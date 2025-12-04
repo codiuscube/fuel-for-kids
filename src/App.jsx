@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ChevronRight, ChevronLeft, Lock } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { ChevronRight, ChevronLeft, Lock, Volume2, VolumeX } from 'lucide-react';
 
 // Components
 import { CharacterHUD } from './components/CharacterHUD';
@@ -27,9 +27,19 @@ const AppContent = () => {
   const [showHelper, setShowHelper] = useState(true);
   const [showHUD, setShowHUD] = useState(true);
   const [missionReady, setMissionReady] = useState(false);
+  const [audioEnabled, setAudioEnabled] = useState(false); // Global audio toggle
 
   const { playTransition } = useSoundEffects();
   const { userState } = useUserContext();
+
+  // Auto-open helper bot on slide change
+  useEffect(() => {
+    setShowHelper(true);
+  }, [currentSlide]);
+
+  const toggleAudio = useCallback(() => {
+    setAudioEnabled(prev => !prev);
+  }, []);
 
   // Slide configuration
   const slides = [
@@ -123,7 +133,23 @@ const AppContent = () => {
         isVisible={showHelper}
         onToggle={() => setShowHelper(!showHelper)}
         currentSlide={currentSlide}
+        audioEnabled={audioEnabled}
       />
+
+      {/* Global Audio Toggle (Bottom Right, next to chat bubble) */}
+      <button
+        onClick={toggleAudio}
+        className={`fixed bottom-4 z-30 p-3 rounded-full shadow-lg transition-all ${
+          showHelper ? 'right-24' : 'right-20'
+        } ${
+          audioEnabled
+            ? 'bg-green-600 text-white hover:bg-green-500'
+            : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
+        }`}
+        title={audioEnabled ? 'Audio On (click to mute)' : 'Audio Off (click to enable)'}
+      >
+        {audioEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+      </button>
     </div>
   );
 };

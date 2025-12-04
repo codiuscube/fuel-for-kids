@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { X, Send, Loader2, MessageSquare, Volume2, VolumeX, Play, Square } from 'lucide-react';
+import { X, Send, Loader2, MessageSquare, Play, Square } from 'lucide-react';
 import { ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID } from '../config';
 import { useUserContext } from '../context/UserContext';
 import { callClaude } from '../utils/claudeApi';
@@ -67,11 +67,11 @@ export const HelperBot = ({
   slideKey,
   isVisible,
   onToggle,
-  currentSlide
+  currentSlide,
+  audioEnabled // Controlled by parent
 }) => {
   // Audio State
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [audioEnabled, setAudioEnabled] = useState(false); // Off by default to save API costs
   const audioRef = useRef(null);
   const abortControllerRef = useRef(null);
   const hasPlayedScript = useRef(false);
@@ -179,12 +179,11 @@ export const HelperBot = ({
     }
   }, [dynamicScript, isSpeaking, speak]);
 
-  // Toggle audio and stop if turning off
-  const toggleAudio = useCallback(() => {
-    if (audioEnabled) {
+  // Stop audio when audioEnabled is turned off
+  useEffect(() => {
+    if (!audioEnabled) {
       stopAudio();
     }
-    setAudioEnabled(!audioEnabled);
   }, [audioEnabled, stopAudio]);
 
   // Generate dynamic script when slide changes
@@ -304,37 +303,21 @@ ${dynamicScript}`;
       {/* Chat Panel */}
       <div className="mr-4 mb-2 bg-slate-800/95 border border-blue-500/30 p-4 rounded-xl rounded-br-none shadow-2xl backdrop-blur-md max-w-sm md:max-w-md">
 
-        {/* Header - audio controls and close button */}
+        {/* Header - play button and close button */}
         <div className="flex justify-between items-center mb-3">
-          {/* Audio Controls */}
-          <div className="flex items-center gap-1">
-            {/* Audio Toggle */}
-            <button
-              onClick={toggleAudio}
-              className={`p-1.5 rounded transition-colors ${
-                audioEnabled
-                  ? 'bg-green-600/20 text-green-400 hover:bg-green-600/30'
-                  : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
-              }`}
-              title={audioEnabled ? 'Audio On (click to mute)' : 'Audio Off (click to enable)'}
-            >
-              {audioEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-            </button>
-
-            {/* Play/Stop Button */}
-            <button
-              onClick={isSpeaking ? stopAudio : playScript}
-              disabled={!dynamicScript || isGeneratingScript}
-              className={`p-1.5 rounded transition-colors ${
-                isSpeaking
-                  ? 'bg-red-600/20 text-red-400 hover:bg-red-600/30'
-                  : 'bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 disabled:opacity-30 disabled:cursor-not-allowed'
-              }`}
-              title={isSpeaking ? 'Stop' : 'Play'}
-            >
-              {isSpeaking ? <Square className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-            </button>
-          </div>
+          {/* Play/Stop Button */}
+          <button
+            onClick={isSpeaking ? stopAudio : playScript}
+            disabled={!dynamicScript || isGeneratingScript}
+            className={`p-1.5 rounded transition-colors ${
+              isSpeaking
+                ? 'bg-red-600/20 text-red-400 hover:bg-red-600/30'
+                : 'bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 disabled:opacity-30 disabled:cursor-not-allowed'
+            }`}
+            title={isSpeaking ? 'Stop' : 'Play'}
+          >
+            {isSpeaking ? <Square className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+          </button>
 
           <button
             onClick={onToggle}
