@@ -8,22 +8,12 @@ import { useSoundEffects } from './hooks/useSoundEffects';
 
 // Slides
 import {
-  DashboardSlide, dashboardScript,
-  ProteinSlide, proteinScript,
-  CreatineSlide, creatineScript,
-  SugarSlide, sugarScript,
-  StrategySlide, strategyScript,
+  DashboardSlide, dashboardScript, dashboardAudio,
+  ProteinSlide, proteinScript, proteinAudio,
+  CreatineSlide, creatineScript, creatineAudio,
+  SugarSlide, sugarScript, sugarAudio,
+  StrategySlide, strategyScript, strategyAudio,
 } from './components/slides';
-
-// Audio files from public folder (uses base path from vite.config.js)
-const BASE_URL = import.meta.env.BASE_URL;
-const audioFiles = {
-  dashboard: `${BASE_URL}sounds/dashboard.mp3`,
-  protein: `${BASE_URL}sounds/protein.mp3`,
-  creatine: `${BASE_URL}sounds/creatine.mp3`,
-  sugar: `${BASE_URL}sounds/sugar.mp3`,
-  strategy: `${BASE_URL}sounds/strategy.mp3`,
-};
 
 /**
  * NutritionRPG - Main application component
@@ -39,11 +29,11 @@ const NutritionRPG = () => {
 
   // Slide configuration
   const slides = [
-    { component: <DashboardSlide />, script: dashboardScript, audio: audioFiles.dashboard },
-    { component: <ProteinSlide />, script: proteinScript, audio: audioFiles.protein },
-    { component: <CreatineSlide />, script: creatineScript, audio: audioFiles.creatine },
-    { component: <SugarSlide />, script: sugarScript, audio: audioFiles.sugar },
-    { component: <StrategySlide onLoadoutUpdate={setMissionReady} />, script: strategyScript, audio: audioFiles.strategy },
+    { component: <DashboardSlide />, script: dashboardScript, audio: dashboardAudio },
+    { component: <ProteinSlide />, script: proteinScript, audio: proteinAudio },
+    { component: <CreatineSlide />, script: creatineScript, audio: creatineAudio },
+    { component: <SugarSlide />, script: sugarScript, audio: sugarAudio },
+    { component: <StrategySlide onLoadoutUpdate={setMissionReady} />, script: strategyScript, audio: strategyAudio },
   ];
 
   const goToPrevSlide = () => {
@@ -101,14 +91,6 @@ const NutritionRPG = () => {
           {slides[currentSlide].component}
         </main>
 
-        {/* Helper Bot (Bottom Right) */}
-        <HelperBot
-          script={slides[currentSlide].script}
-          audioFile={slides[currentSlide].audio}
-          isVisible={showHelper}
-          onToggle={() => setShowHelper(!showHelper)}
-          currentSlide={currentSlide}
-        />
       </div>
 
       {/* Character HUD (Bottom Left - Outside frame) */}
@@ -117,6 +99,15 @@ const NutritionRPG = () => {
         allEquipped={missionReady}
         isVisible={showHUD}
         onToggle={() => setShowHUD(!showHUD)}
+      />
+
+      {/* Helper Bot (Bottom Right - Outside frame) */}
+      <HelperBot
+        script={slides[currentSlide].script}
+        audioFile={slides[currentSlide].audio}
+        isVisible={showHelper}
+        onToggle={() => setShowHelper(!showHelper)}
+        currentSlide={currentSlide}
       />
     </div>
   );

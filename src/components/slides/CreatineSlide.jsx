@@ -12,7 +12,7 @@ export const CreatineSlide = () => {
     <div className="h-full flex flex-col gap-6">
       {/* Header */}
       <div>
-        <Badge color="purple">Mission 2</Badge>
+        <Badge color="purple">Mission 3</Badge>
         <h2 className="text-3xl font-bold text-white mt-2">The Brain Battery</h2>
         <p className="text-slate-400 text-sm">
           Target: <strong className="text-white">Top off the Phosphocreatine tank.</strong>

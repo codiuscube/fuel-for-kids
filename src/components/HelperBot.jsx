@@ -269,7 +269,7 @@ export const HelperBot = ({
     return (
       <button
         onClick={onToggle}
-        className="absolute bottom-4 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-500 transition-colors z-30"
+        className="fixed bottom-4 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-500 transition-colors z-30"
       >
         <MessageSquare className="w-6 h-6" />
       </button>
@@ -277,7 +277,7 @@ export const HelperBot = ({
   }
 
   return (
-    <div className="absolute bottom-4 right-4 z-30 flex items-end justify-end animate-in slide-in-from-right duration-300">
+    <div className="fixed bottom-4 right-4 z-30 flex items-end justify-end animate-in slide-in-from-right duration-300">
       {/* Chat Panel */}
       <div className="mr-4 mb-2 bg-slate-800/95 border border-blue-500/30 p-4 rounded-xl rounded-br-none shadow-2xl backdrop-blur-md max-w-sm md:max-w-md">
 

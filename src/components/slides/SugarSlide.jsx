@@ -118,7 +118,7 @@ export const SugarSlide = () => {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <Badge color="red">Mission 3</Badge>
+          <Badge color="red">Mission 4</Badge>
           <h2 className="text-2xl font-bold text-white mt-1">Energy Management</h2>
           <p className="text-slate-400 text-xs">
             See how different foods affect your blood sugar. Avoid <span className="text-red-400">THE BONK</span>!

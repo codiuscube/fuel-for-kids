@@ -84,7 +84,7 @@ export const ProteinSlide = () => {
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <Badge color="blue">Mission 1</Badge>
+          <Badge color="blue">Mission 2</Badge>
           <h2 className="text-3xl font-bold text-white mt-2">Balanced Fuel Protocol</h2>
           <p className="text-slate-400 text-sm mt-1">
             Goal: <strong className="text-blue-400">Protein</strong> + <strong className="text-purple-400">Carbs</strong>,
