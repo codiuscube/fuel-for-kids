@@ -9,25 +9,28 @@ import { useSoundEffects } from '../../hooks/useSoundEffects';
  * Mission 1: Hit protein goals while keeping fat low
  */
 export const ProteinSlide = () => {
-  const [macros, setMacros] = useState({ p: 0, f: 0, c: 0 });
+  const [macros, setMacros] = useState({ p: 0, f: 0, c: 0, cal: 0 });
   const pTarget = 30;
   const fLimit = 25;
+  const cMin = 20; // Minimum carbs for balance
+  const calLimit = 500; // Calorie limit for a meal
 
   const { playClick, playSuccess, playAlarm } = useSoundEffects();
   const prevProteinMet = useRef(false);
   const prevFatBlowout = useRef(false);
+  const prevCalorieBlowout = useRef(false);
 
   const foods = [
-    { name: "Tomato Soup", p: 2, f: 0, c: 10, type: "weak", icon: "🍅" },
-    { name: "Almond Milk", p: 1, f: 2.5, c: 1, type: "weak", icon: "🥛" },
-    { name: "Annie's Mac & Cheese", p: 9, f: 10, c: 45, type: "good", icon: "🧀" },
-    { name: "Bean & Cheese Taco", p: 12, f: 14, c: 30, type: "good", icon: "🌮" },
-    { name: "Cheese Quesadilla", p: 12, f: 18, c: 25, type: "good", icon: "🌯" },
-    { name: "PB & J Sandwich", p: 8, f: 12, c: 40, type: "good", icon: "🥜" },
-    { name: "Ballerina Farm Whey", p: 24, f: 0, c: 2, type: "super", icon: "💪" },
-    { name: "Pea Protein", p: 20, f: 1.5, c: 1, type: "super", icon: "🫛" },
-    { name: "Bone Broth Ramen", p: 15, f: 5, c: 30, type: "super", icon: "🍜" },
-    { name: "Greek Yogurt", p: 15, f: 0, c: 6, type: "super", icon: "🍦" },
+    { name: "Tomato Soup", p: 2, f: 0, c: 10, cal: 90, type: "weak", icon: "🍅" },
+    { name: "Almond Milk", p: 1, f: 2.5, c: 1, cal: 30, type: "weak", icon: "🥛" },
+    { name: "Annie's Mac & Cheese", p: 9, f: 10, c: 45, cal: 350, type: "good", icon: "🧀" },
+    { name: "Bean & Cheese Taco", p: 12, f: 14, c: 30, cal: 300, type: "good", icon: "🌮" },
+    { name: "Cheese Quesadilla", p: 12, f: 18, c: 25, cal: 350, type: "good", icon: "🌯" },
+    { name: "PB & J Sandwich", p: 8, f: 12, c: 40, cal: 350, type: "good", icon: "🥜" },
+    { name: "Ballerina Farm Whey", p: 24, f: 0, c: 2, cal: 110, type: "super", icon: "💪" },
+    { name: "Pea Protein", p: 20, f: 1.5, c: 1, cal: 90, type: "super", icon: "🫛" },
+    { name: "Bone Broth Ramen", p: 15, f: 5, c: 30, cal: 230, type: "super", icon: "🍜" },
+    { name: "Greek Yogurt", p: 15, f: 0, c: 6, cal: 100, type: "super", icon: "🍦" },
   ];
 
   const addFood = (item) => {
@@ -35,27 +38,32 @@ export const ProteinSlide = () => {
     setMacros(prev => ({
       p: Math.min(prev.p + item.p, 60),
       f: Math.min(prev.f + item.f, 60),
-      c: Math.min(prev.c + item.c, 100)
+      c: Math.min(prev.c + item.c, 100),
+      cal: prev.cal + item.cal
     }));
   };
 
   const reset = () => {
     playClick();
-    setMacros({ p: 0, f: 0, c: 0 });
+    setMacros({ p: 0, f: 0, c: 0, cal: 0 });
     prevProteinMet.current = false;
     prevFatBlowout.current = false;
+    prevCalorieBlowout.current = false;
   };
 
   const isFatBlowout = macros.f > fLimit;
+  const isCalorieBlowout = macros.cal > calLimit;
   const isProteinMet = macros.p >= pTarget;
+  const isCarbsMet = macros.c >= cMin;
+  const isBalanced = isProteinMet && isCarbsMet && !isFatBlowout && !isCalorieBlowout;
 
   // Sound effects for state changes
   useEffect(() => {
-    if (isProteinMet && !prevProteinMet.current && !isFatBlowout) {
+    if (isBalanced && !prevProteinMet.current) {
       playSuccess();
     }
-    prevProteinMet.current = isProteinMet;
-  }, [isProteinMet, isFatBlowout, playSuccess]);
+    prevProteinMet.current = isBalanced;
+  }, [isBalanced, playSuccess]);
 
   useEffect(() => {
     if (isFatBlowout && !prevFatBlowout.current) {
@@ -64,18 +72,26 @@ export const ProteinSlide = () => {
     prevFatBlowout.current = isFatBlowout;
   }, [isFatBlowout, playAlarm]);
 
+  useEffect(() => {
+    if (isCalorieBlowout && !prevCalorieBlowout.current) {
+      playAlarm();
+    }
+    prevCalorieBlowout.current = isCalorieBlowout;
+  }, [isCalorieBlowout, playAlarm]);
+
   return (
     <div className="h-full flex flex-col gap-4">
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
           <Badge color="blue">Mission 1</Badge>
-          <h2 className="text-3xl font-bold text-white mt-2">The Anabolic Threshold</h2>
+          <h2 className="text-3xl font-bold text-white mt-2">Balanced Fuel Protocol</h2>
           <p className="text-slate-400 text-sm mt-1">
-            Goal: High Protein, <strong className="text-white">Low Fat</strong> cost.
+            Goal: <strong className="text-blue-400">Protein</strong> + <strong className="text-purple-400">Carbs</strong>,
+            under <strong className="text-yellow-400">Fat</strong> & <strong className="text-orange-400">Calorie</strong> limits.
           </p>
         </div>
-        <div className="bg-slate-800 p-2 rounded-lg border border-slate-600 text-right min-w-[120px] flex flex-col gap-1">
+        <div className="bg-slate-800 p-2 rounded-lg border border-slate-600 text-right min-w-[140px] flex flex-col gap-1">
           <div className="flex justify-between text-xs text-slate-400 gap-2">
             <span>PRO</span>
             <span className={isProteinMet ? "text-green-400" : "text-white"}>
@@ -83,9 +99,21 @@ export const ProteinSlide = () => {
             </span>
           </div>
           <div className="flex justify-between text-xs text-slate-400 gap-2">
+            <span>CARB</span>
+            <span className={isCarbsMet ? "text-green-400" : "text-white"}>
+              {Math.round(macros.c)}/{cMin}g+
+            </span>
+          </div>
+          <div className="flex justify-between text-xs text-slate-400 gap-2">
             <span>FAT</span>
             <span className={isFatBlowout ? "text-red-500 font-bold animate-pulse" : "text-white"}>
               {Math.round(macros.f)}/{fLimit}g
+            </span>
+          </div>
+          <div className="flex justify-between text-xs text-slate-400 gap-2">
+            <span>CAL</span>
+            <span className={isCalorieBlowout ? "text-red-500 font-bold animate-pulse" : "text-white"}>
+              {Math.round(macros.cal)}/{calLimit}
             </span>
           </div>
         </div>
@@ -124,9 +152,9 @@ export const ProteinSlide = () => {
                   <span className="text-sm truncate pr-1">{food.icon} {food.name}</span>
                   <div className="flex flex-col items-end">
                     <span className={`font-mono text-[10px] font-bold ${food.type === 'super' ? 'text-blue-300' : 'text-slate-400'}`}>
-                      P:{food.p}
+                      P:{food.p} C:{food.c}
                     </span>
-                    <span className="font-mono text-[9px] text-slate-500">F:{food.f}</span>
+                    <span className="font-mono text-[9px] text-slate-500">F:{food.f} | {food.cal}cal</span>
                   </div>
                 </div>
                 <div className="absolute inset-0 bg-white opacity-0 group-active:opacity-10 transition-opacity" />
@@ -138,13 +166,17 @@ export const ProteinSlide = () => {
         {/* Progress Display */}
         <div className="flex flex-col space-y-4 bg-slate-900/30 rounded-xl border border-slate-800/50 p-4 relative overflow-hidden">
 
-          {/* Fat Overload Warning */}
-          {isFatBlowout && (
+          {/* Fat/Calorie Overload Warning */}
+          {(isFatBlowout || isCalorieBlowout) && (
             <div className="absolute inset-0 bg-red-900/90 z-20 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
               <AlertOctagon className="w-16 h-16 text-red-500 mb-4 animate-bounce" />
-              <h3 className="text-2xl font-black text-white uppercase tracking-widest">Lipid Overload</h3>
+              <h3 className="text-2xl font-black text-white uppercase tracking-widest">
+                {isFatBlowout && isCalorieBlowout ? "Double Overload" : isFatBlowout ? "Lipid Overload" : "Calorie Overload"}
+              </h3>
               <p className="text-red-300 text-sm mt-2 text-center max-w-[200px]">
-                Fat content exceeded limit. System sluggish.
+                {isFatBlowout && "Fat content exceeded limit. "}
+                {isCalorieBlowout && "Too many calories. "}
+                System sluggish.
               </p>
               <button
                 onClick={reset}
@@ -185,16 +217,30 @@ export const ProteinSlide = () => {
               </div>
             </div>
 
-            {/* Carbs */}
+            {/* Carbs - now a requirement */}
             <div>
               <div className="flex justify-between text-xs mb-1">
-                <span className="text-purple-400 font-bold">CARBS (Fuel)</span>
-                <span className="text-slate-500">{Math.round(macros.c)}g</span>
+                <span className="text-purple-400 font-bold">CARBS (Fuel) - Min {cMin}g</span>
+                <span className="text-slate-500">{Math.round(macros.c)} / {cMin}g+</span>
               </div>
               <div className="h-4 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
                 <div
-                  className="h-full bg-purple-900/50 transition-all duration-500"
-                  style={{ width: `${Math.min((macros.c / 100) * 100, 100)}%` }}
+                  className={`h-full transition-all duration-500 ${isCarbsMet ? 'bg-green-500' : 'bg-purple-600'}`}
+                  style={{ width: `${Math.min((macros.c / cMin) * 100, 100)}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Calories */}
+            <div>
+              <div className="flex justify-between text-xs mb-1">
+                <span className="text-orange-400 font-bold">CALORIES (Limit)</span>
+                <span className="text-slate-500">{Math.round(macros.cal)} / {calLimit}</span>
+              </div>
+              <div className="h-4 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+                <div
+                  className={`h-full transition-all duration-500 ${isCalorieBlowout ? 'bg-red-500' : 'bg-orange-500'}`}
+                  style={{ width: `${Math.min((macros.cal / calLimit) * 100, 100)}%` }}
                 />
               </div>
             </div>
@@ -202,13 +248,17 @@ export const ProteinSlide = () => {
 
           {/* Status Message */}
           <div className="text-center mt-auto">
-            {isProteinMet && !isFatBlowout ? (
+            {isBalanced ? (
               <div className="animate-bounce bg-green-500 text-white px-4 py-2 rounded-full font-bold shadow-[0_0_20px_rgba(34,197,94,0.6)]">
-                OPTIMIZED!
+                BALANCED & OPTIMIZED!
               </div>
             ) : (
               <div className="text-slate-500 text-xs italic">
-                Tip: Quesadillas have high fat cost. <br/>Whey/Peas have low fat cost.
+                {!isProteinMet && !isCarbsMet && "Need protein AND carbs for energy. "}
+                {isProteinMet && !isCarbsMet && "Good protein! Add carbs for fuel. "}
+                {!isProteinMet && isCarbsMet && "Good carbs! Add more protein. "}
+                {isProteinMet && isCarbsMet && !isFatBlowout && !isCalorieBlowout && "Almost there!"}
+                <br/>Tip: Ramen has protein + carbs. Pure protein powder needs pairing.
               </div>
             )}
           </div>
@@ -218,7 +268,7 @@ export const ProteinSlide = () => {
   );
 };
 
-export const proteinScript = "This is the Protein Lab. Since we don't eat meat, you are missing specific amino acids needed for your brain. Use the meal builder to hit 30 grams of protein. Watch out for fat. If you just eat cheese tacos, the fat level will blow out and jam the system. Use clean fuel like Whey or Peas.";
+export const proteinScript = "Welcome to the Balanced Fuel Protocol. Your body needs more than just protein. You need carbs for energy too! Hit 30 grams of protein AND at least 20 grams of carbs. But watch your limits. Too much fat slows you down, and too many calories overloads the system. If you only eat protein powder, you won't have fuel. Try combining foods like Ramen with Greek Yogurt for a balanced meal.";
 
 import proteinAudioFile from '../../sounds/Protein lab.mp3';
 export const proteinAudio = proteinAudioFile;

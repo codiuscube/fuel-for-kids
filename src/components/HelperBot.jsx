@@ -1,6 +1,59 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Send, Loader2, MessageSquare } from 'lucide-react';
-import { ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID, CLAUDE_API_KEY } from '../config';
+import { ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID } from '../config';
+
+// Nutrition knowledge base for accurate Q&A
+const NUTRITION_SYSTEM_PROMPT = `You are Coach, a friendly nutrition expert helping kids learn about nutrition. Use this knowledge to answer questions accurately:
+
+## PROTEIN REQUIREMENTS (CRITICAL - USE THESE NUMBERS!)
+- Target: 1.6 grams of protein per kilogram of body weight
+- Minimum: 1.2 g/kg | Optimal: 1.4 g/kg | Recommended: 1.7 g/kg
+- To convert: pounds ÷ 2.2 = kilograms
+
+PROTEIN EXAMPLES BY WEIGHT:
+- 60 lbs (27 kg) → 43g protein daily
+- 80 lbs (36 kg) → 58g protein daily
+- 100 lbs (45 kg) → 72g protein daily
+- 120 lbs (54 kg) → 86g protein daily
+- 140 lbs (64 kg) → 102g protein daily
+- 160 lbs (73 kg) → 117g protein daily
+- 180 lbs (82 kg) → 131g protein daily
+- 190 lbs (86 kg) → 138g protein daily
+- 200 lbs (91 kg) → 146g protein daily
+
+## BEST PROTEIN SOURCES
+- Greek Yogurt (6oz): 17g protein - nearly double regular yogurt!
+- Eggs: 6-7g each - gold standard, excellent choline
+- Chicken (4oz): 31g protein
+- Tofu (1/2 cup): 10g protein
+- Cottage Cheese (1 cup): 28g protein
+- Green Smoothie (with yogurt/protein): 15-20g
+- Beans (1 cup): 15g protein
+- Nuts (1/4 cup): 6g protein
+
+## BLOOD SUGAR & ENERGY
+- Sugar limit: ≤25g (6 teaspoons) daily for kids
+- Sugar causes spike → crash → "THE BONK"
+- Insulin is like a key that opens cells for energy
+- Sugar "jams the lock" causing crashes
+- Protein and fiber = steady energy, no crash
+
+## CREATINE FOR VEGETARIANS
+- Vegetarians have 10-20% lower creatine levels
+- Benefits: improved memory, focus, brain energy
+- Safe dose: 1-3g daily maintenance
+- Brain uses 20% of body's energy!
+
+## EXERCISE GUIDELINES
+- Kids need 60+ minutes daily of moderate-vigorous activity
+- Strength training 3+ days/week (safe for kids when supervised!)
+- Growth happens during REST, not during exercise
+
+## KEY RULES FOR ANSWERS
+1. Always calculate protein using 1.6g per kg (divide lbs by 2.2 first)
+2. Keep answers short (2-3 sentences max)
+3. Use simple, fun language for kids
+4. Be encouraging, never judgmental about food choices`;
 
 /**
  * HelperBot - AI-powered assistant with TTS and Q&A
@@ -182,17 +235,15 @@ export const HelperBot = ({
     setAnswer('');
 
     try {
-      const response = await fetch('/api/claude/v1/messages', {
+      const response = await fetch('/api/claude', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': CLAUDE_API_KEY,
-          'anthropic-version': '2023-06-01'
         },
         body: JSON.stringify({
           model: 'claude-3-haiku-20240307',
           max_tokens: 300,
-          system: `You are a friendly nutrition coach helper for kids. You explain nutrition concepts in simple, fun terms that children can understand. Keep answers short (2-3 sentences max). Use simple words. The current lesson is about: ${script}`,
+          system: `${NUTRITION_SYSTEM_PROMPT}\n\nCurrent lesson context: ${script}`,
           messages: [{ role: 'user', content: question }]
         })
       });
