@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { X, Send, Loader2, MessageSquare } from 'lucide-react';
+import { X, Send, Loader2, MessageSquare, Volume2, VolumeX, Play, Square } from 'lucide-react';
 import { ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID } from '../config';
 import { useUserContext } from '../context/UserContext';
 import { callClaude } from '../utils/claudeApi';
@@ -71,7 +71,7 @@ export const HelperBot = ({
 }) => {
   // Audio State
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [userHasInteracted, setUserHasInteracted] = useState(false);
+  const [audioEnabled, setAudioEnabled] = useState(false); // Off by default to save API costs
   const audioRef = useRef(null);
   const abortControllerRef = useRef(null);
   const hasPlayedScript = useRef(false);
@@ -172,23 +172,20 @@ export const HelperBot = ({
     }
   }, [stopAudio]);
 
-  // Track user interaction (needed for autoplay)
-  useEffect(() => {
-    const handleInteraction = () => {
-      setUserHasInteracted(true);
-      // Remove listeners after first interaction
-      document.removeEventListener('click', handleInteraction);
-      document.removeEventListener('keydown', handleInteraction);
-    };
+  // Play current script manually
+  const playScript = useCallback(() => {
+    if (dynamicScript && !isSpeaking) {
+      speak(dynamicScript);
+    }
+  }, [dynamicScript, isSpeaking, speak]);
 
-    document.addEventListener('click', handleInteraction);
-    document.addEventListener('keydown', handleInteraction);
-
-    return () => {
-      document.removeEventListener('click', handleInteraction);
-      document.removeEventListener('keydown', handleInteraction);
-    };
-  }, []);
+  // Toggle audio and stop if turning off
+  const toggleAudio = useCallback(() => {
+    if (audioEnabled) {
+      stopAudio();
+    }
+    setAudioEnabled(!audioEnabled);
+  }, [audioEnabled, stopAudio]);
 
   // Generate dynamic script when slide changes
   const generateScript = useCallback(async () => {
@@ -224,9 +221,9 @@ export const HelperBot = ({
     }
   }, [slideKey, generateScript, stopAudio]);
 
-  // Auto-play when dynamic script is ready and user has interacted
+  // Auto-play when dynamic script is ready (only if audio is enabled)
   useEffect(() => {
-    if (isVisible && dynamicScript && userHasInteracted && !hasPlayedScript.current && !isGeneratingScript) {
+    if (isVisible && dynamicScript && audioEnabled && !hasPlayedScript.current && !isGeneratingScript) {
       const timer = setTimeout(() => {
         if (!hasPlayedScript.current) {
           hasPlayedScript.current = true;
@@ -235,15 +232,15 @@ export const HelperBot = ({
       }, 300);
       return () => clearTimeout(timer);
     }
-  }, [dynamicScript, isVisible, userHasInteracted, isGeneratingScript, speak]);
+  }, [dynamicScript, isVisible, audioEnabled, isGeneratingScript, speak]);
 
-  // Also auto-play when bot becomes visible (after user interaction)
+  // Also auto-play when bot becomes visible (only if audio is enabled)
   useEffect(() => {
-    if (isVisible && dynamicScript && !hasPlayedScript.current && !isSpeaking && userHasInteracted && !isGeneratingScript) {
+    if (isVisible && dynamicScript && !hasPlayedScript.current && !isSpeaking && audioEnabled && !isGeneratingScript) {
       hasPlayedScript.current = true;
       speak(dynamicScript);
     }
-  }, [isVisible, userHasInteracted, isGeneratingScript, dynamicScript, isSpeaking, speak]);
+  }, [isVisible, audioEnabled, isGeneratingScript, dynamicScript, isSpeaking, speak]);
 
   // Claude Haiku Q&A
   const askQuestion = async () => {
@@ -277,8 +274,10 @@ ${dynamicScript}`;
 
       const answerText = data.content[0].text;
       setAnswer(answerText);
-      // Auto-play the answer
-      speak(answerText);
+      // Auto-play the answer only if audio is enabled
+      if (audioEnabled) {
+        speak(answerText);
+      }
     } catch (error) {
       console.error('Q&A Error:', error);
       setAnswer("Oops! I couldn't answer that right now. Try asking again!");
@@ -305,8 +304,38 @@ ${dynamicScript}`;
       {/* Chat Panel */}
       <div className="mr-4 mb-2 bg-slate-800/95 border border-blue-500/30 p-4 rounded-xl rounded-br-none shadow-2xl backdrop-blur-md max-w-sm md:max-w-md">
 
-        {/* Header - just close button */}
-        <div className="flex justify-end mb-3">
+        {/* Header - audio controls and close button */}
+        <div className="flex justify-between items-center mb-3">
+          {/* Audio Controls */}
+          <div className="flex items-center gap-1">
+            {/* Audio Toggle */}
+            <button
+              onClick={toggleAudio}
+              className={`p-1.5 rounded transition-colors ${
+                audioEnabled
+                  ? 'bg-green-600/20 text-green-400 hover:bg-green-600/30'
+                  : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
+              }`}
+              title={audioEnabled ? 'Audio On (click to mute)' : 'Audio Off (click to enable)'}
+            >
+              {audioEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+            </button>
+
+            {/* Play/Stop Button */}
+            <button
+              onClick={isSpeaking ? stopAudio : playScript}
+              disabled={!dynamicScript || isGeneratingScript}
+              className={`p-1.5 rounded transition-colors ${
+                isSpeaking
+                  ? 'bg-red-600/20 text-red-400 hover:bg-red-600/30'
+                  : 'bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 disabled:opacity-30 disabled:cursor-not-allowed'
+              }`}
+              title={isSpeaking ? 'Stop' : 'Play'}
+            >
+              {isSpeaking ? <Square className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+            </button>
+          </div>
+
           <button
             onClick={onToggle}
             className="text-slate-500 hover:text-white p-1"
