@@ -32,6 +32,9 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          VITE_ELEVENLABS_API_KEY: ${{ secrets.VITE_ELEVENLABS_API_KEY }}
+          VITE_CLAUDE_API_KEY: ${{ secrets.VITE_CLAUDE_API_KEY }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
