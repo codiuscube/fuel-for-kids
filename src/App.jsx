@@ -15,13 +15,14 @@ import {
   StrategySlide, strategyScript,
 } from './components/slides';
 
-// Audio files from public folder
+// Audio files from public folder (uses base path from vite.config.js)
+const BASE_URL = import.meta.env.BASE_URL;
 const audioFiles = {
-  dashboard: '/sounds/Listen up team.mp3',
-  protein: '/sounds/Protein lab.mp3',
-  creatine: "/sounds/Since we don't eat Steak.mp3",
-  sugar: '/sounds/I want to teach you.mp3',
-  strategy: '/sounds/Practical application.mp3',
+  dashboard: `${BASE_URL}sounds/dashboard.mp3`,
+  protein: `${BASE_URL}sounds/protein.mp3`,
+  creatine: `${BASE_URL}sounds/creatine.mp3`,
+  sugar: `${BASE_URL}sounds/sugar.mp3`,
+  strategy: `${BASE_URL}sounds/strategy.mp3`,
 };
 
 /**

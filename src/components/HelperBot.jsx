@@ -15,6 +15,7 @@ export const HelperBot = ({
 }) => {
   // Audio State
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [userHasInteracted, setUserHasInteracted] = useState(false);
   const audioRef = useRef(null);
   const hasPlayedScript = useRef(false);
 
@@ -23,7 +24,25 @@ export const HelperBot = ({
   const [answer, setAnswer] = useState('');
   const [isAsking, setIsAsking] = useState(false);
 
-  // Auto-play script when slide changes
+  // Track user interaction (needed for autoplay)
+  useEffect(() => {
+    const handleInteraction = () => {
+      setUserHasInteracted(true);
+      // Remove listeners after first interaction
+      document.removeEventListener('click', handleInteraction);
+      document.removeEventListener('keydown', handleInteraction);
+    };
+
+    document.addEventListener('click', handleInteraction);
+    document.addEventListener('keydown', handleInteraction);
+
+    return () => {
+      document.removeEventListener('click', handleInteraction);
+      document.removeEventListener('keydown', handleInteraction);
+    };
+  }, []);
+
+  // Auto-play script when slide changes (only after user interaction)
   useEffect(() => {
     // Stop any current audio
     if (audioRef.current) {
@@ -35,25 +54,25 @@ export const HelperBot = ({
     setAnswer('');
     hasPlayedScript.current = false;
 
-    // Auto-play the pre-recorded audio after a short delay
-    if (isVisible && audioFile) {
+    // Auto-play the pre-recorded audio after user has interacted
+    if (isVisible && audioFile && userHasInteracted) {
       const timer = setTimeout(() => {
         if (!hasPlayedScript.current) {
           hasPlayedScript.current = true;
           playScriptAudio();
         }
-      }, 500);
+      }, 300);
       return () => clearTimeout(timer);
     }
-  }, [currentSlide, audioFile]);
+  }, [currentSlide, audioFile, userHasInteracted]);
 
-  // Also auto-play when bot becomes visible
+  // Also auto-play when bot becomes visible (after user interaction)
   useEffect(() => {
-    if (isVisible && audioFile && !hasPlayedScript.current && !isSpeaking) {
+    if (isVisible && audioFile && !hasPlayedScript.current && !isSpeaking && userHasInteracted) {
       hasPlayedScript.current = true;
       playScriptAudio();
     }
-  }, [isVisible]);
+  }, [isVisible, userHasInteracted]);
 
   // Play pre-recorded audio file for scripts
   const playScriptAudio = () => {
