@@ -1,8 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { X, Send, Loader2, MessageSquare } from 'lucide-react';
 import { ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID } from '../config';
 import { useUserContext } from '../context/UserContext';
 import { callClaude } from '../utils/claudeApi';
+import { generateDynamicScript, getBaseScript } from '../utils/dynamicScripts';
 
 // Nutrition knowledge base for accurate Q&A
 const NUTRITION_SYSTEM_PROMPT = `You are Coach, a friendly nutrition expert helping kids learn about nutrition. Use this knowledge to answer questions accurately:
@@ -60,9 +61,10 @@ PROTEIN EXAMPLES BY WEIGHT:
 /**
  * HelperBot - AI-powered assistant with TTS and Q&A
  * Auto-plays script on slide change using TTS, simple Q&A below
+ * Generates personalized scripts using Claude based on user context
  */
 export const HelperBot = ({
-  script,
+  slideKey,
   isVisible,
   onToggle,
   currentSlide
@@ -74,61 +76,21 @@ export const HelperBot = ({
   const abortControllerRef = useRef(null);
   const hasPlayedScript = useRef(false);
 
+  // Dynamic Script State
+  const [dynamicScript, setDynamicScript] = useState('');
+  const [isGeneratingScript, setIsGeneratingScript] = useState(false);
+  const lastSlideKeyRef = useRef(null);
+
   // Q&A State
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
   const [isAsking, setIsAsking] = useState(false);
 
-  // Get user context for personalized Q&A
-  const { getStateSummary } = useUserContext();
+  // Get user context for personalized Q&A and script generation
+  const { getStateSummary, userState } = useUserContext();
 
-  // Track user interaction (needed for autoplay)
-  useEffect(() => {
-    const handleInteraction = () => {
-      setUserHasInteracted(true);
-      // Remove listeners after first interaction
-      document.removeEventListener('click', handleInteraction);
-      document.removeEventListener('keydown', handleInteraction);
-    };
-
-    document.addEventListener('click', handleInteraction);
-    document.addEventListener('keydown', handleInteraction);
-
-    return () => {
-      document.removeEventListener('click', handleInteraction);
-      document.removeEventListener('keydown', handleInteraction);
-    };
-  }, []);
-
-  // Auto-play script when slide changes (only after user interaction)
-  useEffect(() => {
-    // Stop any current audio
-    stopAudio();
-    setAnswer('');
-    hasPlayedScript.current = false;
-
-    // Auto-play TTS after user has interacted
-    if (isVisible && script && userHasInteracted) {
-      const timer = setTimeout(() => {
-        if (!hasPlayedScript.current) {
-          hasPlayedScript.current = true;
-          speak(script);
-        }
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [currentSlide, script, userHasInteracted]);
-
-  // Also auto-play when bot becomes visible (after user interaction)
-  useEffect(() => {
-    if (isVisible && script && !hasPlayedScript.current && !isSpeaking && userHasInteracted) {
-      hasPlayedScript.current = true;
-      speak(script);
-    }
-  }, [isVisible, userHasInteracted]);
-
-  // Stop all audio
-  const stopAudio = () => {
+  // Stop all audio - defined first so it can be used in other hooks
+  const stopAudio = useCallback(() => {
     // Cancel any pending fetch request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -143,10 +105,10 @@ export const HelperBot = ({
       audioRef.current = null;
     }
     setIsSpeaking(false);
-  };
+  }, []);
 
-  // ElevenLabs Text-to-Speech
-  const speak = async (text) => {
+  // ElevenLabs Text-to-Speech - defined before effects that use it
+  const speak = useCallback(async (text) => {
     // Stop any existing audio first
     stopAudio();
 
@@ -208,7 +170,80 @@ export const HelperBot = ({
       setIsSpeaking(true);
       window.speechSynthesis.speak(utterance);
     }
-  };
+  }, [stopAudio]);
+
+  // Track user interaction (needed for autoplay)
+  useEffect(() => {
+    const handleInteraction = () => {
+      setUserHasInteracted(true);
+      // Remove listeners after first interaction
+      document.removeEventListener('click', handleInteraction);
+      document.removeEventListener('keydown', handleInteraction);
+    };
+
+    document.addEventListener('click', handleInteraction);
+    document.addEventListener('keydown', handleInteraction);
+
+    return () => {
+      document.removeEventListener('click', handleInteraction);
+      document.removeEventListener('keydown', handleInteraction);
+    };
+  }, []);
+
+  // Generate dynamic script when slide changes
+  const generateScript = useCallback(async () => {
+    if (!slideKey) return;
+
+    // Show base script immediately while generating
+    const baseScript = getBaseScript(slideKey);
+    setDynamicScript(baseScript);
+    setIsGeneratingScript(true);
+
+    try {
+      const personalized = await generateDynamicScript(slideKey, userState);
+      setDynamicScript(personalized);
+    } catch (error) {
+      console.error('Failed to generate dynamic script:', error);
+      // Keep base script on error
+    }
+
+    setIsGeneratingScript(false);
+  }, [slideKey, userState]);
+
+  // Generate new script and auto-play when slide changes
+  useEffect(() => {
+    // Stop any current audio
+    stopAudio();
+    setAnswer('');
+    hasPlayedScript.current = false;
+
+    // Only regenerate if slide actually changed
+    if (slideKey !== lastSlideKeyRef.current) {
+      lastSlideKeyRef.current = slideKey;
+      generateScript();
+    }
+  }, [slideKey, generateScript, stopAudio]);
+
+  // Auto-play when dynamic script is ready and user has interacted
+  useEffect(() => {
+    if (isVisible && dynamicScript && userHasInteracted && !hasPlayedScript.current && !isGeneratingScript) {
+      const timer = setTimeout(() => {
+        if (!hasPlayedScript.current) {
+          hasPlayedScript.current = true;
+          speak(dynamicScript);
+        }
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [dynamicScript, isVisible, userHasInteracted, isGeneratingScript, speak]);
+
+  // Also auto-play when bot becomes visible (after user interaction)
+  useEffect(() => {
+    if (isVisible && dynamicScript && !hasPlayedScript.current && !isSpeaking && userHasInteracted && !isGeneratingScript) {
+      hasPlayedScript.current = true;
+      speak(dynamicScript);
+    }
+  }, [isVisible, userHasInteracted, isGeneratingScript, dynamicScript, isSpeaking, speak]);
 
   // Claude Haiku Q&A
   const askQuestion = async () => {
@@ -230,7 +265,7 @@ export const HelperBot = ({
 ${userStateSummary}
 
 ## Current lesson context:
-${script}`;
+${dynamicScript}`;
 
     try {
       const data = await callClaude({
@@ -281,9 +316,15 @@ ${script}`;
         </div>
 
         {/* Script Text */}
-        <p className="text-sm leading-snug text-slate-200 mb-4">
-          {script}
-        </p>
+        <div className="text-sm leading-snug text-slate-200 mb-4">
+          {isGeneratingScript && (
+            <div className="flex items-center gap-2 text-slate-400 mb-2">
+              <Loader2 className="w-3 h-3 animate-spin" />
+              <span className="text-xs">Personalizing...</span>
+            </div>
+          )}
+          <p>{dynamicScript}</p>
+        </div>
 
         {/* Answer (if any) */}
         {answer && (

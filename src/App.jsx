@@ -9,14 +9,14 @@ import { UserProvider, useUserContext } from './context/UserContext';
 
 // Slides
 import {
-  DashboardSlide, dashboardScript,
-  ProteinSlide, proteinScript,
-  CreatineSlide, creatineScript,
-  SugarSlide, sugarScript,
-  StrategySlide, strategyScript,
+  DashboardSlide,
+  ProteinSlide,
+  CreatineSlide,
+  SugarSlide,
+  StrategySlide,
 } from './components/slides';
 
-// Slide keys for completion tracking
+// Slide keys for completion tracking and dynamic script generation
 const SLIDE_KEYS = ['dashboard', 'protein', 'creatine', 'sugar', 'strategy'];
 
 /**
@@ -33,11 +33,11 @@ const AppContent = () => {
 
   // Slide configuration
   const slides = [
-    { component: <DashboardSlide />, script: dashboardScript },
-    { component: <ProteinSlide />, script: proteinScript },
-    { component: <CreatineSlide />, script: creatineScript },
-    { component: <SugarSlide />, script: sugarScript },
-    { component: <StrategySlide onLoadoutUpdate={setMissionReady} />, script: strategyScript },
+    { component: <DashboardSlide />, key: 'dashboard' },
+    { component: <ProteinSlide />, key: 'protein' },
+    { component: <CreatineSlide />, key: 'creatine' },
+    { component: <SugarSlide />, key: 'sugar' },
+    { component: <StrategySlide onLoadoutUpdate={setMissionReady} />, key: 'strategy' },
   ];
 
   // Check if current slide is complete
@@ -119,7 +119,7 @@ const AppContent = () => {
 
       {/* Helper Bot (Bottom Right - Outside frame) */}
       <HelperBot
-        script={slides[currentSlide].script}
+        slideKey={slides[currentSlide].key}
         isVisible={showHelper}
         onToggle={() => setShowHelper(!showHelper)}
         currentSlide={currentSlide}
