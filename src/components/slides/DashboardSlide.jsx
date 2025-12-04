@@ -197,7 +197,7 @@ export const DashboardSlide = () => {
             <RotateCcw className="w-3 h-3" /> Reset
           </button>
         </div>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1.5 pt-14">
           {FOODS.map((food) => (
             <button
               key={food.id}
@@ -220,7 +220,7 @@ export const DashboardSlide = () => {
                 {food.protein}g P
               </span>
               {hoveredFood?.id === food.id && (
-                <div className="absolute -top-14 left-1/2 -translate-x-1/2 bg-slate-900 px-2 py-1 rounded text-xs whitespace-nowrap border border-slate-600 z-10 shadow-lg">
+                <div className="absolute -top-14 left-1/2 -translate-x-1/2 bg-slate-900 px-2 py-1 rounded text-xs whitespace-nowrap border border-slate-600 z-50 shadow-lg">
                   <div className="font-bold text-white">{food.name}</div>
                   <div className="text-slate-400">
                     {food.calories}cal | <span className="text-cyan-400">{food.protein}g protein</span> | {food.carbs}g carbs
