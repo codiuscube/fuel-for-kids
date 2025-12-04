@@ -4,7 +4,7 @@ import { callClaude } from './claudeApi';
 const BASE_SCRIPTS = {
   dashboard: `Listen up team. We need a mindset shift. We don't eat just to get full. We eat to build the machine. Your muscles and brain are like teams of tiny builders. Protein gives them the blocks they need. Enter your weight and I'll calculate exactly how much protein you need at 1.6 grams per kilogram. Then build your day to hit that goal!`,
 
-  protein: `Welcome to the Balanced Fuel Protocol. Every cell in your body contains protein. Muscles use it to repair, and your brain uses it for focus chemicals. But you also need carbs for energy! Hit 30 grams of protein AND at least 20 grams of carbs. Watch your limits though. Too much fat slows you down, and too many calories overloads the system. Greek yogurt has 17 grams of protein, nearly double regular yogurt. Try combining foods for a balanced meal.`,
+  protein: `Now let's build ONE perfect meal! Based on the foods you picked earlier, I've created a personalized menu just for you. Your goal: hit 30 grams of protein AND at least 20 grams of carbs in a single meal. But watch out! Keep fat under 25 grams and total calories under 500. This teaches you how to build balanced meals. The blue-highlighted foods are protein powerhouses. Try combining a protein source with some carbs!`,
 
   creatine: `Time for the Math Speed Challenge! Vegetarians have about 80 percent creatine in their brain battery. Let's test your speed at 80 percent first. Then we'll top off your tank with creatine and try again. Watch how having a full battery gives you more thinking time. Five grams daily is the research-backed dose for memory and math performance.`,
 
