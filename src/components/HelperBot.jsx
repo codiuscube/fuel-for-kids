@@ -186,6 +186,12 @@ export const HelperBot = ({
     }
   }, [audioEnabled, stopAudio]);
 
+  // Store userState in a ref so generateScript doesn't re-run on every state change
+  const userStateRef = useRef(userState);
+  useEffect(() => {
+    userStateRef.current = userState;
+  }, [userState]);
+
   // Generate dynamic script when slide changes
   const generateScript = useCallback(async () => {
     if (!slideKey) return;
@@ -196,7 +202,7 @@ export const HelperBot = ({
     setIsGeneratingScript(true);
 
     try {
-      const personalized = await generateDynamicScript(slideKey, userState);
+      const personalized = await generateDynamicScript(slideKey, userStateRef.current);
       setDynamicScript(personalized);
     } catch (error) {
       console.error('Failed to generate dynamic script:', error);
@@ -204,17 +210,16 @@ export const HelperBot = ({
     }
 
     setIsGeneratingScript(false);
-  }, [slideKey, userState]);
+  }, [slideKey]);
 
   // Generate new script and auto-play when slide changes
   useEffect(() => {
-    // Stop any current audio
-    stopAudio();
-    setAnswer('');
-    hasPlayedScript.current = false;
-
-    // Only regenerate if slide actually changed
+    // Only act when slide actually changed
     if (slideKey !== lastSlideKeyRef.current) {
+      // Stop any current audio
+      stopAudio();
+      setAnswer('');
+      hasPlayedScript.current = false;
       lastSlideKeyRef.current = slideKey;
       generateScript();
     }
