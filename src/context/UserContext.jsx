@@ -7,6 +7,9 @@ const UserContext = createContext();
  */
 export const UserProvider = ({ children }) => {
   const [userState, setUserState] = useState({
+    // User info
+    userName: '',
+
     // Dashboard state
     weightLbs: null,
     weightKg: null,
@@ -20,11 +23,56 @@ export const UserProvider = ({ children }) => {
     // Sugar slide state
     sugarFoods: [],
 
+    // Creatine slide state
+    creatineState: {
+      batteryLevel: 80,
+      creatineGrams: 0,
+      round80Score: null,
+      round100Score: null,
+    },
+
     // Strategy slide state
     equippedHabits: [],
+    habitQuizAnswers: {}, // { smoothie: 'answer', yogurt: 'answer', ... }
+
+    // Slide completion tracking
+    slideCompletion: {
+      dashboard: false,
+      protein: false,
+      creatine: false,
+      sugar: false,
+      strategy: false,
+    },
   });
 
   // Update specific parts of state
+  const updateUserName = useCallback((name) => {
+    setUserState(prev => ({
+      ...prev,
+      userName: name,
+    }));
+  }, []);
+
+  const updateSlideCompletion = useCallback((slide, completed) => {
+    setUserState(prev => ({
+      ...prev,
+      slideCompletion: {
+        ...prev.slideCompletion,
+        [slide]: completed,
+      },
+    }));
+  }, []);
+
+  const updateHabitQuizAnswer = useCallback((habit, answer) => {
+    setUserState(prev => ({
+      ...prev,
+      habitQuizAnswers: {
+        ...prev.habitQuizAnswers,
+        [habit]: answer,
+      },
+    }));
+  }, []);
+
   const updateDashboard = useCallback((data) => {
     setUserState(prev => ({
       ...prev,
@@ -57,9 +105,23 @@ export const UserProvider = ({ children }) => {
     }));
   }, []);
 
+  const updateCreatine = useCallback((data) => {
+    setUserState(prev => ({
+      ...prev,
+      creatineState: {
+        ...prev.creatineState,
+        ...data,
+      },
+    }));
+  }, []);
+
   // Generate a summary string for the AI prompt
   const getStateSummary = useCallback(() => {
     const parts = [];
+
+    if (userState.userName) {
+      parts.push(`User's name: ${userState.userName}`);
+    }
 
     if (userState.weightLbs) {
       parts.push(`User's weight: ${userState.weightLbs} lbs (${userState.weightKg?.toFixed(1)} kg)`);
@@ -95,6 +157,23 @@ export const UserProvider = ({ children }) => {
       }
     }
 
+    if (userState.creatineState?.creatineGrams > 0) {
+      parts.push(`Creatine dose: ${userState.creatineState.creatineGrams}g (battery at ${userState.creatineState.batteryLevel}%)`);
+
+      if (userState.creatineState.round80Score) {
+        parts.push(`Math challenge at 80% battery: ${userState.creatineState.round80Score.correct}/5 correct`);
+      }
+      if (userState.creatineState.round100Score) {
+        parts.push(`Math challenge at 100% battery: ${userState.creatineState.round100Score.correct}/5 correct`);
+        if (userState.creatineState.round80Score) {
+          const improvement = userState.creatineState.round100Score.correct - userState.creatineState.round80Score.correct;
+          if (improvement > 0) {
+            parts.push(`Improvement with creatine: +${improvement} correct answers!`);
+          }
+        }
+      }
+    }
+
     if (userState.equippedHabits.length > 0) {
       parts.push(`Equipped habits: ${userState.equippedHabits.join(', ')}`);
       if (userState.equippedHabits.length === 4) {
@@ -108,10 +187,14 @@ export const UserProvider = ({ children }) => {
   return (
     <UserContext.Provider value={{
       userState,
+      updateUserName,
+      updateSlideCompletion,
+      updateHabitQuizAnswer,
       updateDashboard,
       updateProteinMeal,
       updateSugarFoods,
       updateHabits,
+      updateCreatine,
       getStateSummary,
     }}>
       {children}

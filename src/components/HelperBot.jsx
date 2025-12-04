@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { X, Send, Loader2, MessageSquare } from 'lucide-react';
 import { ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID } from '../config';
 import { useUserContext } from '../context/UserContext';
+import { callClaude } from '../utils/claudeApi';
 
 // Nutrition knowledge base for accurate Q&A
 const NUTRITION_SYSTEM_PROMPT = `You are Coach, a friendly nutrition expert helping kids learn about nutrition. Use this knowledge to answer questions accurately:
@@ -70,6 +71,7 @@ export const HelperBot = ({
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [userHasInteracted, setUserHasInteracted] = useState(false);
   const audioRef = useRef(null);
+  const abortControllerRef = useRef(null);
   const hasPlayedScript = useRef(false);
 
   // Q&A State
@@ -101,12 +103,7 @@ export const HelperBot = ({
   // Auto-play script when slide changes (only after user interaction)
   useEffect(() => {
     // Stop any current audio
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
-    }
-    window.speechSynthesis.cancel();
-    setIsSpeaking(false);
+    stopAudio();
     setAnswer('');
     hasPlayedScript.current = false;
 
@@ -130,14 +127,31 @@ export const HelperBot = ({
     }
   }, [isVisible, userHasInteracted]);
 
-  // ElevenLabs Text-to-Speech
-  const speak = async (text) => {
-    // Cancel any existing speech
+  // Stop all audio
+  const stopAudio = () => {
+    // Cancel any pending fetch request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    // Stop browser speech synthesis
     window.speechSynthesis.cancel();
+    // Stop ElevenLabs audio
     if (audioRef.current) {
       audioRef.current.pause();
+      audioRef.current.currentTime = 0;
       audioRef.current = null;
     }
+    setIsSpeaking(false);
+  };
+
+  // ElevenLabs Text-to-Speech
+  const speak = async (text) => {
+    // Stop any existing audio first
+    stopAudio();
+
+    // Create new abort controller for this request
+    abortControllerRef.current = new AbortController();
 
     try {
       const response = await fetch(
@@ -156,7 +170,8 @@ export const HelperBot = ({
               stability: 0.5,
               similarity_boost: 0.75
             }
-          })
+          }),
+          signal: abortControllerRef.current.signal
         }
       );
 
@@ -181,6 +196,10 @@ export const HelperBot = ({
       setIsSpeaking(true);
       await audioRef.current.play();
     } catch (error) {
+      if (error.name === 'AbortError') {
+        // Request was cancelled, don't show error
+        return;
+      }
       console.error('TTS Error:', error.message);
       // Fallback to browser TTS
       const utterance = new SpeechSynthesisUtterance(text);
@@ -194,6 +213,9 @@ export const HelperBot = ({
   // Claude Haiku Q&A
   const askQuestion = async () => {
     if (!question.trim()) return;
+
+    // Stop any currently playing audio
+    stopAudio();
 
     setIsAsking(true);
     setAnswer('');
@@ -211,22 +233,13 @@ ${userStateSummary}
 ${script}`;
 
     try {
-      const response = await fetch('/api/claude', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'claude-3-haiku-20240307',
-          max_tokens: 300,
-          system: fullSystemPrompt,
-          messages: [{ role: 'user', content: question }]
-        })
+      const data = await callClaude({
+        model: 'claude-3-haiku-20240307',
+        max_tokens: 300,
+        system: fullSystemPrompt,
+        messages: [{ role: 'user', content: question }]
       });
 
-      if (!response.ok) throw new Error('Claude API error');
-
-      const data = await response.json();
       const answerText = data.content[0].text;
       setAnswer(answerText);
       // Auto-play the answer

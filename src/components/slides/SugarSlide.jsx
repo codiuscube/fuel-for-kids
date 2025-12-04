@@ -38,7 +38,7 @@ const FOODS = [
 export const SugarSlide = () => {
   const [addedFoods, setAddedFoods] = useState([]);
   const [hoveredFood, setHoveredFood] = useState(null);
-  const { updateSugarFoods } = useUserContext();
+  const { updateSugarFoods, updateSlideCompletion } = useUserContext();
 
   // Count sugar items for carb overload
   const sugarCount = addedFoods.filter(f => f.category === 'sugar').length;
@@ -110,6 +110,11 @@ export const SugarSlide = () => {
     return 'warning';
   }, [generateCurve, addedFoods, carbOverload, sugarCount]);
 
+  // Track slide completion - need to achieve 'good' status (steady energy)
+  useEffect(() => {
+    updateSlideCompletion('sugar', scoreStatus === 'good');
+  }, [scoreStatus, updateSlideCompletion]);
+
   const addFood = (food) => {
     if (addedFoods.length < 8) {
       setAddedFoods([...addedFoods, food]);
@@ -127,7 +132,7 @@ export const SugarSlide = () => {
         <div>
           <Badge color="red">Mission 4</Badge>
           <h2 className="text-2xl font-bold text-white mt-1">Energy Management</h2>
-          <p className="text-slate-400 text-xs">
+          <p className="text-slate-400 text-sm">
             See how different foods affect your blood sugar. Avoid <span className="text-red-400">THE BONK</span>!
           </p>
         </div>

@@ -17,7 +17,7 @@ export const ProteinSlide = () => {
   const calLimit = 500; // Calorie limit for a meal
 
   const { playClick, playSuccess, playAlarm } = useSoundEffects();
-  const { updateProteinMeal } = useUserContext();
+  const { updateProteinMeal, updateSlideCompletion } = useUserContext();
   const prevProteinMet = useRef(false);
   const prevFatBlowout = useRef(false);
   const prevCalorieBlowout = useRef(false);
@@ -26,6 +26,17 @@ export const ProteinSlide = () => {
   useEffect(() => {
     updateProteinMeal(macros);
   }, [macros, updateProteinMeal]);
+
+  // Track slide completion - need to achieve balanced meal
+  const isFatBlowout = macros.f > fLimit;
+  const isCalorieBlowout = macros.cal > calLimit;
+  const isProteinMet = macros.p >= pTarget;
+  const isCarbsMet = macros.c >= cMin;
+  const isBalanced = isProteinMet && isCarbsMet && !isFatBlowout && !isCalorieBlowout;
+
+  useEffect(() => {
+    updateSlideCompletion('protein', isBalanced);
+  }, [isBalanced, updateSlideCompletion]);
 
   const foods = [
     { name: "Tomato Soup", p: 2, f: 0, c: 10, cal: 90, type: "weak", icon: "🍅" },
@@ -58,12 +69,6 @@ export const ProteinSlide = () => {
     prevCalorieBlowout.current = false;
   };
 
-  const isFatBlowout = macros.f > fLimit;
-  const isCalorieBlowout = macros.cal > calLimit;
-  const isProteinMet = macros.p >= pTarget;
-  const isCarbsMet = macros.c >= cMin;
-  const isBalanced = isProteinMet && isCarbsMet && !isFatBlowout && !isCalorieBlowout;
-
   // Sound effects for state changes
   useEffect(() => {
     if (isBalanced && !prevProteinMet.current) {
@@ -92,8 +97,8 @@ export const ProteinSlide = () => {
       <div className="flex justify-between items-start">
         <div>
           <Badge color="blue">Mission 2</Badge>
-          <h2 className="text-3xl font-bold text-white mt-2">Balanced Fuel Protocol</h2>
-          <p className="text-slate-400 text-sm mt-1">
+          <h2 className="text-2xl font-bold text-white mt-1">Balanced Fuel Protocol</h2>
+          <p className="text-slate-400 text-sm">
             Goal: <strong className="text-blue-400">Protein</strong> + <strong className="text-purple-400">Carbs</strong>,
             under <strong className="text-yellow-400">Fat</strong> & <strong className="text-orange-400">Calorie</strong> limits.
           </p>

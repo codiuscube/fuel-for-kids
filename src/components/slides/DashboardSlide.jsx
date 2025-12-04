@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { RotateCcw, Scale, Trophy, Target, Utensils } from 'lucide-react';
+import { RotateCcw, Scale, Trophy, Target, Utensils, Loader2, Plus, User } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { useUserContext } from '../../context/UserContext';
+import { callClaude } from '../../utils/claudeApi';
 
 // Food items with realistic nutritional data
 const FOODS = [
@@ -49,7 +50,50 @@ export const DashboardSlide = () => {
   const [addedFoods, setAddedFoods] = useState([]);
   const [hoveredFood, setHoveredFood] = useState(null);
   const [weightLbs, setWeightLbs] = useState('');
-  const { updateDashboard } = useUserContext();
+  const [customFood, setCustomFood] = useState('');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [userName, setUserName] = useState('');
+  const { updateDashboard, updateUserName, updateSlideCompletion } = useUserContext();
+
+  // Analyze custom food with Claude
+  const analyzeFood = async () => {
+    if (!customFood.trim() || isAnalyzing) return;
+
+    setIsAnalyzing(true);
+
+    try {
+      const data = await callClaude({
+        model: 'claude-3-haiku-20240307',
+        max_tokens: 200,
+        system: `You are a nutrition data API. Return ONLY valid JSON for the food item requested. Use typical serving sizes.
+Format: {"name": "Food Name", "emoji": "🍕", "calories": 200, "protein": 10, "carbs": 25}
+- emoji: single emoji that best represents the food
+- calories: number (typical serving)
+- protein: grams (integer)
+- carbs: grams (integer)
+Return ONLY the JSON object, no other text.`,
+        messages: [{ role: 'user', content: `Nutrition data for: ${customFood}` }]
+      });
+
+      const foodData = JSON.parse(data.content[0].text);
+
+      // Add the custom food
+      const newFood = {
+        id: `custom-${Date.now()}`,
+        ...foodData
+      };
+
+      if (totals.calories + newFood.calories <= CALORIE_LIMIT) {
+        setAddedFoods([...addedFoods, newFood]);
+      }
+
+      setCustomFood('');
+    } catch (error) {
+      console.error('Food analysis error:', error);
+    }
+
+    setIsAnalyzing(false);
+  };
 
   // Calculate weight in kg and protein target
   const weightKg = weightLbs ? parseFloat(weightLbs) / 2.205 : 0;
@@ -78,6 +122,17 @@ export const DashboardSlide = () => {
     });
   }, [weightLbs, weightKg, proteinTarget, addedFoods, totals, updateDashboard]);
 
+  // Update userName in context
+  useEffect(() => {
+    updateUserName(userName);
+  }, [userName, updateUserName]);
+
+  // Track slide completion - need name, weight, and at least one food
+  useEffect(() => {
+    const isComplete = userName.trim().length > 0 && weightLbs && addedFoods.length > 0;
+    updateSlideCompletion('dashboard', isComplete);
+  }, [userName, weightLbs, addedFoods, updateSlideCompletion]);
+
   // Check protein status
   const proteinPercent = proteinTarget ? Math.min((totals.protein / proteinTarget) * 100, 100) : 0;
   const proteinStatus = proteinTarget
@@ -104,7 +159,7 @@ export const DashboardSlide = () => {
         <div>
           <Badge color="blue">Mission 1</Badge>
           <h2 className="text-2xl font-bold text-white mt-1">Build Your Day</h2>
-          <p className="text-slate-400 text-xs">
+          <p className="text-slate-400 text-sm">
             Enter your weight, then build a balanced day hitting your <span className="text-cyan-400">protein goal</span>!
           </p>
         </div>
@@ -124,25 +179,41 @@ export const DashboardSlide = () => {
         </div>
       </div>
 
-      {/* Weight input for protein calculator */}
-      <div className="flex items-center gap-3 bg-gradient-to-r from-cyan-900/30 to-blue-900/30 rounded-lg p-3 border border-cyan-700/50">
-        <Scale className="w-5 h-5 text-cyan-400" />
-        <span className="text-sm text-cyan-300 font-medium">Your weight:</span>
-        <input
-          type="number"
-          value={weightLbs}
-          onChange={(e) => setWeightLbs(e.target.value)}
-          placeholder="lbs"
-          className="w-20 px-3 py-1.5 text-sm bg-slate-800 border border-cyan-600/50 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
-        />
-        {proteinTarget > 0 && (
-          <div className="flex items-center gap-2 ml-2">
-            <span className="text-cyan-400 text-sm">
-              Daily protein goal: <strong className="text-lg">{proteinTarget}g</strong>
-            </span>
-            <span className="text-slate-500 text-xs">(1.6g per kg)</span>
-          </div>
-        )}
+      {/* Name and Weight inputs */}
+      <div className="flex gap-3">
+        {/* Name input */}
+        <div className="flex items-center gap-3 bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded-lg p-3 border border-purple-700/50">
+          <User className="w-5 h-5 text-purple-400" />
+          <span className="text-sm text-purple-300 font-medium">Your name:</span>
+          <input
+            type="text"
+            value={userName}
+            onChange={(e) => setUserName(e.target.value)}
+            placeholder="Enter name"
+            className="w-32 px-3 py-1.5 text-sm bg-slate-800 border border-purple-600/50 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+          />
+        </div>
+
+        {/* Weight input */}
+        <div className="flex items-center gap-3 bg-gradient-to-r from-cyan-900/30 to-blue-900/30 rounded-lg p-3 border border-cyan-700/50 flex-1">
+          <Scale className="w-5 h-5 text-cyan-400" />
+          <span className="text-sm text-cyan-300 font-medium">Your weight:</span>
+          <input
+            type="number"
+            value={weightLbs}
+            onChange={(e) => setWeightLbs(e.target.value)}
+            placeholder="lbs"
+            className="w-20 px-3 py-1.5 text-sm bg-slate-800 border border-cyan-600/50 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+          />
+          {proteinTarget > 0 && (
+            <div className="flex items-center gap-2 ml-2">
+              <span className="text-cyan-400 text-sm">
+                Daily protein goal: <strong className="text-lg">{proteinTarget}g</strong>
+              </span>
+              <span className="text-slate-500 text-xs">(1.6g per kg)</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Stats bars */}
@@ -210,7 +281,33 @@ export const DashboardSlide = () => {
             <RotateCcw className="w-3 h-3" /> Reset
           </button>
         </div>
-        <div className="flex flex-wrap gap-1.5 pt-14">
+
+        {/* Custom food input */}
+        <div className="flex gap-2 mb-3">
+          <div className="flex-1 relative">
+            <input
+              type="text"
+              value={customFood}
+              onChange={(e) => setCustomFood(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && analyzeFood()}
+              placeholder="Type any food (e.g., pizza slice, burrito)..."
+              className="w-full px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+            />
+          </div>
+          <button
+            onClick={analyzeFood}
+            disabled={isAnalyzing || !customFood.trim()}
+            className="px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-lg transition-colors flex items-center gap-2"
+          >
+            {isAnalyzing ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <><Plus className="w-4 h-4" /> Add</>
+            )}
+          </button>
+        </div>
+
+        <div className="flex flex-wrap gap-3">
           {FOODS.map((food) => (
             <button
               key={food.id}
@@ -218,7 +315,7 @@ export const DashboardSlide = () => {
               onMouseEnter={() => setHoveredFood(food)}
               onMouseLeave={() => setHoveredFood(null)}
               disabled={totals.calories + food.calories > CALORIE_LIMIT}
-              className={`relative flex flex-col items-center p-1.5 rounded-lg border transition-all hover:scale-105 active:scale-95 ${
+              className={`relative flex flex-col items-center p-3 rounded-xl border-2 transition-all hover:scale-105 active:scale-95 ${
                 totals.calories + food.calories > CALORIE_LIMIT
                   ? 'bg-slate-800 border-slate-700 opacity-40 cursor-not-allowed'
                   : food.protein >= 10
@@ -228,8 +325,8 @@ export const DashboardSlide = () => {
                       : 'bg-slate-700 border-slate-600 hover:border-slate-500'
               }`}
             >
-              <span className="text-xl">{food.emoji}</span>
-              <span className={`text-[9px] ${food.protein >= 10 ? 'text-cyan-400 font-bold' : 'text-slate-400'}`}>
+              <span className="text-3xl">{food.emoji}</span>
+              <span className={`text-xs ${food.protein >= 10 ? 'text-cyan-400 font-bold' : 'text-slate-400'}`}>
                 {food.protein}g P
               </span>
               {hoveredFood?.id === food.id && (
