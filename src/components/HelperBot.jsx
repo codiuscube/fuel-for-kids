@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Send, Loader2, MessageSquare } from 'lucide-react';
 import { ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID } from '../config';
+import { useUserContext } from '../context/UserContext';
 
 // Nutrition knowledge base for accurate Q&A
 const NUTRITION_SYSTEM_PROMPT = `You are Coach, a friendly nutrition expert helping kids learn about nutrition. Use this knowledge to answer questions accurately:
@@ -57,11 +58,10 @@ PROTEIN EXAMPLES BY WEIGHT:
 
 /**
  * HelperBot - AI-powered assistant with TTS and Q&A
- * Auto-plays script on slide change, simple Q&A below
+ * Auto-plays script on slide change using TTS, simple Q&A below
  */
 export const HelperBot = ({
   script,
-  audioFile,
   isVisible,
   onToggle,
   currentSlide
@@ -76,6 +76,9 @@ export const HelperBot = ({
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
   const [isAsking, setIsAsking] = useState(false);
+
+  // Get user context for personalized Q&A
+  const { getStateSummary } = useUserContext();
 
   // Track user interaction (needed for autoplay)
   useEffect(() => {
@@ -107,64 +110,25 @@ export const HelperBot = ({
     setAnswer('');
     hasPlayedScript.current = false;
 
-    // Auto-play the pre-recorded audio after user has interacted
-    if (isVisible && audioFile && userHasInteracted) {
+    // Auto-play TTS after user has interacted
+    if (isVisible && script && userHasInteracted) {
       const timer = setTimeout(() => {
         if (!hasPlayedScript.current) {
           hasPlayedScript.current = true;
-          playScriptAudio();
+          speak(script);
         }
       }, 300);
       return () => clearTimeout(timer);
     }
-  }, [currentSlide, audioFile, userHasInteracted]);
+  }, [currentSlide, script, userHasInteracted]);
 
   // Also auto-play when bot becomes visible (after user interaction)
   useEffect(() => {
-    if (isVisible && audioFile && !hasPlayedScript.current && !isSpeaking && userHasInteracted) {
+    if (isVisible && script && !hasPlayedScript.current && !isSpeaking && userHasInteracted) {
       hasPlayedScript.current = true;
-      playScriptAudio();
+      speak(script);
     }
   }, [isVisible, userHasInteracted]);
-
-  // Play pre-recorded audio file for scripts
-  const playScriptAudio = () => {
-    if (!audioFile) {
-      console.log('No audio file provided');
-      return;
-    }
-
-    console.log('Playing audio:', audioFile);
-
-    // Stop any current audio
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
-    }
-    window.speechSynthesis.cancel();
-
-    audioRef.current = new Audio(audioFile);
-
-    audioRef.current.oncanplaythrough = () => {
-      console.log('Audio ready to play');
-    };
-
-    audioRef.current.onended = () => {
-      console.log('Audio ended');
-      setIsSpeaking(false);
-    };
-
-    audioRef.current.onerror = (e) => {
-      console.error('Audio error:', e, audioRef.current?.error);
-      setIsSpeaking(false);
-    };
-
-    setIsSpeaking(true);
-    audioRef.current.play().catch(e => {
-      console.error('Audio playback error:', e);
-      setIsSpeaking(false);
-    });
-  };
 
   // ElevenLabs Text-to-Speech
   const speak = async (text) => {
@@ -234,6 +198,18 @@ export const HelperBot = ({
     setIsAsking(true);
     setAnswer('');
 
+    // Get user's current state for personalized answers
+    const userStateSummary = getStateSummary();
+    console.log('[HelperBot] User State for Q&A:', userStateSummary);
+
+    const fullSystemPrompt = `${NUTRITION_SYSTEM_PROMPT}
+
+## CURRENT USER DATA (USE THIS FOR PERSONALIZED ANSWERS!)
+${userStateSummary}
+
+## Current lesson context:
+${script}`;
+
     try {
       const response = await fetch('/api/claude', {
         method: 'POST',
@@ -243,7 +219,7 @@ export const HelperBot = ({
         body: JSON.stringify({
           model: 'claude-3-haiku-20240307',
           max_tokens: 300,
-          system: `${NUTRITION_SYSTEM_PROMPT}\n\nCurrent lesson context: ${script}`,
+          system: fullSystemPrompt,
           messages: [{ role: 'user', content: question }]
         })
       });

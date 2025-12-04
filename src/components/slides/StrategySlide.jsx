@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Zap, Utensils, Brain, Heart, Shield, Flame } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { useSoundEffects } from '../../hooks/useSoundEffects';
+import { useUserContext } from '../../context/UserContext';
 
 /**
  * StrategySlide - Daily habit loadout
@@ -16,6 +17,7 @@ export const StrategySlide = ({ onLoadoutUpdate }) => {
   });
 
   const { playEquip, playLevelUp } = useSoundEffects();
+  const { updateHabits } = useUserContext();
   const prevAllEquipped = useRef(false);
 
   const toggleItem = (item) => {
@@ -26,6 +28,14 @@ export const StrategySlide = ({ onLoadoutUpdate }) => {
   };
 
   const allEquipped = Object.values(loadout).every(Boolean);
+
+  // Report state to context for AI awareness
+  useEffect(() => {
+    const equipped = Object.entries(loadout)
+      .filter(([_, v]) => v)
+      .map(([k]) => k);
+    updateHabits(equipped);
+  }, [loadout, updateHabits]);
 
   // Play level up sound when all equipped
   useEffect(() => {
@@ -158,7 +168,4 @@ export const StrategySlide = ({ onLoadoutUpdate }) => {
   );
 };
 
-export const strategyScript = "Practical Application. We aren't fighting every day. We have two daily habits: The Power Smoothie, which sneaks in greens and protein, and the Greek Yogurt Bowl. Combined with 60 minutes of heart-pumping activity, we turn stress into growth.";
-
-import strategyAudioFile from '../../sounds/Practical application.mp3';
-export const strategyAudio = strategyAudioFile;
+export const strategyScript = "Time for practical application. We have four daily habits. First, the Power Smoothie with hidden greens and protein. Second, a Greek Yogurt Bowl for high quality fuel. Third, creatine for your brain battery. And fourth, 60 minutes of heart-pumping activity. Exercise creates stress that tells your body to rebuild stronger. Growth happens during recovery. Equip all four habits to complete the protocol.";

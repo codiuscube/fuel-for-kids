@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { RotateCcw, Zap, AlertTriangle, Trophy, Flame, Skull } from 'lucide-react';
 import { Badge } from '../ui/Badge';
+import { useUserContext } from '../../context/UserContext';
 
 // Foods organized by their blood sugar impact
 const FOODS = [
@@ -37,10 +38,16 @@ const FOODS = [
 export const SugarSlide = () => {
   const [addedFoods, setAddedFoods] = useState([]);
   const [hoveredFood, setHoveredFood] = useState(null);
+  const { updateSugarFoods } = useUserContext();
 
   // Count sugar items for carb overload
   const sugarCount = addedFoods.filter(f => f.category === 'sugar').length;
   const carbOverload = sugarCount >= 3;
+
+  // Report state to context for AI awareness
+  useEffect(() => {
+    updateSugarFoods(addedFoods);
+  }, [addedFoods, updateSugarFoods]);
 
   // Generate the blood sugar curve
   const generateCurve = useMemo(() => {
@@ -318,7 +325,4 @@ export const SugarSlide = () => {
   );
 };
 
-export const sugarScript = "I want to teach you the underworkings of your body. Insulin is a key that opens your cells to let energy in. Sugar jams the lock. When the lock is jammed, you get an energy crash called The Bonk. We control the quality of fuel to prevent this.";
-
-import sugarAudioFile from '../../sounds/I want to teach you.mp3';
-export const sugarAudio = sugarAudioFile;
+export const sugarScript = "I want to teach you how your body works. Insulin is a key that opens your cells to let energy in. When blood sugar rises fast, your pancreas releases insulin. But sugar jams the lock! Candy spikes then crashes your blood sugar. That crash is called The Bonk. Keep sugar under 25 grams daily, that's just 6 teaspoons. Choose steady fuel like protein and fiber to avoid the crash.";

@@ -3,6 +3,7 @@ import { Utensils, AlertOctagon } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { useSoundEffects } from '../../hooks/useSoundEffects';
+import { useUserContext } from '../../context/UserContext';
 
 /**
  * ProteinSlide - Interactive meal builder
@@ -16,9 +17,15 @@ export const ProteinSlide = () => {
   const calLimit = 500; // Calorie limit for a meal
 
   const { playClick, playSuccess, playAlarm } = useSoundEffects();
+  const { updateProteinMeal } = useUserContext();
   const prevProteinMet = useRef(false);
   const prevFatBlowout = useRef(false);
   const prevCalorieBlowout = useRef(false);
+
+  // Report state to context for AI awareness
+  useEffect(() => {
+    updateProteinMeal(macros);
+  }, [macros, updateProteinMeal]);
 
   const foods = [
     { name: "Tomato Soup", p: 2, f: 0, c: 10, cal: 90, type: "weak", icon: "🍅" },
@@ -135,7 +142,7 @@ export const ProteinSlide = () => {
             </button>
           </div>
 
-          <div className="p-4 grid grid-cols-2 gap-2 overflow-y-auto custom-scrollbar">
+          <div className="p-4 grid grid-cols-2 gap-2">
             {foods.map((food, idx) => (
               <button
                 key={idx}
@@ -268,7 +275,4 @@ export const ProteinSlide = () => {
   );
 };
 
-export const proteinScript = "Welcome to the Balanced Fuel Protocol. Your body needs more than just protein. You need carbs for energy too! Hit 30 grams of protein AND at least 20 grams of carbs. But watch your limits. Too much fat slows you down, and too many calories overloads the system. If you only eat protein powder, you won't have fuel. Try combining foods like Ramen with Greek Yogurt for a balanced meal.";
-
-import proteinAudioFile from '../../sounds/Protein lab.mp3';
-export const proteinAudio = proteinAudioFile;
+export const proteinScript = "Welcome to the Balanced Fuel Protocol. Every cell in your body contains protein. Muscles use it to repair, and your brain uses it for focus chemicals. But you also need carbs for energy! Hit 30 grams of protein AND at least 20 grams of carbs. Watch your limits though. Too much fat slows you down, and too many calories overloads the system. Greek yogurt has 17 grams of protein, nearly double regular yogurt. Try combining foods for a balanced meal.";

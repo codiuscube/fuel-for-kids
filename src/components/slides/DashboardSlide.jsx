@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { RotateCcw, Scale, Trophy, Target, Utensils } from 'lucide-react';
 import { Badge } from '../ui/Badge';
+import { useUserContext } from '../../context/UserContext';
 
 // Food items with realistic nutritional data
 const FOODS = [
@@ -48,6 +49,7 @@ export const DashboardSlide = () => {
   const [addedFoods, setAddedFoods] = useState([]);
   const [hoveredFood, setHoveredFood] = useState(null);
   const [weightLbs, setWeightLbs] = useState('');
+  const { updateDashboard } = useUserContext();
 
   // Calculate weight in kg and protein target
   const weightKg = weightLbs ? parseFloat(weightLbs) / 2.205 : 0;
@@ -64,6 +66,17 @@ export const DashboardSlide = () => {
       { calories: 0, protein: 0, carbs: 0 }
     );
   }, [addedFoods]);
+
+  // Report state to context for AI awareness
+  useEffect(() => {
+    updateDashboard({
+      weightLbs: weightLbs ? parseFloat(weightLbs) : null,
+      weightKg: weightKg || null,
+      proteinTarget: proteinTarget || null,
+      foods: addedFoods,
+      totals,
+    });
+  }, [weightLbs, weightKg, proteinTarget, addedFoods, totals, updateDashboard]);
 
   // Check protein status
   const proteinPercent = proteinTarget ? Math.min((totals.protein / proteinTarget) * 100, 100) : 0;
@@ -184,7 +197,7 @@ export const DashboardSlide = () => {
       </div>
 
       {/* Food selector */}
-      <div className="bg-slate-800/50 rounded-xl p-3 border border-slate-700 flex-1 overflow-auto">
+      <div className="bg-slate-800/50 rounded-xl p-3 border border-slate-700 flex-1">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <Utensils className="w-4 h-4 text-slate-400" />
@@ -252,7 +265,4 @@ export const DashboardSlide = () => {
   );
 };
 
-export const dashboardScript = "Listen up team. We need a mindset shift. We don't eat just to get full. We eat to Build the Machine. Enter your weight and I'll calculate exactly how much protein you need. Then build your day to hit that goal!";
-
-import dashboardAudioFile from '../../sounds/Listen up team.mp3';
-export const dashboardAudio = dashboardAudioFile;
+export const dashboardScript = "Listen up team. We need a mindset shift. We don't eat just to get full. We eat to build the machine. Your muscles and brain are like teams of tiny builders. Protein gives them the blocks they need. Enter your weight and I'll calculate exactly how much protein you need at 1.6 grams per kilogram. Then build your day to hit that goal!";

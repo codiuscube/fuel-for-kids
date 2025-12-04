@@ -75,7 +75,4 @@ export const CreatineSlide = () => {
   );
 };
 
-export const creatineScript = "Since we don't eat steak, research shows we miss baseline creatine. This isn't just for muscles. It's for your brain battery. Studies show it is critical for memory and focus. We are adding a small dose to smoothies to top off your tank to 100 percent.";
-
-import creatineAudioFile from '../../sounds/Since we don\'t eat Steak.mp3';
-export const creatineAudio = creatineAudioFile;
+export const creatineScript = "Since we don't eat steak, research shows vegetarians have 10 to 20 percent lower muscle creatine than meat eaters. This isn't just for muscles. Your brain uses 20 percent of your body's energy, and creatine helps brain cells regenerate energy faster. Studies show it improves memory, focus, and attention. We supplement with 3 to 5 grams daily to top off your tank to 100 percent.";
