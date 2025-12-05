@@ -68,7 +68,8 @@ export const HelperBot = ({
   isVisible,
   onToggle,
   currentSlide,
-  audioEnabled // Controlled by parent
+  audioEnabled, // Controlled by parent
+  useElevenLabs // Whether to use ElevenLabs or browser TTS
 }) => {
   // Audio State
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -107,11 +108,18 @@ export const HelperBot = ({
     setIsSpeaking(false);
   }, []);
 
-  // ElevenLabs Text-to-Speech - defined before effects that use it
-  const speak = useCallback(async (text) => {
-    // Stop any existing audio first
-    stopAudio();
+  // Browser TTS fallback
+  const speakWithBrowser = useCallback((text) => {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.9;
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+    setIsSpeaking(true);
+    window.speechSynthesis.speak(utterance);
+  }, []);
 
+  // ElevenLabs Text-to-Speech
+  const speakWithElevenLabs = useCallback(async (text) => {
     // Create new abort controller for this request
     abortControllerRef.current = new AbortController();
 
@@ -159,18 +167,25 @@ export const HelperBot = ({
       await audioRef.current.play();
     } catch (error) {
       if (error.name === 'AbortError') {
-        // Request was cancelled, don't show error
         return;
       }
-      console.error('TTS Error:', error.message);
-      // Fallback to browser TTS
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 0.9;
-      utterance.onend = () => setIsSpeaking(false);
-      setIsSpeaking(true);
-      window.speechSynthesis.speak(utterance);
+      console.error('ElevenLabs Error:', error.message);
+      // Fallback to browser TTS if ElevenLabs fails
+      speakWithBrowser(text);
     }
-  }, [stopAudio]);
+  }, [speakWithBrowser]);
+
+  // Main speak function - chooses between ElevenLabs and browser TTS
+  const speak = useCallback(async (text) => {
+    // Stop any existing audio first
+    stopAudio();
+
+    if (useElevenLabs) {
+      await speakWithElevenLabs(text);
+    } else {
+      speakWithBrowser(text);
+    }
+  }, [stopAudio, useElevenLabs, speakWithElevenLabs, speakWithBrowser]);
 
   // Play current script manually
   const playScript = useCallback(() => {
