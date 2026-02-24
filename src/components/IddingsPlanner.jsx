@@ -22,7 +22,7 @@ import {
 const IddingsPlanner = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
 
-  // Scenario State - Default to 120k based on current trend
+  // Scenario State - Default to 160k based on current trend
   const [applicantScenario, setApplicantScenario] = useState(160000);
 
   // Student Data
@@ -69,7 +69,7 @@ const IddingsPlanner = () => {
     { item: "TEFA Scholarship", status: "Submitted", date: "Early April", type: "success", funding: "Digital Wallet" },
     { item: "ACE Scholarship", status: "Submitted", date: "June", type: "success", funding: "Check to School" },
     { item: "NBCA Scholarship", status: "Submitted", date: "Unknown?", type: "success", funding: "Tuition Credit" },
-    { item: "Student Assessments", status: "Scheduled", date: "Feb 20", type: "pending", funding: "N/A" },
+    { item: "Student Assessments", status: "Completed", date: "Feb 20", type: "success", funding: "N/A" },
     { item: "Family Interview", status: "Scheduled", date: "Feb 27 (Fri)", type: "pending", funding: "N/A" },
   ];
 
@@ -86,7 +86,7 @@ const IddingsPlanner = () => {
         { id: 'nbca-math', text: 'Math Teacher Recommendation (6th-12th)', done: true },
         { id: 'nbca-report', text: 'Current Report Card / Transcript', done: true },
         { id: 'nbca-immun', text: 'Immunization Record', done: true },
-        { id: 'nbca-assess', text: 'Student Assessments (Scheduled Feb 20)', done: false },
+        { id: 'nbca-assess', text: 'Student Assessments (Completed Feb 20)', done: true },
         { id: 'nbca-interview', text: 'Family Interview (Scheduled Feb 27)', done: false },
       ]
     },
@@ -164,16 +164,17 @@ const IddingsPlanner = () => {
 
     // Fund Tier 1 & 2
     const fundedT1_2 = Math.min(remainingSlots, demandT1_2);
+    const tier1_2SuccessRate = demandT1_2 > 0 ? (fundedT1_2 / demandT1_2) * 100 : 0;
     remainingSlots -= fundedT1_2;
 
     // Fund Tier 3 (You)
     const fundedT3 = Math.min(remainingSlots, demandT3);
-    const tier3SuccessRate = (fundedT3 / demandT3) * 100;
+    const tier3SuccessRate = demandT3 > 0 ? (fundedT3 / demandT3) * 100 : 0;
     remainingSlots -= fundedT3;
 
     // Fund Tier 4 (Capped at 20% of budget anyway, but let's see slots)
     const fundedT4 = Math.min(remainingSlots, demandT4);
-    const tier4SuccessRate = (fundedT4 / demandT4) * 100;
+    const tier4SuccessRate = demandT4 > 0 ? (fundedT4 / demandT4) * 100 : 0;
 
     // Sibling Rule Math for Tier 3
     // Probability of all 3 kids losing lottery
@@ -183,10 +184,15 @@ const IddingsPlanner = () => {
 
     return {
         capacity,
+        demandT1_2,
+        fundedT1_2,
+        tier1_2SuccessRate,
         demandT3,
         fundedT3,
         tier3SuccessRate,
         familySuccessRate,
+        demandT4,
+        fundedT4,
         tier4SuccessRate
     };
   };
@@ -398,7 +404,16 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             <div>
                                 <div className="font-bold text-blue-900 flex items-center gap-2">
                                     TEFA Voucher
-                                    <span className="text-[10px] bg-green-500 text-white px-1.5 py-0.5 rounded uppercase tracking-wide">Excellent ({'>'}99%)</span>
+                                    <span className={`text-[10px] text-white px-1.5 py-0.5 rounded uppercase tracking-wide ${
+                                      analysis.familySuccessRate > 95 ? 'bg-green-500' :
+                                      analysis.familySuccessRate > 80 ? 'bg-emerald-500' :
+                                      analysis.familySuccessRate > 50 ? 'bg-amber-500' : 'bg-red-500'
+                                    }`}>
+                                      {analysis.familySuccessRate > 95 ? `Excellent (${analysis.familySuccessRate.toFixed(1)}%)` :
+                                       analysis.familySuccessRate > 80 ? `Very Good (${analysis.familySuccessRate.toFixed(1)}%)` :
+                                       analysis.familySuccessRate > 50 ? `Moderate (${analysis.familySuccessRate.toFixed(1)}%)` :
+                                       `Low (${analysis.familySuccessRate.toFixed(1)}%)`}
+                                    </span>
                                 </div>
                                 <div className="text-xs text-blue-700 mt-1">3 x $10,474 (Est)</div>
                                 <div className="text-[10px] text-blue-500 mt-2 flex items-center gap-1">
@@ -670,19 +685,23 @@ The contribution amount we listed represents the maximum we can sustainably budg
                 <h3 className="font-bold text-slate-700 mb-4 flex items-center gap-2">
                     <Layers size={18}/> Select Applicant Volume Scenario
                 </h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {[150000, 160000, 180000, 200000].map((count) => (
-                        <button
-                            key={count}
-                            onClick={() => setApplicantScenario(count)}
-                            className={`py-2 px-3 rounded-lg text-sm font-medium border transition
-                                ${applicantScenario === count
-                                ? 'bg-slate-800 text-white border-slate-800'
-                                : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'}`}
-                        >
-                            {(count / 1000).toFixed(0)}k Applicants
-                        </button>
-                    ))}
+                <div>
+                    <div className="flex justify-between items-center mb-2">
+                        <span className="text-xs font-medium text-slate-500">Current: 124k</span>
+                        <span className="text-sm font-bold text-slate-800 bg-slate-100 px-3 py-1 rounded-lg border border-slate-200">
+                            {(applicantScenario / 1000).toFixed(0)}k Applicants
+                        </span>
+                        <span className="text-xs font-medium text-slate-500">300k</span>
+                    </div>
+                    <input
+                        type="range"
+                        min="124000"
+                        max="300000"
+                        step="1000"
+                        value={applicantScenario}
+                        onChange={(e) => setApplicantScenario(Number(e.target.value))}
+                        className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-slate-700"
+                    />
                 </div>
 
                 {/* Scenario Result */}
@@ -701,8 +720,10 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         <div className="text-sm text-slate-700 mt-1">
                             Capacity: <strong>~{analysis.capacity.toLocaleString()}</strong> students
                         </div>
-                        <div className="text-sm text-slate-700">
-                            Tier 4 Funding: <strong>{analysis.tier4SuccessRate.toFixed(1)}%</strong>
+                        <div className="text-sm text-slate-700 mt-1 space-y-0.5">
+                            <div>Tier 1 & 2 Funding: <strong className={analysis.tier1_2SuccessRate === 100 ? 'text-green-600' : 'text-amber-600'}>{analysis.tier1_2SuccessRate.toFixed(1)}%</strong></div>
+                            <div>Tier 3 Funding: <strong className={analysis.tier3SuccessRate === 100 ? 'text-green-600' : analysis.tier3SuccessRate > 80 ? 'text-amber-600' : 'text-red-600'}>{analysis.tier3SuccessRate.toFixed(1)}%</strong></div>
+                            <div>Tier 4 Funding: <strong className={analysis.tier4SuccessRate === 100 ? 'text-green-600' : analysis.tier4SuccessRate > 0 ? 'text-amber-600' : 'text-red-600'}>{analysis.tier4SuccessRate.toFixed(1)}%</strong></div>
                         </div>
                     </div>
                 </div>
