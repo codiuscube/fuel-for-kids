@@ -23,7 +23,7 @@ const IddingsPlanner = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
 
   // Scenario State - Default to 120k based on current trend
-  const [applicantScenario, setApplicantScenario] = useState(120000);
+  const [applicantScenario, setApplicantScenario] = useState(160000);
 
   // Student Data
   const students = [
@@ -140,16 +140,16 @@ const IddingsPlanner = () => {
 
   // Scenario Logic
   const getScenarioAnalysis = (totalApps) => {
-    // Constants from Feb 15 Fact Sheet
+    // Constants from Feb 22 Fact Sheet (Window open through March 17)
     const budget = 1000000000; // $1 Billion
-    const tier1_2_pct = 0.34; // 34% (10% Tier 1 + 24% Tier 2)
-    const tier3_pct = 0.32;   // 32% (Your Tier)
-    const tier4_pct = 0.34;   // 34% (29% + 5%)
+    const tier1_2_pct = 0.41; // 41% (11% Tier 1 + 30% Tier 2)
+    const tier3_pct = 0.31;   // 31% (Your Tier: 200-500% FPL)
+    const tier4_pct = 0.28;   // 28% (5% public school + 23% ≥500% FPL)
 
-    // Costs
+    // Costs (updated: 79% Private, 21% Homeschool)
     const privateCost = 10500;
     const homeCost = 2000;
-    const weightedAvg = (privateCost * 0.8) + (homeCost * 0.2); // ~$8,800
+    const weightedAvg = (privateCost * 0.79) + (homeCost * 0.21); // ~$8,715 (79% Private / 21% Homeschool)
 
     // Capacity
     const capacity = Math.floor(budget / weightedAvg); // ~113,636 students
@@ -671,7 +671,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <Layers size={18}/> Select Applicant Volume Scenario
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {[120000, 130000, 150000, 200000].map((count) => (
+                    {[150000, 160000, 180000, 200000].map((count) => (
                         <button
                             key={count}
                             onClick={() => setApplicantScenario(count)}
@@ -717,16 +717,17 @@ The contribution amount we listed represents the maximum we can sustainably budg
                 </div>
                 <div className="p-8">
                     <div className="prose prose-sm max-w-none text-slate-700">
-                        <h3 className="font-bold text-slate-900 text-lg mb-2">1. The "Final Surge" Projection Model</h3>
+                        <h3 className="font-bold text-slate-900 text-lg mb-2">1. The Projection Model</h3>
                         <p className="mb-4">
-                            We are modeling the final applicant pool based on the February 15th confirmed count of 101,797.
-                            The current scenario is set to <strong>{applicantScenario.toLocaleString()}</strong> total applicants.
+                            As of February 22nd, <strong>123,743</strong> applications have been confirmed. The application window remains open
+                            through <strong>March 17 at 11:59 PM CT</strong>. We are projecting final totals using a ~33% weekly decline model
+                            with a last-week surge. The current scenario is set to <strong>{applicantScenario.toLocaleString()}</strong> total applicants.
                         </p>
 
                         <h3 className="font-bold text-slate-900 text-lg mb-2">2. Supply vs. Demand</h3>
                         <ul className="list-disc pl-5 mb-4 space-y-1">
                             <li><strong>Total Budget:</strong> $1 Billion</li>
-                            <li><strong>Weighted Avg Cost:</strong> ~$8,800 (Lowered by 20% Homeschool mix)</li>
+                            <li><strong>Weighted Avg Cost:</strong> ~$8,715 (79% Private / 21% Homeschool mix)</li>
                             <li><strong>Estimated Capacity:</strong> ~{analysis.capacity.toLocaleString()} Students</li>
                         </ul>
 
@@ -758,7 +759,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
 
                         <h3 className="font-bold text-slate-900 text-lg mb-2">4. Conclusion for Iddings Family</h3>
                         <p>
-                            In this specific scenario ({applicantScenario.toLocaleString()} applicants), your family has a
+                            With a projected {applicantScenario.toLocaleString()} total applicants, your family has a
                             <strong> {analysis.familySuccessRate.toFixed(1)}% </strong> statistical probability of securing funding.
                             {analysis.familySuccessRate > 90
                                 ? " You are in the 'Safe Zone'. The budget is sufficient to cover your tier."
