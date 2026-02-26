@@ -25,6 +25,9 @@ const IddingsPlanner = () => {
   // Scenario State - Default to 160k based on current trend
   const [applicantScenario, setApplicantScenario] = useState(160000);
 
+  // Latest confirmed data point (updated per Comptroller press release)
+  const confirmedApplicants = 130000; // 130k+ as of midway milestone (Feb 25)
+
   // Student Data
   const students = [
     { name: 'Cassius', grade: '9th Grade', school: 'High School', aceAmount: 4000 },
@@ -140,7 +143,7 @@ const IddingsPlanner = () => {
 
   // Scenario Logic
   const getScenarioAnalysis = (totalApps) => {
-    // Constants from Feb 22 Fact Sheet (Window open through March 17)
+    // Constants from Feb 25 Comptroller Press Release (Window open through March 17)
     const budget = 1000000000; // $1 Billion
     const tier1_2_pct = 0.41; // 41% (11% Tier 1 + 30% Tier 2)
     const tier3_pct = 0.31;   // 31% (Your Tier: 200-500% FPL)
@@ -687,7 +690,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                 </h3>
                 <div>
                     <div className="flex justify-between items-center mb-2">
-                        <span className="text-xs font-medium text-slate-500">Current: 124k</span>
+                        <span className="text-xs font-medium text-slate-500">Current: 130k</span>
                         <span className="text-sm font-bold text-slate-800 bg-slate-100 px-3 py-1 rounded-lg border border-slate-200">
                             {(applicantScenario / 1000).toFixed(0)}k Applicants
                         </span>
@@ -695,7 +698,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     </div>
                     <input
                         type="range"
-                        min="124000"
+                        min="130000"
                         max="300000"
                         step="1000"
                         value={applicantScenario}
@@ -740,9 +743,10 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <div className="prose prose-sm max-w-none text-slate-700">
                         <h3 className="font-bold text-slate-900 text-lg mb-2">1. The Projection Model</h3>
                         <p className="mb-4">
-                            As of February 22nd, <strong>123,743</strong> applications have been confirmed. The application window remains open
-                            through <strong>March 17 at 11:59 PM CT</strong>. We are projecting final totals using a ~33% weekly decline model
-                            with a last-week surge. The current scenario is set to <strong>{applicantScenario.toLocaleString()}</strong> total applicants.
+                            As of the midway milestone (February 25th), <strong>130,000+</strong> applications have been submitted with <strong>2,000+</strong> schools
+                            signed up to participate. The application window remains open through <strong>March 17 at 11:59 PM CT</strong> (3 weeks remaining).
+                            We are projecting final totals using a ~33% weekly decline model with a last-week surge.
+                            The current scenario is set to <strong>{applicantScenario.toLocaleString()}</strong> total applicants.
                         </p>
 
                         <h3 className="font-bold text-slate-900 text-lg mb-2">2. Supply vs. Demand</h3>
