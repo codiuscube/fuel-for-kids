@@ -22,8 +22,8 @@ import {
 const IddingsPlanner = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
 
-  // Scenario State - Default to 120k based on current trend
-  const [applicantScenario, setApplicantScenario] = useState(160000);
+  // Scenario State - null means "use model's best estimate"
+  const [applicantScenario, setApplicantScenario] = useState(null);
 
   // Student Data
   const students = [
@@ -31,6 +31,27 @@ const IddingsPlanner = () => {
     { name: 'Dorothy', grade: '7th Grade', school: 'Middle School', aceAmount: 3000 },
     { name: 'Sebastian', grade: '4th Grade', school: 'Elementary', aceAmount: 3000 }
   ];
+
+  // TEFA Application Window & Data Points
+  const TEFA_WINDOW = {
+    startDate: new Date('2026-02-04T00:00:00'),
+    endDate: new Date('2026-03-17T23:59:59'),
+    totalDays: 41,
+  };
+
+  // Known data from TEA Fact Sheets — add new rows as they're released
+  const TEFA_DATA_POINTS = [
+    { date: '2026-02-08', day: 4,  cumulative: 76000,  source: 'TEA Fact Sheet (Feb 8)', approximate: true },
+    { date: '2026-02-16', day: 12, cumulative: 101000, source: 'TEA Fact Sheet (Feb 16)', approximate: false },
+    { date: '2026-02-22', day: 18, cumulative: 123743, source: 'TEA Fact Sheet (Feb 22)', approximate: false },
+    { date: '2026-02-25', day: 21, cumulative: 130000, source: 'TEA Fact Sheet (Feb 25)', approximate: false },
+  ];
+
+  const PROJECTION_SCENARIOS = {
+    low:  { decayRate: 0.935, surgeMultiplier: 1.3, label: 'Low' },
+    mid:  { decayRate: 0.950, surgeMultiplier: 2.0, label: 'Projected' },
+    high: { decayRate: 0.965, surgeMultiplier: 3.0, label: 'High' },
+  };
 
   // Financial Data State - "Most Likely Scenario" Defaults
   const [tuition, setTuition] = useState(43505);
@@ -138,6 +159,64 @@ const IddingsPlanner = () => {
     }));
   };
 
+  // Projection Engine — fits a daily rate decay model to TEA data points
+  const projectTotalApplicants = () => {
+    const { totalDays } = TEFA_WINDOW;
+    const today = new Date();
+    const currentDay = Math.min(
+      totalDays,
+      Math.max(1, Math.floor((today - TEFA_WINDOW.startDate) / 86400000) + 1)
+    );
+
+    // Sort data points by day
+    const sorted = [...TEFA_DATA_POINTS].sort((a, b) => a.day - b.day);
+    const latest = sorted[sorted.length - 1];
+
+    const runScenario = ({ decayRate, surgeMultiplier }) => {
+      const surgeStartDay = totalDays - 5; // last 5 days
+
+      // Raw daily rate shape: exponential decay with deadline surge
+      const rawRate = (t) => {
+        const base = Math.pow(decayRate, t - 1);
+        if (t >= surgeStartDay) {
+          const progress = (t - surgeStartDay + 1) / (totalDays - surgeStartDay + 1);
+          return base * (1 + (surgeMultiplier - 1) * progress);
+        }
+        return base;
+      };
+
+      // Scale so cumulative through anchor day matches latest data point
+      let sumToAnchor = 0;
+      for (let t = 1; t <= latest.day; t++) sumToAnchor += rawRate(t);
+      const scale = latest.cumulative / sumToAnchor;
+
+      // Build full daily curve
+      const dailyCurve = [];
+      let cumulative = 0;
+      for (let t = 1; t <= totalDays; t++) {
+        const daily = Math.round(rawRate(t) * scale);
+        cumulative += daily;
+        dailyCurve.push({ day: t, daily, cumulative, isProjected: t > latest.day });
+      }
+
+      return { total: cumulative, dailyCurve };
+    };
+
+    const low = runScenario(PROJECTION_SCENARIOS.low);
+    const mid = runScenario(PROJECTION_SCENARIOS.mid);
+    const high = runScenario(PROJECTION_SCENARIOS.high);
+
+    return {
+      low: low.total, mid: mid.total, high: high.total,
+      lowCurve: low.dailyCurve, midCurve: mid.dailyCurve, highCurve: high.dailyCurve,
+      currentDay, anchorDay: latest.day, anchorCumulative: latest.cumulative,
+      daysRemaining: Math.max(0, totalDays - currentDay),
+      dataPoints: sorted,
+    };
+  };
+
+  const projection = projectTotalApplicants();
+
   // Scenario Logic
   const getScenarioAnalysis = (totalApps) => {
     // Constants from Feb 22 Fact Sheet (Window open through March 17)
@@ -191,7 +270,8 @@ const IddingsPlanner = () => {
     };
   };
 
-  const analysis = getScenarioAnalysis(applicantScenario);
+  const effectiveScenario = applicantScenario ?? projection.mid;
+  const analysis = getScenarioAnalysis(effectiveScenario);
 
   // Essay/Text Data
   const applicationTexts = {
@@ -261,6 +341,117 @@ The contribution amount we listed represents the maximum we can sustainably budg
     { date: 'Jun 15', day: 'Mon', event: 'ACE Award Notification', type: 'ace', desc: 'Scholarship decisions released.', funding: 'Paid directly to School' },
     { date: 'Jul 01', day: 'Wed', event: 'TEFA Funds Available (25%)', type: 'tefa', desc: 'First tranche of funds available in account.', funding: 'Distribution' },
   ];
+
+  // SVG Projection Chart
+  const ProjectionChart = () => {
+    const W = 700, H = 320;
+    const pad = { top: 24, right: 55, bottom: 44, left: 65 };
+    const plotW = W - pad.left - pad.right;
+    const plotH = H - pad.top - pad.bottom;
+
+    const maxY = Math.max(projection.high, ...projection.highCurve.map(d => d.cumulative));
+    const yMax = Math.ceil(maxY / 25000) * 25000; // round up to nearest 25k
+
+    const x = (day) => pad.left + ((day - 1) / (TEFA_WINDOW.totalDays - 1)) * plotW;
+    const y = (val) => pad.top + plotH - (val / yMax) * plotH;
+
+    const pathFromCurve = (curve, fromDay = 1) => {
+      const pts = curve.filter(d => d.day >= fromDay);
+      return pts.map((d, i) => `${i === 0 ? 'M' : 'L'}${x(d.day).toFixed(1)},${y(d.cumulative).toFixed(1)}`).join(' ');
+    };
+
+    // Confidence band between low and high (projected portion only)
+    const bandPath = () => {
+      const from = projection.anchorDay;
+      const hi = projection.highCurve.filter(d => d.day >= from);
+      const lo = [...projection.lowCurve.filter(d => d.day >= from)].reverse();
+      const forward = hi.map((d, i) => `${i === 0 ? 'M' : 'L'}${x(d.day).toFixed(1)},${y(d.cumulative).toFixed(1)}`);
+      const backward = lo.map(d => `L${x(d.day).toFixed(1)},${y(d.cumulative).toFixed(1)}`);
+      return forward.join(' ') + ' ' + backward.join(' ') + ' Z';
+    };
+
+    // Y-axis ticks
+    const yTicks = [];
+    for (let v = 0; v <= yMax; v += 25000) yTicks.push(v);
+
+    // X-axis date labels
+    const xLabels = [
+      { day: 1, label: 'Feb 4' },
+      { day: 8, label: 'Feb 11' },
+      { day: 15, label: 'Feb 18' },
+      { day: 22, label: 'Feb 25' },
+      { day: 29, label: 'Mar 4' },
+      { day: 36, label: 'Mar 11' },
+      { day: 41, label: 'Mar 17' },
+    ];
+
+    const capacityY = y(analysis.capacity);
+
+    return (
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" role="img" aria-label="TEFA Application Projection Chart">
+        {/* Grid lines */}
+        {yTicks.map(v => (
+          <line key={v} x1={pad.left} x2={W - pad.right} y1={y(v)} y2={y(v)} stroke="#e2e8f0" strokeWidth="1" />
+        ))}
+
+        {/* Capacity line */}
+        <line x1={pad.left} x2={W - pad.right} y1={capacityY} y2={capacityY} stroke="#ef4444" strokeWidth="1" strokeDasharray="6,4" />
+        <text x={W - pad.right + 4} y={capacityY + 4} fontSize="9" fill="#ef4444" fontWeight="bold">Capacity</text>
+
+        {/* Confidence band */}
+        <path d={bandPath()} fill="rgba(59,130,246,0.1)" />
+
+        {/* Low curve (dashed, light) */}
+        <path d={pathFromCurve(projection.lowCurve, projection.anchorDay)} fill="none" stroke="#93c5fd" strokeWidth="1" strokeDasharray="3,3" />
+
+        {/* High curve (dashed, light) */}
+        <path d={pathFromCurve(projection.highCurve, projection.anchorDay)} fill="none" stroke="#93c5fd" strokeWidth="1" strokeDasharray="3,3" />
+
+        {/* Actual data line (solid) */}
+        <path d={pathFromCurve(projection.midCurve.filter(d => d.day <= projection.anchorDay))} fill="none" stroke="#1e40af" strokeWidth="2.5" strokeLinecap="round" />
+
+        {/* Projected mid line (dashed) */}
+        <path d={pathFromCurve(projection.midCurve, projection.anchorDay)} fill="none" stroke="#3b82f6" strokeWidth="2" strokeDasharray="6,3" />
+
+        {/* Today marker */}
+        {projection.currentDay <= TEFA_WINDOW.totalDays && (
+          <>
+            <line x1={x(projection.currentDay)} x2={x(projection.currentDay)} y1={pad.top} y2={pad.top + plotH} stroke="#64748b" strokeWidth="1" strokeDasharray="4,3" />
+            <text x={x(projection.currentDay)} y={pad.top - 6} fontSize="9" fill="#64748b" textAnchor="middle" fontWeight="bold">Today</text>
+          </>
+        )}
+
+        {/* Data point dots */}
+        {projection.dataPoints.map((dp, i) => (
+          <g key={i}>
+            <circle cx={x(dp.day)} cy={y(dp.cumulative)} r="5" fill="#1e40af" stroke="white" strokeWidth="2" />
+            <title>{dp.source}: {dp.cumulative.toLocaleString()}</title>
+          </g>
+        ))}
+
+        {/* End-of-line labels */}
+        <text x={W - pad.right + 4} y={y(projection.mid) + 4} fontSize="10" fill="#3b82f6" fontWeight="bold">{Math.round(projection.mid / 1000)}k</text>
+        <text x={W - pad.right + 4} y={y(projection.low) + 4} fontSize="9" fill="#93c5fd">{Math.round(projection.low / 1000)}k</text>
+        <text x={W - pad.right + 4} y={y(projection.high) + 4} fontSize="9" fill="#93c5fd">{Math.round(projection.high / 1000)}k</text>
+
+        {/* Y-axis labels */}
+        {yTicks.map(v => (
+          <text key={v} x={pad.left - 8} y={y(v) + 4} fontSize="10" fill="#94a3b8" textAnchor="end">
+            {v === 0 ? '0' : `${v / 1000}k`}
+          </text>
+        ))}
+
+        {/* X-axis labels */}
+        {xLabels.map(({ day, label }) => (
+          <text key={day} x={x(day)} y={H - pad.bottom + 18} fontSize="10" fill="#94a3b8" textAnchor="middle">{label}</text>
+        ))}
+
+        {/* Axes */}
+        <line x1={pad.left} x2={pad.left} y1={pad.top} y2={pad.top + plotH} stroke="#cbd5e1" strokeWidth="1" />
+        <line x1={pad.left} x2={W - pad.right} y1={pad.top + plotH} y2={pad.top + plotH} stroke="#cbd5e1" strokeWidth="1" />
+      </svg>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-12">
@@ -398,7 +589,9 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             <div>
                                 <div className="font-bold text-blue-900 flex items-center gap-2">
                                     TEFA Voucher
-                                    <span className="text-[10px] bg-green-500 text-white px-1.5 py-0.5 rounded uppercase tracking-wide">Excellent ({'>'}99%)</span>
+                                    <span className={`text-[10px] ${analysis.familySuccessRate > 90 ? 'bg-green-500' : analysis.familySuccessRate > 60 ? 'bg-amber-500' : 'bg-red-500'} text-white px-1.5 py-0.5 rounded uppercase tracking-wide`}>
+                                        {analysis.familySuccessRate > 90 ? 'Excellent' : analysis.familySuccessRate > 60 ? 'Good' : 'Competitive'} ({analysis.familySuccessRate.toFixed(0)}%)
+                                    </span>
                                 </div>
                                 <div className="text-xs text-blue-700 mt-1">3 x $10,474 (Est)</div>
                                 <div className="text-[10px] text-blue-500 mt-2 flex items-center gap-1">
@@ -665,24 +858,70 @@ The contribution amount we listed represents the maximum we can sustainably budg
               <BarChart2 /> Strategic Financial Analysis Report
             </h2>
 
-            {/* Scenario Selector */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
-                <h3 className="font-bold text-slate-700 mb-4 flex items-center gap-2">
-                    <Layers size={18}/> Select Applicant Volume Scenario
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {[150000, 160000, 180000, 200000].map((count) => (
-                        <button
-                            key={count}
-                            onClick={() => setApplicantScenario(count)}
-                            className={`py-2 px-3 rounded-lg text-sm font-medium border transition
-                                ${applicantScenario === count
-                                ? 'bg-slate-800 text-white border-slate-800'
-                                : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'}`}
-                        >
-                            {(count / 1000).toFixed(0)}k Applicants
-                        </button>
-                    ))}
+            {/* Projection Hero Card */}
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <div className="flex items-center justify-between mb-1">
+                    <h3 className="font-bold text-slate-700 flex items-center gap-2">
+                        <TrendingUp size={18}/> Projected Total Applicants
+                    </h3>
+                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-medium">
+                        Data-Driven Model
+                    </span>
+                </div>
+                <p className="text-xs text-slate-500 mb-5">
+                    Based on {projection.dataPoints.length} TEA data points.
+                    Last update: {projection.dataPoints[projection.dataPoints.length - 1].source}.
+                    {projection.daysRemaining > 0
+                        ? ` ${projection.daysRemaining} days remaining in window.`
+                        : ' Application window has closed.'}
+                </p>
+
+                {/* Low / Mid / High Cards */}
+                <div className="grid grid-cols-3 gap-3 mb-6">
+                    <button
+                        onClick={() => setApplicantScenario(projection.low)}
+                        className={`text-center p-3 rounded-lg border transition ${
+                            applicantScenario === projection.low
+                                ? 'bg-green-100 border-green-400 ring-2 ring-green-300'
+                                : 'bg-green-50 border-green-200 hover:border-green-300'
+                        }`}
+                    >
+                        <div className="text-[10px] text-green-600 font-bold uppercase">Low</div>
+                        <div className="text-xl font-bold text-green-700">{Math.round(projection.low / 1000)}k</div>
+                    </button>
+                    <button
+                        onClick={() => setApplicantScenario(null)}
+                        className={`text-center p-3 rounded-lg border-2 transition ${
+                            applicantScenario === null
+                                ? 'bg-blue-100 border-blue-500 ring-2 ring-blue-300'
+                                : 'bg-blue-50 border-blue-300 hover:border-blue-400'
+                        }`}
+                    >
+                        <div className="text-[10px] text-blue-600 font-bold uppercase">Best Estimate</div>
+                        <div className="text-2xl font-bold text-blue-700">{Math.round(projection.mid / 1000)}k</div>
+                    </button>
+                    <button
+                        onClick={() => setApplicantScenario(projection.high)}
+                        className={`text-center p-3 rounded-lg border transition ${
+                            applicantScenario === projection.high
+                                ? 'bg-amber-100 border-amber-400 ring-2 ring-amber-300'
+                                : 'bg-amber-50 border-amber-200 hover:border-amber-300'
+                        }`}
+                    >
+                        <div className="text-[10px] text-amber-600 font-bold uppercase">High</div>
+                        <div className="text-xl font-bold text-amber-700">{Math.round(projection.high / 1000)}k</div>
+                    </button>
+                </div>
+
+                {/* Projection Chart */}
+                <div className="bg-slate-50 rounded-lg border border-slate-100 p-3">
+                    <ProjectionChart />
+                    <div className="flex items-center justify-center gap-4 mt-2 text-[10px] text-slate-500">
+                        <span className="flex items-center gap-1"><span className="inline-block w-3 h-0.5 bg-blue-800"></span> Actual</span>
+                        <span className="flex items-center gap-1"><span className="inline-block w-3 h-0.5 bg-blue-400 border-b border-dashed"></span> Projected</span>
+                        <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 bg-blue-100 rounded-sm"></span> Range</span>
+                        <span className="flex items-center gap-1"><span className="inline-block w-3 h-0.5 bg-red-400 border-b border-dashed"></span> Capacity</span>
+                    </div>
                 </div>
 
                 {/* Scenario Result */}
@@ -706,8 +945,30 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         </div>
                     </div>
                 </div>
+
+                {/* Manual Override */}
+                <details className="mt-4 pt-3 border-t border-slate-100">
+                    <summary className="text-xs text-slate-400 cursor-pointer hover:text-slate-600 select-none">
+                        Manual override (pick your own scenario)
+                    </summary>
+                    <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-2">
+                        {[130000, 150000, 160000, 180000, 200000, 220000].map((count) => (
+                            <button
+                                key={count}
+                                onClick={() => setApplicantScenario(count)}
+                                className={`py-1.5 px-2 rounded text-xs font-medium border transition
+                                    ${applicantScenario === count
+                                    ? 'bg-slate-800 text-white border-slate-800'
+                                    : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'}`}
+                            >
+                                {(count / 1000).toFixed(0)}k Applicants
+                            </button>
+                        ))}
+                    </div>
+                </details>
             </div>
 
+            {/* Prose Analysis */}
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div className="bg-slate-800 text-white px-6 py-4 flex justify-between items-center">
                     <div>
@@ -719,9 +980,15 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <div className="prose prose-sm max-w-none text-slate-700">
                         <h3 className="font-bold text-slate-900 text-lg mb-2">1. The Projection Model</h3>
                         <p className="mb-4">
-                            As of February 22nd, <strong>123,743</strong> applications have been confirmed. The application window remains open
-                            through <strong>March 17 at 11:59 PM CT</strong>. We are projecting final totals using a ~33% weekly decline model
-                            with a last-week surge. The current scenario is set to <strong>{applicantScenario.toLocaleString()}</strong> total applicants.
+                            Based on {projection.dataPoints.length} TEA data points through {projection.dataPoints[projection.dataPoints.length - 1].source.match(/\((.+)\)/)?.[1] || 'latest'},
+                            <strong> {projection.anchorCumulative.toLocaleString()}</strong> applications have been confirmed
+                            ({projection.anchorDay} of {TEFA_WINDOW.totalDays} days elapsed). Our projection model uses daily rate decay
+                            with a deadline surge, estimating a final total of <strong>~{Math.round(projection.mid / 1000)}k</strong> applicants
+                            (range: {Math.round(projection.low / 1000)}k &ndash; {Math.round(projection.high / 1000)}k).
+                            {projection.daysRemaining > 0
+                                ? ` There are ${projection.daysRemaining} days remaining in the application window (closes March 17 at 11:59 PM CT).`
+                                : ' The application window has closed.'}
+                            {' '}The active scenario is <strong>{effectiveScenario.toLocaleString()}</strong> total applicants.
                         </p>
 
                         <h3 className="font-bold text-slate-900 text-lg mb-2">2. Supply vs. Demand</h3>
@@ -732,7 +999,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         </ul>
 
                         <h3 className="font-bold text-slate-900 text-lg mb-2">3. Tier Analysis: Who Gets Funded?</h3>
-                        <p className="mb-4">With {applicantScenario.toLocaleString()} applicants, here is how the budget drains:</p>
+                        <p className="mb-4">With {effectiveScenario.toLocaleString()} applicants, here is how the budget drains:</p>
 
                         <div className="space-y-4 mb-6">
                             <div className="p-3 bg-green-50 border border-green-200 rounded">
@@ -759,7 +1026,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
 
                         <h3 className="font-bold text-slate-900 text-lg mb-2">4. Conclusion for Iddings Family</h3>
                         <p>
-                            With a projected {applicantScenario.toLocaleString()} total applicants, your family has a
+                            With a projected {effectiveScenario.toLocaleString()} total applicants, your family has a
                             <strong> {analysis.familySuccessRate.toFixed(1)}% </strong> statistical probability of securing funding.
                             {analysis.familySuccessRate > 90
                                 ? " You are in the 'Safe Zone'. The budget is sufficient to cover your tier."
