@@ -23,7 +23,7 @@ const IddingsPlanner = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
 
   // Scenario State - Default to 120k based on current trend
-  const [applicantScenario, setApplicantScenario] = useState(160000);
+  const [applicantScenario, setApplicantScenario] = useState(200000);
 
   // Student Data
   const students = [
@@ -49,10 +49,11 @@ const IddingsPlanner = () => {
   // Fee Calculations (One-time)
   const fees = {
     nbcaApp: 150 * 3, // $150 per student
+    nbcaEnroll: 175 * 2, // $175 per student x 2 accepted (Cassius & Dorothy)
     factsApp: 40,     // $40 per family
     aceApp: 0         // $0 (Waived per user update)
   };
-  const totalFees = fees.nbcaApp + fees.factsApp + fees.aceApp;
+  const totalFees = fees.nbcaApp + fees.nbcaEnroll + fees.factsApp + fees.aceApp;
 
   // Recurring Financial Calculations
   const totalTefa = includeTefa ? tefaPerStudent * 3 : 0;
@@ -64,13 +65,15 @@ const IddingsPlanner = () => {
 
   // Status Tracking Data
   const appStatus = [
-    { item: "NBCA Application", status: "Submitted", date: "Pending Review", type: "success", funding: "N/A" },
-    { item: "NBCA Financial Aid", status: "Submitted", date: "End of March", type: "success", funding: "Tuition Credit" },
+    { item: "NBCA Application", status: "Accepted (2/3)", date: "Cassius & Dorothy Accepted", type: "success", funding: "N/A" },
+    { item: "NBCA Enrollment Fee", status: "Due", date: "$175 x 2 = $350", type: "pending", funding: "One-Time" },
+    { item: "Sebastian (NBCA)", status: "Pending", date: "Awaiting Decision", type: "pending", funding: "N/A" },
+    { item: "NBCA Financial Aid", status: "Waiting", date: "End of March", type: "pending", funding: "Tuition Credit" },
     { item: "TEFA Scholarship", status: "Submitted", date: "Early April", type: "success", funding: "Digital Wallet" },
     { item: "ACE Scholarship", status: "Submitted", date: "June", type: "success", funding: "Check to School" },
     { item: "NBCA Scholarship", status: "Submitted", date: "Unknown?", type: "success", funding: "Tuition Credit" },
-    { item: "Student Assessments", status: "Scheduled", date: "Feb 20", type: "pending", funding: "N/A" },
-    { item: "Family Interview", status: "Scheduled", date: "Feb 27 (Fri)", type: "pending", funding: "N/A" },
+    { item: "Student Assessments", status: "Completed", date: "Feb 20", type: "success", funding: "N/A" },
+    { item: "Family Interview", status: "Completed", date: "Feb 27", type: "success", funding: "N/A" },
   ];
 
   // Checklist Data
@@ -86,8 +89,8 @@ const IddingsPlanner = () => {
         { id: 'nbca-math', text: 'Math Teacher Recommendation (6th-12th)', done: true },
         { id: 'nbca-report', text: 'Current Report Card / Transcript', done: true },
         { id: 'nbca-immun', text: 'Immunization Record', done: true },
-        { id: 'nbca-assess', text: 'Student Assessments (Scheduled Feb 20)', done: false },
-        { id: 'nbca-interview', text: 'Family Interview (Scheduled Feb 27)', done: false },
+        { id: 'nbca-assess', text: 'Student Assessments (Completed Feb 20)', done: true },
+        { id: 'nbca-interview', text: 'Family Interview (Completed Feb 27)', done: true },
       ]
     },
     facts: {
@@ -140,7 +143,7 @@ const IddingsPlanner = () => {
 
   // Scenario Logic
   const getScenarioAnalysis = (totalApps) => {
-    // Constants from Feb 22 Fact Sheet (Window open through March 17)
+    // Constants from Mar 1 Fact Sheet (Window open through March 17)
     const budget = 1000000000; // $1 Billion
     const tier1_2_pct = 0.41; // 41% (11% Tier 1 + 30% Tier 2)
     const tier3_pct = 0.31;   // 31% (Your Tier: 200-500% FPL)
@@ -349,6 +352,10 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         <div className="flex justify-between items-center text-sm">
                             <span className="text-slate-600">NBCA Apps (3)</span>
                             <span className="font-bold">${fees.nbcaApp}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm">
+                            <span className="text-slate-600">NBCA Enrollment (2)</span>
+                            <span className="font-bold">${fees.nbcaEnroll}</span>
                         </div>
                         <div className="flex justify-between items-center text-sm">
                             <span className="text-slate-600">FACTS Fee</span>
@@ -671,7 +678,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <Layers size={18}/> Select Applicant Volume Scenario
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {[150000, 160000, 180000, 200000].map((count) => (
+                    {[180000, 200000, 220000, 250000].map((count) => (
                         <button
                             key={count}
                             onClick={() => setApplicantScenario(count)}
@@ -719,9 +726,9 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <div className="prose prose-sm max-w-none text-slate-700">
                         <h3 className="font-bold text-slate-900 text-lg mb-2">1. The Projection Model</h3>
                         <p className="mb-4">
-                            As of February 22nd, <strong>123,743</strong> applications have been confirmed. The application window remains open
-                            through <strong>March 17 at 11:59 PM CT</strong>. We are projecting final totals using a ~33% weekly decline model
-                            with a last-week surge. The current scenario is set to <strong>{applicantScenario.toLocaleString()}</strong> total applicants.
+                            As of March 5th, <strong>over 150,000</strong> applications have been confirmed (141,608 as of Mar 1 fact sheet). The application window remains open
+                            through <strong>March 17 at 11:59 PM CT</strong>. The comptroller's office has confirmed they expect demand to exceed funding, resulting in a waitlist.
+                            We are projecting final totals using continued momentum with a last-week surge. The current scenario is set to <strong>{applicantScenario.toLocaleString()}</strong> total applicants.
                         </p>
 
                         <h3 className="font-bold text-slate-900 text-lg mb-2">2. Supply vs. Demand</h3>
