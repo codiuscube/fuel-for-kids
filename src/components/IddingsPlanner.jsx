@@ -49,7 +49,7 @@ const IddingsPlanner = () => {
   // Fee Calculations (One-time)
   const fees = {
     nbcaApp: 150 * 3, // $150 per student
-    nbcaEnroll: 175 * 2, // $175 per student x 2 accepted (Cassius & Dorothy)
+    nbcaEnroll: 175 * 3, // $175 per student x 3 accepted
     factsApp: 40,     // $40 per family
     aceApp: 0         // $0 (Waived per user update)
   };
@@ -65,9 +65,8 @@ const IddingsPlanner = () => {
 
   // Status Tracking Data
   const appStatus = [
-    { item: "NBCA Application", status: "Accepted (2/3)", date: "Cassius & Dorothy Accepted", type: "success", funding: "N/A" },
-    { item: "NBCA Enrollment Fee", status: "Due", date: "$175 x 2 = $350", type: "pending", funding: "One-Time" },
-    { item: "Sebastian (NBCA)", status: "Pending", date: "Awaiting Decision", type: "pending", funding: "N/A" },
+    { item: "NBCA Application", status: "Accepted (3/3)", date: "All 3 Accepted", type: "success", funding: "N/A" },
+    { item: "NBCA Enrollment Fee", status: "Due", date: "$175 x 3 = $525", type: "pending", funding: "One-Time" },
     { item: "NBCA Financial Aid", status: "Waiting", date: "End of March", type: "pending", funding: "Tuition Credit" },
     { item: "TEFA Scholarship", status: "Submitted", date: "Early April", type: "success", funding: "Digital Wallet" },
     { item: "ACE Scholarship", status: "Submitted", date: "June", type: "success", funding: "Check to School" },
@@ -354,7 +353,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             <span className="font-bold">${fees.nbcaApp}</span>
                         </div>
                         <div className="flex justify-between items-center text-sm">
-                            <span className="text-slate-600">NBCA Enrollment (2)</span>
+                            <span className="text-slate-600">NBCA Enrollment (3)</span>
                             <span className="font-bold">${fees.nbcaEnroll}</span>
                         </div>
                         <div className="flex justify-between items-center text-sm">
