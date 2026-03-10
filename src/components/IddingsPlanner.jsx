@@ -143,7 +143,7 @@ const IddingsPlanner = () => {
 
   // Scenario Logic
   const getScenarioAnalysis = (totalApps) => {
-    // Constants from Mar 1 Fact Sheet (Window open through March 17)
+    // Constants from Mar 8 Fact Sheet (Window open through March 17)
     const budget = 1000000000; // $1 Billion
     const tier1_2_pct = 0.41; // 41% (11% Tier 1 + 30% Tier 2)
     const tier3_pct = 0.31;   // 31% (Your Tier: 200-500% FPL)
@@ -726,8 +726,9 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <div className="prose prose-sm max-w-none text-slate-700">
                         <h3 className="font-bold text-slate-900 text-lg mb-2">1. The Projection Model</h3>
                         <p className="mb-4">
-                            As of March 5th, <strong>over 150,000</strong> applications have been confirmed (141,608 as of Mar 1 fact sheet). The application window remains open
-                            through <strong>March 17 at 11:59 PM CT</strong>. The comptroller's office has confirmed they expect demand to exceed funding, resulting in a waitlist.
+                            As of March 8th, <strong>163,362</strong> applications have been submitted (per the updated fact sheet). The application window
+                            closes <strong>March 17 at 11:59 PM CT</strong> — one week away. Acting Comptroller Hancock: "We're expecting to sell out in year one."
+                            More than 2,200 schools have signed up. The waitlist will be reported to the Texas Legislature to determine funding for future years.
                             We are projecting final totals using continued momentum with a last-week surge. The current scenario is set to <strong>{applicantScenario.toLocaleString()}</strong> total applicants.
                         </p>
 
