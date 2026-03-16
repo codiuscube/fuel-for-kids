@@ -49,7 +49,7 @@ const IddingsPlanner = () => {
   // Fee Calculations (One-time)
   const fees = {
     nbcaApp: 150 * 3, // $150 per student
-    nbcaEnroll: 175 * 2, // $175 per student x 2 accepted (Cassius & Dorothy)
+    nbcaEnroll: 175 * 3, // $175 per student x 3 accepted
     factsApp: 40,     // $40 per family
     aceApp: 0         // $0 (Waived per user update)
   };
@@ -65,11 +65,11 @@ const IddingsPlanner = () => {
 
   // Status Tracking Data
   const appStatus = [
-    { item: "NBCA Application", status: "Accepted (2/3)", date: "Cassius & Dorothy Accepted", type: "success", funding: "N/A" },
-    { item: "NBCA Enrollment Fee", status: "Due", date: "$175 x 2 = $350", type: "pending", funding: "One-Time" },
-    { item: "Sebastian (NBCA)", status: "Pending", date: "Awaiting Decision", type: "pending", funding: "N/A" },
+    { item: "NBCA Application", status: "Accepted (3/3)", date: "All 3 Accepted", type: "success", funding: "N/A" },
+    { item: "NBCA Enrollment Fee", status: "Due", date: "$175 x 3 = $525", type: "pending", funding: "One-Time" },
+    { item: "Sebastian (NBCA)", status: "Accepted", date: "Accepted", type: "success", funding: "N/A" },
     { item: "NBCA Financial Aid", status: "Waiting", date: "End of March", type: "pending", funding: "Tuition Credit" },
-    { item: "TEFA Scholarship", status: "Submitted", date: "Early April", type: "success", funding: "Digital Wallet" },
+    { item: "TEFA Scholarship", status: "Waiting", date: "Early April", type: "pending", funding: "Digital Wallet" },
     { item: "ACE Scholarship", status: "Submitted", date: "June", type: "success", funding: "Check to School" },
     { item: "NBCA Scholarship", status: "Submitted", date: "Unknown?", type: "success", funding: "Tuition Credit" },
     { item: "Student Assessments", status: "Completed", date: "Feb 20", type: "success", funding: "N/A" },
@@ -143,16 +143,16 @@ const IddingsPlanner = () => {
 
   // Scenario Logic
   const getScenarioAnalysis = (totalApps) => {
-    // Constants from Mar 8 Fact Sheet (Window open through March 17)
+    // Constants from Mar 16 Fact Sheet (Window closed March 17)
     const budget = 1000000000; // $1 Billion
-    const tier1_2_pct = 0.41; // 41% (11% Tier 1 + 30% Tier 2)
-    const tier3_pct = 0.31;   // 31% (Your Tier: 200-500% FPL)
+    const tier1_2_pct = 0.42; // 42% (11% Tier 1 + 31% Tier 2)
+    const tier3_pct = 0.30;   // 30% (Your Tier: 200-500% FPL)
     const tier4_pct = 0.28;   // 28% (5% public school + 23% ≥500% FPL)
 
-    // Costs (updated: 79% Private, 21% Homeschool)
+    // Costs (updated: 78% Private, 22% Homeschool — Mar 16 Fact Sheet)
     const privateCost = 10500;
     const homeCost = 2000;
-    const weightedAvg = (privateCost * 0.79) + (homeCost * 0.21); // ~$8,715 (79% Private / 21% Homeschool)
+    const weightedAvg = (privateCost * 0.78) + (homeCost * 0.22); // ~$8,630 (78% Private / 22% Homeschool)
 
     // Capacity
     const capacity = Math.floor(budget / weightedAvg); // ~113,636 students
@@ -354,7 +354,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             <span className="font-bold">${fees.nbcaApp}</span>
                         </div>
                         <div className="flex justify-between items-center text-sm">
-                            <span className="text-slate-600">NBCA Enrollment (2)</span>
+                            <span className="text-slate-600">NBCA Enrollment (3)</span>
                             <span className="font-bold">${fees.nbcaEnroll}</span>
                         </div>
                         <div className="flex justify-between items-center text-sm">
@@ -405,7 +405,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             <div>
                                 <div className="font-bold text-blue-900 flex items-center gap-2">
                                     TEFA Voucher
-                                    <span className="text-[10px] bg-green-500 text-white px-1.5 py-0.5 rounded uppercase tracking-wide">Excellent ({'>'}99%)</span>
+                                    <span className={`text-[10px] text-white px-1.5 py-0.5 rounded uppercase tracking-wide ${analysis.familySuccessRate > 80 ? 'bg-green-500' : analysis.familySuccessRate > 50 ? 'bg-amber-500' : 'bg-red-500'}`}>{analysis.familySuccessRate > 90 ? 'Excellent' : analysis.familySuccessRate > 70 ? 'Good' : analysis.familySuccessRate > 50 ? 'Fair' : 'Low'} ({analysis.familySuccessRate.toFixed(1)}%)</span>
                                 </div>
                                 <div className="text-xs text-blue-700 mt-1">3 x $10,474 (Est)</div>
                                 <div className="text-[10px] text-blue-500 mt-2 flex items-center gap-1">
@@ -726,16 +726,16 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <div className="prose prose-sm max-w-none text-slate-700">
                         <h3 className="font-bold text-slate-900 text-lg mb-2">1. The Projection Model</h3>
                         <p className="mb-4">
-                            As of March 8th, <strong>163,362</strong> applications have been submitted (per the updated fact sheet). The application window
-                            closes <strong>March 17 at 11:59 PM CT</strong> — one week away. Acting Comptroller Hancock: "We're expecting to sell out in year one."
+                            As of March 16th, <strong>200,003</strong> applications have been submitted (per the updated fact sheet). The application window
+                            closes <strong>March 17 at 11:59 PM CT</strong>. Acting Comptroller Hancock: "We're expecting to sell out in year one."
                             More than 2,200 schools have signed up. The waitlist will be reported to the Texas Legislature to determine funding for future years.
-                            We are projecting final totals using continued momentum with a last-week surge. The current scenario is set to <strong>{applicantScenario.toLocaleString()}</strong> total applicants.
+                            With the window nearly closed, <strong>200,003</strong> represents the near-final total. The current scenario is set to <strong>{applicantScenario.toLocaleString()}</strong> total applicants.
                         </p>
 
                         <h3 className="font-bold text-slate-900 text-lg mb-2">2. Supply vs. Demand</h3>
                         <ul className="list-disc pl-5 mb-4 space-y-1">
                             <li><strong>Total Budget:</strong> $1 Billion</li>
-                            <li><strong>Weighted Avg Cost:</strong> ~$8,715 (79% Private / 21% Homeschool mix)</li>
+                            <li><strong>Weighted Avg Cost:</strong> ~$8,630 (78% Private / 22% Homeschool mix)</li>
                             <li><strong>Estimated Capacity:</strong> ~{analysis.capacity.toLocaleString()} Students</li>
                         </ul>
 
