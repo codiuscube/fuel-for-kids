@@ -24,6 +24,7 @@ const IddingsPlanner = () => {
 
   // Scenario State - Default to 120k based on current trend
   const [applicantScenario, setApplicantScenario] = useState(200000);
+  const [ineligibilityRate, setIneligibilityRate] = useState(0.10); // ~10% default
 
   // Student Data
   const students = [
@@ -145,9 +146,16 @@ const IddingsPlanner = () => {
   const getScenarioAnalysis = (totalApps) => {
     // Constants from Mar 16 Fact Sheet (Window closed March 17)
     const budget = 1000000000; // $1 Billion
-    const tier1_2_pct = 0.42; // 42% (11% Tier 1 + 31% Tier 2)
-    const tier3_pct = 0.30;   // 30% (Your Tier: 200-500% FPL)
-    const tier4_pct = 0.28;   // 28% (5% public school + 23% ≥500% FPL)
+
+    // Ineligibility reduces the pool competing for funding
+    const eligibleApps = Math.round(totalApps * (1 - ineligibilityRate));
+
+    // 5-tier breakdown from Mar 16 Fact Sheet
+    const tier1_pct = 0.12;  // 12% Tier 1 (Disability + ≤500% FPL)
+    const tier2_pct = 0.30;  // 30% Tier 2 (≤200% FPL)
+    const tier3_pct = 0.30;  // 30% Tier 3 (200-500% FPL — Iddings family)
+    const tier4a_pct = 0.05; // 5% Tier 4a (≥500% FPL + public school)
+    const tier4b_pct = 0.23; // 23% Tier 4b (≥500% FPL)
 
     // Costs (updated: 78% Private, 22% Homeschool — Mar 16 Fact Sheet)
     const privateCost = 10500;
@@ -155,28 +163,39 @@ const IddingsPlanner = () => {
     const weightedAvg = (privateCost * 0.78) + (homeCost * 0.22); // ~$8,630 (78% Private / 22% Homeschool)
 
     // Capacity
-    const capacity = Math.floor(budget / weightedAvg); // ~113,636 students
+    const capacity = Math.floor(budget / weightedAvg); // ~115,874 students
 
-    // Demand by Tier
-    const demandT1_2 = Math.round(totalApps * tier1_2_pct);
-    const demandT3 = Math.round(totalApps * tier3_pct);
-    const demandT4 = Math.round(totalApps * tier4_pct);
+    // Demand by Tier (based on eligible applicants)
+    const demandT1 = Math.round(eligibleApps * tier1_pct);
+    const demandT2 = Math.round(eligibleApps * tier2_pct);
+    const demandT3 = Math.round(eligibleApps * tier3_pct);
+    const demandT4a = Math.round(eligibleApps * tier4a_pct);
+    const demandT4b = Math.round(eligibleApps * tier4b_pct);
 
     // Funding Logic (Priority Order)
     let remainingSlots = capacity;
 
-    // Fund Tier 1 & 2
-    const fundedT1_2 = Math.min(remainingSlots, demandT1_2);
-    remainingSlots -= fundedT1_2;
+    // Fund Tier 1
+    const fundedT1 = Math.min(remainingSlots, demandT1);
+    remainingSlots -= fundedT1;
+
+    // Fund Tier 2
+    const fundedT2 = Math.min(remainingSlots, demandT2);
+    remainingSlots -= fundedT2;
 
     // Fund Tier 3 (You)
     const fundedT3 = Math.min(remainingSlots, demandT3);
-    const tier3SuccessRate = (fundedT3 / demandT3) * 100;
+    const tier3SuccessRate = demandT3 > 0 ? (fundedT3 / demandT3) * 100 : 0;
     remainingSlots -= fundedT3;
 
-    // Fund Tier 4 (Capped at 20% of budget anyway, but let's see slots)
-    const fundedT4 = Math.min(remainingSlots, demandT4);
-    const tier4SuccessRate = (fundedT4 / demandT4) * 100;
+    // Fund Tier 4a (public school + ≥500% FPL)
+    const fundedT4a = Math.min(remainingSlots, demandT4a);
+    remainingSlots -= fundedT4a;
+
+    // Fund Tier 4b (≥500% FPL)
+    const fundedT4b = Math.min(remainingSlots, demandT4b);
+    const tier4SuccessRate = (demandT4a + demandT4b) > 0
+      ? ((fundedT4a + fundedT4b) / (demandT4a + demandT4b)) * 100 : 0;
 
     // Sibling Rule Math for Tier 3
     // Probability of all 3 kids losing lottery
@@ -186,7 +205,14 @@ const IddingsPlanner = () => {
 
     return {
         capacity,
+        eligibleApps,
+        demandT1,
+        demandT2,
         demandT3,
+        demandT4a,
+        demandT4b,
+        fundedT1,
+        fundedT2,
         fundedT3,
         tier3SuccessRate,
         familySuccessRate,
@@ -692,6 +718,34 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     ))}
                 </div>
 
+                {/* Ineligibility Rate */}
+                <div className="mt-5 pt-4 border-t border-slate-100">
+                    <div className="flex items-center justify-between mb-2">
+                        <label className="text-sm font-medium text-slate-700">Estimated Ineligibility Rate</label>
+                        <span className="text-sm font-bold text-slate-800">{Math.round(ineligibilityRate * 100)}%</span>
+                    </div>
+                    <input
+                        type="range"
+                        min="0"
+                        max="20"
+                        step="1"
+                        value={Math.round(ineligibilityRate * 100)}
+                        onChange={(e) => setIneligibilityRate(parseInt(e.target.value) / 100)}
+                        className="w-full accent-slate-700"
+                    />
+                    <div className="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>0%</span>
+                        <span>10%</span>
+                        <span>20%</span>
+                    </div>
+                    <div className="mt-2 text-sm text-slate-600">
+                        Total Applicants: <strong>{applicantScenario.toLocaleString()}</strong> → Eligible: <strong>{analysis.eligibleApps.toLocaleString()}</strong> ({Math.round(ineligibilityRate * 100)}% ineligible)
+                    </div>
+                    <div className="mt-1 text-xs text-slate-400">
+                        Comptroller reported ~10% overall ineligibility (~50% for pre-K, much lower for K-12)
+                    </div>
+                </div>
+
                 {/* Scenario Result */}
                 <div className="mt-6 pt-4 border-t border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
@@ -731,36 +785,54 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             More than 2,200 schools have signed up. The waitlist will be reported to the Texas Legislature to determine funding for future years.
                             With the window nearly closed, <strong>200,003</strong> represents the near-final total. The current scenario is set to <strong>{applicantScenario.toLocaleString()}</strong> total applicants.
                         </p>
+                        <p className="mb-4">
+                            <strong>Not all applicants are eligible.</strong> The Comptroller reported that approximately 18,000 of 184,000 applicants
+                            reviewed at an earlier count were ineligible — roughly 10% overall. Pre-K applications had ~50% ineligibility,
+                            while K-12 was much lower. This model accounts for ineligibility (currently set to {Math.round(ineligibilityRate * 100)}%),
+                            reducing the eligible pool to <strong>{analysis.eligibleApps.toLocaleString()}</strong> applicants competing for funding.
+                        </p>
 
                         <h3 className="font-bold text-slate-900 text-lg mb-2">2. Supply vs. Demand</h3>
                         <ul className="list-disc pl-5 mb-4 space-y-1">
                             <li><strong>Total Budget:</strong> $1 Billion</li>
                             <li><strong>Weighted Avg Cost:</strong> ~$8,630 (78% Private / 22% Homeschool mix)</li>
                             <li><strong>Estimated Capacity:</strong> ~{analysis.capacity.toLocaleString()} Students</li>
+                            <li><strong>Eligible Applicants:</strong> ~{analysis.eligibleApps.toLocaleString()} (after {Math.round(ineligibilityRate * 100)}% ineligibility)</li>
                         </ul>
+                        <p className="mb-4 text-xs text-slate-500">
+                            Note: Eligible pre-K students also draw from the same $1B budget pool. Pre-K vouchers are $10,500 (if free public pre-K criteria are met) or $2,000, consuming meaningful budget before K-12 tiers are funded.
+                        </p>
 
                         <h3 className="font-bold text-slate-900 text-lg mb-2">3. Tier Analysis: Who Gets Funded?</h3>
-                        <p className="mb-4">With {applicantScenario.toLocaleString()} applicants, here is how the budget drains:</p>
+                        <p className="mb-4">With {analysis.eligibleApps.toLocaleString()} eligible applicants (of {applicantScenario.toLocaleString()} total), here is how the budget drains:</p>
 
                         <div className="space-y-4 mb-6">
                             <div className="p-3 bg-green-50 border border-green-200 rounded">
-                                <div className="font-bold text-green-800">Tier 1 & 2 (Priority)</div>
-                                <div className="text-sm text-green-700">Status: 100% FUNDED</div>
+                                <div className="font-bold text-green-800">Tier 1 — Disability + ≤500% FPL (12%)</div>
+                                <div className="text-sm text-green-700">
+                                    {analysis.demandT1.toLocaleString()} applicants → 100% FUNDED
+                                </div>
+                            </div>
+                            <div className="p-3 bg-green-50 border border-green-200 rounded">
+                                <div className="font-bold text-green-800">Tier 2 — ≤200% FPL (30%)</div>
+                                <div className="text-sm text-green-700">
+                                    {analysis.demandT2.toLocaleString()} applicants → 100% FUNDED
+                                </div>
                             </div>
                             <div className={`p-3 border rounded ${analysis.tier3SuccessRate === 100 ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}`}>
                                 <div className={`font-bold ${analysis.tier3SuccessRate === 100 ? 'text-green-800' : 'text-amber-800'}`}>
-                                    Tier 3 (Your Family - Middle Income)
+                                    Tier 3 — 200-500% FPL (30%) — Your Family
                                 </div>
                                 <div className={`text-sm ${analysis.tier3SuccessRate === 100 ? 'text-green-700' : 'text-amber-700'}`}>
-                                    Status: {analysis.tier3SuccessRate === 100 ? '100% FUNDED' : `${analysis.tier3SuccessRate.toFixed(1)}% Funded (Lottery)`}
+                                    {analysis.demandT3.toLocaleString()} applicants → {analysis.tier3SuccessRate === 100 ? '100% FUNDED' : `${analysis.tier3SuccessRate.toFixed(1)}% Funded (Lottery)`}
                                 </div>
                             </div>
                             <div className={`p-3 border rounded ${analysis.tier4SuccessRate === 100 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
                                 <div className={`font-bold ${analysis.tier4SuccessRate === 100 ? 'text-green-800' : 'text-red-800'}`}>
-                                    Tier 4 (High Income {'>'}$175k)
+                                    Tier 4a — ≥500% FPL + Public School (5%) & Tier 4b — ≥500% FPL (23%)
                                 </div>
                                 <div className={`text-sm ${analysis.tier4SuccessRate === 100 ? 'text-green-700' : 'text-red-700'}`}>
-                                    Status: {analysis.tier4SuccessRate.toFixed(1)}% Funded
+                                    {(analysis.demandT4a + analysis.demandT4b).toLocaleString()} applicants → {analysis.tier4SuccessRate.toFixed(1)}% Funded
                                 </div>
                             </div>
                         </div>
