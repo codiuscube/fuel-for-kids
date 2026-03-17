@@ -67,7 +67,7 @@ const IddingsPlanner = () => {
   // Status Tracking Data
   const appStatus = [
     { item: "NBCA Application", status: "Accepted (3/3)", date: "All 3 Accepted", type: "success", funding: "N/A" },
-    { item: "NBCA Enrollment Fee", status: "Due", date: "$175 x 3 = $525", type: "pending", funding: "One-Time" },
+    { item: "NBCA Enrollment Fee", status: "Due by April 6", date: "$175 x 3 = $525", type: "pending", funding: "One-Time" },
     { item: "NBCA Financial Aid", status: "Waiting", date: "March 31", type: "pending", funding: "Tuition Credit" },
     { item: "NBCA Scholarship", status: "Waiting", date: "March 31", type: "pending", funding: "Tuition Credit" },
     { item: "TEFA Scholarship", status: "Waiting", date: "Early April", type: "pending", funding: "Digital Wallet" },
@@ -281,8 +281,8 @@ The contribution amount we listed represents the maximum we can sustainably budg
     { date: 'Mar 14', day: 'Sat', isoDate: '2026-03-14', event: 'NBCA Round 1 Notification', type: 'nbca', desc: 'Acceptance letters emailed to families.', funding: 'Decision Only' },
     { date: 'Mar 17', day: 'Tue', isoDate: '2026-03-17', event: 'TEFA Application Closes', type: 'tefa', desc: 'Strict deadline. Lottery priority set by income.', funding: 'Deadline' },
     { date: 'Mar 31', day: 'Mon', isoDate: '2026-03-31', event: 'NBCA Aid & Scholarship Decisions', type: 'facts', desc: 'Financial aid and scholarship offers sent. Must accept within 2 weeks.', funding: 'Credited to Tuition' },
+    { date: 'Apr 06', day: 'Mon', isoDate: '2026-04-06', event: 'NBCA Enrollment Fee Due', type: 'nbca', desc: 'Pay $175 x 3 ($525) by EOD to secure spots. 9th = 5 left, 7th = 3 left, 4th = plenty.', funding: '$525 One-Time' },
     { date: 'Apr 06', day: 'Wk Of', isoDate: '2026-04-06', event: 'TEFA Funding Notification', type: 'tefa', desc: 'State notifies families of voucher award status.', funding: 'Paid to Digital Wallet' },
-    { date: 'Apr 10', day: 'Fri', isoDate: '2026-04-10', event: 'NBCA Enrollment Offers Sent', type: 'nbca', desc: 'Admissions committee meets week of Apr 6. Spots: 9th = 5 left, 7th = 3 left, 4th = plenty.', funding: 'N/A' },
     { date: 'Apr 15', day: 'Wed', isoDate: '2026-04-15', event: 'ACE Scholarship Deadline', type: 'ace', desc: 'Closes 11:59 PM (Tax Day).', funding: 'Deadline' },
     { date: 'Jun 15', day: 'Mon', isoDate: '2026-06-15', event: 'ACE Award Notification', type: 'ace', desc: 'Scholarship decisions released.', funding: 'Paid directly to School' },
     { date: 'Jun 30', day: 'Tue', isoDate: '2026-06-30', event: 'NBCA Withdrawal Deadline', type: 'nbca', desc: 'Can withdraw penalty-free before this date. No tuition due until July.', funding: 'N/A' },
