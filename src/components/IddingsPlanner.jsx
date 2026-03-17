@@ -68,13 +68,9 @@ const IddingsPlanner = () => {
   const appStatus = [
     { item: "NBCA Application", status: "Accepted (3/3)", date: "All 3 Accepted", type: "success", funding: "N/A" },
     { item: "NBCA Enrollment Fee", status: "Due", date: "$175 x 3 = $525", type: "pending", funding: "One-Time" },
-    { item: "Sebastian (NBCA)", status: "Accepted", date: "Accepted", type: "success", funding: "N/A" },
-    { item: "NBCA Financial Aid", status: "Waiting", date: "End of March", type: "pending", funding: "Tuition Credit" },
+    { item: "NBCA Financial Aid", status: "Waiting", date: "March 31", type: "pending", funding: "Tuition Credit" },
+    { item: "NBCA Scholarship", status: "Waiting", date: "March 31", type: "pending", funding: "Tuition Credit" },
     { item: "TEFA Scholarship", status: "Waiting", date: "Early April", type: "pending", funding: "Digital Wallet" },
-    { item: "ACE Scholarship", status: "Submitted", date: "June", type: "success", funding: "Check to School" },
-    { item: "NBCA Scholarship", status: "Submitted", date: "Unknown?", type: "success", funding: "Tuition Credit" },
-    { item: "Student Assessments", status: "Completed", date: "Feb 20", type: "success", funding: "N/A" },
-    { item: "Family Interview", status: "Completed", date: "Feb 27", type: "success", funding: "N/A" },
   ];
 
   // Checklist Data
@@ -280,15 +276,17 @@ The contribution amount we listed represents the maximum we can sustainably budg
 
   // Timeline Data
   const timelineEvents = [
-    { date: 'Feb 20', day: 'Fri', event: 'Student Assessments', type: 'nbca', desc: 'Required testing for placement.', funding: 'N/A' },
-    { date: 'Feb 27', day: 'Fri', event: 'Family Interview', type: 'nbca', desc: 'Final step before acceptance decision.', funding: 'N/A' },
-    { date: 'Mar 14', day: 'Sat', event: 'NBCA Round 1 Notification', type: 'nbca', desc: 'Acceptance letters emailed to families.', funding: 'Decision Only' },
-    { date: 'Mar 17', day: 'Tue', event: 'TEFA Application Closes', type: 'tefa', desc: 'Strict deadline. Lottery priority set by income.', funding: 'Deadline' },
-    { date: 'Mar 31', day: 'Tue', event: 'NBCA Aid Award Letter', type: 'facts', desc: 'Financial aid offers sent. Must accept within 2 weeks.', funding: 'Credited to Tuition' },
-    { date: 'Apr 06', day: 'Wk Of', event: 'TEFA Funding Notification', type: 'tefa', desc: 'State notifies families of voucher award status.', funding: 'Paid to Digital Wallet' },
-    { date: 'Apr 15', day: 'Wed', event: 'ACE Scholarship Deadline', type: 'ace', desc: 'Closes 11:59 PM (Tax Day).', funding: 'Deadline' },
-    { date: 'Jun 15', day: 'Mon', event: 'ACE Award Notification', type: 'ace', desc: 'Scholarship decisions released.', funding: 'Paid directly to School' },
-    { date: 'Jul 01', day: 'Wed', event: 'TEFA Funds Available (25%)', type: 'tefa', desc: 'First tranche of funds available in account.', funding: 'Distribution' },
+    { date: 'Feb 20', day: 'Fri', isoDate: '2026-02-20', event: 'Student Assessments', type: 'nbca', desc: 'Required testing for placement.', funding: 'N/A' },
+    { date: 'Feb 27', day: 'Fri', isoDate: '2026-02-27', event: 'Family Interview', type: 'nbca', desc: 'Final step before acceptance decision.', funding: 'N/A' },
+    { date: 'Mar 14', day: 'Sat', isoDate: '2026-03-14', event: 'NBCA Round 1 Notification', type: 'nbca', desc: 'Acceptance letters emailed to families.', funding: 'Decision Only' },
+    { date: 'Mar 17', day: 'Tue', isoDate: '2026-03-17', event: 'TEFA Application Closes', type: 'tefa', desc: 'Strict deadline. Lottery priority set by income.', funding: 'Deadline' },
+    { date: 'Mar 31', day: 'Mon', isoDate: '2026-03-31', event: 'NBCA Aid & Scholarship Decisions', type: 'facts', desc: 'Financial aid and scholarship offers sent. Must accept within 2 weeks.', funding: 'Credited to Tuition' },
+    { date: 'Apr 06', day: 'Wk Of', isoDate: '2026-04-06', event: 'TEFA Funding Notification', type: 'tefa', desc: 'State notifies families of voucher award status.', funding: 'Paid to Digital Wallet' },
+    { date: 'Apr 10', day: 'Fri', isoDate: '2026-04-10', event: 'NBCA Enrollment Offers Sent', type: 'nbca', desc: 'Admissions committee meets week of Apr 6. Spots: 9th = 5 left, 7th = 3 left, 4th = plenty.', funding: 'N/A' },
+    { date: 'Apr 15', day: 'Wed', isoDate: '2026-04-15', event: 'ACE Scholarship Deadline', type: 'ace', desc: 'Closes 11:59 PM (Tax Day).', funding: 'Deadline' },
+    { date: 'Jun 15', day: 'Mon', isoDate: '2026-06-15', event: 'ACE Award Notification', type: 'ace', desc: 'Scholarship decisions released.', funding: 'Paid directly to School' },
+    { date: 'Jun 30', day: 'Tue', isoDate: '2026-06-30', event: 'NBCA Withdrawal Deadline', type: 'nbca', desc: 'Can withdraw penalty-free before this date. No tuition due until July.', funding: 'N/A' },
+    { date: 'Jul 01', day: 'Wed', isoDate: '2026-07-01', event: 'TEFA Funds Available (25%)', type: 'tefa', desc: 'First tranche of funds available in account.', funding: 'Distribution' },
   ];
 
   return (
@@ -495,13 +493,13 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         </div>
 
                         {/* NBCA Scholarship Slider */}
-                        <div className="p-3 bg-amber-50 rounded-lg border border-amber-100">
+                        <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-100">
                           <div className="flex justify-between items-center mb-2">
-                            <div className="font-bold text-amber-900 flex items-center gap-2">
+                            <div className="font-bold text-emerald-900 flex items-center gap-2">
                                 <GraduationCap size={14}/> NBCA Scholarship
-                                <span className="text-[10px] bg-slate-400 text-white px-1.5 py-0.5 rounded uppercase tracking-wide">Unknown</span>
+                                <span className="text-[10px] bg-emerald-600 text-white px-1.5 py-0.5 rounded uppercase tracking-wide">Pending Mar 31</span>
                             </div>
-                            <div className="text-xs font-bold text-amber-700 bg-white px-2 py-0.5 rounded border border-amber-200">
+                            <div className="text-xs font-bold text-emerald-700 bg-white px-2 py-0.5 rounded border border-emerald-200">
                               ${nbcaScholarshipAmount.toLocaleString()}
                             </div>
                           </div>
@@ -512,11 +510,14 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             step="100"
                             value={nbcaScholarshipAmount}
                             onChange={(e) => setNbcaScholarshipAmount(Number(e.target.value))}
-                            className="w-full h-2 bg-amber-200 rounded-lg appearance-none cursor-pointer accent-amber-600"
+                            className="w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
                           />
-                          <div className="flex justify-between text-xs text-amber-500 mt-1 font-medium">
+                          <div className="flex justify-between text-xs text-emerald-500 mt-1 font-medium">
                             <span>$0</span>
                             <span>$15k Max</span>
+                          </div>
+                          <div className="text-[10px] text-emerald-600 mt-1">
+                                Credited to Tuition
                           </div>
                         </div>
 
@@ -550,7 +551,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                               </div>
                             )}
                             {nbcaScholarshipAmount > 0 && (
-                              <div className="flex justify-between text-sm text-amber-600 font-medium bg-amber-50 px-2 py-1 rounded">
+                              <div className="flex justify-between text-sm text-emerald-600 font-medium bg-emerald-50 px-2 py-1 rounded">
                                 <span>Scholarship:</span>
                                 <span>-${nbcaScholarshipAmount.toLocaleString()}</span>
                               </div>
@@ -576,23 +577,34 @@ The contribution amount we listed represents the maximum we can sustainably budg
         )}
 
         {/* TIMELINE VIEW */}
-        {activeTab === 'timeline' && (
+        {activeTab === 'timeline' && (() => {
+          const today = new Date().toISOString().slice(0, 10);
+          const nextUpIdx = timelineEvents.findIndex(evt => evt.isoDate >= today);
+          return (
           <div className="max-w-4xl mx-auto">
              <h2 className="text-2xl font-bold mb-6 text-slate-800 flex items-center gap-2">
                 <Calendar /> Funding Timeline & Method
               </h2>
               <div className="relative border-l-2 border-slate-200 ml-4 space-y-8">
-                {timelineEvents.map((evt, idx) => (
-                  <div key={idx} className="relative pl-8">
+                {timelineEvents.map((evt, idx) => {
+                  const isPast = evt.isoDate < today;
+                  const isNext = idx === nextUpIdx;
+                  return (
+                  <div key={idx} className={`relative pl-8 ${isPast ? 'opacity-50' : ''}`}>
                     {/* Dot */}
                     <div className={`absolute -left-[9px] top-1 w-4 h-4 rounded-full border-2 border-white shadow-sm
-                      ${evt.type === 'nbca' ? 'bg-emerald-500' :
+                      ${isPast ? 'bg-slate-300' :
+                        isNext ? 'bg-emerald-500 ring-4 ring-emerald-200' :
+                        evt.type === 'nbca' ? 'bg-emerald-500' :
                         evt.type === 'tefa' ? 'bg-blue-500' :
                         evt.type === 'ace' ? 'bg-purple-500' : 'bg-yellow-500'}`}
                     />
 
-                    <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-100 hover:shadow-md transition grid grid-cols-1 md:grid-cols-12 gap-4">
+                    <div className={`bg-white p-4 rounded-lg shadow-sm border hover:shadow-md transition grid grid-cols-1 md:grid-cols-12 gap-4 ${isNext ? 'border-emerald-300 ring-1 ring-emerald-200' : 'border-slate-100'}`}>
                       <div className="md:col-span-3">
+                        {isNext && (
+                          <span className="text-[10px] font-bold bg-emerald-600 text-white px-2 py-0.5 rounded uppercase tracking-wide mb-1 inline-block">Up Next</span>
+                        )}
                         <span className={`text-xs font-bold px-2 py-1 rounded uppercase tracking-wide block w-fit mb-1
                            ${evt.type === 'nbca' ? 'bg-emerald-100 text-emerald-800' :
                              evt.type === 'tefa' ? 'bg-blue-100 text-blue-800' :
@@ -613,10 +625,12 @@ The contribution amount we listed represents the maximum we can sustainably budg
                       </div>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
           </div>
-        )}
+          );
+        })()}
 
         {/* CHECKLIST VIEW */}
         {activeTab === 'checklist' && (
