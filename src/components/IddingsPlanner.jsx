@@ -26,12 +26,13 @@ const IddingsPlanner = () => {
   // Scenario State - Default to 120k based on current trend
   const [applicantScenario, setApplicantScenario] = useState(200000);
   const [ineligibilityRate, setIneligibilityRate] = useState(0.10); // ~10% default
+  const [publicSchoolPct, setPublicSchoolPct] = useState(0.24); // TCVT data: ~24% were in public school last year
 
   // Student Data
   const students = [
-    { name: 'Cassius', grade: '9th Grade', school: 'High School', aceAmount: 4000 },
-    { name: 'Dorothy', grade: '7th Grade', school: 'Middle School', aceAmount: 3000 },
-    { name: 'Sebastian', grade: '4th Grade', school: 'Elementary', aceAmount: 3000 }
+    { name: 'Cassius', grade: '9th Grade', school: 'High School', aceAmount: 4000, wasInPublicSchool: false },
+    { name: 'Dorothy', grade: '7th Grade', school: 'Middle School', aceAmount: 3000, wasInPublicSchool: true },
+    { name: 'Sebastian', grade: '4th Grade', school: 'Elementary', aceAmount: 3000, wasInPublicSchool: true }
   ];
 
   // Financial Data State - "Most Likely Scenario" Defaults
@@ -139,81 +140,78 @@ const IddingsPlanner = () => {
     }));
   };
 
-  // Scenario Logic
+  // Scenario Logic — Dual Model: Comptroller's Implementation vs Strict SB 2 Reading
   const getScenarioAnalysis = (totalApps) => {
-    // Constants from Mar 16 Fact Sheet (Window closed March 17)
     const budget = 1000000000; // $1 Billion
-
-    // Ineligibility reduces the pool competing for funding
     const eligibleApps = Math.round(totalApps * (1 - ineligibilityRate));
 
-    // 5-tier breakdown from Mar 16 Fact Sheet
-    const tier1_pct = 0.12;  // 12% Tier 1 (Disability + ≤500% FPL)
-    const tier2_pct = 0.30;  // 30% Tier 2 (≤200% FPL)
-    const tier3_pct = 0.30;  // 30% Tier 3 (200-500% FPL — Iddings family)
-    const tier4a_pct = 0.05; // 5% Tier 4a (≥500% FPL + public school)
-    const tier4b_pct = 0.23; // 23% Tier 4b (≥500% FPL)
-
-    // Costs (updated: 78% Private, 22% Homeschool — Mar 16 Fact Sheet)
+    // Cost model (78% Private, 22% Homeschool — Mar 16 Fact Sheet, intended 2026-27 enrollment)
     const privateCost = 10500;
     const homeCost = 2000;
-    const weightedAvg = (privateCost * 0.78) + (homeCost * 0.22); // ~$8,630 (78% Private / 22% Homeschool)
-
-    // Capacity
+    const weightedAvg = (privateCost * 0.78) + (homeCost * 0.22); // ~$8,630
     const capacity = Math.floor(budget / weightedAvg); // ~115,874 students
 
-    // Demand by Tier (based on eligible applicants)
+    // =====================================================
+    // MODEL A: COMPTROLLER'S ACTUAL IMPLEMENTATION
+    // (5-tier system from website — ignores SB 2 public school requirement for T1-3)
+    // =====================================================
+    const tier1_pct = 0.12;  // Disability + ≤500% FPL
+    const tier2_pct = 0.30;  // ≤200% FPL
+    const tier3_pct = 0.30;  // 200-500% FPL (Iddings family — ALL 3 kids)
+    const tier4a_pct = 0.05; // ≥500% FPL + public school
+    const tier4b_pct = 0.23; // ≥500% FPL
+
     const demandT1 = Math.round(eligibleApps * tier1_pct);
     const demandT2 = Math.round(eligibleApps * tier2_pct);
     const demandT3 = Math.round(eligibleApps * tier3_pct);
     const demandT4a = Math.round(eligibleApps * tier4a_pct);
     const demandT4b = Math.round(eligibleApps * tier4b_pct);
 
-    // Funding Logic (Priority Order)
-    let remainingSlots = capacity;
+    let remaining = capacity;
+    const fundedT1 = Math.min(remaining, demandT1); remaining -= fundedT1;
+    const fundedT2 = Math.min(remaining, demandT2); remaining -= fundedT2;
+    const fundedT3 = Math.min(remaining, demandT3); remaining -= fundedT3;
+    const fundedT4a = Math.min(remaining, demandT4a); remaining -= fundedT4a;
+    const fundedT4b = Math.min(remaining, demandT4b);
 
-    // Fund Tier 1
-    const fundedT1 = Math.min(remainingSlots, demandT1);
-    remainingSlots -= fundedT1;
+    const tier3Rate = demandT3 > 0 ? Math.min(100, (fundedT3 / demandT3) * 100) : 100;
+    const tier4Rate = (demandT4a + demandT4b) > 0
+      ? Math.min(100, ((fundedT4a + fundedT4b) / (demandT4a + demandT4b)) * 100) : 100;
 
-    // Fund Tier 2
-    const fundedT2 = Math.min(remainingSlots, demandT2);
-    remainingSlots -= fundedT2;
+    // Sibling Rule (Comptroller administrative rule):
+    // If ANY one child wins the lottery, all eligible siblings are automatically accepted.
+    // P(family funded) = 1 - P(all 3 children lose independently)
+    const singleFailRate = 1 - (tier3Rate / 100);
+    const familySuccessRate = (1 - Math.pow(singleFailRate, 3)) * 100;
 
-    // Fund Tier 3 (You)
-    const fundedT3 = Math.min(remainingSlots, demandT3);
-    const tier3SuccessRate = demandT3 > 0 ? (fundedT3 / demandT3) * 100 : 0;
-    remainingSlots -= fundedT3;
+    // =====================================================
+    // MODEL B: STRICT SB 2 READING (Legal Risk Scenario)
+    // (If a court enforces §29.356(b) public school requirement)
+    // =====================================================
+    const incomeOrDisabilityRate = 0.75; // ~72% ≤500% FPL + ~3% disabled above
+    const priorityDemand = Math.round(eligibleApps * publicSchoolPct * incomeOrDisabilityRate);
+    const priorityCapacity = Math.floor(capacity * 0.80);
+    const priorityFunded = Math.min(priorityCapacity, priorityDemand);
+    const priorityRate = priorityDemand > 0 ? Math.min(100, (priorityFunded / priorityDemand) * 100) : 100;
 
-    // Fund Tier 4a (public school + ≥500% FPL)
-    const fundedT4a = Math.min(remainingSlots, demandT4a);
-    remainingSlots -= fundedT4a;
+    const generalDemand = eligibleApps - priorityDemand;
+    const generalCapacity = capacity - priorityFunded;
+    const generalRate = generalDemand > 0 ? Math.min(100, (Math.min(generalCapacity, generalDemand) / generalDemand) * 100) : 100;
 
-    // Fund Tier 4b (≥500% FPL)
-    const fundedT4b = Math.min(remainingSlots, demandT4b);
-    const tier4SuccessRate = (demandT4a + demandT4b) > 0
-      ? ((fundedT4a + fundedT4b) / (demandT4a + demandT4b)) * 100 : 0;
-
-    // Sibling Rule Math for Tier 3
-    // Probability of all 3 kids losing lottery
-    const singleFailureRate = 1 - (tier3SuccessRate / 100);
-    const allThreeFail = singleFailureRate * singleFailureRate * singleFailureRate;
-    const familySuccessRate = (1 - allThreeFail) * 100;
+    // Under strict reading with sibling rule:
+    // Dorothy & Sebastian → priority pool, Cassius → general pool
+    // P(family) = 1 - P(D loses) * P(S loses) * P(C loses)
+    const strictFamilyRate = (1 - (1 - priorityRate / 100) * (1 - priorityRate / 100) * (1 - generalRate / 100)) * 100;
 
     return {
-        capacity,
-        eligibleApps,
-        demandT1,
-        demandT2,
-        demandT3,
-        demandT4a,
-        demandT4b,
-        fundedT1,
-        fundedT2,
-        fundedT3,
-        tier3SuccessRate,
-        familySuccessRate,
-        tier4SuccessRate
+        capacity, eligibleApps,
+        // Model A: Comptroller's implementation
+        demandT1, demandT2, demandT3, demandT4a, demandT4b,
+        fundedT1, fundedT2, fundedT3, fundedT4a, fundedT4b,
+        tier3Rate, tier4Rate, familySuccessRate,
+        // Model B: Strict SB 2
+        priorityDemand, priorityCapacity, priorityFunded, priorityRate,
+        generalDemand, generalCapacity, generalRate, strictFamilyRate,
     };
   };
 
@@ -806,24 +804,61 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     </div>
                 </div>
 
+                {/* Prior Public School Rate */}
+                <div className="mt-5 pt-4 border-t border-slate-100">
+                    <div className="flex items-center justify-between mb-2">
+                        <label className="text-sm font-medium text-slate-700">Prior Public School Enrollment Rate</label>
+                        <span className="text-sm font-bold text-slate-800">{Math.round(publicSchoolPct * 100)}%</span>
+                    </div>
+                    <input
+                        type="range"
+                        min="10"
+                        max="60"
+                        step="1"
+                        value={Math.round(publicSchoolPct * 100)}
+                        onChange={(e) => setPublicSchoolPct(parseInt(e.target.value) / 100)}
+                        className="w-full accent-slate-700"
+                    />
+                    <div className="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10%</span>
+                        <span>24% (TCVT)</span>
+                        <span>60%</span>
+                    </div>
+                    <div className="mt-2 text-sm text-slate-600">
+                        Est. {Math.round(publicSchoolPct * 100)}% of applicants were enrolled in public school last year
+                    </div>
+                    <div className="mt-1 text-xs text-slate-400">
+                        SB 2 §29.356(b)(1) requires prior public school enrollment for the 80% priority pool. TCVT data suggests ~24% of applicants qualify. The Comptroller has not published this breakdown.
+                    </div>
+                </div>
+
                 {/* Scenario Result */}
-                <div className="mt-6 pt-4 border-t border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="mt-6 pt-4 border-t border-slate-100 grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                        <div className="text-xs text-slate-400 uppercase font-bold">Tier 3 (Your) Probability</div>
-                        <div className={`text-2xl font-bold ${analysis.familySuccessRate > 80 ? 'text-green-600' : analysis.familySuccessRate > 50 ? 'text-amber-500' : 'text-red-500'}`}>
-                            {analysis.familySuccessRate.toFixed(1)}% <span className="text-sm font-normal text-slate-400">(Family)</span>
+                        <div className="text-xs text-slate-400 uppercase font-bold">Per-Child (Tier 3)</div>
+                        <div className={`text-2xl font-bold ${analysis.tier3Rate > 80 ? 'text-green-600' : analysis.tier3Rate > 50 ? 'text-amber-500' : 'text-red-500'}`}>
+                            {analysis.tier3Rate.toFixed(1)}%
                         </div>
                         <div className="text-xs text-slate-500 mt-1">
-                            Individual Child Chance: {analysis.tier3SuccessRate.toFixed(1)}%
+                            Individual lottery odds
                         </div>
                     </div>
                     <div>
-                        <div className="text-xs text-slate-400 uppercase font-bold">Program Status</div>
-                        <div className="text-sm text-slate-700 mt-1">
-                            Capacity: <strong>~{analysis.capacity.toLocaleString()}</strong> students
+                        <div className="text-xs text-slate-400 uppercase font-bold">Family (Sibling Rule)</div>
+                        <div className={`text-2xl font-bold ${analysis.familySuccessRate > 80 ? 'text-green-600' : analysis.familySuccessRate > 50 ? 'text-amber-500' : 'text-red-500'}`}>
+                            {analysis.familySuccessRate.toFixed(1)}%
                         </div>
-                        <div className="text-sm text-slate-700">
-                            Tier 4 Funding: <strong>{analysis.tier4SuccessRate.toFixed(1)}%</strong>
+                        <div className="text-xs text-slate-500 mt-1">
+                            1 win = all 3 funded
+                        </div>
+                    </div>
+                    <div>
+                        <div className="text-xs text-slate-400 uppercase font-bold">Program Capacity</div>
+                        <div className="text-2xl font-bold text-slate-700">
+                            ~{analysis.capacity.toLocaleString()}
+                        </div>
+                        <div className="text-xs text-slate-500 mt-1">
+                            Tier 4 odds: {analysis.tier4Rate.toFixed(1)}%
                         </div>
                     </div>
                 </div>
@@ -833,17 +868,16 @@ The contribution amount we listed represents the maximum we can sustainably budg
                 <div className="bg-slate-800 text-white px-6 py-4 flex justify-between items-center">
                     <div>
                         <h3 className="font-bold text-lg">Iddings Family Funding Strategy</h3>
-                        <p className="text-slate-300 text-sm">Funding Probability Assessment (2026-2027)</p>
+                        <p className="text-slate-300 text-sm">Dual Model Analysis — Comptroller's Rules vs. SB 2 Text — March 2026</p>
                     </div>
                 </div>
                 <div className="p-8">
                     <div className="prose prose-sm max-w-none text-slate-700">
                         <h3 className="font-bold text-slate-900 text-lg mb-2">1. The Projection Model</h3>
                         <p className="mb-4">
-                            As of March 16th, <strong>200,003</strong> applications have been submitted (per the updated fact sheet). The application window
-                            closes <strong>March 17 at 11:59 PM CT</strong>. Acting Comptroller Hancock: "We're expecting to sell out in year one."
-                            More than 2,200 schools have signed up. The waitlist will be reported to the Texas Legislature to determine funding for future years.
-                            With the window nearly closed, <strong>200,003</strong> represents the near-final total. The current scenario is set to <strong>{applicantScenario.toLocaleString()}</strong> total applicants.
+                            As of March 16th, <strong>200,003</strong> applications have been submitted (per the Comptroller's fact sheet). The application window
+                            closed <strong>March 17 at 11:59 PM CT</strong>. Acting Comptroller Hancock: "We're expecting to sell out in year one."
+                            More than 2,200 schools have signed up. The current scenario is set to <strong>{applicantScenario.toLocaleString()}</strong> total applicants.
                         </p>
                         <p className="mb-4">
                             <strong>Not all applicants are eligible.</strong> The Comptroller reported that approximately 18,000 of 184,000 applicants
@@ -855,55 +889,153 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         <h3 className="font-bold text-slate-900 text-lg mb-2">2. Supply vs. Demand</h3>
                         <ul className="list-disc pl-5 mb-4 space-y-1">
                             <li><strong>Total Budget:</strong> $1 Billion</li>
-                            <li><strong>Weighted Avg Cost:</strong> ~$8,630 (78% Private / 22% Homeschool mix)</li>
+                            <li><strong>Weighted Avg Cost:</strong> ~$8,630 (78% Private / 22% Homeschool — intended 2026-27 enrollment mix)</li>
                             <li><strong>Estimated Capacity:</strong> ~{analysis.capacity.toLocaleString()} Students</li>
                             <li><strong>Eligible Applicants:</strong> ~{analysis.eligibleApps.toLocaleString()} (after {Math.round(ineligibilityRate * 100)}% ineligibility)</li>
                         </ul>
                         <p className="mb-4 text-xs text-slate-500">
-                            Note: Eligible pre-K students also draw from the same $1B budget pool. Pre-K vouchers are $10,500 (if free public pre-K criteria are met) or $2,000, consuming meaningful budget before K-12 tiers are funded.
+                            Note: The 78/22 split is from the Comptroller's "Educational Setting" chart, which shows where applicants <em>plan to enroll</em> for 2026-27, not where they attended previously. Pre-K students also draw from the same $1B pool.
                         </p>
 
-                        <h3 className="font-bold text-slate-900 text-lg mb-2">3. Tier Analysis: Who Gets Funded?</h3>
-                        <p className="mb-4">With {analysis.eligibleApps.toLocaleString()} eligible applicants (of {applicantScenario.toLocaleString()} total), here is how the budget drains:</p>
+                        <h3 className="font-bold text-slate-900 text-lg mb-2">3. Comptroller's Tier System (How the Lottery Will Actually Run)</h3>
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                            <p className="text-sm text-blue-900 mb-2">
+                                <strong>Sibling Rule:</strong> Per the Comptroller's administrative rules, if <em>any one child</em> is accepted in the lottery,
+                                all eligible siblings who applied during the same period are <strong>automatically accepted</strong>.
+                                Your family effectively gets 3 lottery tickets — one win covers the whole household.
+                            </p>
+                            <p className="text-xs text-blue-700">
+                                All 3 children (Cassius, Dorothy, Sebastian) are in <strong>Tier 3 (200-500% FPL)</strong> under the Comptroller's implementation,
+                                which does not enforce the public school attendance requirement for Tiers 1-3.
+                            </p>
+                        </div>
+
+                        <p className="mb-4">With {analysis.eligibleApps.toLocaleString()} eligible applicants, here is how the $1B budget drains by tier:</p>
 
                         <div className="space-y-4 mb-6">
                             <div className="p-3 bg-green-50 border border-green-200 rounded">
                                 <div className="font-bold text-green-800">Tier 1 — Disability + ≤500% FPL (12%)</div>
                                 <div className="text-sm text-green-700">
-                                    {analysis.demandT1.toLocaleString()} applicants → 100% FUNDED
+                                    {analysis.demandT1.toLocaleString()} applicants — Funded first, 100% funded
                                 </div>
                             </div>
                             <div className="p-3 bg-green-50 border border-green-200 rounded">
                                 <div className="font-bold text-green-800">Tier 2 — ≤200% FPL (30%)</div>
                                 <div className="text-sm text-green-700">
-                                    {analysis.demandT2.toLocaleString()} applicants → 100% FUNDED
+                                    {analysis.demandT2.toLocaleString()} applicants — 100% funded
                                 </div>
                             </div>
-                            <div className={`p-3 border rounded ${analysis.tier3SuccessRate === 100 ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}`}>
-                                <div className={`font-bold ${analysis.tier3SuccessRate === 100 ? 'text-green-800' : 'text-amber-800'}`}>
-                                    Tier 3 — 200-500% FPL (30%) — Your Family
+                            <div className={`p-4 border-2 rounded-lg ${analysis.tier3Rate === 100 ? 'bg-green-50 border-green-300' : 'bg-amber-50 border-amber-300'}`}>
+                                <div className={`font-bold text-lg ${analysis.tier3Rate === 100 ? 'text-green-800' : 'text-amber-800'}`}>
+                                    Tier 3 — 200-500% FPL (30%) — All 3 Iddings Children
                                 </div>
-                                <div className={`text-sm ${analysis.tier3SuccessRate === 100 ? 'text-green-700' : 'text-amber-700'}`}>
-                                    {analysis.demandT3.toLocaleString()} applicants → {analysis.tier3SuccessRate === 100 ? '100% FUNDED' : `${analysis.tier3SuccessRate.toFixed(1)}% Funded (Lottery)`}
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3 text-sm">
+                                    <div>
+                                        <div className="text-xs text-slate-400">Demand</div>
+                                        <div className="font-bold">{analysis.demandT3.toLocaleString()}</div>
+                                    </div>
+                                    <div>
+                                        <div className="text-xs text-slate-400">Funded</div>
+                                        <div className="font-bold">{analysis.fundedT3.toLocaleString()}</div>
+                                    </div>
+                                    <div>
+                                        <div className="text-xs text-slate-400">Per-Child Rate</div>
+                                        <div className={`font-bold ${analysis.tier3Rate > 80 ? 'text-green-600' : analysis.tier3Rate > 50 ? 'text-amber-600' : 'text-red-600'}`}>
+                                            {analysis.tier3Rate.toFixed(1)}%
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div className="text-xs text-slate-400">Family Rate (Sibling Rule)</div>
+                                        <div className={`font-bold ${analysis.familySuccessRate > 80 ? 'text-green-600' : analysis.familySuccessRate > 50 ? 'text-amber-600' : 'text-red-600'}`}>
+                                            {analysis.familySuccessRate.toFixed(1)}%
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="mt-3 text-xs text-slate-500">
+                                    Sibling math: P(family) = 1 - P(all 3 lose) = 1 - (1 - {(analysis.tier3Rate / 100).toFixed(4)})³ = {(analysis.familySuccessRate / 100).toFixed(4)}
                                 </div>
                             </div>
-                            <div className={`p-3 border rounded ${analysis.tier4SuccessRate === 100 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
-                                <div className={`font-bold ${analysis.tier4SuccessRate === 100 ? 'text-green-800' : 'text-red-800'}`}>
-                                    Tier 4a — ≥500% FPL + Public School (5%) & Tier 4b — ≥500% FPL (23%)
+                            <div className={`p-3 border rounded ${analysis.tier4Rate > 0 ? 'bg-red-50 border-red-200' : 'bg-slate-50 border-slate-200'}`}>
+                                <div className={`font-bold ${analysis.tier4Rate > 50 ? 'text-amber-800' : 'text-red-800'}`}>
+                                    Tier 4 — ≥500% FPL (28%){' '}
+                                    <span className="text-xs font-normal text-slate-500">(4a: public school 5% | 4b: all others 23%)</span>
                                 </div>
-                                <div className={`text-sm ${analysis.tier4SuccessRate === 100 ? 'text-green-700' : 'text-red-700'}`}>
-                                    {(analysis.demandT4a + analysis.demandT4b).toLocaleString()} applicants → {analysis.tier4SuccessRate.toFixed(1)}% Funded
+                                <div className={`text-sm ${analysis.tier4Rate > 50 ? 'text-amber-700' : 'text-red-700'}`}>
+                                    {(analysis.demandT4a + analysis.demandT4b).toLocaleString()} applicants — {analysis.tier4Rate.toFixed(1)}% funded
                                 </div>
                             </div>
                         </div>
 
-                        <h3 className="font-bold text-slate-900 text-lg mb-2">4. Conclusion for Iddings Family</h3>
-                        <p>
-                            With a projected {applicantScenario.toLocaleString()} total applicants, your family has a
-                            <strong> {analysis.familySuccessRate.toFixed(1)}% </strong> statistical probability of securing funding.
+                        <h3 className="font-bold text-slate-900 text-lg mb-2">4. Per-Student Breakdown</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            {students.map((student) => (
+                                <div key={student.name} className={`p-4 rounded-lg border ${analysis.familySuccessRate > 80 ? 'bg-green-50 border-green-200' : analysis.familySuccessRate > 50 ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'}`}>
+                                    <div className="font-bold text-slate-800">{student.name}</div>
+                                    <div className="text-xs text-slate-500">{student.grade} — Tier 3</div>
+                                    <div className={`text-2xl font-bold mt-2 ${analysis.tier3Rate > 80 ? 'text-green-600' : analysis.tier3Rate > 50 ? 'text-amber-600' : 'text-red-600'}`}>
+                                        {analysis.tier3Rate.toFixed(1)}%
+                                    </div>
+                                    <div className="text-xs text-slate-400 mt-1">
+                                        {student.wasInPublicSchool ? 'Was in public school last year' : 'Was not in public school last year'}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className={`p-4 rounded-lg border-2 mb-6 ${analysis.familySuccessRate > 80 ? 'bg-green-50 border-green-300' : analysis.familySuccessRate > 50 ? 'bg-amber-50 border-amber-300' : 'bg-red-50 border-red-300'}`}>
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <div className="text-xs text-slate-400 uppercase font-bold">Family Probability (All 3 Funded via Sibling Rule)</div>
+                                    <div className="text-xs text-slate-500 mt-1">1 win in Tier 3 lottery = all 3 children automatically accepted</div>
+                                </div>
+                                <div className={`text-4xl font-bold ${analysis.familySuccessRate > 80 ? 'text-green-600' : analysis.familySuccessRate > 50 ? 'text-amber-600' : 'text-red-600'}`}>
+                                    {analysis.familySuccessRate.toFixed(1)}%
+                                </div>
+                            </div>
+                        </div>
+
+                        <h3 className="font-bold text-slate-900 text-lg mb-2">5. Legal Risk: Comptroller vs. SB 2 Text</h3>
+                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
+                            <p className="text-sm text-amber-900 mb-3">
+                                <strong>The Comptroller is not enforcing SB 2's public school requirement.</strong> The law (§29.356(b)(1)) mandates that 80% of positions
+                                be reserved for children who attended public school last year AND are low-income/disabled. The Comptroller's website only applies
+                                this requirement to Tier 4 (≥500% FPL), ignoring it entirely for Tiers 1-3. This benefits your family
+                                (Cassius stays in Tier 3) but creates legal vulnerability if challenged.
+                            </p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                <div className="bg-white rounded p-3 border border-amber-100">
+                                    <div className="text-xs text-slate-400 uppercase font-bold mb-1">Comptroller's Rules (Current Reality)</div>
+                                    <div className="text-slate-600">All 3 kids in Tier 3 (same pool)</div>
+                                    <div className={`text-xl font-bold mt-1 ${analysis.familySuccessRate > 80 ? 'text-green-600' : 'text-amber-600'}`}>
+                                        {analysis.familySuccessRate.toFixed(1)}% Family Rate
+                                    </div>
+                                </div>
+                                <div className="bg-white rounded p-3 border border-amber-100">
+                                    <div className="text-xs text-slate-400 uppercase font-bold mb-1">If SB 2 Text Enforced (Legal Risk)</div>
+                                    <div className="text-slate-600">D&S in priority pool, Cassius in general</div>
+                                    <div className={`text-xl font-bold mt-1 ${analysis.strictFamilyRate > 80 ? 'text-green-600' : 'text-amber-600'}`}>
+                                        {analysis.strictFamilyRate.toFixed(1)}% Family Rate
+                                    </div>
+                                    <div className="text-xs text-slate-400 mt-1">
+                                        Priority: {analysis.priorityRate.toFixed(1)}% (D&S) | General: {analysis.generalRate.toFixed(1)}% (Cassius)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h3 className="font-bold text-slate-900 text-lg mb-2">6. Conclusion</h3>
+                        <p className="mb-3">
+                            Under the Comptroller's actual implementation, your family has a
+                            <strong> {analysis.familySuccessRate.toFixed(1)}%</strong> probability of all 3 children receiving TEFA funding.
                             {analysis.familySuccessRate > 90
-                                ? " You are in the 'Safe Zone'. The budget is sufficient to cover your tier."
-                                : " You are in a competitive lottery, but the 'Sibling Rule' gives you a massive mathematical advantage."}
+                                ? " The combination of Tier 3 placement and the sibling rule puts you in an excellent position."
+                                : analysis.familySuccessRate > 70
+                                ? " The sibling rule significantly boosts your odds — 3 independent lottery draws with 1 win covering all."
+                                : " While individual odds are competitive, the sibling rule provides a meaningful boost."}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                            Even under the stricter SB 2 reading, the sibling rule still applies — and Dorothy & Sebastian's near-certain priority placement
+                            would pull Cassius through regardless. Either way, your family's position is strong.
                         </p>
                     </div>
                 </div>
