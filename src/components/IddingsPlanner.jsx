@@ -16,7 +16,8 @@ import {
   CheckCircle,
   TrendingUp,
   Briefcase,
-  Layers
+  Layers,
+  Shield
 } from 'lucide-react';
 
 const IddingsPlanner = () => {
@@ -394,6 +395,51 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             <span>${totalFees}</span>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            {/* Enrollment Decision Risk Card */}
+            <div className="bg-sky-50 p-6 rounded-xl shadow-lg border border-sky-200">
+                <h2 className="text-xl font-bold flex items-center gap-2 text-sky-800 mb-4">
+                    <Shield size={20} /> Enrollment Decision
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                    <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-sky-100">
+                        <span className="text-slate-500 font-medium">At risk today</span>
+                        <span className="font-bold text-sky-900 text-lg">$525</span>
+                        <span className="text-xs text-slate-400 hidden sm:block">Enrollment fee for 3 kids</span>
+                    </div>
+                    <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-sky-100">
+                        <span className="text-slate-500 font-medium">NBCA Aid & Scholarship</span>
+                        <span className="font-bold text-sky-900 text-lg">March 31</span>
+                        <span className="text-xs text-slate-400 hidden sm:block">Decisions released</span>
+                    </div>
+                    <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-sky-100">
+                        <span className="text-slate-500 font-medium">TEFA Notification</span>
+                        <span className="font-bold text-sky-900 text-lg">Early April</span>
+                        <span className="text-xs text-slate-400 hidden sm:block">Funding decision</span>
+                    </div>
+                    <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-sky-100">
+                        <span className="text-slate-500 font-medium">Withdraw penalty-free by</span>
+                        <span className="font-bold text-sky-900 text-lg">June 30</span>
+                        <span className="text-xs text-slate-400 hidden sm:block">Full refund except enrollment fee</span>
+                    </div>
+                    <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-sky-100">
+                        <span className="text-slate-500 font-medium">No tuition due until</span>
+                        <span className="font-bold text-sky-900 text-lg">July</span>
+                        <span className="text-xs text-slate-400 hidden sm:block">First payment</span>
+                    </div>
+                    <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-sky-100">
+                        <span className="text-slate-500 font-medium">Spots available</span>
+                        <div className="flex gap-2 flex-wrap">
+                            <span className="text-xs font-semibold bg-sky-100 text-sky-800 px-2 py-0.5 rounded">9th: 5</span>
+                            <span className="text-xs font-semibold bg-amber-100 text-amber-800 px-2 py-0.5 rounded">7th: 3</span>
+                            <span className="text-xs font-semibold bg-green-100 text-green-800 px-2 py-0.5 rounded">4th: plenty</span>
+                        </div>
+                    </div>
+                </div>
+                <div className="mt-4 bg-sky-100 border border-sky-200 rounded-lg p-3 text-sm text-sky-900">
+                    <strong>Bottom line:</strong> Enrolling now secures spots while you wait for funding answers. If funding falls through, withdraw by June 30 — you only lose the $525 fee.
                 </div>
             </div>
 
