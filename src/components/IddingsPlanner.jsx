@@ -23,8 +23,8 @@ import {
 const IddingsPlanner = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
 
-  // Scenario State - Default to 120k based on current trend
-  const [applicantScenario, setApplicantScenario] = useState(200000);
+  // Scenario State - Updated to 229k+ per March 18 Comptroller press release (deadline extension)
+  const [applicantScenario, setApplicantScenario] = useState(250000);
   const [ineligibilityRate, setIneligibilityRate] = useState(0.10); // ~10% default
   const [publicSchoolPct, setPublicSchoolPct] = useState(0.24); // TCVT data: ~24% were in public school last year
 
@@ -72,7 +72,7 @@ const IddingsPlanner = () => {
     { item: "NBCA Enrollment Fee", status: "Due by April 6", date: "$175 x 3 = $525", type: "pending", funding: "One-Time" },
     { item: "NBCA Financial Aid", status: "Waiting", date: "March 31", type: "pending", funding: "Tuition Credit" },
     { item: "NBCA Scholarship", status: "Waiting", date: "March 31", type: "pending", funding: "Tuition Credit" },
-    { item: "TEFA Scholarship", status: "Waiting", date: "Early April", type: "pending", funding: "Digital Wallet" },
+    { item: "TEFA Scholarship", status: "Waiting", date: "Late April (est.)", type: "pending", funding: "Digital Wallet" },
   ];
 
   // Checklist Data
@@ -110,7 +110,7 @@ const IddingsPlanner = () => {
         { id: 'tefa-create', text: 'Create Account on TEFA Portal', done: true },
         { id: 'tefa-citizen', text: 'Proof of Citizenship/Residency', done: true },
         { id: 'tefa-eligibility', text: 'Proof of Public School Eligibility', done: true },
-        { id: 'tefa-submit', text: 'Submit Application (Feb 4 - Mar 17)', done: true },
+        { id: 'tefa-submit', text: 'Submit Application (Feb 4 - Mar 31, Extended)', done: true },
       ]
     },
     ace: {
@@ -278,10 +278,11 @@ The contribution amount we listed represents the maximum we can sustainably budg
     { date: 'Feb 20', day: 'Fri', isoDate: '2026-02-20', event: 'Student Assessments', type: 'nbca', desc: 'Required testing for placement.', funding: 'N/A' },
     { date: 'Feb 27', day: 'Fri', isoDate: '2026-02-27', event: 'Family Interview', type: 'nbca', desc: 'Final step before acceptance decision.', funding: 'N/A' },
     { date: 'Mar 14', day: 'Sat', isoDate: '2026-03-14', event: 'NBCA Round 1 Notification', type: 'nbca', desc: 'Acceptance letters emailed to families.', funding: 'Decision Only' },
-    { date: 'Mar 17', day: 'Tue', isoDate: '2026-03-17', event: 'TEFA Application Closes', type: 'tefa', desc: 'Strict deadline. Lottery priority set by income.', funding: 'Deadline' },
-    { date: 'Mar 31', day: 'Mon', isoDate: '2026-03-31', event: 'NBCA Aid & Scholarship Decisions', type: 'facts', desc: 'Financial aid and scholarship offers sent. Must accept within 2 weeks.', funding: 'Credited to Tuition' },
+    { date: 'Mar 17', day: 'Tue', isoDate: '2026-03-17', event: 'TEFA Original Deadline (Extended)', type: 'tefa', desc: 'Original deadline. Extended by federal court order.', funding: 'Superseded' },
+    { date: 'Mar 31', day: 'Tue', isoDate: '2026-03-31', event: 'TEFA Application Closes (Extended)', type: 'tefa', desc: 'New deadline per federal court order (Judge Bennett, S.D. Texas). 11:59 PM CT.', funding: 'Deadline' },
+    { date: 'Mar 31', day: 'Tue', isoDate: '2026-03-31', event: 'NBCA Aid & Scholarship Decisions', type: 'facts', desc: 'Financial aid and scholarship offers sent. Must accept within 2 weeks.', funding: 'Credited to Tuition' },
     { date: 'Apr 06', day: 'Mon', isoDate: '2026-04-06', event: 'NBCA Enrollment Fee Due', type: 'nbca', desc: 'Pay $175 x 3 ($525) by EOD to secure spots. 9th = 5 left, 7th = 3 left, 4th = plenty.', funding: '$525 One-Time' },
-    { date: 'Early Apr', day: 'TBD', isoDate: '2026-04-06', event: 'TEFA Funding Notification', type: 'tefa', desc: 'State notifies families of voucher award status. Exact date TBD.', funding: 'Paid to Digital Wallet' },
+    { date: 'Late Apr', day: 'TBD', isoDate: '2026-04-20', event: 'TEFA Funding Notification (est.)', type: 'tefa', desc: 'State notifies families of voucher award status. Delayed by 2-week deadline extension. Exact date TBD.', funding: 'Paid to Digital Wallet' },
     { date: 'Apr 15', day: 'Wed', isoDate: '2026-04-15', event: 'ACE Scholarship Deadline', type: 'ace', desc: 'Closes 11:59 PM (Tax Day).', funding: 'Deadline' },
     { date: 'Jun 15', day: 'Mon', isoDate: '2026-06-15', event: 'ACE Award Notification', type: 'ace', desc: 'Scholarship decisions released.', funding: 'Paid directly to School' },
     { date: 'Jun 30', day: 'Tue', isoDate: '2026-06-30', event: 'NBCA Withdrawal Deadline', type: 'nbca', desc: 'Can withdraw penalty-free before this date. No tuition due until July.', funding: 'N/A' },
@@ -414,8 +415,8 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     </div>
                     <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-sky-100">
                         <span className="text-slate-500 font-medium">TEFA Notification</span>
-                        <span className="font-bold text-sky-900 text-lg">Early April</span>
-                        <span className="text-xs text-slate-400 hidden sm:block">Funding decision</span>
+                        <span className="font-bold text-sky-900 text-lg">Late April (est.)</span>
+                        <span className="text-xs text-slate-400 hidden sm:block">Delayed by court extension</span>
                     </div>
                     <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-sky-100">
                         <span className="text-slate-500 font-medium">Withdraw penalty-free by</span>
@@ -436,8 +437,14 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         </div>
                     </div>
                 </div>
-                <div className="mt-4 bg-sky-100 border border-sky-200 rounded-lg p-3 text-sm text-sky-900">
-                    <strong>Bottom line:</strong> Enrolling now secures spots while you wait for funding answers. If funding falls through, withdraw by June 30 — you only lose the $525 fee.
+                <div className="mt-4 bg-amber-50 border border-amber-300 rounded-lg p-4 text-sm text-amber-900">
+                    <strong className="flex items-center gap-1 mb-2">⚠️ New Timeline Gap — You'll commit $525 before knowing TEFA status</strong>
+                    <ul className="list-disc list-inside space-y-1 mb-2">
+                        <li><strong>April 6:</strong> Enrollment fee due ($525) — <strong>no TEFA answer yet</strong></li>
+                        <li><strong>Late April:</strong> TEFA notification arrives (~3 weeks later)</li>
+                        <li><strong>June 30:</strong> Withdraw penalty-free if funding doesn't work out</li>
+                    </ul>
+                    <strong>Bottom line:</strong> You're committing $525 blind on TEFA, but the June 30 safety net means you still have ~2 months after TEFA notification to back out with no tuition owed.
                 </div>
             </div>
 
@@ -762,7 +769,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <Layers size={18}/> Select Applicant Volume Scenario
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {[180000, 200000, 220000, 250000].map((count) => (
+                    {[230000, 250000, 280000, 300000].map((count) => (
                         <button
                             key={count}
                             onClick={() => setApplicantScenario(count)}
@@ -875,9 +882,11 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <div className="prose prose-sm max-w-none text-slate-700">
                         <h3 className="font-bold text-slate-900 text-lg mb-2">1. The Projection Model</h3>
                         <p className="mb-4">
-                            As of March 16th, <strong>200,003</strong> applications have been submitted (per the Comptroller's fact sheet). The application window
-                            closed <strong>March 17 at 11:59 PM CT</strong>. Acting Comptroller Hancock: "We're expecting to sell out in year one."
-                            More than 2,200 schools have signed up. The current scenario is set to <strong>{applicantScenario.toLocaleString()}</strong> total applicants.
+                            As of March 18th, more than <strong>229,000</strong> students have applied (per the Comptroller's press release). The application window
+                            has been <strong>extended through March 31 at 11:59 PM CT</strong> per a federal court order (Judge Bennett, S.D. Texas).
+                            Acting Comptroller Hancock: "We look forward to building on the record-setting demand for educational options."
+                            More than 2,200 schools have signed up. The current scenario is set to <strong>{applicantScenario.toLocaleString()}</strong> total applicants
+                            to account for additional applications during the extension period.
                         </p>
                         <p className="mb-4">
                             <strong>Not all applicants are eligible.</strong> The Comptroller reported that approximately 18,000 of 184,000 applicants
