@@ -17,14 +17,15 @@ import {
   TrendingUp,
   Briefcase,
   Layers,
-  Shield
+  Shield,
+  Scale
 } from 'lucide-react';
 
 const IddingsPlanner = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
 
-  // Scenario State - Updated to 229k+ per March 18 Comptroller press release (deadline extension)
-  const [applicantScenario, setApplicantScenario] = useState(250000);
+  // Scenario State - Updated to 244k per March 22 Comptroller fact sheet (deadline extension)
+  const [applicantScenario, setApplicantScenario] = useState(244132);
   const [ineligibilityRate, setIneligibilityRate] = useState(0.10); // ~10% default
   const [publicSchoolPct, setPublicSchoolPct] = useState(0.24); // TCVT data: ~24% were in public school last year
 
@@ -282,8 +283,9 @@ The contribution amount we listed represents the maximum we can sustainably budg
     { date: 'Mar 31', day: 'Tue', isoDate: '2026-03-31', event: 'TEFA Application Closes (Extended)', type: 'tefa', desc: 'New deadline per federal court order (Judge Bennett, S.D. Texas). 11:59 PM CT.', funding: 'Deadline' },
     { date: 'Mar 31', day: 'Tue', isoDate: '2026-03-31', event: 'NBCA Aid & Scholarship Decisions', type: 'facts', desc: 'Financial aid and scholarship offers sent. Must accept within 2 weeks.', funding: 'Credited to Tuition' },
     { date: 'Apr 06', day: 'Mon', isoDate: '2026-04-06', event: 'NBCA Enrollment Fee Due', type: 'nbca', desc: 'Pay $175 x 3 ($525) by EOD to secure spots. 9th = 5 left, 7th = 3 left, 4th = plenty.', funding: '$525 One-Time' },
-    { date: 'Late Apr', day: 'TBD', isoDate: '2026-04-20', event: 'TEFA Funding Notification (est.)', type: 'tefa', desc: 'State notifies families of voucher award status. Delayed by 2-week deadline extension. Exact date TBD.', funding: 'Paid to Digital Wallet' },
     { date: 'Apr 15', day: 'Wed', isoDate: '2026-04-15', event: 'ACE Scholarship Deadline', type: 'ace', desc: 'Closes 11:59 PM (Tax Day).', funding: 'Deadline' },
+    { date: 'Apr 24', day: 'Fri', isoDate: '2026-04-24', event: 'Federal Injunction Hearing', type: 'tefa', desc: 'Key hearing in Muslim schools v. Texas. Court decides whether to maintain, modify, or dissolve the injunction blocking Comptroller Hancock from excluding Islamic schools. TEFA funding timeline depends on outcome.', funding: 'Court Date' },
+    { date: 'May (est.)', day: 'TBD', isoDate: '2026-05-01', event: 'TEFA Funding Notification (est.)', type: 'tefa', desc: 'State notifies families of voucher award status. Originally expected late April — now likely delayed until after the April 24 federal hearing resolves. 244k+ applications to process. Exact date TBD.', funding: 'Paid to Digital Wallet' },
     { date: 'Jun 15', day: 'Mon', isoDate: '2026-06-15', event: 'ACE Award Notification', type: 'ace', desc: 'Scholarship decisions released.', funding: 'Paid directly to School' },
     { date: 'Jun 30', day: 'Tue', isoDate: '2026-06-30', event: 'NBCA Withdrawal Deadline', type: 'nbca', desc: 'Can withdraw penalty-free before this date. No tuition due until July.', funding: 'N/A' },
     { date: 'Jul 01', day: 'Wed', isoDate: '2026-07-01', event: 'TEFA Funds Available (25%)', type: 'tefa', desc: 'First tranche of funds available in account.', funding: 'Distribution' },
@@ -397,6 +399,72 @@ The contribution amount we listed represents the maximum we can sustainably budg
                 </div>
             </div>
 
+            {/* TEFA Program Status Card */}
+            <div className="bg-amber-50 p-6 rounded-xl shadow-lg border border-amber-300">
+                <h2 className="text-xl font-bold flex items-center gap-2 text-amber-800 mb-3">
+                    <Scale size={20} /> TEFA Program Status: In Holding Pattern
+                </h2>
+                <p className="text-sm text-amber-900 mb-4">
+                    The TEFA program is stalled due to a federal civil rights lawsuit and a political feud between
+                    Comptroller Hancock and AG Paxton. Your application is submitted and valid — the uncertainty
+                    is about <strong>when</strong> funds will flow, not <strong>whether</strong> you are eligible.
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm mb-4">
+                    <div className="bg-white rounded-lg p-3 border border-amber-100 text-center">
+                        <div className="text-xs text-slate-400 font-medium">Applications</div>
+                        <div className="font-bold text-amber-900 text-lg">244,132</div>
+                        <div className="text-[10px] text-slate-400">As of Mar 22</div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 border border-amber-100 text-center">
+                        <div className="text-xs text-slate-400 font-medium">Deadline</div>
+                        <div className="font-bold text-amber-900 text-lg">Mar 31</div>
+                        <div className="text-[10px] text-slate-400">Court-ordered extension</div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 border border-amber-100 text-center">
+                        <div className="text-xs text-slate-400 font-medium">Next Hearing</div>
+                        <div className="font-bold text-red-700 text-lg">Apr 24</div>
+                        <div className="text-[10px] text-slate-400">Federal injunction</div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 border border-amber-100 text-center">
+                        <div className="text-xs text-slate-400 font-medium">Private School</div>
+                        <div className="font-bold text-amber-900 text-lg">77%</div>
+                        <div className="text-[10px] text-slate-400">of applicants</div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 border border-amber-100 text-center">
+                        <div className="text-xs text-slate-400 font-medium">Homeschool</div>
+                        <div className="font-bold text-amber-900 text-lg">23%</div>
+                        <div className="text-[10px] text-slate-400">of applicants</div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 border border-amber-100 text-center">
+                        <div className="text-xs text-slate-400 font-medium">Funds Flowing</div>
+                        <div className="font-bold text-red-700 text-lg">No</div>
+                        <div className="text-[10px] text-slate-400">Pending court ruling</div>
+                    </div>
+                </div>
+                <div className="grid grid-cols-5 gap-1 text-xs text-center">
+                    <div className="bg-emerald-100 rounded p-1.5 border border-emerald-200">
+                        <div className="font-bold text-emerald-800">T1: 31%</div>
+                        <div className="text-emerald-600">≤200% FPL</div>
+                    </div>
+                    <div className="bg-blue-100 rounded p-1.5 border border-blue-200">
+                        <div className="font-bold text-blue-800">T2: 30%</div>
+                        <div className="text-blue-600">200-500%</div>
+                    </div>
+                    <div className="bg-violet-100 rounded p-1.5 border border-violet-200">
+                        <div className="font-bold text-violet-800">T3: 22%</div>
+                        <div className="text-violet-600">≥500%</div>
+                    </div>
+                    <div className="bg-amber-100 rounded p-1.5 border border-amber-200">
+                        <div className="font-bold text-amber-800">T4: 12%</div>
+                        <div className="text-amber-600">Disability</div>
+                    </div>
+                    <div className="bg-sky-100 rounded p-1.5 border border-sky-200">
+                        <div className="font-bold text-sky-800">T5: 5%</div>
+                        <div className="text-sky-600">Pub Sch</div>
+                    </div>
+                </div>
+            </div>
+
             {/* Enrollment Decision Risk Card */}
             <div className="bg-sky-50 p-6 rounded-xl shadow-lg border border-sky-200">
                 <h2 className="text-xl font-bold flex items-center gap-2 text-sky-800 mb-4">
@@ -415,8 +483,8 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     </div>
                     <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-sky-100">
                         <span className="text-slate-500 font-medium">TEFA Notification</span>
-                        <span className="font-bold text-sky-900 text-lg">Late April (est.)</span>
-                        <span className="text-xs text-slate-400 hidden sm:block">Delayed by court extension</span>
+                        <span className="font-bold text-sky-900 text-lg">May+ (est.)</span>
+                        <span className="text-xs text-slate-400 hidden sm:block">Depends on Apr 24 hearing</span>
                     </div>
                     <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-sky-100">
                         <span className="text-slate-500 font-medium">Withdraw penalty-free by</span>
@@ -441,7 +509,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <strong className="flex items-center gap-1 mb-2">⚠️ New Timeline Gap — You'll commit $525 before knowing TEFA status</strong>
                     <ul className="list-disc list-inside space-y-1 mb-2">
                         <li><strong>April 6:</strong> Enrollment fee due ($525) — <strong>no TEFA answer yet</strong></li>
-                        <li><strong>Late April:</strong> TEFA notification arrives (~3 weeks later)</li>
+                        <li><strong>May+ (est.):</strong> TEFA notification — delayed by federal lawsuit, depends on Apr 24 hearing</li>
                         <li><strong>June 30:</strong> Withdraw penalty-free if funding doesn't work out</li>
                     </ul>
                     <strong>Bottom line:</strong> You're committing $525 blind on TEFA, but the June 30 safety net means you still have ~2 months after TEFA notification to back out with no tuition owed.
@@ -485,6 +553,9 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                 <div className="text-xs text-blue-700 mt-1">3 x $10,474 (Est)</div>
                                 <div className="text-[10px] text-blue-500 mt-2 flex items-center gap-1">
                                     <Briefcase size={10}/> Paid to Digital Wallet
+                                </div>
+                                <div className="text-[10px] text-amber-600 mt-1 flex items-center gap-1">
+                                    <AlertCircle size={10}/> Program stalled — Apr 24 hearing
                                 </div>
                             </div>
                             <label className="relative inline-flex items-center cursor-pointer mt-1">
@@ -1032,7 +1103,57 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             </div>
                         </div>
 
-                        <h3 className="font-bold text-slate-900 text-lg mb-2">6. Conclusion</h3>
+                        <h3 className="font-bold text-slate-900 text-lg mb-2">6. Federal Lawsuit & Political Conflict</h3>
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                            <p className="text-sm text-red-900 mb-3">
+                                <strong>The TEFA program is caught in a federal civil rights lawsuit and a political feud.</strong> Acting
+                                Comptroller Kelly Hancock blocked several Islamic private schools (including Houston Quran Academy) from participating,
+                                citing alleged ties to organizations Gov. Abbott designated as terrorist organizations. Muslim families and schools
+                                sued for religious discrimination. A federal judge (Judge Bennett, S.D. Texas) temporarily sided with the plaintiffs,
+                                ordering the state to extend the deadline to March 31, 2026 and allow the excluded schools to submit applications.
+                            </p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-3">
+                                <div className="bg-white rounded p-3 border border-red-100">
+                                    <div className="text-xs text-slate-400 uppercase font-bold mb-1">The Lawsuit</div>
+                                    <ul className="text-slate-600 space-y-1 text-xs">
+                                        <li>Hancock banned Islamic schools citing terror ties</li>
+                                        <li>Federal judge sided with plaintiffs (temporary injunction)</li>
+                                        <li>Deadline extended from Mar 17 to Mar 31</li>
+                                        <li><strong>Permanent injunction hearing: April 24, 2026</strong></li>
+                                    </ul>
+                                </div>
+                                <div className="bg-white rounded p-3 border border-red-100">
+                                    <div className="text-xs text-slate-400 uppercase font-bold mb-1">The Political Feud</div>
+                                    <ul className="text-slate-600 space-y-1 text-xs">
+                                        <li>Hancock blames AG Paxton for poorly defending the ban</li>
+                                        <li>Hancock demanded Paxton strip school charters</li>
+                                        <li>Paxton called Hancock an "incompetent loser"</li>
+                                        <li>Paxton wants Gov. Abbott to fire Hancock</li>
+                                        <li className="text-slate-400">Backdrop: Hancock voted to impeach Paxton in 2023</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div className="bg-white rounded p-3 border border-red-100 mb-3">
+                                <div className="text-xs text-slate-400 uppercase font-bold mb-1">Impact on TEFA Funding Timeline</div>
+                                <ul className="text-slate-600 space-y-1 text-xs">
+                                    <li>No state funds have been ordered to flow yet</li>
+                                    <li>Financial side of the program is stalled until court proceedings resolve</li>
+                                    <li>Internal Comptroller-AG conflict adds additional unpredictability to administration</li>
+                                    <li>244,132 applications to process once the legal path is clear</li>
+                                </ul>
+                            </div>
+                            <div className="bg-emerald-50 rounded p-3 border border-emerald-200">
+                                <div className="text-xs text-emerald-800 uppercase font-bold mb-1">What This Means for Your Family</div>
+                                <ul className="text-emerald-700 space-y-1 text-xs">
+                                    <li><strong>Your application is valid</strong> — submitted before the deadline</li>
+                                    <li><strong>Your lottery odds are unchanged</strong> — this lawsuit concerns which schools can participate, not family tier placement</li>
+                                    <li><strong>The risk is timing, not eligibility</strong> — funds may arrive later than originally expected</li>
+                                    <li><strong>Your safety valve:</strong> June 30 NBCA withdrawal deadline lets you back out if funding is delayed too long</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <h3 className="font-bold text-slate-900 text-lg mb-2">7. Conclusion</h3>
                         <p className="mb-3">
                             Under the Comptroller's actual implementation, your family has a
                             <strong> {analysis.familySuccessRate.toFixed(1)}%</strong> probability of all 3 children receiving TEFA funding.
@@ -1042,9 +1163,15 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                 ? " The sibling rule significantly boosts your odds — 3 independent lottery draws with 1 win covering all."
                                 : " While individual odds are competitive, the sibling rule provides a meaningful boost."}
                         </p>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-slate-500 mb-3">
                             Even under the stricter SB 2 reading, the sibling rule still applies — and Dorothy & Sebastian's near-certain priority placement
                             would pull Cassius through regardless. Either way, your family's position is strong.
+                        </p>
+                        <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-3">
+                            <strong>Timing caveat:</strong> The federal lawsuit and Comptroller-AG political conflict have introduced significant timing uncertainty.
+                            While your lottery odds remain strong, the program is in a holding pattern until at least the April 24 hearing. Plan for the
+                            possibility that TEFA funds may not arrive until late May or later. The June 30 NBCA withdrawal deadline remains your key decision point —
+                            if funding is not confirmed by then, you can still walk away with only the $525 enrollment fee at risk.
                         </p>
                     </div>
                 </div>
