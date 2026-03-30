@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   Calendar,
   CheckSquare,
@@ -21,8 +22,13 @@ import {
   Scale
 } from 'lucide-react';
 
+const VALID_TABS = ['dashboard', 'timeline', 'checklist', 'essays', 'analysis'];
+
 const IddingsPlanner = () => {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const { tab } = useParams();
+  const navigate = useNavigate();
+  const activeTab = VALID_TABS.includes(tab) ? tab : 'dashboard';
+  const setActiveTab = (t) => navigate(`/${t}`);
 
   // Scenario State - Updated to 256k+ per March 30 Comptroller email (last day before deadline)
   const [applicantScenario, setApplicantScenario] = useState(270000);
@@ -146,21 +152,21 @@ const IddingsPlanner = () => {
     const budget = 1000000000; // $1 Billion
     const eligibleApps = Math.round(totalApps * (1 - ineligibilityRate));
 
-    // Cost model (78% Private, 22% Homeschool — Mar 16 Fact Sheet, intended 2026-27 enrollment)
+    // Cost model (77% Private, 23% Homeschool — Mar 29 Fact Sheet, intended 2026-27 enrollment)
     const privateCost = 10500;
     const homeCost = 2000;
-    const weightedAvg = (privateCost * 0.78) + (homeCost * 0.22); // ~$8,630
+    const weightedAvg = (privateCost * 0.77) + (homeCost * 0.23); // ~$8,545
     const capacity = Math.floor(budget / weightedAvg); // ~115,874 students
 
     // =====================================================
     // MODEL A: COMPTROLLER'S ACTUAL IMPLEMENTATION
-    // (5-tier system from website — ignores SB 2 public school requirement for T1-3)
+    // (4-tier system from website — Tier 4 sub-prioritizes public school within ≥500% FPL)
     // =====================================================
     const tier1_pct = 0.12;  // Disability + ≤500% FPL
-    const tier2_pct = 0.30;  // ≤200% FPL
+    const tier2_pct = 0.31;  // ≤200% FPL (updated per Mar 29 fact sheet)
     const tier3_pct = 0.30;  // 200-500% FPL (Iddings family — ALL 3 kids)
     const tier4a_pct = 0.05; // ≥500% FPL + public school
-    const tier4b_pct = 0.23; // ≥500% FPL
+    const tier4b_pct = 0.22; // ≥500% FPL (updated per Mar 29 fact sheet)
 
     const demandT1 = Math.round(eligibleApps * tier1_pct);
     const demandT2 = Math.round(eligibleApps * tier2_pct);
@@ -414,8 +420,8 @@ The contribution amount we listed represents the maximum we can sustainably budg
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm mb-4">
                     <div className="bg-white rounded-lg p-3 border border-amber-100 text-center">
                         <div className="text-xs text-slate-400 font-medium">Applications</div>
-                        <div className="font-bold text-amber-900 text-lg">244,132</div>
-                        <div className="text-[10px] text-slate-400">As of Mar 22</div>
+                        <div className="font-bold text-amber-900 text-lg">256,700</div>
+                        <div className="text-[10px] text-slate-400">As of Mar 29</div>
                     </div>
                     <div className="bg-white rounded-lg p-3 border border-amber-100 text-center">
                         <div className="text-xs text-slate-400 font-medium">Deadline</div>
@@ -443,26 +449,22 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         <div className="text-[10px] text-slate-400">Pending court ruling</div>
                     </div>
                 </div>
-                <div className="grid grid-cols-5 gap-1 text-xs text-center">
+                <div className="grid grid-cols-4 gap-1 text-xs text-center">
                     <div className="bg-emerald-100 rounded p-1.5 border border-emerald-200">
-                        <div className="font-bold text-emerald-800">T1: 31%</div>
-                        <div className="text-emerald-600">≤200% FPL</div>
+                        <div className="font-bold text-emerald-800">T1: 12%</div>
+                        <div className="text-emerald-600">Disability</div>
                     </div>
                     <div className="bg-blue-100 rounded p-1.5 border border-blue-200">
-                        <div className="font-bold text-blue-800">T2: 30%</div>
-                        <div className="text-blue-600">200-500%</div>
-                    </div>
-                    <div className="bg-violet-100 rounded p-1.5 border border-violet-200">
-                        <div className="font-bold text-violet-800">T3: 22%</div>
-                        <div className="text-violet-600">≥500%</div>
+                        <div className="font-bold text-blue-800">T2: 31%</div>
+                        <div className="text-blue-600">≤200% FPL</div>
                     </div>
                     <div className="bg-amber-100 rounded p-1.5 border border-amber-200">
-                        <div className="font-bold text-amber-800">T4: 12%</div>
-                        <div className="text-amber-600">Disability</div>
+                        <div className="font-bold text-amber-800">T3: 30%</div>
+                        <div className="text-amber-600">200-500%</div>
                     </div>
-                    <div className="bg-sky-100 rounded p-1.5 border border-sky-200">
-                        <div className="font-bold text-sky-800">T5: 5%</div>
-                        <div className="text-sky-600">Pub Sch</div>
+                    <div className="bg-violet-100 rounded p-1.5 border border-violet-200">
+                        <div className="font-bold text-violet-800">T4: 27%</div>
+                        <div className="text-violet-600">≥500% FPL</div>
                     </div>
                 </div>
             </div>
@@ -962,21 +964,21 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             to account for final-day applications.
                         </p>
                         <p className="mb-4">
-                            <strong>Not all applicants are eligible.</strong> The Comptroller reported that approximately 18,000 of 184,000 applicants
-                            reviewed at an earlier count were ineligible — roughly 10% overall. Pre-K applications had ~50% ineligibility,
-                            while K-12 was much lower. This model accounts for ineligibility (currently set to {Math.round(ineligibilityRate * 100)}%),
+                            <strong>Not all applicants are eligible.</strong> An earlier Comptroller review found ~10% ineligibility (18,000 of 184,000 reviewed).
+                            Pre-K has the highest ineligibility (~50%), while K-12 is much lower. With 256,700 total applications as of March 29,
+                            this model accounts for ineligibility (currently set to {Math.round(ineligibilityRate * 100)}%),
                             reducing the eligible pool to <strong>{analysis.eligibleApps.toLocaleString()}</strong> applicants competing for funding.
                         </p>
 
                         <h3 className="font-bold text-slate-900 text-lg mb-2">2. Supply vs. Demand</h3>
                         <ul className="list-disc pl-5 mb-4 space-y-1">
                             <li><strong>Total Budget:</strong> $1 Billion</li>
-                            <li><strong>Weighted Avg Cost:</strong> ~$8,630 (78% Private / 22% Homeschool — intended 2026-27 enrollment mix)</li>
+                            <li><strong>Weighted Avg Cost:</strong> ~$8,545 (77% Private / 23% Homeschool — Mar 29 Fact Sheet enrollment mix)</li>
                             <li><strong>Estimated Capacity:</strong> ~{analysis.capacity.toLocaleString()} Students</li>
                             <li><strong>Eligible Applicants:</strong> ~{analysis.eligibleApps.toLocaleString()} (after {Math.round(ineligibilityRate * 100)}% ineligibility)</li>
                         </ul>
                         <p className="mb-4 text-xs text-slate-500">
-                            Note: The 78/22 split is from the Comptroller's "Educational Setting" chart, which shows where applicants <em>plan to enroll</em> for 2026-27, not where they attended previously. Pre-K students also draw from the same $1B pool.
+                            Note: The 77/23 split is from the Comptroller's Mar 29 "Educational Setting" chart, which shows where applicants <em>plan to enroll</em> for 2026-27, not where they attended previously. Pre-K students also draw from the same $1B pool.
                         </p>
 
                         <h3 className="font-bold text-slate-900 text-lg mb-2">3. Comptroller's Tier System (How the Lottery Will Actually Run)</h3>
@@ -1002,7 +1004,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                 </div>
                             </div>
                             <div className="p-3 bg-green-50 border border-green-200 rounded">
-                                <div className="font-bold text-green-800">Tier 2 — ≤200% FPL (30%)</div>
+                                <div className="font-bold text-green-800">Tier 2 — ≤200% FPL (31%)</div>
                                 <div className="text-sm text-green-700">
                                     {analysis.demandT2.toLocaleString()} applicants — 100% funded
                                 </div>
@@ -1039,8 +1041,8 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             </div>
                             <div className={`p-3 border rounded ${analysis.tier4Rate > 0 ? 'bg-red-50 border-red-200' : 'bg-slate-50 border-slate-200'}`}>
                                 <div className={`font-bold ${analysis.tier4Rate > 50 ? 'text-amber-800' : 'text-red-800'}`}>
-                                    Tier 4 — ≥500% FPL (28%){' '}
-                                    <span className="text-xs font-normal text-slate-500">(4a: public school 5% | 4b: all others 23%)</span>
+                                    Tier 4 — ≥500% FPL (27%){' '}
+                                    <span className="text-xs font-normal text-slate-500">(4a: public school 5% | 4b: all others 22%)</span>
                                 </div>
                                 <div className={`text-sm ${analysis.tier4Rate > 50 ? 'text-amber-700' : 'text-red-700'}`}>
                                     {(analysis.demandT4a + analysis.demandT4b).toLocaleString()} applicants — {analysis.tier4Rate.toFixed(1)}% funded
@@ -1141,7 +1143,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                     <li>No state funds have been ordered to flow yet</li>
                                     <li>Financial side of the program is stalled until court proceedings resolve</li>
                                     <li>Internal Comptroller-AG conflict adds additional unpredictability to administration</li>
-                                    <li>244,132 applications to process once the legal path is clear</li>
+                                    <li>256,700+ applications to process once the legal path is clear</li>
                                 </ul>
                             </div>
                             <div className="bg-emerald-50 rounded p-3 border border-emerald-200">
