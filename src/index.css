@@ -1,1 +1,15 @@
 @import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+
+@theme {
+  --font-sans: 'Montserrat', sans-serif;
+  --color-tefa-navy: #202562;
+  --color-tefa-sky: #9ad5ed;
+  --color-tefa-red: #aa2142;
+  --color-tefa-green: #13612e;
+  --color-tefa-gold: #d8ab61;
+  --color-tefa-body: #2D3748;
+  --color-tefa-light: #F7FAFC;
+  --color-tefa-gray: #EDF2F7;
+}

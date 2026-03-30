@@ -22,7 +22,7 @@ import {
   Scale
 } from 'lucide-react';
 
-const VALID_TABS = ['dashboard', 'timeline', 'checklist', 'essays', 'analysis'];
+const VALID_TABS = ['dashboard', 'timeline', 'analysis'];
 
 const IddingsPlanner = () => {
   const { tab } = useParams();
@@ -86,7 +86,7 @@ const IddingsPlanner = () => {
   const checklistData = {
     nbca: {
       title: "NBCA Admissions",
-      color: "bg-emerald-100 text-emerald-800",
+      color: "bg-tefa-green/10 text-tefa-green",
       items: [
         { id: 'nbca-app', text: 'Submit Online Application ($150 fee)', done: true },
         { id: 'nbca-pastor', text: 'Pastor Recommendation Form', done: true },
@@ -101,7 +101,7 @@ const IddingsPlanner = () => {
     },
     facts: {
       title: "Financial Aid & Scholarships",
-      color: "bg-yellow-100 text-yellow-800",
+      color: "bg-tefa-gold/20 text-tefa-gold",
       items: [
         { id: 'facts-app', text: 'Submit FACTS Grant & Aid App ($40 fee)', done: true },
         { id: 'nbca-schol', text: 'Submit NBCA Scholarship App (Mar 15)', done: true },
@@ -112,7 +112,7 @@ const IddingsPlanner = () => {
     },
     tefa: {
       title: "TEFA Voucher (Texas)",
-      color: "bg-blue-100 text-blue-800",
+      color: "bg-tefa-navy/10 text-tefa-navy",
       items: [
         { id: 'tefa-create', text: 'Create Account on TEFA Portal', done: true },
         { id: 'tefa-citizen', text: 'Proof of Citizenship/Residency', done: true },
@@ -122,7 +122,7 @@ const IddingsPlanner = () => {
     },
     ace: {
       title: "ACE Scholarships",
-      color: "bg-purple-100 text-purple-800",
+      color: "bg-tefa-red/10 text-tefa-red",
       items: [
         { id: 'ace-qualify', text: 'Confirm Income Eligibility', done: true },
         { id: 'ace-school', text: 'Confirm NBCA Enrollment/Application', done: true },
@@ -300,30 +300,24 @@ The contribution amount we listed represents the maximum we can sustainably budg
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-12">
+    <div className="min-h-screen bg-tefa-light font-sans text-tefa-body pb-12">
       {/* Header */}
-      <header className="bg-emerald-900 text-white p-6 shadow-lg">
+      <header className="bg-tefa-navy text-white p-6 shadow-lg">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Iddings Family Planner</h1>
-            <p className="text-emerald-200 mt-1">NBCA Enrollment 2026-2027</p>
+            <p className="text-tefa-sky mt-1">NBCA Enrollment 2026-2027</p>
           </div>
           <div className="mt-4 md:mt-0 flex flex-wrap gap-2 text-sm font-medium">
-            {['dashboard', 'timeline', 'checklist', 'essays', 'analysis'].map(tab => (
+            {['dashboard', 'timeline', 'analysis'].map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 rounded-full transition capitalize ${activeTab === tab ? 'bg-white text-emerald-900' : 'bg-emerald-800 text-emerald-100 hover:bg-emerald-700'}`}
+                className={`px-4 py-2 rounded-[20px] transition capitalize ${activeTab === tab ? 'bg-white text-tefa-navy font-bold' : 'text-white border border-white/20 hover:text-tefa-sky'}`}
               >
-                {tab === 'essays' ? 'App Text' : tab}
+                {tab}
               </button>
             ))}
-            <button
-              onClick={() => window.print()}
-              className="px-4 py-2 rounded-full bg-emerald-800 text-emerald-100 hover:bg-emerald-700 flex items-center gap-2"
-            >
-              <Printer size={16} /> Print
-            </button>
           </div>
         </div>
       </header>
@@ -336,13 +330,13 @@ The contribution amount we listed represents the maximum we can sustainably budg
 
             {/* Status Overview Table */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <div className="lg:col-span-8 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                    <h3 className="font-bold text-slate-700 mb-4 flex items-center gap-2">
+                <div className="lg:col-span-8 bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                    <h3 className="font-bold text-tefa-navy mb-4 flex items-center gap-2">
                         <TrendingUp size={20}/> Application Status
                     </h3>
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left">
-                            <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-100">
+                            <thead className="text-xs text-tefa-navy uppercase bg-tefa-navy/5 border-b border-tefa-navy/10">
                                 <tr>
                                     <th className="px-4 py-3 rounded-tl-lg">Item</th>
                                     <th className="px-4 py-3">Status</th>
@@ -350,12 +344,12 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                     <th className="px-4 py-3 rounded-tr-lg">Funding Method</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100">
+                            <tbody className="divide-y divide-gray-100">
                                 {appStatus.map((row, idx) => (
-                                    <tr key={idx} className="hover:bg-slate-50 transition">
-                                        <td className="px-4 py-3 font-medium text-slate-800 flex items-center gap-2">
+                                    <tr key={idx} className="hover:bg-tefa-light transition">
+                                        <td className="px-4 py-3 font-medium text-tefa-body flex items-center gap-2">
                                             {row.status === 'Submitted' ? <CheckCircle size={16} className={row.type === 'success' ? 'text-green-600' : 'text-amber-500'}/> :
-                                             row.status === 'Scheduled' ? <Calendar size={16} className="text-blue-600"/> :
+                                             row.status === 'Scheduled' ? <Calendar size={16} className="text-tefa-navy"/> :
                                              <Clock size={16} className="text-amber-500"/>
                                             }
                                             {row.item}
@@ -363,14 +357,14 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                         <td className="px-4 py-3">
                                             <span className={`px-2 py-1 rounded text-xs font-bold ${
                                               row.type === 'success' ? 'bg-green-100 text-green-700' :
-                                              row.status === 'Scheduled' ? 'bg-blue-100 text-blue-700' :
-                                              'bg-amber-100 text-amber-700'
+                                              row.status === 'Scheduled' ? 'bg-tefa-navy/10 text-tefa-navy/70' :
+                                              'bg-amber-100 text-tefa-red/80'
                                             }`}>
                                                 {row.status}
                                             </span>
                                         </td>
-                                        <td className="px-4 py-3 text-slate-600">{row.date}</td>
-                                        <td className="px-4 py-3 text-xs text-slate-500 font-mono">{row.funding}</td>
+                                        <td className="px-4 py-3 text-tefa-body/70">{row.date}</td>
+                                        <td className="px-4 py-3 text-xs text-tefa-body/60 font-mono">{row.funding}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -378,28 +372,28 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     </div>
                 </div>
 
-                <div className="lg:col-span-4 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                     <h3 className="font-bold text-slate-700 mb-4 flex items-center gap-2">
+                <div className="lg:col-span-4 bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                     <h3 className="font-bold text-tefa-navy mb-4 flex items-center gap-2">
                         <CreditCard size={20}/> One-Time Fees
                     </h3>
                     <div className="space-y-3">
                         <div className="flex justify-between items-center text-sm">
-                            <span className="text-slate-600">NBCA Apps (3)</span>
+                            <span className="text-tefa-body/70">NBCA Apps (3)</span>
                             <span className="font-bold">${fees.nbcaApp}</span>
                         </div>
                         <div className="flex justify-between items-center text-sm">
-                            <span className="text-slate-600">NBCA Enrollment (3)</span>
+                            <span className="text-tefa-body/70">NBCA Enrollment (3)</span>
                             <span className="font-bold">${fees.nbcaEnroll}</span>
                         </div>
                         <div className="flex justify-between items-center text-sm">
-                            <span className="text-slate-600">FACTS Fee</span>
+                            <span className="text-tefa-body/70">FACTS Fee</span>
                             <span className="font-bold">${fees.factsApp}</span>
                         </div>
                         <div className="flex justify-between items-center text-sm">
-                            <span className="text-slate-600">ACE Apps (3)</span>
+                            <span className="text-tefa-body/70">ACE Apps (3)</span>
                             <span className="font-bold">${fees.aceApp}</span>
                         </div>
-                        <div className="pt-3 border-t border-slate-100 flex justify-between items-center font-bold text-lg">
+                        <div className="pt-3 border-t border-gray-200 flex justify-between items-center font-bold text-lg">
                             <span>Total</span>
                             <span>${totalFees}</span>
                         </div>
@@ -408,108 +402,108 @@ The contribution amount we listed represents the maximum we can sustainably budg
             </div>
 
             {/* TEFA Program Status Card */}
-            <div className="bg-amber-50 p-6 rounded-xl shadow-lg border border-amber-300">
-                <h2 className="text-xl font-bold flex items-center gap-2 text-amber-800 mb-3">
+            <div className="bg-tefa-light p-6 rounded-lg shadow-md border-2 border-tefa-navy">
+                <h2 className="text-xl font-bold flex items-center gap-2 text-tefa-navy mb-3">
                     <Scale size={20} /> TEFA Program Status: In Holding Pattern
                 </h2>
-                <p className="text-sm text-amber-900 mb-4">
+                <p className="text-sm text-tefa-body mb-4">
                     The TEFA program is stalled due to a federal civil rights lawsuit and a political feud between
                     Comptroller Hancock and AG Paxton. Your application is submitted and valid — the uncertainty
                     is about <strong>when</strong> funds will flow, not <strong>whether</strong> you are eligible.
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm mb-4">
-                    <div className="bg-white rounded-lg p-3 border border-amber-100 text-center">
-                        <div className="text-xs text-slate-400 font-medium">Applications</div>
-                        <div className="font-bold text-amber-900 text-lg">256,700</div>
-                        <div className="text-[10px] text-slate-400">As of Mar 29</div>
+                    <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
+                        <div className="text-xs text-tefa-body/50 font-medium">Applications</div>
+                        <div className="font-bold text-tefa-navy text-lg">256,700</div>
+                        <div className="text-[10px] text-tefa-body/40">As of Mar 29</div>
                     </div>
-                    <div className="bg-white rounded-lg p-3 border border-amber-100 text-center">
-                        <div className="text-xs text-slate-400 font-medium">Deadline</div>
-                        <div className="font-bold text-amber-900 text-lg">Mar 31</div>
-                        <div className="text-[10px] text-slate-400">Court-ordered extension</div>
+                    <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
+                        <div className="text-xs text-tefa-body/50 font-medium">Deadline</div>
+                        <div className="font-bold text-tefa-navy text-lg">Mar 31</div>
+                        <div className="text-[10px] text-tefa-body/40">Court-ordered extension</div>
                     </div>
-                    <div className="bg-white rounded-lg p-3 border border-amber-100 text-center">
-                        <div className="text-xs text-slate-400 font-medium">Next Hearing</div>
-                        <div className="font-bold text-red-700 text-lg">Apr 24</div>
-                        <div className="text-[10px] text-slate-400">Federal injunction</div>
+                    <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
+                        <div className="text-xs text-tefa-body/50 font-medium">Next Hearing</div>
+                        <div className="font-bold text-tefa-red text-lg">Apr 24</div>
+                        <div className="text-[10px] text-tefa-body/40">Federal injunction</div>
                     </div>
-                    <div className="bg-white rounded-lg p-3 border border-amber-100 text-center">
-                        <div className="text-xs text-slate-400 font-medium">Private School</div>
-                        <div className="font-bold text-amber-900 text-lg">77%</div>
-                        <div className="text-[10px] text-slate-400">of applicants</div>
+                    <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
+                        <div className="text-xs text-tefa-body/50 font-medium">Private School</div>
+                        <div className="font-bold text-tefa-navy text-lg">77%</div>
+                        <div className="text-[10px] text-tefa-body/40">of applicants</div>
                     </div>
-                    <div className="bg-white rounded-lg p-3 border border-amber-100 text-center">
-                        <div className="text-xs text-slate-400 font-medium">Homeschool</div>
-                        <div className="font-bold text-amber-900 text-lg">23%</div>
-                        <div className="text-[10px] text-slate-400">of applicants</div>
+                    <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
+                        <div className="text-xs text-tefa-body/50 font-medium">Homeschool</div>
+                        <div className="font-bold text-tefa-navy text-lg">23%</div>
+                        <div className="text-[10px] text-tefa-body/40">of applicants</div>
                     </div>
-                    <div className="bg-white rounded-lg p-3 border border-amber-100 text-center">
-                        <div className="text-xs text-slate-400 font-medium">Funds Flowing</div>
-                        <div className="font-bold text-red-700 text-lg">No</div>
-                        <div className="text-[10px] text-slate-400">Pending court ruling</div>
+                    <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
+                        <div className="text-xs text-tefa-body/50 font-medium">Funds Flowing</div>
+                        <div className="font-bold text-tefa-red text-lg">No</div>
+                        <div className="text-[10px] text-tefa-body/40">Pending court ruling</div>
                     </div>
                 </div>
                 <div className="grid grid-cols-4 gap-1 text-xs text-center">
-                    <div className="bg-emerald-100 rounded p-1.5 border border-emerald-200">
-                        <div className="font-bold text-emerald-800">T1: 12%</div>
-                        <div className="text-emerald-600">Disability</div>
+                    <div className="bg-tefa-green/10 rounded p-1.5 border border-tefa-green/20">
+                        <div className="font-bold text-tefa-green">T1: 12%</div>
+                        <div className="text-tefa-green/70">Disability</div>
                     </div>
-                    <div className="bg-blue-100 rounded p-1.5 border border-blue-200">
-                        <div className="font-bold text-blue-800">T2: 31%</div>
-                        <div className="text-blue-600">≤200% FPL</div>
+                    <div className="bg-tefa-navy/10 rounded p-1.5 border border-tefa-navy/20">
+                        <div className="font-bold text-tefa-navy">T2: 31%</div>
+                        <div className="text-tefa-navy/70">≤200% FPL</div>
                     </div>
-                    <div className="bg-amber-100 rounded p-1.5 border border-amber-200">
-                        <div className="font-bold text-amber-800">T3: 30%</div>
-                        <div className="text-amber-600">200-500%</div>
+                    <div className="bg-tefa-gold/20 rounded p-1.5 border border-tefa-gold/40">
+                        <div className="font-bold text-tefa-red">T3: 30%</div>
+                        <div className="text-tefa-red/70">200-500%</div>
                     </div>
-                    <div className="bg-violet-100 rounded p-1.5 border border-violet-200">
-                        <div className="font-bold text-violet-800">T4: 27%</div>
-                        <div className="text-violet-600">≥500% FPL</div>
+                    <div className="bg-tefa-red/10 rounded p-1.5 border border-tefa-red/20">
+                        <div className="font-bold text-tefa-red">T4: 27%</div>
+                        <div className="text-tefa-red/70">≥500% FPL</div>
                     </div>
                 </div>
             </div>
 
             {/* Enrollment Decision Risk Card */}
-            <div className="bg-sky-50 p-6 rounded-xl shadow-lg border border-sky-200">
-                <h2 className="text-xl font-bold flex items-center gap-2 text-sky-800 mb-4">
+            <div className="bg-tefa-sky/10 p-6 rounded-lg shadow-md border border-tefa-navy/20">
+                <h2 className="text-xl font-bold flex items-center gap-2 text-tefa-navy mb-4">
                     <Shield size={20} /> Enrollment Decision
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                    <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-sky-100">
-                        <span className="text-slate-500 font-medium">At risk today</span>
-                        <span className="font-bold text-sky-900 text-lg">$525</span>
-                        <span className="text-xs text-slate-400 hidden sm:block">Enrollment fee for 3 kids</span>
+                    <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-navy/10">
+                        <span className="text-tefa-body/60 font-medium">At risk today</span>
+                        <span className="font-bold text-tefa-navy text-lg">$525</span>
+                        <span className="text-xs text-tefa-body/40 hidden sm:block">Enrollment fee for 3 kids</span>
                     </div>
-                    <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-sky-100">
-                        <span className="text-slate-500 font-medium">NBCA Aid & Scholarship</span>
-                        <span className="font-bold text-sky-900 text-lg">March 31</span>
-                        <span className="text-xs text-slate-400 hidden sm:block">Decisions released</span>
+                    <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-navy/10">
+                        <span className="text-tefa-body/60 font-medium">NBCA Aid & Scholarship</span>
+                        <span className="font-bold text-tefa-navy text-lg">March 31</span>
+                        <span className="text-xs text-tefa-body/40 hidden sm:block">Decisions released</span>
                     </div>
-                    <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-sky-100">
-                        <span className="text-slate-500 font-medium">TEFA Notification</span>
-                        <span className="font-bold text-sky-900 text-lg">May (est.)</span>
-                        <span className="text-xs text-slate-400 hidden sm:block">Depends on Apr 24 federal hearing</span>
+                    <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-navy/10">
+                        <span className="text-tefa-body/60 font-medium">TEFA Notification</span>
+                        <span className="font-bold text-tefa-navy text-lg">May (est.)</span>
+                        <span className="text-xs text-tefa-body/40 hidden sm:block">Depends on Apr 24 federal hearing</span>
                     </div>
-                    <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-sky-100">
-                        <span className="text-slate-500 font-medium">Withdraw penalty-free by</span>
-                        <span className="font-bold text-sky-900 text-lg">June 30</span>
-                        <span className="text-xs text-slate-400 hidden sm:block">Full refund except enrollment fee</span>
+                    <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-navy/10">
+                        <span className="text-tefa-body/60 font-medium">Withdraw penalty-free by</span>
+                        <span className="font-bold text-tefa-navy text-lg">June 30</span>
+                        <span className="text-xs text-tefa-body/40 hidden sm:block">Full refund except enrollment fee</span>
                     </div>
-                    <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-sky-100">
-                        <span className="text-slate-500 font-medium">No tuition due until</span>
-                        <span className="font-bold text-sky-900 text-lg">July</span>
-                        <span className="text-xs text-slate-400 hidden sm:block">First payment</span>
+                    <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-navy/10">
+                        <span className="text-tefa-body/60 font-medium">No tuition due until</span>
+                        <span className="font-bold text-tefa-navy text-lg">July</span>
+                        <span className="text-xs text-tefa-body/40 hidden sm:block">First payment</span>
                     </div>
-                    <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-sky-100">
-                        <span className="text-slate-500 font-medium">Spots available</span>
+                    <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-navy/10">
+                        <span className="text-tefa-body/60 font-medium">Spots available</span>
                         <div className="flex gap-2 flex-wrap">
-                            <span className="text-xs font-semibold bg-sky-100 text-sky-800 px-2 py-0.5 rounded">9th: 5</span>
-                            <span className="text-xs font-semibold bg-amber-100 text-amber-800 px-2 py-0.5 rounded">7th: 3</span>
-                            <span className="text-xs font-semibold bg-green-100 text-green-800 px-2 py-0.5 rounded">4th: plenty</span>
+                            <span className="text-xs font-semibold bg-tefa-navy/10 text-tefa-navy px-2 py-0.5 rounded">9th: 5</span>
+                            <span className="text-xs font-semibold bg-tefa-gold/20 text-tefa-red px-2 py-0.5 rounded">7th: 3</span>
+                            <span className="text-xs font-semibold bg-tefa-green/10 text-tefa-green px-2 py-0.5 rounded">4th: plenty</span>
                         </div>
                     </div>
                 </div>
-                <div className="mt-4 bg-amber-50 border border-amber-300 rounded-lg p-4 text-sm text-amber-900">
+                <div className="mt-4 bg-tefa-red/5 border border-tefa-red/20 rounded-lg p-4 text-sm text-tefa-body">
                     <strong className="flex items-center gap-1 mb-2">⚠️ New Timeline Gap — You'll commit $525 before knowing TEFA status</strong>
                     <ul className="list-disc list-inside space-y-1 mb-2">
                         <li><strong>April 6:</strong> Enrollment fee due ($525) — <strong>no TEFA answer yet</strong></li>
@@ -522,10 +516,10 @@ The contribution amount we listed represents the maximum we can sustainably budg
 
             {/* Cost Calculator */}
             <div className="grid grid-cols-1 gap-6">
-                <div className="bg-white p-6 rounded-xl shadow-lg border border-emerald-100">
-                  <h2 className="text-xl font-bold flex items-center gap-2 text-slate-700 mb-4">
+                <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                  <h2 className="text-xl font-bold flex items-center gap-2 text-tefa-navy mb-4">
                     <DollarSign size={20} /> Financial Estimate Calculator
-                    <span className="text-xs font-normal bg-slate-100 text-slate-500 px-2 py-1 rounded ml-auto">
+                    <span className="text-xs font-normal bg-tefa-navy/5 text-tefa-body/60 px-2 py-1 rounded ml-auto">
                         "Most Likely" Scenario Loaded
                     </span>
                   </h2>
@@ -534,69 +528,69 @@ The contribution amount we listed represents the maximum we can sustainably budg
                       <div className="space-y-6">
                         {/* Tuition Input */}
                         <div>
-                          <label className="text-xs font-bold text-slate-400 uppercase">Gross Annual Tuition (3 Kids)</label>
+                          <label className="text-xs font-bold text-tefa-body/50 uppercase">Gross Annual Tuition (3 Kids)</label>
                           <div className="flex items-center mt-1">
-                            <span className="text-slate-400 mr-2">$</span>
+                            <span className="text-tefa-body/40 mr-2">$</span>
                             <input
                               type="number"
                               value={tuition}
                               onChange={(e) => setTuition(Number(e.target.value))}
-                              className="w-full bg-slate-50 border border-slate-200 rounded p-2 font-mono font-bold text-right"
+                              className="w-full bg-tefa-light border border-gray-200 rounded p-2 font-mono font-bold text-right"
                             />
                           </div>
                         </div>
 
                         {/* TEFA Toggle */}
-                        <div className="p-3 bg-blue-50 rounded-lg border border-blue-100 relative overflow-hidden">
+                        <div className="p-3 bg-tefa-navy/5 rounded-lg border border-tefa-navy/10 relative overflow-hidden">
                           <div className="flex items-start justify-between relative z-10">
                             <div>
-                                <div className="font-bold text-blue-900 flex items-center gap-2">
+                                <div className="font-bold text-tefa-navy flex items-center gap-2">
                                     TEFA Voucher
-                                    <span className={`text-[10px] text-white px-1.5 py-0.5 rounded uppercase tracking-wide ${analysis.familySuccessRate > 80 ? 'bg-green-500' : analysis.familySuccessRate > 50 ? 'bg-amber-500' : 'bg-red-500'}`}>{analysis.familySuccessRate > 90 ? 'Excellent' : analysis.familySuccessRate > 70 ? 'Good' : analysis.familySuccessRate > 50 ? 'Fair' : 'Low'} ({analysis.familySuccessRate.toFixed(1)}%)</span>
+                                    <span className={`text-[10px] text-white px-1.5 py-0.5 rounded uppercase tracking-wide ${analysis.familySuccessRate > 80 ? 'bg-green-500' : analysis.familySuccessRate > 50 ? 'bg-tefa-gold/100' : 'bg-red-500'}`}>{analysis.familySuccessRate > 90 ? 'Excellent' : analysis.familySuccessRate > 70 ? 'Good' : analysis.familySuccessRate > 50 ? 'Fair' : 'Low'} ({analysis.familySuccessRate.toFixed(1)}%)</span>
                                 </div>
-                                <div className="text-xs text-blue-700 mt-1">3 x $10,474 (Est)</div>
-                                <div className="text-[10px] text-blue-500 mt-2 flex items-center gap-1">
+                                <div className="text-xs text-tefa-navy/70 mt-1">3 x $10,474 (Est)</div>
+                                <div className="text-[10px] text-tefa-navy/50 mt-2 flex items-center gap-1">
                                     <Briefcase size={10}/> Paid to Digital Wallet
                                 </div>
-                                <div className="text-[10px] text-amber-600 mt-1 flex items-center gap-1">
+                                <div className="text-[10px] text-tefa-red mt-1 flex items-center gap-1">
                                     <AlertCircle size={10}/> Program stalled — Apr 24 hearing
                                 </div>
                             </div>
                             <label className="relative inline-flex items-center cursor-pointer mt-1">
                                 <input type="checkbox" checked={includeTefa} onChange={() => setIncludeTefa(!includeTefa)} className="sr-only peer" />
-                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tefa-navy"></div>
                             </label>
                           </div>
                         </div>
 
                         {/* ACE Toggle */}
-                        <div className="p-3 bg-purple-50 rounded-lg border border-purple-100">
+                        <div className="p-3 bg-tefa-red/5 rounded-lg border border-tefa-red/10">
                           <div className="flex items-start justify-between">
                             <div>
-                                <div className="font-bold text-purple-900 flex items-center gap-2">
+                                <div className="font-bold text-tefa-red flex items-center gap-2">
                                     ACE Scholarship
                                     <span className="text-[10px] bg-amber-400 text-white px-1.5 py-0.5 rounded uppercase tracking-wide">Low ({'<'}10%)</span>
                                 </div>
-                                <div className="text-xs text-purple-700 mt-1">Needs-based (~$10k Max)</div>
-                                <div className="text-[10px] text-purple-500 mt-2 flex items-center gap-1">
+                                <div className="text-xs text-tefa-red/70 mt-1">Needs-based (~$10k Max)</div>
+                                <div className="text-[10px] text-tefa-red/50 mt-2 flex items-center gap-1">
                                     <GraduationCap size={10}/> Paid to School
                                 </div>
                             </div>
                             <label className="relative inline-flex items-center cursor-pointer mt-1">
                                 <input type="checkbox" checked={includeAce} onChange={() => setIncludeAce(!includeAce)} className="sr-only peer" />
-                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tefa-red"></div>
                             </label>
                           </div>
                         </div>
 
                         {/* NBCA Financial Aid Slider */}
-                        <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-100">
+                        <div className="p-3 bg-tefa-green/5 rounded-lg border border-tefa-green/10">
                           <div className="flex justify-between items-center mb-2">
-                            <div className="font-bold text-emerald-900 flex items-center gap-2">
+                            <div className="font-bold text-tefa-green flex items-center gap-2">
                                 <Percent size={14}/> NBCA Fin. Aid
                                 <span className="text-[10px] bg-amber-400 text-white px-1.5 py-0.5 rounded uppercase tracking-wide">Moderate</span>
                             </div>
-                            <div className="text-xs font-bold text-emerald-700 bg-white px-2 py-0.5 rounded border border-emerald-200">
+                            <div className="text-xs font-bold text-tefa-green/70 bg-white px-2 py-0.5 rounded border border-tefa-green/20">
                               ${nbcaAidAmount.toLocaleString()}
                             </div>
                           </div>
@@ -607,25 +601,25 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             step="100"
                             value={nbcaAidAmount}
                             onChange={(e) => setNbcaAidAmount(Number(e.target.value))}
-                            className="w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+                            className="w-full h-2 bg-tefa-green/20 rounded-lg appearance-none cursor-pointer accent-tefa-green"
                           />
-                          <div className="flex justify-between text-xs text-emerald-500 mt-1 font-medium">
+                          <div className="flex justify-between text-xs text-tefa-green/60 mt-1 font-medium">
                             <span>$0</span>
                             <span>$15k Max</span>
                           </div>
-                           <div className="text-[10px] text-emerald-600 mt-1">
+                           <div className="text-[10px] text-tefa-green/80 mt-1">
                                 Credited to Tuition
                            </div>
                         </div>
 
                         {/* NBCA Scholarship Slider */}
-                        <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-100">
+                        <div className="p-3 bg-tefa-green/5 rounded-lg border border-tefa-green/10">
                           <div className="flex justify-between items-center mb-2">
-                            <div className="font-bold text-emerald-900 flex items-center gap-2">
+                            <div className="font-bold text-tefa-green flex items-center gap-2">
                                 <GraduationCap size={14}/> NBCA Scholarship
-                                <span className="text-[10px] bg-emerald-600 text-white px-1.5 py-0.5 rounded uppercase tracking-wide">Pending Mar 31</span>
+                                <span className="text-[10px] bg-tefa-green text-white px-1.5 py-0.5 rounded uppercase tracking-wide">Pending Mar 31</span>
                             </div>
-                            <div className="text-xs font-bold text-emerald-700 bg-white px-2 py-0.5 rounded border border-emerald-200">
+                            <div className="text-xs font-bold text-tefa-green/70 bg-white px-2 py-0.5 rounded border border-tefa-green/20">
                               ${nbcaScholarshipAmount.toLocaleString()}
                             </div>
                           </div>
@@ -636,13 +630,13 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             step="100"
                             value={nbcaScholarshipAmount}
                             onChange={(e) => setNbcaScholarshipAmount(Number(e.target.value))}
-                            className="w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+                            className="w-full h-2 bg-tefa-green/20 rounded-lg appearance-none cursor-pointer accent-tefa-green"
                           />
-                          <div className="flex justify-between text-xs text-emerald-500 mt-1 font-medium">
+                          <div className="flex justify-between text-xs text-tefa-green/60 mt-1 font-medium">
                             <span>$0</span>
                             <span>$15k Max</span>
                           </div>
-                          <div className="text-[10px] text-emerald-600 mt-1">
+                          <div className="text-[10px] text-tefa-green/80 mt-1">
                                 Credited to Tuition
                           </div>
                         </div>
@@ -650,48 +644,48 @@ The contribution amount we listed represents the maximum we can sustainably budg
                       </div>
 
                       {/* Results Column */}
-                      <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 flex flex-col justify-center h-full">
-                        <h3 className="text-slate-500 font-bold uppercase text-xs mb-4">Estimated Breakdown</h3>
+                      <div className="bg-tefa-light p-6 rounded-lg border border-gray-200 flex flex-col justify-center h-full">
+                        <h3 className="text-tefa-body/60 font-bold uppercase text-xs mb-4">Estimated Breakdown</h3>
 
                         <div className="space-y-3 mb-6">
-                            <div className="flex justify-between text-sm text-slate-500">
+                            <div className="flex justify-between text-sm text-tefa-body/60">
                               <span>Tuition Total:</span>
                               <span>${tuition.toLocaleString()}</span>
                             </div>
                             {includeTefa && (
-                              <div className="flex justify-between text-sm text-blue-600 font-medium bg-blue-50 px-2 py-1 rounded">
+                              <div className="flex justify-between text-sm text-tefa-navy font-medium bg-tefa-navy/5 px-2 py-1 rounded">
                                 <span>TEFA Credit:</span>
                                 <span>-${totalTefa.toLocaleString()}</span>
                               </div>
                             )}
                             {includeAce && (
-                              <div className="flex justify-between text-sm text-purple-600 font-medium bg-purple-50 px-2 py-1 rounded">
+                              <div className="flex justify-between text-sm text-tefa-red font-medium bg-tefa-red/5 px-2 py-1 rounded">
                                 <span>ACE Credit:</span>
                                 <span>-${totalAce.toLocaleString()}</span>
                               </div>
                             )}
                              {nbcaAidAmount > 0 && (
-                              <div className="flex justify-between text-sm text-emerald-600 font-medium bg-emerald-50 px-2 py-1 rounded">
+                              <div className="flex justify-between text-sm text-tefa-green/80 font-medium bg-tefa-green/5 px-2 py-1 rounded">
                                 <span>NBCA Aid:</span>
                                 <span>-${nbcaAidAmount.toLocaleString()}</span>
                               </div>
                             )}
                             {nbcaScholarshipAmount > 0 && (
-                              <div className="flex justify-between text-sm text-emerald-600 font-medium bg-emerald-50 px-2 py-1 rounded">
+                              <div className="flex justify-between text-sm text-tefa-green/80 font-medium bg-tefa-green/5 px-2 py-1 rounded">
                                 <span>Scholarship:</span>
                                 <span>-${nbcaScholarshipAmount.toLocaleString()}</span>
                               </div>
                             )}
                         </div>
 
-                        <div className="border-t-2 border-dashed border-slate-300 pt-4 mt-auto">
+                        <div className="border-t-2 border-dashed border-gray-300 pt-4 mt-auto">
                             <div className="flex justify-between items-end">
-                              <span className="font-bold text-slate-700">Est. Annual Cost</span>
-                              <span className={`text-3xl font-bold ${finalCost <= 5000 ? 'text-green-600' : 'text-slate-800'}`}>
+                              <span className="font-bold text-tefa-navy">Est. Annual Cost</span>
+                              <span className={`text-3xl font-bold ${finalCost <= 5000 ? 'text-green-600' : 'text-tefa-navy'}`}>
                                 ${finalCost > 0 ? finalCost.toLocaleString(undefined, {maximumFractionDigits: 0}) : 0}
                               </span>
                             </div>
-                            <div className="text-right text-sm text-slate-400 mt-1 font-medium">
+                            <div className="text-right text-sm text-tefa-body/50 mt-1 font-medium">
                               approx ${Math.max(0, monthlyCost).toFixed(0)} / month (10-mo)
                             </div>
                         </div>
@@ -708,10 +702,10 @@ The contribution amount we listed represents the maximum we can sustainably budg
           const nextUpIdx = timelineEvents.findIndex(evt => evt.isoDate >= today);
           return (
           <div className="max-w-4xl mx-auto">
-             <h2 className="text-2xl font-bold mb-6 text-slate-800 flex items-center gap-2">
+             <h2 className="text-2xl font-bold mb-6 text-tefa-navy flex items-center gap-2">
                 <Calendar /> Funding Timeline & Method
               </h2>
-              <div className="relative border-l-2 border-slate-200 ml-4 space-y-8">
+              <div className="relative border-l-2 border-gray-200 ml-4 space-y-8">
                 {timelineEvents.map((evt, idx) => {
                   const isPast = evt.isoDate < today;
                   const isNext = idx === nextUpIdx;
@@ -719,33 +713,33 @@ The contribution amount we listed represents the maximum we can sustainably budg
                   <div key={idx} className={`relative pl-8 ${isPast ? 'opacity-50' : ''}`}>
                     {/* Dot */}
                     <div className={`absolute -left-[9px] top-1 w-4 h-4 rounded-full border-2 border-white shadow-sm
-                      ${isPast ? 'bg-slate-300' :
-                        isNext ? 'bg-emerald-500 ring-4 ring-emerald-200' :
-                        evt.type === 'nbca' ? 'bg-emerald-500' :
-                        evt.type === 'tefa' ? 'bg-blue-500' :
-                        evt.type === 'ace' ? 'bg-purple-500' : 'bg-yellow-500'}`}
+                      ${isPast ? 'bg-gray-300' :
+                        isNext ? 'bg-tefa-navy ring-4 ring-tefa-sky/40' :
+                        evt.type === 'nbca' ? 'bg-tefa-green' :
+                        evt.type === 'tefa' ? 'bg-tefa-navy' :
+                        evt.type === 'ace' ? 'bg-tefa-red' : 'bg-tefa-gold'}`}
                     />
 
-                    <div className={`bg-white p-4 rounded-lg shadow-sm border hover:shadow-md transition grid grid-cols-1 md:grid-cols-12 gap-4 ${isNext ? 'border-emerald-300 ring-1 ring-emerald-200' : 'border-slate-100'}`}>
+                    <div className={`bg-white p-4 rounded-lg shadow-sm border hover:shadow-md transition grid grid-cols-1 md:grid-cols-12 gap-4 ${isNext ? 'border-tefa-navy/30 ring-1 ring-tefa-sky/30' : 'border-gray-100'}`}>
                       <div className="md:col-span-3">
                         {isNext && (
-                          <span className="text-[10px] font-bold bg-emerald-600 text-white px-2 py-0.5 rounded uppercase tracking-wide mb-1 inline-block">Up Next</span>
+                          <span className="text-[10px] font-bold bg-tefa-green text-white px-2 py-0.5 rounded uppercase tracking-wide mb-1 inline-block">Up Next</span>
                         )}
                         <span className={`text-xs font-bold px-2 py-1 rounded uppercase tracking-wide block w-fit mb-1
-                           ${evt.type === 'nbca' ? 'bg-emerald-100 text-emerald-800' :
-                             evt.type === 'tefa' ? 'bg-blue-100 text-blue-800' :
-                             evt.type === 'ace' ? 'bg-purple-100 text-purple-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                           ${evt.type === 'nbca' ? 'bg-tefa-green/10 text-tefa-green' :
+                             evt.type === 'tefa' ? 'bg-tefa-navy/10 text-tefa-navy' :
+                             evt.type === 'ace' ? 'bg-tefa-red/10 text-tefa-red' : 'bg-tefa-gold/20 text-tefa-gold'}`}>
                           {evt.type}
                         </span>
-                        <span className="text-sm font-bold text-slate-400">{evt.day}, {evt.date}</span>
+                        <span className="text-sm font-bold text-tefa-body/50">{evt.day}, {evt.date}</span>
                       </div>
                       <div className="md:col-span-6">
-                        <h3 className="font-bold text-slate-800">{evt.event}</h3>
-                        <p className="text-sm text-slate-600 mt-1">{evt.desc}</p>
+                        <h3 className="font-bold text-tefa-navy">{evt.event}</h3>
+                        <p className="text-sm text-tefa-body/70 mt-1">{evt.desc}</p>
                       </div>
                       <div className="md:col-span-3 flex items-center">
-                         <div className="text-xs font-medium text-slate-500 bg-slate-50 px-3 py-2 rounded border border-slate-100 w-full text-center">
-                            <span className="block uppercase text-[10px] text-slate-400 mb-1">Funding Method</span>
+                         <div className="text-xs font-medium text-tefa-body/60 bg-tefa-light px-3 py-2 rounded border border-gray-100 w-full text-center">
+                            <span className="block uppercase text-[10px] text-tefa-body/50 mb-1">Funding Method</span>
                             {evt.funding}
                          </div>
                       </div>
@@ -761,11 +755,11 @@ The contribution amount we listed represents the maximum we can sustainably budg
         {/* CHECKLIST VIEW */}
         {activeTab === 'checklist' && (
           <div className="max-w-3xl mx-auto space-y-6">
-              <h2 className="text-2xl font-bold mb-6 text-slate-800 flex items-center gap-2">
+              <h2 className="text-2xl font-bold mb-6 text-tefa-navy flex items-center gap-2">
                 <CheckSquare /> Application Checklist
               </h2>
 
-              <div className="bg-amber-50 p-4 rounded-lg border border-amber-200 text-sm text-amber-800 flex items-start gap-3 mb-6">
+              <div className="bg-tefa-gold/10 p-4 rounded-lg border border-tefa-gold/30 text-sm text-tefa-red flex items-start gap-3 mb-6">
                 <AlertCircle className="shrink-0 mt-0.5" size={18} />
                 <p>
                   <strong>Note:</strong> Main applications are checked off. Focus on supporting documents (Tax returns, Recommendations).
@@ -773,25 +767,25 @@ The contribution amount we listed represents the maximum we can sustainably budg
               </div>
 
               {Object.entries(checklist).map(([key, section]) => (
-                <div key={key} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div key={key} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                   <div className={`px-4 py-3 font-bold flex justify-between items-center ${section.color}`}>
                     {section.title}
                     <span className="text-xs bg-white/50 px-2 py-1 rounded">
                       {section.items.filter(i => i.done).length}/{section.items.length}
                     </span>
                   </div>
-                  <div className="divide-y divide-slate-100">
+                  <div className="divide-y divide-gray-100">
                     {section.items.map((item) => (
                       <div
                         key={item.id}
                         onClick={() => toggleCheck(key, item.id)}
-                        className="p-3 flex items-start gap-3 hover:bg-slate-50 cursor-pointer transition"
+                        className="p-3 flex items-start gap-3 hover:bg-tefa-light cursor-pointer transition"
                       >
                         <div className={`mt-1 w-5 h-5 rounded border flex items-center justify-center shrink-0 transition
-                          ${item.done ? 'bg-green-500 border-green-500 text-white' : 'border-slate-300 bg-white'}`}>
+                          ${item.done ? 'bg-green-500 border-green-500 text-white' : 'border-gray-300 bg-white'}`}>
                           {item.done && <CheckCircle size={14} />}
                         </div>
-                        <span className={`text-sm ${item.done ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
+                        <span className={`text-sm ${item.done ? 'text-tefa-body/50 line-through' : 'text-tefa-navy'}`}>
                           {item.text}
                         </span>
                       </div>
@@ -805,23 +799,23 @@ The contribution amount we listed represents the maximum we can sustainably budg
         {/* ESSAYS VIEW */}
         {activeTab === 'essays' && (
           <div className="max-w-4xl mx-auto space-y-6">
-            <h2 className="text-2xl font-bold mb-6 text-slate-800 flex items-center gap-2">
+            <h2 className="text-2xl font-bold mb-6 text-tefa-navy flex items-center gap-2">
               <FileText /> Application Text & Essays
             </h2>
             <div className="grid grid-cols-1 gap-6">
               {Object.values(applicationTexts).map((item, idx) => (
-                <div key={idx} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                  <div className="bg-slate-50 px-4 py-3 border-b border-slate-100 flex justify-between items-center">
-                    <h3 className="font-bold text-slate-700">{item.title}</h3>
+                <div key={idx} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                  <div className="bg-tefa-light px-4 py-3 border-b border-gray-100 flex justify-between items-center">
+                    <h3 className="font-bold text-tefa-navy">{item.title}</h3>
                     <button
                       onClick={() => copyToClipboard(item.content)}
-                      className="text-xs flex items-center gap-1 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 px-2 py-1 rounded transition"
+                      className="text-xs flex items-center gap-1 bg-white border border-gray-200 hover:bg-tefa-light text-tefa-body/70 px-2 py-1 rounded transition"
                     >
                       <Copy size={12} /> Copy Text
                     </button>
                   </div>
-                  <div className="p-4 bg-slate-50/30">
-                    <pre className="whitespace-pre-wrap font-sans text-sm text-slate-700 leading-relaxed">
+                  <div className="p-4 bg-tefa-light/30">
+                    <pre className="whitespace-pre-wrap font-sans text-sm text-tefa-navy leading-relaxed">
                       {item.content}
                     </pre>
                   </div>
@@ -834,13 +828,13 @@ The contribution amount we listed represents the maximum we can sustainably budg
         {/* ANALYSIS VIEW */}
         {activeTab === 'analysis' && (
           <div className="max-w-4xl mx-auto space-y-6">
-            <h2 className="text-2xl font-bold mb-6 text-slate-800 flex items-center gap-2">
+            <h2 className="text-2xl font-bold mb-6 text-tefa-navy flex items-center gap-2">
               <BarChart2 /> Strategic Financial Analysis Report
             </h2>
 
             {/* Scenario Selector */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
-                <h3 className="font-bold text-slate-700 mb-4 flex items-center gap-2">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+                <h3 className="font-bold text-tefa-navy mb-4 flex items-center gap-2">
                     <Layers size={18}/> Select Applicant Volume Scenario
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -850,8 +844,8 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             onClick={() => setApplicantScenario(count)}
                             className={`py-2 px-3 rounded-lg text-sm font-medium border transition
                                 ${applicantScenario === count
-                                ? 'bg-slate-800 text-white border-slate-800'
-                                : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'}`}
+                                ? 'bg-tefa-navy text-white border-tefa-navy'
+                                : 'bg-white text-tefa-navy border-tefa-navy/30 hover:border-tefa-navy'}`}
                         >
                             {(count / 1000).toFixed(0)}k Applicants
                         </button>
@@ -859,10 +853,10 @@ The contribution amount we listed represents the maximum we can sustainably budg
                 </div>
 
                 {/* Ineligibility Rate */}
-                <div className="mt-5 pt-4 border-t border-slate-100">
+                <div className="mt-5 pt-4 border-t border-gray-100">
                     <div className="flex items-center justify-between mb-2">
-                        <label className="text-sm font-medium text-slate-700">Estimated Ineligibility Rate</label>
-                        <span className="text-sm font-bold text-slate-800">{Math.round(ineligibilityRate * 100)}%</span>
+                        <label className="text-sm font-medium text-tefa-navy">Estimated Ineligibility Rate</label>
+                        <span className="text-sm font-bold text-tefa-navy">{Math.round(ineligibilityRate * 100)}%</span>
                     </div>
                     <input
                         type="range"
@@ -871,26 +865,26 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         step="1"
                         value={Math.round(ineligibilityRate * 100)}
                         onChange={(e) => setIneligibilityRate(parseInt(e.target.value) / 100)}
-                        className="w-full accent-slate-700"
+                        className="w-full accent-tefa-navy"
                     />
-                    <div className="flex justify-between text-xs text-slate-400 mt-1">
+                    <div className="flex justify-between text-xs text-tefa-body/50 mt-1">
                         <span>0%</span>
                         <span>10%</span>
                         <span>20%</span>
                     </div>
-                    <div className="mt-2 text-sm text-slate-600">
+                    <div className="mt-2 text-sm text-tefa-body/70">
                         Total Applicants: <strong>{applicantScenario.toLocaleString()}</strong> → Eligible: <strong>{analysis.eligibleApps.toLocaleString()}</strong> ({Math.round(ineligibilityRate * 100)}% ineligible)
                     </div>
-                    <div className="mt-1 text-xs text-slate-400">
+                    <div className="mt-1 text-xs text-tefa-body/50">
                         Comptroller reported ~10% overall ineligibility (~50% for pre-K, much lower for K-12)
                     </div>
                 </div>
 
                 {/* Prior Public School Rate */}
-                <div className="mt-5 pt-4 border-t border-slate-100">
+                <div className="mt-5 pt-4 border-t border-gray-100">
                     <div className="flex items-center justify-between mb-2">
-                        <label className="text-sm font-medium text-slate-700">Prior Public School Enrollment Rate</label>
-                        <span className="text-sm font-bold text-slate-800">{Math.round(publicSchoolPct * 100)}%</span>
+                        <label className="text-sm font-medium text-tefa-navy">Prior Public School Enrollment Rate</label>
+                        <span className="text-sm font-bold text-tefa-navy">{Math.round(publicSchoolPct * 100)}%</span>
                     </div>
                     <input
                         type="range"
@@ -899,63 +893,63 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         step="1"
                         value={Math.round(publicSchoolPct * 100)}
                         onChange={(e) => setPublicSchoolPct(parseInt(e.target.value) / 100)}
-                        className="w-full accent-slate-700"
+                        className="w-full accent-tefa-navy"
                     />
-                    <div className="flex justify-between text-xs text-slate-400 mt-1">
+                    <div className="flex justify-between text-xs text-tefa-body/50 mt-1">
                         <span>10%</span>
                         <span>24% (TCVT)</span>
                         <span>60%</span>
                     </div>
-                    <div className="mt-2 text-sm text-slate-600">
+                    <div className="mt-2 text-sm text-tefa-body/70">
                         Est. {Math.round(publicSchoolPct * 100)}% of applicants were enrolled in public school last year
                     </div>
-                    <div className="mt-1 text-xs text-slate-400">
+                    <div className="mt-1 text-xs text-tefa-body/50">
                         SB 2 §29.356(b)(1) requires prior public school enrollment for the 80% priority pool. TCVT data suggests ~24% of applicants qualify. The Comptroller has not published this breakdown.
                     </div>
                 </div>
 
                 {/* Scenario Result */}
-                <div className="mt-6 pt-4 border-t border-slate-100 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="mt-6 pt-4 border-t border-gray-100 grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                        <div className="text-xs text-slate-400 uppercase font-bold">Per-Child (Tier 3)</div>
+                        <div className="text-xs text-tefa-body/50 uppercase font-bold">Per-Child (Tier 3)</div>
                         <div className={`text-2xl font-bold ${analysis.tier3Rate > 80 ? 'text-green-600' : analysis.tier3Rate > 50 ? 'text-amber-500' : 'text-red-500'}`}>
                             {analysis.tier3Rate.toFixed(1)}%
                         </div>
-                        <div className="text-xs text-slate-500 mt-1">
+                        <div className="text-xs text-tefa-body/60 mt-1">
                             Individual lottery odds
                         </div>
                     </div>
                     <div>
-                        <div className="text-xs text-slate-400 uppercase font-bold">Family (Sibling Rule)</div>
+                        <div className="text-xs text-tefa-body/50 uppercase font-bold">Family (Sibling Rule)</div>
                         <div className={`text-2xl font-bold ${analysis.familySuccessRate > 80 ? 'text-green-600' : analysis.familySuccessRate > 50 ? 'text-amber-500' : 'text-red-500'}`}>
                             {analysis.familySuccessRate.toFixed(1)}%
                         </div>
-                        <div className="text-xs text-slate-500 mt-1">
+                        <div className="text-xs text-tefa-body/60 mt-1">
                             1 win = all 3 funded
                         </div>
                     </div>
                     <div>
-                        <div className="text-xs text-slate-400 uppercase font-bold">Program Capacity</div>
-                        <div className="text-2xl font-bold text-slate-700">
+                        <div className="text-xs text-tefa-body/50 uppercase font-bold">Program Capacity</div>
+                        <div className="text-2xl font-bold text-tefa-navy">
                             ~{analysis.capacity.toLocaleString()}
                         </div>
-                        <div className="text-xs text-slate-500 mt-1">
+                        <div className="text-xs text-tefa-body/60 mt-1">
                             Tier 4 odds: {analysis.tier4Rate.toFixed(1)}%
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="bg-slate-800 text-white px-6 py-4 flex justify-between items-center">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="bg-tefa-navy text-white px-6 py-4 flex justify-between items-center">
                     <div>
                         <h3 className="font-bold text-lg">Iddings Family Funding Strategy</h3>
-                        <p className="text-slate-300 text-sm">Dual Model Analysis — Comptroller's Rules vs. SB 2 Text — March 2026</p>
+                        <p className="text-tefa-sky/70 text-sm">Dual Model Analysis — Comptroller's Rules vs. SB 2 Text — March 2026</p>
                     </div>
                 </div>
                 <div className="p-8">
-                    <div className="prose prose-sm max-w-none text-slate-700">
-                        <h3 className="font-bold text-slate-900 text-lg mb-2">1. The Projection Model</h3>
+                    <div className="prose prose-sm max-w-none text-tefa-navy">
+                        <h3 className="font-bold text-tefa-navy text-lg mb-2">1. The Projection Model</h3>
                         <p className="mb-4">
                             As of March 30th, more than <strong>256,000</strong> students have applied (per the Comptroller's email). The application window
                             closes <strong>March 31 at 11:59 PM CT</strong> per a federal court order (Judge Bennett, S.D. Texas).
@@ -970,25 +964,25 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             reducing the eligible pool to <strong>{analysis.eligibleApps.toLocaleString()}</strong> applicants competing for funding.
                         </p>
 
-                        <h3 className="font-bold text-slate-900 text-lg mb-2">2. Supply vs. Demand</h3>
+                        <h3 className="font-bold text-tefa-navy text-lg mb-2">2. Supply vs. Demand</h3>
                         <ul className="list-disc pl-5 mb-4 space-y-1">
                             <li><strong>Total Budget:</strong> $1 Billion</li>
                             <li><strong>Weighted Avg Cost:</strong> ~$8,545 (77% Private / 23% Homeschool — Mar 29 Fact Sheet enrollment mix)</li>
                             <li><strong>Estimated Capacity:</strong> ~{analysis.capacity.toLocaleString()} Students</li>
                             <li><strong>Eligible Applicants:</strong> ~{analysis.eligibleApps.toLocaleString()} (after {Math.round(ineligibilityRate * 100)}% ineligibility)</li>
                         </ul>
-                        <p className="mb-4 text-xs text-slate-500">
+                        <p className="mb-4 text-xs text-tefa-body/60">
                             Note: The 77/23 split is from the Comptroller's Mar 29 "Educational Setting" chart, which shows where applicants <em>plan to enroll</em> for 2026-27, not where they attended previously. Pre-K students also draw from the same $1B pool.
                         </p>
 
-                        <h3 className="font-bold text-slate-900 text-lg mb-2">3. Comptroller's Tier System (How the Lottery Will Actually Run)</h3>
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                            <p className="text-sm text-blue-900 mb-2">
+                        <h3 className="font-bold text-tefa-navy text-lg mb-2">3. Comptroller's Tier System (How the Lottery Will Actually Run)</h3>
+                        <div className="bg-tefa-navy/5 border border-tefa-navy/20 rounded-lg p-4 mb-4">
+                            <p className="text-sm text-tefa-navy mb-2">
                                 <strong>Sibling Rule:</strong> Per the Comptroller's administrative rules, if <em>any one child</em> is accepted in the lottery,
                                 all eligible siblings who applied during the same period are <strong>automatically accepted</strong>.
                                 Your family effectively gets 3 lottery tickets — one win covers the whole household.
                             </p>
-                            <p className="text-xs text-blue-700">
+                            <p className="text-xs text-tefa-navy/70">
                                 All 3 children (Cassius, Dorothy, Sebastian) are in <strong>Tier 3 (200-500% FPL)</strong> under the Comptroller's implementation,
                                 which does not enforce the public school attendance requirement for Tiers 1-3.
                             </p>
@@ -1009,68 +1003,68 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                     {analysis.demandT2.toLocaleString()} applicants — 100% funded
                                 </div>
                             </div>
-                            <div className={`p-4 border-2 rounded-lg ${analysis.tier3Rate === 100 ? 'bg-green-50 border-green-300' : 'bg-amber-50 border-amber-300'}`}>
-                                <div className={`font-bold text-lg ${analysis.tier3Rate === 100 ? 'text-green-800' : 'text-amber-800'}`}>
+                            <div className={`p-4 border-2 rounded-lg ${analysis.tier3Rate === 100 ? 'bg-green-50 border-green-300' : 'bg-tefa-gold/10 border-tefa-gold/40'}`}>
+                                <div className={`font-bold text-lg ${analysis.tier3Rate === 100 ? 'text-green-800' : 'text-tefa-red'}`}>
                                     Tier 3 — 200-500% FPL (30%) — All 3 Iddings Children
                                 </div>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3 text-sm">
                                     <div>
-                                        <div className="text-xs text-slate-400">Demand</div>
+                                        <div className="text-xs text-tefa-body/50">Demand</div>
                                         <div className="font-bold">{analysis.demandT3.toLocaleString()}</div>
                                     </div>
                                     <div>
-                                        <div className="text-xs text-slate-400">Funded</div>
+                                        <div className="text-xs text-tefa-body/50">Funded</div>
                                         <div className="font-bold">{analysis.fundedT3.toLocaleString()}</div>
                                     </div>
                                     <div>
-                                        <div className="text-xs text-slate-400">Per-Child Rate</div>
+                                        <div className="text-xs text-tefa-body/50">Per-Child Rate</div>
                                         <div className={`font-bold ${analysis.tier3Rate > 80 ? 'text-green-600' : analysis.tier3Rate > 50 ? 'text-amber-600' : 'text-red-600'}`}>
                                             {analysis.tier3Rate.toFixed(1)}%
                                         </div>
                                     </div>
                                     <div>
-                                        <div className="text-xs text-slate-400">Family Rate (Sibling Rule)</div>
+                                        <div className="text-xs text-tefa-body/50">Family Rate (Sibling Rule)</div>
                                         <div className={`font-bold ${analysis.familySuccessRate > 80 ? 'text-green-600' : analysis.familySuccessRate > 50 ? 'text-amber-600' : 'text-red-600'}`}>
                                             {analysis.familySuccessRate.toFixed(1)}%
                                         </div>
                                     </div>
                                 </div>
-                                <div className="mt-3 text-xs text-slate-500">
+                                <div className="mt-3 text-xs text-tefa-body/60">
                                     Sibling math: P(family) = 1 - P(all 3 lose) = 1 - (1 - {(analysis.tier3Rate / 100).toFixed(4)})³ = {(analysis.familySuccessRate / 100).toFixed(4)}
                                 </div>
                             </div>
-                            <div className={`p-3 border rounded ${analysis.tier4Rate > 0 ? 'bg-red-50 border-red-200' : 'bg-slate-50 border-slate-200'}`}>
-                                <div className={`font-bold ${analysis.tier4Rate > 50 ? 'text-amber-800' : 'text-red-800'}`}>
+                            <div className={`p-3 border rounded ${analysis.tier4Rate > 0 ? 'bg-red-50 border-red-200' : 'bg-tefa-light border-gray-200'}`}>
+                                <div className={`font-bold ${analysis.tier4Rate > 50 ? 'text-tefa-red' : 'text-tefa-red'}`}>
                                     Tier 4 — ≥500% FPL (27%){' '}
-                                    <span className="text-xs font-normal text-slate-500">(4a: public school 5% | 4b: all others 22%)</span>
+                                    <span className="text-xs font-normal text-tefa-body/60">(4a: public school 5% | 4b: all others 22%)</span>
                                 </div>
-                                <div className={`text-sm ${analysis.tier4Rate > 50 ? 'text-amber-700' : 'text-red-700'}`}>
+                                <div className={`text-sm ${analysis.tier4Rate > 50 ? 'text-tefa-red/80' : 'text-tefa-red/80'}`}>
                                     {(analysis.demandT4a + analysis.demandT4b).toLocaleString()} applicants — {analysis.tier4Rate.toFixed(1)}% funded
                                 </div>
                             </div>
                         </div>
 
-                        <h3 className="font-bold text-slate-900 text-lg mb-2">4. Per-Student Breakdown</h3>
+                        <h3 className="font-bold text-tefa-navy text-lg mb-2">4. Per-Student Breakdown</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                             {students.map((student) => (
-                                <div key={student.name} className={`p-4 rounded-lg border ${analysis.familySuccessRate > 80 ? 'bg-green-50 border-green-200' : analysis.familySuccessRate > 50 ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'}`}>
-                                    <div className="font-bold text-slate-800">{student.name}</div>
-                                    <div className="text-xs text-slate-500">{student.grade} — Tier 3</div>
+                                <div key={student.name} className={`p-4 rounded-lg border ${analysis.familySuccessRate > 80 ? 'bg-green-50 border-green-200' : analysis.familySuccessRate > 50 ? 'bg-tefa-gold/10 border-tefa-gold/30' : 'bg-red-50 border-red-200'}`}>
+                                    <div className="font-bold text-tefa-navy">{student.name}</div>
+                                    <div className="text-xs text-tefa-body/60">{student.grade} — Tier 3</div>
                                     <div className={`text-2xl font-bold mt-2 ${analysis.tier3Rate > 80 ? 'text-green-600' : analysis.tier3Rate > 50 ? 'text-amber-600' : 'text-red-600'}`}>
                                         {analysis.tier3Rate.toFixed(1)}%
                                     </div>
-                                    <div className="text-xs text-slate-400 mt-1">
+                                    <div className="text-xs text-tefa-body/50 mt-1">
                                         {student.wasInPublicSchool ? 'Was in public school last year' : 'Was not in public school last year'}
                                     </div>
                                 </div>
                             ))}
                         </div>
 
-                        <div className={`p-4 rounded-lg border-2 mb-6 ${analysis.familySuccessRate > 80 ? 'bg-green-50 border-green-300' : analysis.familySuccessRate > 50 ? 'bg-amber-50 border-amber-300' : 'bg-red-50 border-red-300'}`}>
+                        <div className={`p-4 rounded-lg border-2 mb-6 ${analysis.familySuccessRate > 80 ? 'bg-green-50 border-green-300' : analysis.familySuccessRate > 50 ? 'bg-tefa-gold/10 border-tefa-gold/40' : 'bg-red-50 border-red-300'}`}>
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <div className="text-xs text-slate-400 uppercase font-bold">Family Probability (All 3 Funded via Sibling Rule)</div>
-                                    <div className="text-xs text-slate-500 mt-1">1 win in Tier 3 lottery = all 3 children automatically accepted</div>
+                                    <div className="text-xs text-tefa-body/50 uppercase font-bold">Family Probability (All 3 Funded via Sibling Rule)</div>
+                                    <div className="text-xs text-tefa-body/60 mt-1">1 win in Tier 3 lottery = all 3 children automatically accepted</div>
                                 </div>
                                 <div className={`text-4xl font-bold ${analysis.familySuccessRate > 80 ? 'text-green-600' : analysis.familySuccessRate > 50 ? 'text-amber-600' : 'text-red-600'}`}>
                                     {analysis.familySuccessRate.toFixed(1)}%
@@ -1078,38 +1072,38 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             </div>
                         </div>
 
-                        <h3 className="font-bold text-slate-900 text-lg mb-2">5. Legal Risk: Comptroller vs. SB 2 Text</h3>
-                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
-                            <p className="text-sm text-amber-900 mb-3">
+                        <h3 className="font-bold text-tefa-navy text-lg mb-2">5. Legal Risk: Comptroller vs. SB 2 Text</h3>
+                        <div className="bg-tefa-gold/10 border border-tefa-gold/30 rounded-lg p-4 mb-4">
+                            <p className="text-sm text-tefa-body mb-3">
                                 <strong>The Comptroller is not enforcing SB 2's public school requirement.</strong> The law (§29.356(b)(1)) mandates that 80% of positions
                                 be reserved for children who attended public school last year AND are low-income/disabled. The Comptroller's website only applies
                                 this requirement to Tier 4 (≥500% FPL), ignoring it entirely for Tiers 1-3. This benefits your family
                                 (Cassius stays in Tier 3) but creates legal vulnerability if challenged.
                             </p>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                                <div className="bg-white rounded p-3 border border-amber-100">
-                                    <div className="text-xs text-slate-400 uppercase font-bold mb-1">Comptroller's Rules (Current Reality)</div>
-                                    <div className="text-slate-600">All 3 kids in Tier 3 (same pool)</div>
+                                <div className="bg-white rounded p-3 border border-tefa-gold/20">
+                                    <div className="text-xs text-tefa-body/50 uppercase font-bold mb-1">Comptroller's Rules (Current Reality)</div>
+                                    <div className="text-tefa-body/70">All 3 kids in Tier 3 (same pool)</div>
                                     <div className={`text-xl font-bold mt-1 ${analysis.familySuccessRate > 80 ? 'text-green-600' : 'text-amber-600'}`}>
                                         {analysis.familySuccessRate.toFixed(1)}% Family Rate
                                     </div>
                                 </div>
-                                <div className="bg-white rounded p-3 border border-amber-100">
-                                    <div className="text-xs text-slate-400 uppercase font-bold mb-1">If SB 2 Text Enforced (Legal Risk)</div>
-                                    <div className="text-slate-600">D&S in priority pool, Cassius in general</div>
+                                <div className="bg-white rounded p-3 border border-tefa-gold/20">
+                                    <div className="text-xs text-tefa-body/50 uppercase font-bold mb-1">If SB 2 Text Enforced (Legal Risk)</div>
+                                    <div className="text-tefa-body/70">D&S in priority pool, Cassius in general</div>
                                     <div className={`text-xl font-bold mt-1 ${analysis.strictFamilyRate > 80 ? 'text-green-600' : 'text-amber-600'}`}>
                                         {analysis.strictFamilyRate.toFixed(1)}% Family Rate
                                     </div>
-                                    <div className="text-xs text-slate-400 mt-1">
+                                    <div className="text-xs text-tefa-body/50 mt-1">
                                         Priority: {analysis.priorityRate.toFixed(1)}% (D&S) | General: {analysis.generalRate.toFixed(1)}% (Cassius)
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <h3 className="font-bold text-slate-900 text-lg mb-2">6. Federal Lawsuit & Political Conflict</h3>
-                        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-                            <p className="text-sm text-red-900 mb-3">
+                        <h3 className="font-bold text-tefa-navy text-lg mb-2">6. Federal Lawsuit & Political Conflict</h3>
+                        <div className="bg-tefa-red/5 border border-tefa-red/20 rounded-lg p-4 mb-4">
+                            <p className="text-sm text-tefa-red mb-3">
                                 <strong>The TEFA program is caught in a federal civil rights lawsuit and a political feud.</strong> Acting
                                 Comptroller Kelly Hancock blocked several Islamic private schools (including Houston Quran Academy) from participating,
                                 citing alleged ties to organizations Gov. Abbott designated as terrorist organizations. Muslim families and schools
@@ -1117,38 +1111,38 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                 ordering the state to extend the deadline to March 31, 2026 and allow the excluded schools to submit applications.
                             </p>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-3">
-                                <div className="bg-white rounded p-3 border border-red-100">
-                                    <div className="text-xs text-slate-400 uppercase font-bold mb-1">The Lawsuit</div>
-                                    <ul className="text-slate-600 space-y-1 text-xs">
+                                <div className="bg-white rounded p-3 border border-tefa-red/10">
+                                    <div className="text-xs text-tefa-body/50 uppercase font-bold mb-1">The Lawsuit</div>
+                                    <ul className="text-tefa-body/70 space-y-1 text-xs">
                                         <li>Hancock banned Islamic schools citing terror ties</li>
                                         <li>Federal judge sided with plaintiffs (temporary injunction)</li>
                                         <li>Deadline extended from Mar 17 to Mar 31</li>
                                         <li><strong>Permanent injunction hearing: April 24, 2026</strong></li>
                                     </ul>
                                 </div>
-                                <div className="bg-white rounded p-3 border border-red-100">
-                                    <div className="text-xs text-slate-400 uppercase font-bold mb-1">The Political Feud</div>
-                                    <ul className="text-slate-600 space-y-1 text-xs">
+                                <div className="bg-white rounded p-3 border border-tefa-red/10">
+                                    <div className="text-xs text-tefa-body/50 uppercase font-bold mb-1">The Political Feud</div>
+                                    <ul className="text-tefa-body/70 space-y-1 text-xs">
                                         <li>Hancock blames AG Paxton for poorly defending the ban</li>
                                         <li>Hancock demanded Paxton strip school charters</li>
                                         <li>Paxton called Hancock an "incompetent loser"</li>
                                         <li>Paxton wants Gov. Abbott to fire Hancock</li>
-                                        <li className="text-slate-400">Backdrop: Hancock voted to impeach Paxton in 2023</li>
+                                        <li className="text-tefa-body/50">Backdrop: Hancock voted to impeach Paxton in 2023</li>
                                     </ul>
                                 </div>
                             </div>
-                            <div className="bg-white rounded p-3 border border-red-100 mb-3">
-                                <div className="text-xs text-slate-400 uppercase font-bold mb-1">Impact on TEFA Funding Timeline</div>
-                                <ul className="text-slate-600 space-y-1 text-xs">
+                            <div className="bg-white rounded p-3 border border-tefa-red/10 mb-3">
+                                <div className="text-xs text-tefa-body/50 uppercase font-bold mb-1">Impact on TEFA Funding Timeline</div>
+                                <ul className="text-tefa-body/70 space-y-1 text-xs">
                                     <li>No state funds have been ordered to flow yet</li>
                                     <li>Financial side of the program is stalled until court proceedings resolve</li>
                                     <li>Internal Comptroller-AG conflict adds additional unpredictability to administration</li>
                                     <li>256,700+ applications to process once the legal path is clear</li>
                                 </ul>
                             </div>
-                            <div className="bg-emerald-50 rounded p-3 border border-emerald-200">
-                                <div className="text-xs text-emerald-800 uppercase font-bold mb-1">What This Means for Your Family</div>
-                                <ul className="text-emerald-700 space-y-1 text-xs">
+                            <div className="bg-tefa-green/5 rounded p-3 border border-tefa-green/20">
+                                <div className="text-xs text-tefa-green uppercase font-bold mb-1">What This Means for Your Family</div>
+                                <ul className="text-tefa-green/70 space-y-1 text-xs">
                                     <li><strong>Your application is valid</strong> — submitted before the deadline</li>
                                     <li><strong>Your lottery odds are unchanged</strong> — this lawsuit concerns which schools can participate, not family tier placement</li>
                                     <li><strong>The risk is timing, not eligibility</strong> — funds may arrive later than originally expected</li>
@@ -1157,7 +1151,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             </div>
                         </div>
 
-                        <h3 className="font-bold text-slate-900 text-lg mb-2">7. Conclusion</h3>
+                        <h3 className="font-bold text-tefa-navy text-lg mb-2">7. Conclusion</h3>
                         <p className="mb-3">
                             Under the Comptroller's actual implementation, your family has a
                             <strong> {analysis.familySuccessRate.toFixed(1)}%</strong> probability of all 3 children receiving TEFA funding.
@@ -1167,11 +1161,11 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                 ? " The sibling rule significantly boosts your odds — 3 independent lottery draws with 1 win covering all."
                                 : " While individual odds are competitive, the sibling rule provides a meaningful boost."}
                         </p>
-                        <p className="text-xs text-slate-500 mb-3">
+                        <p className="text-xs text-tefa-body/60 mb-3">
                             Even under the stricter SB 2 reading, the sibling rule still applies — and Dorothy & Sebastian's near-certain priority placement
                             would pull Cassius through regardless. Either way, your family's position is strong.
                         </p>
-                        <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-3">
+                        <p className="text-xs text-tefa-red/80 bg-tefa-gold/10 border border-tefa-gold/30 rounded p-3">
                             <strong>Timing caveat:</strong> The federal lawsuit and Comptroller-AG political conflict have introduced significant timing uncertainty.
                             While your lottery odds remain strong, the program is in a holding pattern until at least the April 24 hearing. Plan for the
                             possibility that TEFA funds may not arrive until late May or later. The June 30 NBCA withdrawal deadline remains your key decision point —
@@ -1185,7 +1179,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
 
       </main>
 
-      <footer className="max-w-6xl mx-auto p-6 text-center text-slate-400 text-xs mt-8">
+      <footer className="bg-tefa-navy text-white max-w-full p-6 text-center text-xs mt-8">
         <p>Created for Iddings Family | 2026-2027 Academic Year</p>
         <p className="mt-1">Disclaimer: All financial figures are estimates based on 2026 projections. Final awards are determined by respective agencies.</p>
       </footer>
