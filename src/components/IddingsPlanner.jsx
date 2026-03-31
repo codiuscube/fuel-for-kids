@@ -37,9 +37,9 @@ const IddingsPlanner = () => {
 
   // Student Data
   const students = [
-    { name: 'Cassius', grade: '9th Grade', school: 'High School', aceAmount: 4000, wasInPublicSchool: false },
-    { name: 'Dorothy', grade: '7th Grade', school: 'Middle School', aceAmount: 3000, wasInPublicSchool: true },
-    { name: 'Sebastian', grade: '4th Grade', school: 'Elementary', aceAmount: 3000, wasInPublicSchool: true }
+    { name: 'Cassius', grade: '9th Grade', school: 'High School', aceAmount: 4000, nbcaAid: 5850, wasInPublicSchool: false },
+    { name: 'Dorothy', grade: '7th Grade', school: 'Middle School', aceAmount: 3000, nbcaAid: 5600, wasInPublicSchool: true },
+    { name: 'Sebastian', grade: '4th Grade', school: 'Elementary', aceAmount: 3000, nbcaAid: 4750, wasInPublicSchool: true }
   ];
 
   // Financial Data State - "Most Likely Scenario" Defaults
@@ -50,8 +50,8 @@ const IddingsPlanner = () => {
   const [includeTefa, setIncludeTefa] = useState(true);
   const [includeAce, setIncludeAce] = useState(false);
 
-  // NBCA Aid - Defaulting to modest amount ($500/kid) as "Likely"
-  const [nbcaAidAmount, setNbcaAidAmount] = useState(1500);
+  // NBCA Aid - Granted: Cassius $5,850 + Dorothy $5,600 + Sebastian $4,750 = $16,200
+  const nbcaAidAmount = 16200;
 
   // NBCA Scholarship Slider - Defaulting to 0 (Unknown)
   const [nbcaScholarshipAmount, setNbcaScholarshipAmount] = useState(0);
@@ -77,7 +77,7 @@ const IddingsPlanner = () => {
   const appStatus = [
     { item: "NBCA Application", status: "Accepted (3/3)", date: "All 3 Accepted", type: "success", funding: "N/A" },
     { item: "NBCA Enrollment Fee", status: "Due by April 6", date: "$175 x 3 = $525", type: "pending", funding: "One-Time" },
-    { item: "NBCA Financial Aid", status: "Waiting", date: "March 31", type: "pending", funding: "Tuition Credit" },
+    { item: "NBCA Financial Aid", status: "Granted ($16,200)", date: "March 31", type: "success", funding: "Tuition Credit" },
     { item: "NBCA Scholarship", status: "Waiting", date: "March 31", type: "pending", funding: "Tuition Credit" },
     { item: "TEFA Scholarship", status: "Waiting", date: "May (est.)", type: "pending", funding: "Digital Wallet" },
   ];
@@ -287,7 +287,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
     { date: 'Mar 14', day: 'Sat', isoDate: '2026-03-14', event: 'NBCA Round 1 Notification', type: 'nbca', desc: 'Acceptance letters emailed to families.', funding: 'Decision Only' },
     { date: 'Mar 17', day: 'Tue', isoDate: '2026-03-17', event: 'TEFA Original Deadline (Extended)', type: 'tefa', desc: 'Original deadline. Extended by federal court order.', funding: 'Superseded' },
     { date: 'Mar 31', day: 'Tue', isoDate: '2026-03-31', event: 'TEFA Application Closes (Extended)', type: 'tefa', desc: 'New deadline per federal court order (Judge Bennett, S.D. Texas). 11:59 PM CT. After today: cannot switch homeschool/other to private school (can switch private to homeschool/other).', funding: 'Deadline' },
-    { date: 'Mar 31', day: 'Tue', isoDate: '2026-03-31', event: 'NBCA Aid & Scholarship Decisions', type: 'facts', desc: 'Financial aid and scholarship offers sent. Must accept within 2 weeks.', funding: 'Credited to Tuition' },
+    { date: 'Mar 31', day: 'Tue', isoDate: '2026-03-31', event: 'NBCA Financial Aid Granted ($16,200)', type: 'nbca', desc: 'Financial aid awarded: Cassius $5,850, Dorothy $5,600, Sebastian $4,750. Credited to tuition.', funding: 'Credited to Tuition' },
     { date: 'Apr 06', day: 'Mon', isoDate: '2026-04-06', event: 'NBCA Enrollment Fee Due', type: 'nbca', desc: 'Pay $175 x 3 ($525) by EOD to secure spots. 9th = 5 left, 7th = 3 left, 4th = plenty.', funding: '$525 One-Time' },
     { date: 'Apr 15', day: 'Wed', isoDate: '2026-04-15', event: 'ACE Scholarship Deadline', type: 'ace', desc: 'Closes 11:59 PM (Tax Day).', funding: 'Deadline' },
     { date: 'Apr 24', day: 'Fri', isoDate: '2026-04-24', event: 'Federal Injunction Hearing', type: 'tefa', desc: 'Key hearing in Muslim schools v. Texas. Court decides whether to maintain, modify, or dissolve the injunction blocking Comptroller Hancock from excluding Islamic schools. TEFA funding timeline depends on outcome.', funding: 'Court Date' },
@@ -475,9 +475,9 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         <span className="text-xs text-tefa-body/40 hidden sm:block">Enrollment fee for 3 kids</span>
                     </div>
                     <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-navy/10">
-                        <span className="text-tefa-body/60 font-medium">NBCA Aid & Scholarship</span>
-                        <span className="font-bold text-tefa-navy text-lg">March 31</span>
-                        <span className="text-xs text-tefa-body/40 hidden sm:block">Decisions released</span>
+                        <span className="text-tefa-body/60 font-medium">NBCA Financial Aid</span>
+                        <span className="font-bold text-green-600 text-lg">$16,200 Granted</span>
+                        <span className="text-xs text-tefa-body/40 hidden sm:block">Cassius $5,850 / Dorothy $5,600 / Sebastian $4,750</span>
                     </div>
                     <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-navy/10">
                         <span className="text-tefa-body/60 font-medium">TEFA Notification</span>
@@ -583,33 +583,25 @@ The contribution amount we listed represents the maximum we can sustainably budg
                           </div>
                         </div>
 
-                        {/* NBCA Financial Aid Slider */}
-                        <div className="p-3 bg-tefa-green/5 rounded-lg border border-tefa-green/10">
+                        {/* NBCA Financial Aid - Granted */}
+                        <div className="p-3 bg-tefa-green/10 rounded-lg border border-tefa-green/30">
                           <div className="flex justify-between items-center mb-2">
                             <div className="font-bold text-tefa-green flex items-center gap-2">
                                 <Percent size={14}/> NBCA Fin. Aid
-                                <span className="text-[10px] bg-amber-400 text-white px-1.5 py-0.5 rounded uppercase tracking-wide">Moderate</span>
+                                <span className="text-[10px] bg-tefa-green text-white px-1.5 py-0.5 rounded uppercase tracking-wide">Granted</span>
                             </div>
-                            <div className="text-xs font-bold text-tefa-green/70 bg-white px-2 py-0.5 rounded border border-tefa-green/20">
-                              ${nbcaAidAmount.toLocaleString()}
+                            <div className="text-xs font-bold text-tefa-green bg-white px-2 py-0.5 rounded border border-tefa-green/30">
+                              $16,200
                             </div>
                           </div>
-                          <input
-                            type="range"
-                            min="0"
-                            max="15000"
-                            step="100"
-                            value={nbcaAidAmount}
-                            onChange={(e) => setNbcaAidAmount(Number(e.target.value))}
-                            className="w-full h-2 bg-tefa-green/20 rounded-lg appearance-none cursor-pointer accent-tefa-green"
-                          />
-                          <div className="flex justify-between text-xs text-tefa-green/60 mt-1 font-medium">
-                            <span>$0</span>
-                            <span>$15k Max</span>
+                          <div className="space-y-1 text-xs text-tefa-green/80">
+                            <div className="flex justify-between"><span>Cassius:</span><span className="font-bold">$5,850</span></div>
+                            <div className="flex justify-between"><span>Dorothy:</span><span className="font-bold">$5,600</span></div>
+                            <div className="flex justify-between"><span>Sebastian:</span><span className="font-bold">$4,750</span></div>
                           </div>
-                           <div className="text-[10px] text-tefa-green/80 mt-1">
+                          <div className="text-[10px] text-tefa-green/80 mt-2">
                                 Credited to Tuition
-                           </div>
+                          </div>
                         </div>
 
                         {/* NBCA Scholarship Slider */}
