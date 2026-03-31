@@ -680,6 +680,12 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             <div className="text-right text-sm text-tefa-body/50 mt-1 font-medium">
                               approx ${Math.max(0, monthlyCost).toFixed(0)} / month (10-mo)
                             </div>
+                            {finalCost < 0 && (
+                              <div className="flex justify-between items-center mt-3 bg-green-50 px-3 py-2 rounded-lg border border-green-200">
+                                <span className="font-bold text-green-700 text-sm">Remainder (uniforms, supplies, etc.)</span>
+                                <span className="text-lg font-bold text-green-600">${Math.abs(finalCost).toLocaleString(undefined, {maximumFractionDigits: 0})}</span>
+                              </div>
+                            )}
                         </div>
                       </div>
                   </div>
