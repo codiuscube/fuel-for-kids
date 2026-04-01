@@ -30,8 +30,8 @@ const IddingsPlanner = () => {
   const activeTab = VALID_TABS.includes(tab) ? tab : 'dashboard';
   const setActiveTab = (t) => navigate(`/${t}`);
 
-  // Scenario State - Updated to 256k+ per March 30 Comptroller email (last day before deadline)
-  const [applicantScenario, setApplicantScenario] = useState(270000);
+  // Scenario State - Updated to 274k+ per AFC press release (Apr 1)
+  const [applicantScenario, setApplicantScenario] = useState(274000);
   const [ineligibilityRate, setIneligibilityRate] = useState(0.10); // ~10% default
   const [publicSchoolPct, setPublicSchoolPct] = useState(0.24); // TCVT data: ~24% were in public school last year
 
@@ -53,7 +53,7 @@ const IddingsPlanner = () => {
   // NBCA Aid - Granted: Cassius $5,850 + Dorothy $5,600 + Sebastian $4,750 = $16,200
   const nbcaAidAmount = 16200;
 
-  // NBCA Scholarship Slider - Defaulting to 0 (Unknown)
+  // NBCA Scholarship - Depends on TEFA outcome (either/or per NBCA). Defaulting to 0.
   const [nbcaScholarshipAmount, setNbcaScholarshipAmount] = useState(0);
 
   // Fee Calculations (One-time)
@@ -78,8 +78,8 @@ const IddingsPlanner = () => {
     { item: "NBCA Application", status: "Accepted (3/3)", date: "All 3 Accepted", type: "success", funding: "N/A" },
     { item: "NBCA Enrollment Fee", status: "Due by April 6", date: "$175 x 3 = $525", type: "pending", funding: "One-Time" },
     { item: "NBCA Financial Aid", status: "Granted ($16,200)", date: "March 31", type: "success", funding: "Tuition Credit" },
-    { item: "NBCA Scholarship", status: "Waiting", date: "March 31", type: "pending", funding: "Tuition Credit" },
-    { item: "TEFA Scholarship", status: "Waiting", date: "May (est.)", type: "pending", funding: "Digital Wallet" },
+    { item: "NBCA Scholarship", status: "Pending (depends on TEFA)", date: "End of April", type: "pending", funding: "Tuition Credit" },
+    { item: "TEFA Scholarship", status: "Waiting", date: "Mid-April (est.)", type: "pending", funding: "Digital Wallet" },
   ];
 
   // Checklist Data
@@ -288,10 +288,12 @@ The contribution amount we listed represents the maximum we can sustainably budg
     { date: 'Mar 17', day: 'Tue', isoDate: '2026-03-17', event: 'TEFA Original Deadline (Extended)', type: 'tefa', desc: 'Original deadline. Extended by federal court order.', funding: 'Superseded' },
     { date: 'Mar 31', day: 'Tue', isoDate: '2026-03-31', event: 'TEFA Application Closes (Extended)', type: 'tefa', desc: 'New deadline per federal court order (Judge Bennett, S.D. Texas). 11:59 PM CT. After today: cannot switch homeschool/other to private school (can switch private to homeschool/other).', funding: 'Deadline' },
     { date: 'Mar 31', day: 'Tue', isoDate: '2026-03-31', event: 'NBCA Financial Aid Granted ($16,200)', type: 'nbca', desc: 'Financial aid awarded: Cassius $5,850, Dorothy $5,600, Sebastian $4,750. Credited to tuition.', funding: 'Credited to Tuition' },
+    { date: 'Apr 01', day: 'Wed', isoDate: '2026-04-01', event: 'TEFA Surpasses 274,000 Applications (AFC)', type: 'tefa', desc: 'AFC press release confirms 274,000+ applications — largest school choice launch in history.', funding: 'N/A' },
     { date: 'Apr 06', day: 'Mon', isoDate: '2026-04-06', event: 'NBCA Enrollment Fee Due', type: 'nbca', desc: 'Pay $175 x 3 ($525) by EOD to secure spots. 9th = 5 left, 7th = 3 left, 4th = plenty.', funding: '$525 One-Time' },
     { date: 'Apr 15', day: 'Wed', isoDate: '2026-04-15', event: 'ACE Scholarship Deadline', type: 'ace', desc: 'Closes 11:59 PM (Tax Day).', funding: 'Deadline' },
     { date: 'Apr 24', day: 'Fri', isoDate: '2026-04-24', event: 'Federal Injunction Hearing', type: 'tefa', desc: 'Key hearing in Muslim schools v. Texas. Court decides whether to maintain, modify, or dissolve the injunction blocking Comptroller Hancock from excluding Islamic schools. TEFA funding timeline depends on outcome.', funding: 'Court Date' },
-    { date: 'May (est.)', day: 'TBD', isoDate: '2026-05-01', event: 'TEFA Funding Notification (est.)', type: 'tefa', desc: 'Comptroller said notifications "in April, most likely not the first week" (Mar 26 email) — but likely delayed until after Apr 24 federal hearing. 256k+ applications to process. Tier-based awards with lottery for oversubscribed tiers.', funding: 'Paid to Digital Wallet' },
+    { date: 'Mid-Apr', day: 'TBD', isoDate: '2026-04-15', event: 'TEFA Funding Notification (est.)', type: 'tefa', desc: 'Comptroller said notifications "in April, most likely not the first week" (Mar 26 email). 274k+ applications to process. Tier-based awards with lottery for oversubscribed tiers. Per NBCA: notify school when received.', funding: 'Paid to Digital Wallet' },
+    { date: 'End Apr', day: 'TBD', isoDate: '2026-04-30', event: 'NBCA Scholarship Decisions (est.)', type: 'nbca', desc: 'Per NBCA (Michelle Leidy, Mar 31): scholarship amount depends on TEFA outcome — TEFA funds affect financial need calculation. Scholarship awarded only if/where TEFA doesn\'t cover.', funding: 'Credited to Tuition' },
     { date: 'Jun 01', day: 'Mon', isoDate: '2026-06-01', event: 'TEFA School Selection Deadline', type: 'tefa', desc: 'Select a participating school by this date to receive initial funding on July 1. More schools joining on a rolling basis.', funding: 'Required for Jul 1 Funding' },
     { date: 'Jun 15', day: 'Mon', isoDate: '2026-06-15', event: 'ACE Award Notification', type: 'ace', desc: 'Scholarship decisions released.', funding: 'Paid directly to School' },
     { date: 'Jun 30', day: 'Tue', isoDate: '2026-06-30', event: 'NBCA Withdrawal Deadline', type: 'nbca', desc: 'Can withdraw penalty-free before this date. No tuition due until July.', funding: 'N/A' },
@@ -609,7 +611,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                           <div className="flex justify-between items-center mb-2">
                             <div className="font-bold text-tefa-green flex items-center gap-2">
                                 <GraduationCap size={14}/> NBCA Scholarship
-                                <span className="text-[10px] bg-tefa-green text-white px-1.5 py-0.5 rounded uppercase tracking-wide">Pending Mar 31</span>
+                                <span className="text-[10px] bg-amber-400 text-white px-1.5 py-0.5 rounded uppercase tracking-wide">Pending End of Apr</span>
                             </div>
                             <div className="text-xs font-bold text-tefa-green/70 bg-white px-2 py-0.5 rounded border border-tefa-green/20">
                               ${nbcaScholarshipAmount.toLocaleString()}
@@ -630,6 +632,9 @@ The contribution amount we listed represents the maximum we can sustainably budg
                           </div>
                           <div className="text-[10px] text-tefa-green/80 mt-1">
                                 Credited to Tuition
+                          </div>
+                          <div className="text-[10px] text-amber-600 mt-1 font-medium">
+                                NBCA calculates scholarship after TEFA decision — either/or, not both
                           </div>
                         </div>
 
@@ -836,7 +841,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <Layers size={18}/> Select Applicant Volume Scenario
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {[256000, 270000, 290000, 310000].map((count) => (
+                    {[256000, 274000, 290000, 310000].map((count) => (
                         <button
                             key={count}
                             onClick={() => setApplicantScenario(count)}
@@ -949,8 +954,8 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <div className="prose prose-sm max-w-none text-tefa-navy">
                         <h3 className="font-bold text-tefa-navy text-lg mb-2">1. The Projection Model</h3>
                         <p className="mb-4">
-                            As of March 30th, more than <strong>256,000</strong> students have applied (per the Comptroller's email). The application window
-                            closes <strong>March 31 at 11:59 PM CT</strong> per a federal court order (Judge Bennett, S.D. Texas).
+                            More than <strong>274,000</strong> students applied during the initial rollout (per AFC press release, April 1). The application window
+                            closed <strong>March 31 at 11:59 PM CT</strong> per a federal court order (Judge Bennett, S.D. Texas).
                             More than 2,300 participating schools are listed in the school finder tool, including a growing number of accredited online schools.
                             The current scenario is set to <strong>{applicantScenario.toLocaleString()}</strong> total applicants
                             to account for final-day applications.
