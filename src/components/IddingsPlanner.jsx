@@ -32,7 +32,7 @@ const IddingsPlanner = () => {
 
   // Scenario State - Updated to 274k+ per AFC press release (Apr 1)
   const [applicantScenario, setApplicantScenario] = useState(274000);
-  const [ineligibilityRate, setIneligibilityRate] = useState(0.10); // ~10% default
+  const [ineligibilityRate, setIneligibilityRate] = useState(0.02); // ~2% per Comptroller Apr 2 projection (funding exhausts in T2)
   const [publicSchoolPct, setPublicSchoolPct] = useState(0.24); // TCVT data: ~24% were in public school last year
 
   // Student Data
@@ -46,8 +46,8 @@ const IddingsPlanner = () => {
   const [tuition, setTuition] = useState(43505);
   const [tefaPerStudent, setTefaPerStudent] = useState(10474);
 
-  // Default: TEFA is likely (ON), ACE is unlikely (OFF)
-  const [includeTefa, setIncludeTefa] = useState(true);
+  // Default: TEFA unlikely for T3 (OFF per Comptroller Apr 2), ACE unlikely (OFF)
+  const [includeTefa, setIncludeTefa] = useState(false);
   const [includeAce, setIncludeAce] = useState(false);
 
   // NBCA Aid - Granted: Cassius $5,850 + Dorothy $5,600 + Sebastian $4,750 = $16,200
@@ -59,7 +59,7 @@ const IddingsPlanner = () => {
   // Fee Calculations (One-time)
   const fees = {
     nbcaApp: 150 * 3, // $150 per student
-    nbcaEnroll: 175 * 3, // $175 per student x 3 accepted
+    nbcaEnroll: (175 + 55) * 3, // $175 + $55 additional enrollment fee per student x 3
     factsApp: 40,     // $40 per family
     aceApp: 0         // $0 (Waived per user update)
   };
@@ -76,10 +76,10 @@ const IddingsPlanner = () => {
   // Status Tracking Data
   const appStatus = [
     { item: "NBCA Application", status: "Accepted (3/3)", date: "All 3 Accepted", type: "success", funding: "N/A" },
-    { item: "NBCA Enrollment Fee", status: "Due by April 6", date: "$175 x 3 = $525", type: "pending", funding: "One-Time" },
+    { item: "NBCA Enrollment Fee", status: "Paid ($690)", date: "April 2", type: "success", funding: "($175 + $55) x 3" },
     { item: "NBCA Financial Aid", status: "Granted ($16,200)", date: "March 31", type: "success", funding: "Tuition Credit" },
     { item: "NBCA Scholarship", status: "Pending (depends on TEFA)", date: "End of April", type: "pending", funding: "Tuition Credit" },
-    { item: "TEFA Scholarship", status: "Waiting", date: "Mid-April (est.)", type: "pending", funding: "Digital Wallet" },
+    { item: "TEFA Scholarship", status: "Waiting (Tier 3 — likely waitlisted)", date: "April (notifications this month)", type: "pending", funding: "Digital Wallet" },
   ];
 
   // Checklist Data
@@ -152,7 +152,7 @@ const IddingsPlanner = () => {
     const budget = 1000000000; // $1 Billion
     const eligibleApps = Math.round(totalApps * (1 - ineligibilityRate));
 
-    // Cost model (77% Private, 23% Homeschool — Mar 29 Fact Sheet, intended 2026-27 enrollment)
+    // Cost model (77% Private, 23% Homeschool — confirmed by Comptroller Apr 2 breakdown PDF)
     const privateCost = 10500;
     const homeCost = 2000;
     const weightedAvg = (privateCost * 0.77) + (homeCost * 0.23); // ~$8,545
@@ -160,13 +160,14 @@ const IddingsPlanner = () => {
 
     // =====================================================
     // MODEL A: COMPTROLLER'S ACTUAL IMPLEMENTATION
-    // (4-tier system from website — Tier 4 sub-prioritizes public school within ≥500% FPL)
+    // (4-tier system — confirmed by Comptroller Apr 2 breakdown PDF)
+    // Note: Comptroller projects year-one funding exhausts within Tier 2
     // =====================================================
-    const tier1_pct = 0.12;  // Disability + ≤500% FPL
-    const tier2_pct = 0.31;  // ≤200% FPL (updated per Mar 29 fact sheet)
-    const tier3_pct = 0.30;  // 200-500% FPL (Iddings family — ALL 3 kids)
-    const tier4a_pct = 0.05; // ≥500% FPL + public school
-    const tier4b_pct = 0.22; // ≥500% FPL (updated per Mar 29 fact sheet)
+    const tier1_pct = 0.12;  // Disability + ≤500% FPL (confirmed Apr 2)
+    const tier2_pct = 0.31;  // ≤200% FPL (confirmed Apr 2)
+    const tier3_pct = 0.30;  // 200-500% FPL — Iddings family, ALL 3 kids (confirmed Apr 2)
+    const tier4a_pct = 0.05; // ≥500% FPL + public school (confirmed Apr 2)
+    const tier4b_pct = 0.22; // ≥500% FPL (confirmed Apr 2)
 
     const demandT1 = Math.round(eligibleApps * tier1_pct);
     const demandT2 = Math.round(eligibleApps * tier2_pct);
@@ -289,10 +290,11 @@ The contribution amount we listed represents the maximum we can sustainably budg
     { date: 'Mar 31', day: 'Tue', isoDate: '2026-03-31', event: 'TEFA Application Closes (Extended)', type: 'tefa', desc: 'New deadline per federal court order (Judge Bennett, S.D. Texas). 11:59 PM CT. After today: cannot switch homeschool/other to private school (can switch private to homeschool/other).', funding: 'Deadline' },
     { date: 'Mar 31', day: 'Tue', isoDate: '2026-03-31', event: 'NBCA Financial Aid Granted ($16,200)', type: 'nbca', desc: 'Financial aid awarded: Cassius $5,850, Dorothy $5,600, Sebastian $4,750. Credited to tuition.', funding: 'Credited to Tuition' },
     { date: 'Apr 01', day: 'Wed', isoDate: '2026-04-01', event: 'TEFA Surpasses 274,000 Applications (AFC)', type: 'tefa', desc: 'AFC press release confirms 274,000+ applications — largest school choice launch in history.', funding: 'N/A' },
-    { date: 'Apr 06', day: 'Mon', isoDate: '2026-04-06', event: 'NBCA Enrollment Fee Due', type: 'nbca', desc: 'Pay $175 x 3 ($525) by EOD to secure spots. 9th = 5 left, 7th = 3 left, 4th = plenty.', funding: '$525 One-Time' },
+    { date: 'Apr 02', day: 'Thu', isoDate: '2026-04-02', event: 'Comptroller Releases TEFA Application Data', type: 'tefa', desc: 'Official breakdown (PDF): 274k apps, 77% private / 23% homeschool, tiers 12/31/30/5/22%. Funding expected to exhaust within Tier 2. Lottery within T2; T3+ waitlisted. Waitlist reported to legislature.', funding: 'N/A' },
+    { date: 'Apr 02', day: 'Thu', isoDate: '2026-04-02', event: 'NBCA Enrollment Fee Paid', type: 'nbca', desc: 'Enrolled all 3 children. Paid ($175 + $55) x 3 = $690.', funding: '$690 Paid' },
     { date: 'Apr 15', day: 'Wed', isoDate: '2026-04-15', event: 'ACE Scholarship Deadline', type: 'ace', desc: 'Closes 11:59 PM (Tax Day).', funding: 'Deadline' },
     { date: 'Apr 24', day: 'Fri', isoDate: '2026-04-24', event: 'Federal Injunction Hearing', type: 'tefa', desc: 'Key hearing in Muslim schools v. Texas. Court decides whether to maintain, modify, or dissolve the injunction blocking Comptroller Hancock from excluding Islamic schools. TEFA funding timeline depends on outcome.', funding: 'Court Date' },
-    { date: 'Mid-Apr', day: 'TBD', isoDate: '2026-04-15', event: 'TEFA Funding Notification (est.)', type: 'tefa', desc: 'Comptroller said notifications "in April, most likely not the first week" (Mar 26 email). 274k+ applications to process. Tier-based awards with lottery for oversubscribed tiers. Per NBCA: notify school when received.', funding: 'Paid to Digital Wallet' },
+    { date: 'Mid-Apr', day: 'TBD', isoDate: '2026-04-15', event: 'TEFA Funding Notification (est.)', type: 'tefa', desc: 'Comptroller says notifications "later this month" (Apr 2 press release). 274k+ apps to process. Per Apr 2 data, funding exhausts in T2 — Tier 3 families (Iddings) expected to receive waitlist notification, not award. Per NBCA: notify school if awarded.', funding: 'Paid to Digital Wallet' },
     { date: 'End Apr', day: 'TBD', isoDate: '2026-04-30', event: 'NBCA Scholarship Decisions (est.)', type: 'nbca', desc: 'Per NBCA (Michelle Leidy, Mar 31): scholarship amount depends on TEFA outcome — TEFA funds affect financial need calculation. Scholarship awarded only if/where TEFA doesn\'t cover.', funding: 'Credited to Tuition' },
     { date: 'Jun 01', day: 'Mon', isoDate: '2026-06-01', event: 'TEFA School Selection Deadline', type: 'tefa', desc: 'Select a participating school by this date to receive initial funding on July 1. More schools joining on a rolling basis.', funding: 'Required for Jul 1 Funding' },
     { date: 'Jun 15', day: 'Mon', isoDate: '2026-06-15', event: 'ACE Award Notification', type: 'ace', desc: 'Scholarship decisions released.', funding: 'Paid directly to School' },
