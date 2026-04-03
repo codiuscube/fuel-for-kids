@@ -148,9 +148,10 @@ const IddingsPlanner = () => {
   };
 
   // Scenario Logic — Dual Model: Comptroller's Implementation vs Strict SB 2 Reading
-  const getScenarioAnalysis = (totalApps) => {
+  const getScenarioAnalysis = (totalApps, overrideIneligibility) => {
     const budget = 1000000000; // $1 Billion
-    const eligibleApps = Math.round(totalApps * (1 - ineligibilityRate));
+    const rate = overrideIneligibility !== undefined ? overrideIneligibility : ineligibilityRate;
+    const eligibleApps = Math.round(totalApps * (1 - rate));
 
     // Cost model (77% Private, 23% Homeschool — confirmed by Comptroller Apr 2 breakdown PDF)
     const privateCost = 10500;
@@ -224,6 +225,16 @@ const IddingsPlanner = () => {
   };
 
   const analysis = getScenarioAnalysis(applicantScenario);
+
+  // Scenario Outlook: Best / Most Likely / Worst (fixed ineligibility rates, current applicant count)
+  const scenarioOutlook = {
+    best: getScenarioAnalysis(applicantScenario, 0.10),
+    mostLikely: getScenarioAnalysis(applicantScenario, 0.02),
+    worst: getScenarioAnalysis(applicantScenario, 0.00),
+  };
+
+  // Tier 2 funding rate for display
+  const tier2FundingRate = analysis.demandT2 > 0 ? Math.min(100, (analysis.fundedT2 / analysis.demandT2) * 100) : 100;
 
   // Essay/Text Data
   const applicationTexts = {
@@ -881,7 +892,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         Total Applicants: <strong>{applicantScenario.toLocaleString()}</strong> → Eligible: <strong>{analysis.eligibleApps.toLocaleString()}</strong> ({Math.round(ineligibilityRate * 100)}% ineligible)
                     </div>
                     <div className="mt-1 text-xs text-tefa-body/50">
-                        Comptroller reported ~10% overall ineligibility (~50% for pre-K, much lower for K-12)
+                        Comptroller Apr 2: funding expected to exhaust within T2 (implies low ineligibility). Earlier report: ~10% overall (~50% pre-K, much lower K-12).
                     </div>
                 </div>
 
@@ -945,11 +956,47 @@ The contribution amount we listed represents the maximum we can sustainably budg
                 </div>
             </div>
 
+            {/* Scenario Outlook Card */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h3 className="font-bold text-tefa-navy mb-2 flex items-center gap-2">
+                    <TrendingUp size={18}/> Tier 3 Outlook — Iddings Family ({applicantScenario.toLocaleString()} Applicants)
+                </h3>
+                <p className="text-xs text-tefa-body/60 mb-4">
+                    Comptroller (Apr 2): "Year-one funding is expected to be exhausted within the second priority tier." These scenarios show how ineligibility rate affects Tier 3 odds.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="p-4 rounded-lg bg-green-50 border border-green-200">
+                        <div className="text-xs text-green-800 uppercase font-bold mb-1">Best Case (10% Ineligible)</div>
+                        <div className="text-xs text-green-700 mb-2">High verification rejection rate frees capacity</div>
+                        <div className="text-2xl font-bold text-green-700">{scenarioOutlook.best.familySuccessRate.toFixed(1)}%</div>
+                        <div className="text-xs text-green-600 mt-1">Family rate (sibling rule)</div>
+                        <div className="text-xs text-green-600">{scenarioOutlook.best.tier3Rate.toFixed(1)}% per child | {scenarioOutlook.best.fundedT3.toLocaleString()} T3 slots</div>
+                    </div>
+                    <div className="p-4 rounded-lg bg-amber-50 border-2 border-amber-300">
+                        <div className="text-xs text-amber-800 uppercase font-bold mb-1">Most Likely (2% Ineligible)</div>
+                        <div className="text-xs text-amber-700 mb-2">Per Comptroller projection — barely enters T3</div>
+                        <div className="text-2xl font-bold text-amber-700">{scenarioOutlook.mostLikely.familySuccessRate.toFixed(1)}%</div>
+                        <div className="text-xs text-amber-600 mt-1">Family rate (sibling rule)</div>
+                        <div className="text-xs text-amber-600">{scenarioOutlook.mostLikely.tier3Rate.toFixed(1)}% per child | {scenarioOutlook.mostLikely.fundedT3.toLocaleString()} T3 slots</div>
+                    </div>
+                    <div className="p-4 rounded-lg bg-red-50 border border-red-200">
+                        <div className="text-xs text-red-800 uppercase font-bold mb-1">Worst Case (0% Ineligible)</div>
+                        <div className="text-xs text-red-700 mb-2">All applicants eligible — funding exhausts in T2</div>
+                        <div className="text-2xl font-bold text-red-700">{scenarioOutlook.worst.familySuccessRate.toFixed(1)}%</div>
+                        <div className="text-xs text-red-600 mt-1">Family rate (sibling rule)</div>
+                        <div className="text-xs text-red-600">{scenarioOutlook.worst.tier3Rate.toFixed(1)}% per child | Tier 3 waitlisted</div>
+                    </div>
+                </div>
+                <div className="mt-4 p-3 bg-tefa-navy/5 rounded-lg text-xs text-tefa-body/70">
+                    <strong>What could improve Tier 3 odds:</strong> Higher verification rejections (especially pre-K), T2 lottery winners declining their spots, or the Texas Legislature adding funding based on the waitlist report.
+                </div>
+            </div>
+
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div className="bg-tefa-navy text-white px-6 py-4 flex justify-between items-center">
                     <div>
                         <h3 className="font-bold text-lg">Iddings Family Funding Strategy</h3>
-                        <p className="text-tefa-sky/70 text-sm">Dual Model Analysis — Comptroller's Rules vs. SB 2 Text — March 2026</p>
+                        <p className="text-tefa-sky/70 text-sm">Dual Model Analysis — Comptroller's Rules vs. SB 2 Text — April 2026</p>
                     </div>
                 </div>
                 <div className="p-8">
@@ -972,7 +1019,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         <h3 className="font-bold text-tefa-navy text-lg mb-2">2. Supply vs. Demand</h3>
                         <ul className="list-disc pl-5 mb-4 space-y-1">
                             <li><strong>Total Budget:</strong> $1 Billion</li>
-                            <li><strong>Weighted Avg Cost:</strong> ~$8,545 (77% Private / 23% Homeschool — Mar 29 Fact Sheet enrollment mix)</li>
+                            <li><strong>Weighted Avg Cost:</strong> ~$8,545 (77% Private / 23% Homeschool — confirmed by Comptroller Apr 2 breakdown)</li>
                             <li><strong>Estimated Capacity:</strong> ~{analysis.capacity.toLocaleString()} Students</li>
                             <li><strong>Eligible Applicants:</strong> ~{analysis.eligibleApps.toLocaleString()} (after {Math.round(ineligibilityRate * 100)}% ineligibility)</li>
                         </ul>
@@ -1002,10 +1049,10 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                     {analysis.demandT1.toLocaleString()} applicants — Funded first, 100% funded
                                 </div>
                             </div>
-                            <div className="p-3 bg-green-50 border border-green-200 rounded">
-                                <div className="font-bold text-green-800">Tier 2 — ≤200% FPL (31%)</div>
-                                <div className="text-sm text-green-700">
-                                    {analysis.demandT2.toLocaleString()} applicants — 100% funded
+                            <div className={`p-3 border rounded ${tier2FundingRate >= 100 ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}`}>
+                                <div className={`font-bold ${tier2FundingRate >= 100 ? 'text-green-800' : 'text-amber-800'}`}>Tier 2 — ≤200% FPL (31%)</div>
+                                <div className={`text-sm ${tier2FundingRate >= 100 ? 'text-green-700' : 'text-amber-700'}`}>
+                                    {analysis.demandT2.toLocaleString()} applicants — {tier2FundingRate >= 100 ? '100% funded' : `${tier2FundingRate.toFixed(1)}% funded (${analysis.fundedT2.toLocaleString()} of ${analysis.demandT2.toLocaleString()} — lottery within tier)`}
                                 </div>
                             </div>
                             <div className={`p-4 border-2 rounded-lg ${analysis.tier3Rate === 100 ? 'bg-green-50 border-green-300' : 'bg-tefa-gold/10 border-tefa-gold/40'}`}>
@@ -1106,7 +1153,42 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             </div>
                         </div>
 
-                        <h3 className="font-bold text-tefa-navy text-lg mb-2">6. Federal Lawsuit & Political Conflict</h3>
+                        <h3 className="font-bold text-tefa-navy text-lg mb-2">6. Draft Email: SB 2 Interpretation Inquiry</h3>
+                        <div className="bg-tefa-sky/10 border border-tefa-sky/30 rounded-lg p-4 mb-4">
+                            <p className="text-xs text-tefa-body/60 mb-2">
+                                Send to the Comptroller's TEFA team to ask about the SB 2 public school enrollment interpretation for Tier 3 families.
+                            </p>
+                            <div className="bg-white rounded p-4 border border-gray-200 text-sm text-tefa-body font-mono whitespace-pre-wrap">
+{`To: tefa@cpa.texas.gov
+Subject: Question Regarding Priority Tier Placement and Prior Public School Enrollment (SB 2 §29.356)
+
+Dear Texas Education Freedom Account Team,
+
+My family applied for TEFA for three children — two of whom were enrolled in Texas public schools last year, and one who was not. All three fall within the 200-500% FPL income range and are currently placed in Tier 3 under the Comptroller's priority system.
+
+I am writing to understand how prior public school enrollment is factored into the priority tier placement for families in our income bracket.
+
+SB 2 §29.356(b)(1) references reserving positions for students who "attended a public school in this state during the preceding school year" and who meet income or disability criteria. The Comptroller's current tier system appears to apply the public school enrollment distinction only within Tier 4 (at or above 500% FPL), where it creates a sub-priority (Tier 4a vs. 4b).
+
+My question: For families in the 200-500% FPL range (Tier 3), does prior public school enrollment provide any priority advantage? Specifically, would children who attended public school last year receive any higher consideration within Tier 3 compared to children who did not?
+
+I want to make sure I understand how the statute is being applied so our family can plan accordingly as we await notification later this month.
+
+Thank you for your time and for the work your office is doing to administer this program.
+
+Respectfully,
+[Your Name]
+[Your TEFA Application ID(s)]`}
+                            </div>
+                            <button
+                                onClick={() => copyToClipboard(`To: tefa@cpa.texas.gov\nSubject: Question Regarding Priority Tier Placement and Prior Public School Enrollment (SB 2 §29.356)\n\nDear Texas Education Freedom Account Team,\n\nMy family applied for TEFA for three children — two of whom were enrolled in Texas public schools last year, and one who was not. All three fall within the 200-500% FPL income range and are currently placed in Tier 3 under the Comptroller's priority system.\n\nI am writing to understand how prior public school enrollment is factored into the priority tier placement for families in our income bracket.\n\nSB 2 §29.356(b)(1) references reserving positions for students who "attended a public school in this state during the preceding school year" and who meet income or disability criteria. The Comptroller's current tier system appears to apply the public school enrollment distinction only within Tier 4 (at or above 500% FPL), where it creates a sub-priority (Tier 4a vs. 4b).\n\nMy question: For families in the 200-500% FPL range (Tier 3), does prior public school enrollment provide any priority advantage? Specifically, would children who attended public school last year receive any higher consideration within Tier 3 compared to children who did not?\n\nI want to make sure I understand how the statute is being applied so our family can plan accordingly as we await notification later this month.\n\nThank you for your time and for the work your office is doing to administer this program.\n\nRespectfully,\n[Your Name]\n[Your TEFA Application ID(s)]`)}
+                                className="mt-3 px-4 py-2 bg-tefa-navy text-white rounded-lg text-sm font-medium hover:bg-tefa-navy/90 transition flex items-center gap-2"
+                            >
+                                <Copy size={14} /> Copy Email to Clipboard
+                            </button>
+                        </div>
+
+                        <h3 className="font-bold text-tefa-navy text-lg mb-2">7. Federal Lawsuit & Political Conflict</h3>
                         <div className="bg-tefa-red/5 border border-tefa-red/20 rounded-lg p-4 mb-4">
                             <p className="text-sm text-tefa-red mb-3">
                                 <strong>The TEFA program is caught in a federal civil rights lawsuit and a political feud.</strong> Acting
@@ -1142,7 +1224,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                     <li>No state funds have been ordered to flow yet</li>
                                     <li>Financial side of the program is stalled until court proceedings resolve</li>
                                     <li>Internal Comptroller-AG conflict adds additional unpredictability to administration</li>
-                                    <li>256,700+ applications to process once the legal path is clear</li>
+                                    <li>274,000+ applications to process once the legal path is clear</li>
                                 </ul>
                             </div>
                             <div className="bg-tefa-green/5 rounded p-3 border border-tefa-green/20">
@@ -1156,25 +1238,29 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             </div>
                         </div>
 
-                        <h3 className="font-bold text-tefa-navy text-lg mb-2">7. Conclusion</h3>
+                        <h3 className="font-bold text-tefa-navy text-lg mb-2">8. Conclusion</h3>
                         <p className="mb-3">
                             Under the Comptroller's actual implementation, your family has a
-                            <strong> {analysis.familySuccessRate.toFixed(1)}%</strong> probability of all 3 children receiving TEFA funding.
+                            <strong> {analysis.familySuccessRate.toFixed(1)}%</strong> probability of all 3 children receiving TEFA funding
+                            at the current ineligibility rate ({Math.round(ineligibilityRate * 100)}%).
                             {analysis.familySuccessRate > 90
                                 ? " The combination of Tier 3 placement and the sibling rule puts you in an excellent position."
-                                : analysis.familySuccessRate > 70
+                                : analysis.familySuccessRate > 50
                                 ? " The sibling rule significantly boosts your odds — 3 independent lottery draws with 1 win covering all."
-                                : " While individual odds are competitive, the sibling rule provides a meaningful boost."}
+                                : analysis.familySuccessRate > 10
+                                ? " Odds are low but not zero — the sibling rule triples your effective lottery entries."
+                                : " The Comptroller projects funding will exhaust in Tier 2. Tier 3 families are expected to be waitlisted. The waitlist will be reported to the legislature to inform future funding decisions."}
                         </p>
                         <p className="text-xs text-tefa-body/60 mb-3">
-                            Even under the stricter SB 2 reading, the sibling rule still applies — and Dorothy & Sebastian's near-certain priority placement
-                            would pull Cassius through regardless. Either way, your family's position is strong.
+                            Under the stricter SB 2 reading, Dorothy & Sebastian's public school history would place them in the priority pool,
+                            potentially improving your family's odds ({analysis.strictFamilyRate.toFixed(1)}% family rate). The Comptroller is not currently
+                            applying this interpretation — public school history only matters for Tier 4 sub-prioritization.
                         </p>
                         <p className="text-xs text-tefa-red/80 bg-tefa-gold/10 border border-tefa-gold/30 rounded p-3">
                             <strong>Timing caveat:</strong> The federal lawsuit and Comptroller-AG political conflict have introduced significant timing uncertainty.
-                            While your lottery odds remain strong, the program is in a holding pattern until at least the April 24 hearing. Plan for the
+                            The program is in a holding pattern until at least the April 24 hearing. Plan for the
                             possibility that TEFA funds may not arrive until late May or later. The June 30 NBCA withdrawal deadline remains your key decision point —
-                            if funding is not confirmed by then, you can still walk away with only the $525 enrollment fee at risk.
+                            if funding is not confirmed by then, you can still walk away with only the $690 enrollment fee at risk.
                         </p>
                     </div>
                 </div>
