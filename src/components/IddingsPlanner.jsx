@@ -30,9 +30,9 @@ const IddingsPlanner = () => {
   const activeTab = VALID_TABS.includes(tab) ? tab : 'dashboard';
   const setActiveTab = (t) => navigate(`/${t}`);
 
-  // Scenario State - Updated to 274k+ per AFC press release (Apr 1)
-  const [applicantScenario, setApplicantScenario] = useState(274000);
-  const [ineligibilityRate, setIneligibilityRate] = useState(0.02); // ~2% per Comptroller Apr 2 projection (funding exhausts in T2)
+  // Scenario State - Updated to ~301k total per Comptroller comprehensive review (Apr 3)
+  const [applicantScenario, setApplicantScenario] = useState(301000);
+  const [ineligibilityRate, setIneligibilityRate] = useState(0.09); // ~9% per Comptroller Apr 3 review (~25k ineligible, ~2k under review)
   const [publicSchoolPct, setPublicSchoolPct] = useState(0.24); // TCVT data: ~24% were in public school last year
 
   // Student Data
@@ -46,7 +46,7 @@ const IddingsPlanner = () => {
   const [tuition, setTuition] = useState(43505);
   const [tefaPerStudent, setTefaPerStudent] = useState(10474);
 
-  // Default: TEFA unlikely for T3 (OFF per Comptroller Apr 2), ACE unlikely (OFF)
+  // Default: TEFA unlikely for T3 (OFF per Comptroller Apr 3), ACE unlikely (OFF)
   const [includeTefa, setIncludeTefa] = useState(false);
   const [includeAce, setIncludeAce] = useState(false);
 
@@ -153,7 +153,7 @@ const IddingsPlanner = () => {
     const rate = overrideIneligibility !== undefined ? overrideIneligibility : ineligibilityRate;
     const eligibleApps = Math.round(totalApps * (1 - rate));
 
-    // Cost model (77% Private, 23% Homeschool — confirmed by Comptroller Apr 2 breakdown PDF)
+    // Cost model (77% Private, 23% Homeschool — confirmed by Comptroller Apr 3 comprehensive review)
     const privateCost = 10500;
     const homeCost = 2000;
     const weightedAvg = (privateCost * 0.77) + (homeCost * 0.23); // ~$8,545
@@ -161,14 +161,14 @@ const IddingsPlanner = () => {
 
     // =====================================================
     // MODEL A: COMPTROLLER'S ACTUAL IMPLEMENTATION
-    // (4-tier system — confirmed by Comptroller Apr 2 breakdown PDF)
+    // (4-tier system — confirmed by Comptroller Apr 3 comprehensive review)
     // Note: Comptroller projects year-one funding exhausts within Tier 2
     // =====================================================
-    const tier1_pct = 0.12;  // Disability + ≤500% FPL (confirmed Apr 2)
-    const tier2_pct = 0.31;  // ≤200% FPL (confirmed Apr 2)
-    const tier3_pct = 0.30;  // 200-500% FPL — Iddings family, ALL 3 kids (confirmed Apr 2)
-    const tier4a_pct = 0.05; // ≥500% FPL + public school (confirmed Apr 2)
-    const tier4b_pct = 0.22; // ≥500% FPL (confirmed Apr 2)
+    const tier1_pct = 0.12;  // Disability + ≤500% FPL (confirmed Apr 3)
+    const tier2_pct = 0.32;  // ≤200% FPL (updated Apr 3, was 31%)
+    const tier3_pct = 0.29;  // 200-500% FPL — Iddings family, ALL 3 kids (updated Apr 3, was 30%)
+    const tier4a_pct = 0.05; // ≥500% FPL + public school (confirmed Apr 3)
+    const tier4b_pct = 0.22; // ≥500% FPL (confirmed Apr 3)
 
     const demandT1 = Math.round(eligibleApps * tier1_pct);
     const demandT2 = Math.round(eligibleApps * tier2_pct);
@@ -228,9 +228,9 @@ const IddingsPlanner = () => {
 
   // Scenario Outlook: Best / Most Likely / Worst (fixed ineligibility rates, current applicant count)
   const scenarioOutlook = {
-    best: getScenarioAnalysis(applicantScenario, 0.10),
-    mostLikely: getScenarioAnalysis(applicantScenario, 0.02),
-    worst: getScenarioAnalysis(applicantScenario, 0.00),
+    best: getScenarioAnalysis(applicantScenario, 0.12),
+    mostLikely: getScenarioAnalysis(applicantScenario, 0.09),
+    worst: getScenarioAnalysis(applicantScenario, 0.06),
   };
 
   // Tier 2 funding rate for display
@@ -300,12 +300,13 @@ The contribution amount we listed represents the maximum we can sustainably budg
     { date: 'Mar 17', day: 'Tue', isoDate: '2026-03-17', event: 'TEFA Original Deadline (Extended)', type: 'tefa', desc: 'Original deadline. Extended by federal court order.', funding: 'Superseded' },
     { date: 'Mar 31', day: 'Tue', isoDate: '2026-03-31', event: 'TEFA Application Closes (Extended)', type: 'tefa', desc: 'New deadline per federal court order (Judge Bennett, S.D. Texas). 11:59 PM CT. After today: cannot switch homeschool/other to private school (can switch private to homeschool/other).', funding: 'Deadline' },
     { date: 'Mar 31', day: 'Tue', isoDate: '2026-03-31', event: 'NBCA Financial Aid Granted ($16,200)', type: 'nbca', desc: 'Financial aid awarded: Cassius $5,850, Dorothy $5,600, Sebastian $4,750. Credited to tuition.', funding: 'Credited to Tuition' },
-    { date: 'Apr 01', day: 'Wed', isoDate: '2026-04-01', event: 'TEFA Surpasses 274,000 Applications (AFC)', type: 'tefa', desc: 'AFC press release confirms 274,000+ applications — largest school choice launch in history.', funding: 'N/A' },
-    { date: 'Apr 02', day: 'Thu', isoDate: '2026-04-02', event: 'Comptroller Releases TEFA Application Data', type: 'tefa', desc: 'Official breakdown (PDF): 274k apps, 77% private / 23% homeschool, tiers 12/31/30/5/22%. Funding expected to exhaust within Tier 2. Lottery within T2; T3+ waitlisted. Waitlist reported to legislature.', funding: 'N/A' },
+    { date: 'Apr 01', day: 'Wed', isoDate: '2026-04-01', event: 'TEFA Surpasses 274,000 Applications (AFC)', type: 'tefa', desc: 'AFC press release confirms 274,000+ eligible applications — largest school choice launch in history.', funding: 'N/A' },
+    { date: 'Apr 02', day: 'Thu', isoDate: '2026-04-02', event: 'Comptroller Releases Initial TEFA Breakdown', type: 'tefa', desc: 'Initial breakdown (PDF): 274k apps, 77% private / 23% homeschool, tiers 12/31/30/5/22%. Funding expected to exhaust within Tier 2.', funding: 'N/A' },
+    { date: 'Apr 03', day: 'Fri', isoDate: '2026-04-03', event: 'Comptroller Comprehensive Review Released', type: 'tefa', desc: '274,000+ ELIGIBLE students (~301k total). ~25,000 ineligible (~9%), ~2,000 under review. Pre-K: 50%+ ineligible (18,677 of 36,666). Tiers: 12/32/29/5/22%. 43,000 disability apps (80% IEP). 43,000 first-day apps. Notifications "later in April", funds start July.', funding: 'N/A' },
     { date: 'Apr 02', day: 'Thu', isoDate: '2026-04-02', event: 'NBCA Enrollment Fee Paid', type: 'nbca', desc: 'Enrolled all 3 children. Paid ($175 + $55) x 3 = $690.', funding: '$690 Paid' },
     { date: 'Apr 15', day: 'Wed', isoDate: '2026-04-15', event: 'ACE Scholarship Deadline', type: 'ace', desc: 'Closes 11:59 PM (Tax Day).', funding: 'Deadline' },
     { date: 'Apr 24', day: 'Fri', isoDate: '2026-04-24', event: 'Federal Injunction Hearing', type: 'tefa', desc: 'Key hearing in Muslim schools v. Texas. Court decides whether to maintain, modify, or dissolve the injunction blocking Comptroller Hancock from excluding Islamic schools. TEFA funding timeline depends on outcome.', funding: 'Court Date' },
-    { date: 'Mid-Apr', day: 'TBD', isoDate: '2026-04-15', event: 'TEFA Funding Notification (est.)', type: 'tefa', desc: 'Comptroller says notifications "later this month" (Apr 2 press release). 274k+ apps to process. Per Apr 2 data, funding exhausts in T2 — Tier 3 families (Iddings) expected to receive waitlist notification, not award. Per NBCA: notify school if awarded.', funding: 'Paid to Digital Wallet' },
+    { date: 'Mid-Apr', day: 'TBD', isoDate: '2026-04-15', event: 'TEFA Funding Notification (est.)', type: 'tefa', desc: 'Comptroller says notifications "later in April" (Apr 3 review). ~301k total apps (~274k eligible) to process. Per Apr 3 data, funding exhausts in T2 — Tier 3 families (Iddings) expected to receive waitlist notification, not award. Per NBCA: notify school if awarded.', funding: 'Paid to Digital Wallet' },
     { date: 'End Apr', day: 'TBD', isoDate: '2026-04-30', event: 'NBCA Scholarship Decisions (est.)', type: 'nbca', desc: 'Per NBCA (Michelle Leidy, Mar 31): scholarship amount depends on TEFA outcome — TEFA funds affect financial need calculation. Scholarship awarded only if/where TEFA doesn\'t cover.', funding: 'Credited to Tuition' },
     { date: 'Jun 01', day: 'Mon', isoDate: '2026-06-01', event: 'TEFA School Selection Deadline', type: 'tefa', desc: 'Select a participating school by this date to receive initial funding on July 1. More schools joining on a rolling basis.', funding: 'Required for Jul 1 Funding' },
     { date: 'Jun 15', day: 'Mon', isoDate: '2026-06-15', event: 'ACE Award Notification', type: 'ace', desc: 'Scholarship decisions released.', funding: 'Paid directly to School' },
@@ -429,8 +430,8 @@ The contribution amount we listed represents the maximum we can sustainably budg
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm mb-4">
                     <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
                         <div className="text-xs text-tefa-body/50 font-medium">Applications</div>
-                        <div className="font-bold text-tefa-navy text-lg">256,700</div>
-                        <div className="text-[10px] text-tefa-body/40">As of Mar 29</div>
+                        <div className="font-bold text-tefa-navy text-lg">~301,000</div>
+                        <div className="text-[10px] text-tefa-body/40">Total (~274k eligible)</div>
                     </div>
                     <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
                         <div className="text-xs text-tefa-body/50 font-medium">Deadline</div>
@@ -464,11 +465,11 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         <div className="text-tefa-green/70">Disability</div>
                     </div>
                     <div className="bg-tefa-navy/10 rounded p-1.5 border border-tefa-navy/20">
-                        <div className="font-bold text-tefa-navy">T2: 31%</div>
+                        <div className="font-bold text-tefa-navy">T2: 32%</div>
                         <div className="text-tefa-navy/70">≤200% FPL</div>
                     </div>
                     <div className="bg-tefa-gold/20 rounded p-1.5 border border-tefa-gold/40">
-                        <div className="font-bold text-tefa-red">T3: 30%</div>
+                        <div className="font-bold text-tefa-red">T3: 29%</div>
                         <div className="text-tefa-red/70">200-500%</div>
                     </div>
                     <div className="bg-tefa-red/10 rounded p-1.5 border border-tefa-red/20">
@@ -854,7 +855,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <Layers size={18}/> Select Applicant Volume Scenario
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {[256000, 274000, 290000, 310000].map((count) => (
+                    {[274000, 301000, 310000, 325000].map((count) => (
                         <button
                             key={count}
                             onClick={() => setApplicantScenario(count)}
@@ -892,7 +893,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         Total Applicants: <strong>{applicantScenario.toLocaleString()}</strong> → Eligible: <strong>{analysis.eligibleApps.toLocaleString()}</strong> ({Math.round(ineligibilityRate * 100)}% ineligible)
                     </div>
                     <div className="mt-1 text-xs text-tefa-body/50">
-                        Comptroller Apr 2: funding expected to exhaust within T2 (implies low ineligibility). Earlier report: ~10% overall (~50% pre-K, much lower K-12).
+                        Comptroller Apr 3: ~25,000 ineligible (~9%), 50%+ pre-K ineligible (18,677 of 36,666). K-12 rate much lower. ~2,000 still under review.
                     </div>
                 </div>
 
@@ -962,33 +963,33 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <TrendingUp size={18}/> Tier 3 Outlook — Iddings Family ({applicantScenario.toLocaleString()} Applicants)
                 </h3>
                 <p className="text-xs text-tefa-body/60 mb-4">
-                    Comptroller (Apr 2): "Year-one funding is expected to be exhausted within the second priority tier." These scenarios show how ineligibility rate affects Tier 3 odds.
+                    Comptroller (Apr 3 comprehensive review): ~25,000 ineligible (~9%), ~2,000 under review. 274,000+ eligible. Funding exhausts within T2. These scenarios show how ineligibility rate affects Tier 3 odds.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="p-4 rounded-lg bg-green-50 border border-green-200">
-                        <div className="text-xs text-green-800 uppercase font-bold mb-1">Best Case (10% Ineligible)</div>
-                        <div className="text-xs text-green-700 mb-2">High verification rejection rate frees capacity</div>
+                        <div className="text-xs text-green-800 uppercase font-bold mb-1">Best Case (12% Ineligible)</div>
+                        <div className="text-xs text-green-700 mb-2">Additional pre-K/under-review rejections free capacity</div>
                         <div className="text-2xl font-bold text-green-700">{scenarioOutlook.best.familySuccessRate.toFixed(1)}%</div>
                         <div className="text-xs text-green-600 mt-1">Family rate (sibling rule)</div>
                         <div className="text-xs text-green-600">{scenarioOutlook.best.tier3Rate.toFixed(1)}% per child | {scenarioOutlook.best.fundedT3.toLocaleString()} T3 slots</div>
                     </div>
                     <div className="p-4 rounded-lg bg-amber-50 border-2 border-amber-300">
-                        <div className="text-xs text-amber-800 uppercase font-bold mb-1">Most Likely (2% Ineligible)</div>
-                        <div className="text-xs text-amber-700 mb-2">Per Comptroller projection — barely enters T3</div>
+                        <div className="text-xs text-amber-800 uppercase font-bold mb-1">Most Likely (9% Ineligible)</div>
+                        <div className="text-xs text-amber-700 mb-2">Per Comptroller Apr 3 review — ~25k ineligible of ~301k total</div>
                         <div className="text-2xl font-bold text-amber-700">{scenarioOutlook.mostLikely.familySuccessRate.toFixed(1)}%</div>
                         <div className="text-xs text-amber-600 mt-1">Family rate (sibling rule)</div>
                         <div className="text-xs text-amber-600">{scenarioOutlook.mostLikely.tier3Rate.toFixed(1)}% per child | {scenarioOutlook.mostLikely.fundedT3.toLocaleString()} T3 slots</div>
                     </div>
                     <div className="p-4 rounded-lg bg-red-50 border border-red-200">
-                        <div className="text-xs text-red-800 uppercase font-bold mb-1">Worst Case (0% Ineligible)</div>
-                        <div className="text-xs text-red-700 mb-2">All applicants eligible — funding exhausts in T2</div>
+                        <div className="text-xs text-red-800 uppercase font-bold mb-1">Worst Case (6% Ineligible)</div>
+                        <div className="text-xs text-red-700 mb-2">Under-review apps approved, lower final rejection rate</div>
                         <div className="text-2xl font-bold text-red-700">{scenarioOutlook.worst.familySuccessRate.toFixed(1)}%</div>
                         <div className="text-xs text-red-600 mt-1">Family rate (sibling rule)</div>
-                        <div className="text-xs text-red-600">{scenarioOutlook.worst.tier3Rate.toFixed(1)}% per child | Tier 3 waitlisted</div>
+                        <div className="text-xs text-red-600">{scenarioOutlook.worst.tier3Rate.toFixed(1)}% per child | {scenarioOutlook.worst.fundedT3.toLocaleString()} T3 slots</div>
                     </div>
                 </div>
                 <div className="mt-4 p-3 bg-tefa-navy/5 rounded-lg text-xs text-tefa-body/70">
-                    <strong>What could improve Tier 3 odds:</strong> Higher verification rejections (especially pre-K), T2 lottery winners declining their spots, or the Texas Legislature adding funding based on the waitlist report.
+                    <strong>What could improve Tier 3 odds:</strong> Under-review apps being rejected (~2k pending), T2 lottery winners declining spots, pre-K ineligibles continuing to increase, or the Texas Legislature adding funding based on the waitlist report.
                 </div>
             </div>
 
@@ -1003,28 +1004,29 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <div className="prose prose-sm max-w-none text-tefa-navy">
                         <h3 className="font-bold text-tefa-navy text-lg mb-2">1. The Projection Model</h3>
                         <p className="mb-4">
-                            More than <strong>274,000</strong> students applied during the initial rollout (per AFC press release, April 1). The application window
+                            Approximately <strong>301,000</strong> students applied during the initial rollout, with <strong>274,000+</strong> deemed eligible
+                            per the Comptroller's April 3 comprehensive review. The application window
                             closed <strong>March 31 at 11:59 PM CT</strong> per a federal court order (Judge Bennett, S.D. Texas).
                             More than 2,300 participating schools are listed in the school finder tool, including a growing number of accredited online schools.
-                            The current scenario is set to <strong>{applicantScenario.toLocaleString()}</strong> total applicants
-                            to account for final-day applications.
+                            The current scenario is set to <strong>{applicantScenario.toLocaleString()}</strong> total applicants.
                         </p>
                         <p className="mb-4">
-                            <strong>Not all applicants are eligible.</strong> An earlier Comptroller review found ~10% ineligibility (18,000 of 184,000 reviewed).
-                            Pre-K has the highest ineligibility (~50%), while K-12 is much lower. With 256,700 total applications as of March 29,
-                            this model accounts for ineligibility (currently set to {Math.round(ineligibilityRate * 100)}%),
+                            <strong>Not all applicants are eligible.</strong> The Comptroller's Apr 3 comprehensive review confirmed ~9% overall ineligibility
+                            (~25,000 of ~301,000 total). Pre-K has the highest ineligibility rate (50%+, with 18,677 of 36,666 pre-K apps ineligible),
+                            while K-12 is much lower. ~2,000 applications remain under review.
+                            This model accounts for ineligibility (currently set to {Math.round(ineligibilityRate * 100)}%),
                             reducing the eligible pool to <strong>{analysis.eligibleApps.toLocaleString()}</strong> applicants competing for funding.
                         </p>
 
                         <h3 className="font-bold text-tefa-navy text-lg mb-2">2. Supply vs. Demand</h3>
                         <ul className="list-disc pl-5 mb-4 space-y-1">
                             <li><strong>Total Budget:</strong> $1 Billion</li>
-                            <li><strong>Weighted Avg Cost:</strong> ~$8,545 (77% Private / 23% Homeschool — confirmed by Comptroller Apr 2 breakdown)</li>
+                            <li><strong>Weighted Avg Cost:</strong> ~$8,545 (77% Private / 23% Homeschool — confirmed by Comptroller Apr 3 review)</li>
                             <li><strong>Estimated Capacity:</strong> ~{analysis.capacity.toLocaleString()} Students</li>
                             <li><strong>Eligible Applicants:</strong> ~{analysis.eligibleApps.toLocaleString()} (after {Math.round(ineligibilityRate * 100)}% ineligibility)</li>
                         </ul>
                         <p className="mb-4 text-xs text-tefa-body/60">
-                            Note: The 77/23 split is from the Comptroller's Mar 29 "Educational Setting" chart, which shows where applicants <em>plan to enroll</em> for 2026-27, not where they attended previously. Pre-K students also draw from the same $1B pool.
+                            Note: The 77/23 split is confirmed by the Comptroller's Apr 3 comprehensive review. Pre-K students also draw from the same $1B pool.
                         </p>
 
                         <h3 className="font-bold text-tefa-navy text-lg mb-2">3. Comptroller's Tier System (How the Lottery Will Actually Run)</h3>
@@ -1050,14 +1052,14 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                 </div>
                             </div>
                             <div className={`p-3 border rounded ${tier2FundingRate >= 100 ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}`}>
-                                <div className={`font-bold ${tier2FundingRate >= 100 ? 'text-green-800' : 'text-amber-800'}`}>Tier 2 — ≤200% FPL (31%)</div>
+                                <div className={`font-bold ${tier2FundingRate >= 100 ? 'text-green-800' : 'text-amber-800'}`}>Tier 2 — ≤200% FPL (32%)</div>
                                 <div className={`text-sm ${tier2FundingRate >= 100 ? 'text-green-700' : 'text-amber-700'}`}>
                                     {analysis.demandT2.toLocaleString()} applicants — {tier2FundingRate >= 100 ? '100% funded' : `${tier2FundingRate.toFixed(1)}% funded (${analysis.fundedT2.toLocaleString()} of ${analysis.demandT2.toLocaleString()} — lottery within tier)`}
                                 </div>
                             </div>
                             <div className={`p-4 border-2 rounded-lg ${analysis.tier3Rate === 100 ? 'bg-green-50 border-green-300' : 'bg-tefa-gold/10 border-tefa-gold/40'}`}>
                                 <div className={`font-bold text-lg ${analysis.tier3Rate === 100 ? 'text-green-800' : 'text-tefa-red'}`}>
-                                    Tier 3 — 200-500% FPL (30%) — All 3 Iddings Children
+                                    Tier 3 — 200-500% FPL (29%) — All 3 Iddings Children
                                 </div>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3 text-sm">
                                     <div>
@@ -1224,7 +1226,7 @@ Respectfully,
                                     <li>No state funds have been ordered to flow yet</li>
                                     <li>Financial side of the program is stalled until court proceedings resolve</li>
                                     <li>Internal Comptroller-AG conflict adds additional unpredictability to administration</li>
-                                    <li>274,000+ applications to process once the legal path is clear</li>
+                                    <li>~301,000 total applications (~274k eligible) to process once the legal path is clear</li>
                                 </ul>
                             </div>
                             <div className="bg-tefa-green/5 rounded p-3 border border-tefa-green/20">
