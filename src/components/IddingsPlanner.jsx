@@ -228,7 +228,7 @@ const IddingsPlanner = () => {
 
   // Scenario Outlook: Best / Most Likely / Worst (fixed ineligibility rates, current applicant count)
   const scenarioOutlook = {
-    best: getScenarioAnalysis(applicantScenario, 0.12),
+    best: getScenarioAnalysis(applicantScenario, 0.15),
     mostLikely: getScenarioAnalysis(applicantScenario, 0.09),
     worst: getScenarioAnalysis(applicantScenario, 0.06),
   };
@@ -967,29 +967,29 @@ The contribution amount we listed represents the maximum we can sustainably budg
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="p-4 rounded-lg bg-green-50 border border-green-200">
-                        <div className="text-xs text-green-800 uppercase font-bold mb-1">Best Case (12% Ineligible)</div>
-                        <div className="text-xs text-green-700 mb-2">Additional pre-K/under-review rejections free capacity</div>
+                        <div className="text-xs text-green-800 uppercase font-bold mb-1">Best Case (15% Ineligible)</div>
+                        <div className="text-xs text-green-700 mb-2">Higher pre-K/under-review rejections push past ~12% threshold where T3 opens</div>
                         <div className="text-2xl font-bold text-green-700">{scenarioOutlook.best.familySuccessRate.toFixed(1)}%</div>
                         <div className="text-xs text-green-600 mt-1">Family rate (sibling rule)</div>
                         <div className="text-xs text-green-600">{scenarioOutlook.best.tier3Rate.toFixed(1)}% per child | {scenarioOutlook.best.fundedT3.toLocaleString()} T3 slots</div>
                     </div>
                     <div className="p-4 rounded-lg bg-amber-50 border-2 border-amber-300">
                         <div className="text-xs text-amber-800 uppercase font-bold mb-1">Most Likely (9% Ineligible)</div>
-                        <div className="text-xs text-amber-700 mb-2">Per Comptroller Apr 3 review — ~25k ineligible of ~301k total</div>
+                        <div className="text-xs text-amber-700 mb-2">Per Comptroller Apr 3 review — funding exhausts in T2, T3 waitlisted</div>
                         <div className="text-2xl font-bold text-amber-700">{scenarioOutlook.mostLikely.familySuccessRate.toFixed(1)}%</div>
                         <div className="text-xs text-amber-600 mt-1">Family rate (sibling rule)</div>
                         <div className="text-xs text-amber-600">{scenarioOutlook.mostLikely.tier3Rate.toFixed(1)}% per child | {scenarioOutlook.mostLikely.fundedT3.toLocaleString()} T3 slots</div>
                     </div>
                     <div className="p-4 rounded-lg bg-red-50 border border-red-200">
                         <div className="text-xs text-red-800 uppercase font-bold mb-1">Worst Case (6% Ineligible)</div>
-                        <div className="text-xs text-red-700 mb-2">Under-review apps approved, lower final rejection rate</div>
+                        <div className="text-xs text-red-700 mb-2">Lower rejection rate — T2 partially funded, T3 fully waitlisted</div>
                         <div className="text-2xl font-bold text-red-700">{scenarioOutlook.worst.familySuccessRate.toFixed(1)}%</div>
                         <div className="text-xs text-red-600 mt-1">Family rate (sibling rule)</div>
                         <div className="text-xs text-red-600">{scenarioOutlook.worst.tier3Rate.toFixed(1)}% per child | {scenarioOutlook.worst.fundedT3.toLocaleString()} T3 slots</div>
                     </div>
                 </div>
                 <div className="mt-4 p-3 bg-tefa-navy/5 rounded-lg text-xs text-tefa-body/70">
-                    <strong>What could improve Tier 3 odds:</strong> Under-review apps being rejected (~2k pending), T2 lottery winners declining spots, pre-K ineligibles continuing to increase, or the Texas Legislature adding funding based on the waitlist report.
+                    <strong>Tier 3 is waitlisted under confirmed data.</strong> Realistic paths to funding: T2 lottery winners declining spots, ineligibility rising above ~12% (the threshold where T3 opens), or the Texas Legislature adding funding based on the waitlist report. ~2,000 apps still under review.
                 </div>
             </div>
 
