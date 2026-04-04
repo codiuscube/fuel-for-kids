@@ -34,6 +34,7 @@ const IddingsPlanner = () => {
   const [applicantScenario, setApplicantScenario] = useState(301000);
   const [ineligibilityRate, setIneligibilityRate] = useState(0.09); // ~9% per Comptroller Apr 3 review (~25k ineligible, ~2k under review)
   const [publicSchoolPct, setPublicSchoolPct] = useState(0.24); // TCVT data: ~24% were in public school last year
+  const [attritionRate, setAttritionRate] = useState(0.15); // Est. 15% of lottery winners don't follow through
 
   // Student Data
   const students = [
@@ -148,9 +149,10 @@ const IddingsPlanner = () => {
   };
 
   // Scenario Logic — Dual Model: Comptroller's Implementation vs Strict SB 2 Reading
-  const getScenarioAnalysis = (totalApps, overrideIneligibility) => {
+  const getScenarioAnalysis = (totalApps, overrideIneligibility, overrideAttrition) => {
     const budget = 1000000000; // $1 Billion
     const rate = overrideIneligibility !== undefined ? overrideIneligibility : ineligibilityRate;
+    const attrRate = overrideAttrition !== undefined ? overrideAttrition : attritionRate;
     const eligibleApps = Math.round(totalApps * (1 - rate));
 
     // Cost model (77% Private, 23% Homeschool — confirmed by Comptroller Apr 3 comprehensive review)
@@ -212,12 +214,51 @@ const IddingsPlanner = () => {
     // P(family) = 1 - P(D loses) * P(S loses) * P(C loses)
     const strictFamilyRate = (1 - (1 - priorityRate / 100) * (1 - priorityRate / 100) * (1 - generalRate / 100)) * 100;
 
+    // =====================================================
+    // ATTRITION MODEL: Lottery winners who don't participate
+    // Freed spots cascade down the waitlist (T1→T2→T3→T4)
+    // =====================================================
+    const t1Attrition = Math.round(fundedT1 * attrRate);
+    const t2Attrition = Math.round(fundedT2 * attrRate);
+
+    // Freed spots first fill unfunded T2 (lottery losers within T2)
+    let freedSpots = t1Attrition + t2Attrition;
+    const unfundedT2 = demandT2 - fundedT2;
+    const additionalT2Funded = Math.min(freedSpots, unfundedT2);
+    freedSpots -= additionalT2Funded;
+
+    // Second-round attrition from newly funded T2 students
+    const additionalT2Attrition = Math.round(additionalT2Funded * attrRate);
+    freedSpots += additionalT2Attrition;
+
+    // Remaining freed spots go to T3
+    const t3FromWaitlist = Math.min(freedSpots, demandT3 - fundedT3);
+    freedSpots -= t3FromWaitlist;
+
+    // T3 attrition from both initial and waitlist-funded T3
+    const t3Attrition = Math.round((fundedT3 + t3FromWaitlist) * attrRate);
+    freedSpots += t3Attrition;
+
+    const effectiveFundedT3 = fundedT3 + t3FromWaitlist;
+    const effectiveTier3Rate = demandT3 > 0 ? Math.min(100, (effectiveFundedT3 / demandT3) * 100) : 100;
+    const effectiveSingleFail = 1 - (effectiveTier3Rate / 100);
+    const effectiveFamilyRate = (1 - Math.pow(effectiveSingleFail, 3)) * 100;
+
+    // Total attrition summary
+    const totalInitialFunded = fundedT1 + fundedT2 + fundedT3 + fundedT4a + fundedT4b;
+    const totalAttritionFreed = t1Attrition + t2Attrition + additionalT2Attrition + t3Attrition;
+
     return {
         capacity, eligibleApps,
-        // Model A: Comptroller's implementation
+        // Model A: Comptroller's implementation (initial lottery)
         demandT1, demandT2, demandT3, demandT4a, demandT4b,
         fundedT1, fundedT2, fundedT3, fundedT4a, fundedT4b,
         tier3Rate, tier4Rate, familySuccessRate,
+        // Attrition / waitlist cascade
+        t1Attrition, t2Attrition, additionalT2Funded, additionalT2Attrition,
+        t3FromWaitlist, t3Attrition, unfundedT2,
+        effectiveFundedT3, effectiveTier3Rate, effectiveFamilyRate,
+        totalInitialFunded, totalAttritionFreed,
         // Model B: Strict SB 2
         priorityDemand, priorityCapacity, priorityFunded, priorityRate,
         generalDemand, generalCapacity, generalRate, strictFamilyRate,
@@ -925,71 +966,152 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     </div>
                 </div>
 
+                {/* Attrition / Non-Participation Rate */}
+                <div className="mt-5 pt-4 border-t border-gray-100">
+                    <div className="flex items-center justify-between mb-2">
+                        <label className="text-sm font-medium text-tefa-navy">Estimated Non-Participation Rate (Attrition)</label>
+                        <span className="text-sm font-bold text-tefa-navy">{Math.round(attritionRate * 100)}%</span>
+                    </div>
+                    <input
+                        type="range"
+                        min="0"
+                        max="30"
+                        step="1"
+                        value={Math.round(attritionRate * 100)}
+                        onChange={(e) => setAttritionRate(parseInt(e.target.value) / 100)}
+                        className="w-full accent-tefa-navy"
+                    />
+                    <div className="flex justify-between text-xs text-tefa-body/50 mt-1">
+                        <span>0%</span>
+                        <span>15%</span>
+                        <span>30%</span>
+                    </div>
+                    <div className="mt-2 text-sm text-tefa-body/70">
+                        Est. {Math.round(attritionRate * 100)}% of lottery winners won't follow through → freed spots cascade to waitlist
+                    </div>
+                    <div className="mt-1 text-xs text-tefa-body/50">
+                        School choice programs typically see 10-30% non-participation. Reasons: can't afford tuition gap, no nearby school, life changes, applied "just in case." Spots freed go to waitlist in tier order.
+                    </div>
+                </div>
+
                 {/* Scenario Result */}
-                <div className="mt-6 pt-4 border-t border-gray-100 grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <div className="text-xs text-tefa-body/50 uppercase font-bold">Per-Child (Tier 3)</div>
-                        <div className={`text-2xl font-bold ${analysis.tier3Rate > 80 ? 'text-green-600' : analysis.tier3Rate > 50 ? 'text-amber-500' : 'text-red-500'}`}>
-                            {analysis.tier3Rate.toFixed(1)}%
+                {/* Scenario Result — Initial Lottery */}
+                <div className="mt-6 pt-4 border-t border-gray-100">
+                    <div className="text-xs text-tefa-body/50 uppercase font-bold mb-3">Initial Lottery (Day 1)</div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <div className="text-xs text-tefa-body/50">Per-Child (Tier 3)</div>
+                            <div className={`text-2xl font-bold ${analysis.tier3Rate > 80 ? 'text-green-600' : analysis.tier3Rate > 50 ? 'text-amber-500' : 'text-red-500'}`}>
+                                {analysis.tier3Rate.toFixed(1)}%
+                            </div>
                         </div>
-                        <div className="text-xs text-tefa-body/60 mt-1">
-                            Individual lottery odds
+                        <div>
+                            <div className="text-xs text-tefa-body/50">Family (Sibling Rule)</div>
+                            <div className={`text-2xl font-bold ${analysis.familySuccessRate > 80 ? 'text-green-600' : analysis.familySuccessRate > 50 ? 'text-amber-500' : 'text-red-500'}`}>
+                                {analysis.familySuccessRate.toFixed(1)}%
+                            </div>
                         </div>
-                    </div>
-                    <div>
-                        <div className="text-xs text-tefa-body/50 uppercase font-bold">Family (Sibling Rule)</div>
-                        <div className={`text-2xl font-bold ${analysis.familySuccessRate > 80 ? 'text-green-600' : analysis.familySuccessRate > 50 ? 'text-amber-500' : 'text-red-500'}`}>
-                            {analysis.familySuccessRate.toFixed(1)}%
-                        </div>
-                        <div className="text-xs text-tefa-body/60 mt-1">
-                            1 win = all 3 funded
-                        </div>
-                    </div>
-                    <div>
-                        <div className="text-xs text-tefa-body/50 uppercase font-bold">Program Capacity</div>
-                        <div className="text-2xl font-bold text-tefa-navy">
-                            ~{analysis.capacity.toLocaleString()}
-                        </div>
-                        <div className="text-xs text-tefa-body/60 mt-1">
-                            Tier 4 odds: {analysis.tier4Rate.toFixed(1)}%
+                        <div>
+                            <div className="text-xs text-tefa-body/50">Program Capacity</div>
+                            <div className="text-2xl font-bold text-tefa-navy">
+                                ~{analysis.capacity.toLocaleString()}
+                            </div>
                         </div>
                     </div>
+                </div>
+
+                {/* Scenario Result — After Attrition */}
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                    <div className="text-xs text-tefa-body/50 uppercase font-bold mb-3">After Waitlist Cascade ({Math.round(attritionRate * 100)}% Attrition)</div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <div className="text-xs text-tefa-body/50">Per-Child (Tier 3)</div>
+                            <div className={`text-2xl font-bold ${analysis.effectiveTier3Rate > 80 ? 'text-green-600' : analysis.effectiveTier3Rate > 50 ? 'text-amber-500' : analysis.effectiveTier3Rate > 0 ? 'text-amber-600' : 'text-red-500'}`}>
+                                {analysis.effectiveTier3Rate.toFixed(1)}%
+                            </div>
+                        </div>
+                        <div>
+                            <div className="text-xs text-tefa-body/50">Family (Sibling Rule)</div>
+                            <div className={`text-2xl font-bold ${analysis.effectiveFamilyRate > 80 ? 'text-green-600' : analysis.effectiveFamilyRate > 50 ? 'text-amber-500' : analysis.effectiveFamilyRate > 0 ? 'text-amber-600' : 'text-red-500'}`}>
+                                {analysis.effectiveFamilyRate.toFixed(1)}%
+                            </div>
+                        </div>
+                        <div>
+                            <div className="text-xs text-tefa-body/50">Spots Freed → T3</div>
+                            <div className="text-2xl font-bold text-tefa-navy">
+                                {analysis.t3FromWaitlist.toLocaleString()}
+                            </div>
+                            <div className="text-xs text-tefa-body/60 mt-1">
+                                of {analysis.demandT3.toLocaleString()} T3 demand
+                            </div>
+                        </div>
+                    </div>
+                    {analysis.t3FromWaitlist > 0 && (
+                        <div className="mt-3 text-xs text-tefa-body/60 bg-tefa-sky/10 rounded p-3">
+                            <strong>Cascade:</strong> {analysis.t1Attrition.toLocaleString()} T1 + {analysis.t2Attrition.toLocaleString()} T2 winners don't participate
+                            → {analysis.additionalT2Funded.toLocaleString()} unfunded T2 backfilled
+                            → {analysis.additionalT2Attrition.toLocaleString()} of those also drop
+                            → <strong>{analysis.t3FromWaitlist.toLocaleString()}</strong> spots reach T3
+                        </div>
+                    )}
+                    {analysis.t3FromWaitlist === 0 && analysis.unfundedT2 > 0 && (
+                        <div className="mt-3 text-xs text-tefa-body/60 bg-red-50 rounded p-3">
+                            <strong>Cascade blocked:</strong> {(analysis.t1Attrition + analysis.t2Attrition).toLocaleString()} spots freed by T1/T2 attrition,
+                            but {analysis.unfundedT2.toLocaleString()} unfunded T2 students are ahead on the waitlist and absorb all freed spots.
+                            {analysis.additionalT2Attrition > 0 && ` (${analysis.additionalT2Attrition.toLocaleString()} second-round T2 attrition spots also absorbed.)`}
+                        </div>
+                    )}
                 </div>
             </div>
 
             {/* Scenario Outlook Card */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <h3 className="font-bold text-tefa-navy mb-2 flex items-center gap-2">
-                    <TrendingUp size={18}/> Tier 3 Outlook — Iddings Family ({applicantScenario.toLocaleString()} Applicants)
+                    <TrendingUp size={18}/> Tier 3 Outlook — Iddings Family
                 </h3>
                 <p className="text-xs text-tefa-body/60 mb-4">
-                    Comptroller (Apr 3 comprehensive review): ~25,000 ineligible (~9%), ~2,000 under review. 274,000+ eligible. Funding exhausts within T2. These scenarios show how ineligibility rate affects Tier 3 odds.
+                    Initial lottery odds AND waitlist odds after attrition ({Math.round(attritionRate * 100)}% non-participation). Freed spots cascade: T1/T2 dropouts → backfill T2 waitlist → overflow reaches T3.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="p-4 rounded-lg bg-green-50 border border-green-200">
                         <div className="text-xs text-green-800 uppercase font-bold mb-1">Best Case (15% Ineligible)</div>
-                        <div className="text-xs text-green-700 mb-2">Higher pre-K/under-review rejections push past ~12% threshold where T3 opens</div>
-                        <div className="text-2xl font-bold text-green-700">{scenarioOutlook.best.familySuccessRate.toFixed(1)}%</div>
-                        <div className="text-xs text-green-600 mt-1">Family rate (sibling rule)</div>
-                        <div className="text-xs text-green-600">{scenarioOutlook.best.tier3Rate.toFixed(1)}% per child | {scenarioOutlook.best.fundedT3.toLocaleString()} T3 slots</div>
+                        <div className="text-xs text-green-700 mb-2">Higher rejection rate opens T3 in initial lottery</div>
+                        <div className="flex items-baseline gap-2">
+                            <div className="text-2xl font-bold text-green-700">{scenarioOutlook.best.effectiveFamilyRate.toFixed(1)}%</div>
+                            <div className="text-xs text-green-600">family w/ attrition</div>
+                        </div>
+                        <div className="text-xs text-green-600 mt-1">
+                            Lottery: {scenarioOutlook.best.familySuccessRate.toFixed(1)}% | +{scenarioOutlook.best.t3FromWaitlist.toLocaleString()} from waitlist
+                        </div>
+                        <div className="text-xs text-green-600">{scenarioOutlook.best.effectiveFundedT3.toLocaleString()} total T3 funded</div>
                     </div>
                     <div className="p-4 rounded-lg bg-amber-50 border-2 border-amber-300">
                         <div className="text-xs text-amber-800 uppercase font-bold mb-1">Most Likely (9% Ineligible)</div>
-                        <div className="text-xs text-amber-700 mb-2">Per Comptroller Apr 3 review — funding exhausts in T2, T3 waitlisted</div>
-                        <div className="text-2xl font-bold text-amber-700">{scenarioOutlook.mostLikely.familySuccessRate.toFixed(1)}%</div>
-                        <div className="text-xs text-amber-600 mt-1">Family rate (sibling rule)</div>
-                        <div className="text-xs text-amber-600">{scenarioOutlook.mostLikely.tier3Rate.toFixed(1)}% per child | {scenarioOutlook.mostLikely.fundedT3.toLocaleString()} T3 slots</div>
+                        <div className="text-xs text-amber-700 mb-2">Per Comptroller Apr 3 — T3 waitlisted, depends on attrition</div>
+                        <div className="flex items-baseline gap-2">
+                            <div className="text-2xl font-bold text-amber-700">{scenarioOutlook.mostLikely.effectiveFamilyRate.toFixed(1)}%</div>
+                            <div className="text-xs text-amber-600">family w/ attrition</div>
+                        </div>
+                        <div className="text-xs text-amber-600 mt-1">
+                            Lottery: {scenarioOutlook.mostLikely.familySuccessRate.toFixed(1)}% | +{scenarioOutlook.mostLikely.t3FromWaitlist.toLocaleString()} from waitlist
+                        </div>
+                        <div className="text-xs text-amber-600">{scenarioOutlook.mostLikely.effectiveFundedT3.toLocaleString()} total T3 funded</div>
                     </div>
                     <div className="p-4 rounded-lg bg-red-50 border border-red-200">
                         <div className="text-xs text-red-800 uppercase font-bold mb-1">Worst Case (6% Ineligible)</div>
-                        <div className="text-xs text-red-700 mb-2">Lower rejection rate — T2 partially funded, T3 fully waitlisted</div>
-                        <div className="text-2xl font-bold text-red-700">{scenarioOutlook.worst.familySuccessRate.toFixed(1)}%</div>
-                        <div className="text-xs text-red-600 mt-1">Family rate (sibling rule)</div>
-                        <div className="text-xs text-red-600">{scenarioOutlook.worst.tier3Rate.toFixed(1)}% per child | {scenarioOutlook.worst.fundedT3.toLocaleString()} T3 slots</div>
+                        <div className="text-xs text-red-700 mb-2">Large T2 waitlist absorbs all attrition spots</div>
+                        <div className="flex items-baseline gap-2">
+                            <div className="text-2xl font-bold text-red-700">{scenarioOutlook.worst.effectiveFamilyRate.toFixed(1)}%</div>
+                            <div className="text-xs text-red-600">family w/ attrition</div>
+                        </div>
+                        <div className="text-xs text-red-600 mt-1">
+                            Lottery: {scenarioOutlook.worst.familySuccessRate.toFixed(1)}% | +{scenarioOutlook.worst.t3FromWaitlist.toLocaleString()} from waitlist
+                        </div>
+                        <div className="text-xs text-red-600">{scenarioOutlook.worst.effectiveFundedT3.toLocaleString()} total T3 funded</div>
                     </div>
                 </div>
                 <div className="mt-4 p-3 bg-tefa-navy/5 rounded-lg text-xs text-tefa-body/70">
-                    <strong>Tier 3 is waitlisted under confirmed data.</strong> Realistic paths to funding: T2 lottery winners declining spots, ineligibility rising above ~12% (the threshold where T3 opens), or the Texas Legislature adding funding based on the waitlist report. ~2,000 apps still under review.
+                    <strong>Key factor:</strong> Whether attrition spots reach T3 depends on how many unfunded T2 students are ahead on the waitlist. At 9% ineligibility, there are ~{scenarioOutlook.mostLikely.unfundedT2.toLocaleString()} unfunded T2 students — they must be backfilled before T3 sees any spots.
                 </div>
             </div>
 
