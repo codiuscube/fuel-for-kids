@@ -464,113 +464,103 @@ The contribution amount we listed represents the maximum we can sustainably budg
             {/* TEFA Program Status Card */}
             <div className="bg-tefa-light p-6 rounded-lg shadow-md border-2 border-tefa-navy">
                 <h2 className="text-xl font-bold flex items-center gap-2 text-tefa-navy mb-3">
-                    <Scale size={20} /> TEFA Program Status: In Holding Pattern
+                    <Scale size={20} /> TEFA Program Status: Awaiting Notifications
                 </h2>
                 <p className="text-sm text-tefa-body mb-4">
-                    The TEFA program is stalled due to a federal civil rights lawsuit and a political feud between
-                    Comptroller Hancock and AG Paxton. Your application is submitted and valid — the uncertainty
-                    is about <strong>when</strong> funds will flow, not <strong>whether</strong> you are eligible.
+                    274,000+ eligible students applied. The Comptroller confirmed funding will exhaust within Tier 2 — your family (Tier 3) is expected to be <strong>waitlisted</strong>.
+                    Waitlist movement depends on T1/T2 winner attrition. Notifications expected later in April.
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm mb-4">
                     <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
-                        <div className="text-xs text-tefa-body/50 font-medium">Applications</div>
+                        <div className="text-xs text-tefa-body/50 font-medium">Total Apps</div>
                         <div className="font-bold text-tefa-navy text-lg">~301,000</div>
-                        <div className="text-[10px] text-tefa-body/40">Total (~274k eligible)</div>
+                        <div className="text-[10px] text-tefa-body/40">~274k eligible / ~25k ineligible</div>
                     </div>
                     <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
-                        <div className="text-xs text-tefa-body/50 font-medium">Deadline</div>
-                        <div className="font-bold text-tefa-navy text-lg">Mar 31</div>
-                        <div className="text-[10px] text-tefa-body/40">Court-ordered extension</div>
+                        <div className="text-xs text-tefa-body/50 font-medium">Program Capacity</div>
+                        <div className="font-bold text-tefa-navy text-lg">~{analysis.capacity.toLocaleString()}</div>
+                        <div className="text-[10px] text-tefa-body/40">$1B / $8,545 weighted avg</div>
                     </div>
                     <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
-                        <div className="text-xs text-tefa-body/50 font-medium">Next Hearing</div>
-                        <div className="font-bold text-tefa-red text-lg">Apr 24</div>
-                        <div className="text-[10px] text-tefa-body/40">Federal injunction</div>
+                        <div className="text-xs text-tefa-body/50 font-medium">Iddings Tier</div>
+                        <div className="font-bold text-tefa-gold text-lg">Tier 3</div>
+                        <div className="text-[10px] text-tefa-body/40">200-500% FPL (waitlisted)</div>
                     </div>
                     <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
-                        <div className="text-xs text-tefa-body/50 font-medium">Private School</div>
-                        <div className="font-bold text-tefa-navy text-lg">77%</div>
-                        <div className="text-[10px] text-tefa-body/40">of applicants</div>
+                        <div className="text-xs text-tefa-body/50 font-medium">Initial Lottery</div>
+                        <div className={`font-bold text-lg ${analysis.familySuccessRate > 10 ? 'text-amber-600' : 'text-red-500'}`}>{analysis.familySuccessRate.toFixed(1)}%</div>
+                        <div className="text-[10px] text-tefa-body/40">Family rate (sibling rule)</div>
                     </div>
                     <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
-                        <div className="text-xs text-tefa-body/50 font-medium">Homeschool</div>
-                        <div className="font-bold text-tefa-navy text-lg">23%</div>
-                        <div className="text-[10px] text-tefa-body/40">of applicants</div>
+                        <div className="text-xs text-tefa-body/50 font-medium">With Attrition ({Math.round(attritionRate * 100)}%)</div>
+                        <div className={`font-bold text-lg ${analysis.effectiveFamilyRate > 50 ? 'text-amber-500' : analysis.effectiveFamilyRate > 10 ? 'text-amber-600' : 'text-red-500'}`}>{analysis.effectiveFamilyRate.toFixed(1)}%</div>
+                        <div className="text-[10px] text-tefa-body/40">After waitlist cascade</div>
                     </div>
                     <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
-                        <div className="text-xs text-tefa-body/50 font-medium">Funds Flowing</div>
-                        <div className="font-bold text-tefa-red text-lg">No</div>
-                        <div className="text-[10px] text-tefa-body/40">Pending court ruling</div>
+                        <div className="text-xs text-tefa-body/50 font-medium">If Accepted</div>
+                        <div className="font-bold text-tefa-green text-lg">Kept for Life</div>
+                        <div className="text-[10px] text-tefa-body/40">No reapplication needed</div>
                     </div>
                 </div>
                 <div className="grid grid-cols-4 gap-1 text-xs text-center">
                     <div className="bg-tefa-green/10 rounded p-1.5 border border-tefa-green/20">
                         <div className="font-bold text-tefa-green">T1: 12%</div>
-                        <div className="text-tefa-green/70">Disability</div>
+                        <div className="text-tefa-green/70">Funded first</div>
                     </div>
                     <div className="bg-tefa-navy/10 rounded p-1.5 border border-tefa-navy/20">
                         <div className="font-bold text-tefa-navy">T2: 32%</div>
-                        <div className="text-tefa-navy/70">≤200% FPL</div>
+                        <div className="text-tefa-navy/70">Lottery</div>
                     </div>
-                    <div className="bg-tefa-gold/20 rounded p-1.5 border border-tefa-gold/40">
+                    <div className="bg-tefa-gold/20 rounded p-1.5 border-2 border-tefa-gold/60">
                         <div className="font-bold text-tefa-red">T3: 29%</div>
-                        <div className="text-tefa-red/70">200-500%</div>
+                        <div className="text-tefa-red/70">Waitlisted</div>
                     </div>
                     <div className="bg-tefa-red/10 rounded p-1.5 border border-tefa-red/20">
                         <div className="font-bold text-tefa-red">T4: 27%</div>
-                        <div className="text-tefa-red/70">≥500% FPL</div>
+                        <div className="text-tefa-red/70">Waitlisted</div>
                     </div>
                 </div>
             </div>
 
-            {/* Enrollment Decision Risk Card */}
+            {/* Enrollment Status Card */}
             <div className="bg-tefa-sky/10 p-6 rounded-lg shadow-md border border-tefa-navy/20">
                 <h2 className="text-xl font-bold flex items-center gap-2 text-tefa-navy mb-4">
-                    <Shield size={20} /> Enrollment Decision
+                    <Shield size={20} /> Enrollment Status
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                    <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-navy/10">
-                        <span className="text-tefa-body/60 font-medium">At risk today</span>
-                        <span className="font-bold text-tefa-navy text-lg">$525</span>
-                        <span className="text-xs text-tefa-body/40 hidden sm:block">Enrollment fee for 3 kids</span>
+                    <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-green/20">
+                        <span className="text-tefa-body/60 font-medium">Enrollment</span>
+                        <span className="font-bold text-tefa-green text-lg">Enrolled (3/3)</span>
+                        <span className="text-xs text-tefa-body/40 hidden sm:block">Paid $690 on April 2</span>
                     </div>
-                    <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-navy/10">
+                    <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-green/20">
                         <span className="text-tefa-body/60 font-medium">NBCA Financial Aid</span>
                         <span className="font-bold text-green-600 text-lg">$16,200 Granted</span>
                         <span className="text-xs text-tefa-body/40 hidden sm:block">Cassius $5,850 / Dorothy $5,600 / Sebastian $4,750</span>
                     </div>
                     <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-navy/10">
                         <span className="text-tefa-body/60 font-medium">TEFA Notification</span>
-                        <span className="font-bold text-tefa-navy text-lg">May (est.)</span>
-                        <span className="text-xs text-tefa-body/40 hidden sm:block">Depends on Apr 24 federal hearing</span>
+                        <span className="font-bold text-tefa-navy text-lg">Later in April</span>
+                        <span className="text-xs text-tefa-body/40 hidden sm:block">Likely waitlist for Tier 3</span>
+                    </div>
+                    <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-navy/10">
+                        <span className="text-tefa-body/60 font-medium">NBCA Scholarship</span>
+                        <span className="font-bold text-tefa-navy text-lg">End of April</span>
+                        <span className="text-xs text-tefa-body/40 hidden sm:block">Depends on TEFA outcome</span>
                     </div>
                     <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-navy/10">
                         <span className="text-tefa-body/60 font-medium">Withdraw penalty-free by</span>
                         <span className="font-bold text-tefa-navy text-lg">June 30</span>
-                        <span className="text-xs text-tefa-body/40 hidden sm:block">Full refund except enrollment fee</span>
+                        <span className="text-xs text-tefa-body/40 hidden sm:block">Full refund except $690 enrollment fee</span>
                     </div>
                     <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-navy/10">
                         <span className="text-tefa-body/60 font-medium">No tuition due until</span>
                         <span className="font-bold text-tefa-navy text-lg">July</span>
                         <span className="text-xs text-tefa-body/40 hidden sm:block">First payment</span>
                     </div>
-                    <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-navy/10">
-                        <span className="text-tefa-body/60 font-medium">Spots available</span>
-                        <div className="flex gap-2 flex-wrap">
-                            <span className="text-xs font-semibold bg-tefa-navy/10 text-tefa-navy px-2 py-0.5 rounded">9th: 5</span>
-                            <span className="text-xs font-semibold bg-tefa-gold/20 text-tefa-red px-2 py-0.5 rounded">7th: 3</span>
-                            <span className="text-xs font-semibold bg-tefa-green/10 text-tefa-green px-2 py-0.5 rounded">4th: plenty</span>
-                        </div>
-                    </div>
                 </div>
-                <div className="mt-4 bg-tefa-red/5 border border-tefa-red/20 rounded-lg p-4 text-sm text-tefa-body">
-                    <strong className="flex items-center gap-1 mb-2">⚠️ New Timeline Gap — You'll commit $525 before knowing TEFA status</strong>
-                    <ul className="list-disc list-inside space-y-1 mb-2">
-                        <li><strong>April 6:</strong> Enrollment fee due ($525) — <strong>no TEFA answer yet</strong></li>
-                        <li><strong>May (est.):</strong> TEFA notification — likely delayed until after Apr 24 federal hearing</li>
-                        <li><strong>June 30:</strong> Withdraw penalty-free if funding doesn't work out</li>
-                    </ul>
-                    <strong>Bottom line:</strong> You're committing $525 blind on TEFA, but the June 30 safety net means you still have ~2 months after TEFA notification to back out with no tuition owed.
+                <div className="mt-4 p-3 bg-tefa-navy/5 rounded-lg text-xs text-tefa-body/70">
+                    <strong>Sunk cost:</strong> $690 enrollment fee (non-refundable). All other costs can be avoided by withdrawing before June 30. Waitlist movement from T1/T2 attrition may begin May-June — key to watch before the withdrawal deadline.
                 </div>
             </div>
 
@@ -606,14 +596,14 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             <div>
                                 <div className="font-bold text-tefa-navy flex items-center gap-2">
                                     TEFA Voucher
-                                    <span className={`text-[10px] text-white px-1.5 py-0.5 rounded uppercase tracking-wide ${analysis.familySuccessRate > 80 ? 'bg-green-500' : analysis.familySuccessRate > 50 ? 'bg-tefa-gold/100' : 'bg-red-500'}`}>{analysis.familySuccessRate > 90 ? 'Excellent' : analysis.familySuccessRate > 70 ? 'Good' : analysis.familySuccessRate > 50 ? 'Fair' : 'Low'} ({analysis.familySuccessRate.toFixed(1)}%)</span>
+                                    <span className={`text-[10px] text-white px-1.5 py-0.5 rounded uppercase tracking-wide ${analysis.effectiveFamilyRate > 80 ? 'bg-green-500' : analysis.effectiveFamilyRate > 50 ? 'bg-tefa-gold/100' : analysis.effectiveFamilyRate > 10 ? 'bg-amber-500' : 'bg-red-500'}`}>{analysis.effectiveFamilyRate > 80 ? 'Excellent' : analysis.effectiveFamilyRate > 50 ? 'Good' : analysis.effectiveFamilyRate > 10 ? 'Possible' : 'Unlikely'} ({analysis.effectiveFamilyRate.toFixed(1)}%)</span>
                                 </div>
                                 <div className="text-xs text-tefa-navy/70 mt-1">3 x $10,474 (Est)</div>
                                 <div className="text-[10px] text-tefa-navy/50 mt-2 flex items-center gap-1">
                                     <Briefcase size={10}/> Paid to Digital Wallet
                                 </div>
                                 <div className="text-[10px] text-tefa-red mt-1 flex items-center gap-1">
-                                    <AlertCircle size={10}/> Program stalled — Apr 24 hearing
+                                    <AlertCircle size={10}/> Tier 3 waitlisted — attrition is the path
                                 </div>
                             </div>
                             <label className="relative inline-flex items-center cursor-pointer mt-1">
