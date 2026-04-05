@@ -987,35 +987,9 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     </div>
                 </div>
 
-                {/* Scenario Result */}
-                {/* Scenario Result — Initial Lottery */}
+                {/* Scenario Result — After Attrition / Waitlist */}
                 <div className="mt-6 pt-4 border-t border-gray-100">
-                    <div className="text-xs text-tefa-body/50 uppercase font-bold mb-3">Initial Lottery (Day 1)</div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div>
-                            <div className="text-xs text-tefa-body/50">Per-Child (Tier 3)</div>
-                            <div className={`text-2xl font-bold ${analysis.tier3Rate > 80 ? 'text-green-600' : analysis.tier3Rate > 50 ? 'text-amber-500' : 'text-red-500'}`}>
-                                {analysis.tier3Rate.toFixed(1)}%
-                            </div>
-                        </div>
-                        <div>
-                            <div className="text-xs text-tefa-body/50">Family (Sibling Rule)</div>
-                            <div className={`text-2xl font-bold ${analysis.familySuccessRate > 80 ? 'text-green-600' : analysis.familySuccessRate > 50 ? 'text-amber-500' : 'text-red-500'}`}>
-                                {analysis.familySuccessRate.toFixed(1)}%
-                            </div>
-                        </div>
-                        <div>
-                            <div className="text-xs text-tefa-body/50">Program Capacity</div>
-                            <div className="text-2xl font-bold text-tefa-navy">
-                                ~{analysis.capacity.toLocaleString()}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Scenario Result — After Attrition */}
-                <div className="mt-4 pt-4 border-t border-gray-100">
-                    <div className="text-xs text-tefa-body/50 uppercase font-bold mb-3">After Waitlist Cascade ({Math.round(attritionRate * 100)}% Attrition)</div>
+                    <div className="text-xs text-tefa-body/50 uppercase font-bold mb-3">Projected Outcome (incl. {Math.round(attritionRate * 100)}% Attrition &amp; Waitlist Cascade)</div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
                             <div className="text-xs text-tefa-body/50">Per-Child (Tier 3)</div>
@@ -1030,12 +1004,12 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             </div>
                         </div>
                         <div>
-                            <div className="text-xs text-tefa-body/50">Spots Freed → T3</div>
+                            <div className="text-xs text-tefa-body/50">Program Capacity</div>
                             <div className="text-2xl font-bold text-tefa-navy">
-                                {analysis.t3FromWaitlist.toLocaleString()}
+                                ~{analysis.capacity.toLocaleString()}
                             </div>
                             <div className="text-xs text-tefa-body/60 mt-1">
-                                of {analysis.demandT3.toLocaleString()} T3 demand
+                                +{analysis.t3FromWaitlist.toLocaleString()} waitlist → T3
                             </div>
                         </div>
                     </div>
@@ -1172,8 +1146,8 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                     {analysis.demandT2.toLocaleString()} applicants — {tier2FundingRate >= 100 ? '100% funded' : `${tier2FundingRate.toFixed(1)}% funded (${analysis.fundedT2.toLocaleString()} of ${analysis.demandT2.toLocaleString()} — lottery within tier)`}
                                 </div>
                             </div>
-                            <div className={`p-4 border-2 rounded-lg ${analysis.tier3Rate === 100 ? 'bg-green-50 border-green-300' : 'bg-tefa-gold/10 border-tefa-gold/40'}`}>
-                                <div className={`font-bold text-lg ${analysis.tier3Rate === 100 ? 'text-green-800' : 'text-tefa-red'}`}>
+                            <div className={`p-4 border-2 rounded-lg ${analysis.effectiveTier3Rate === 100 ? 'bg-green-50 border-green-300' : 'bg-tefa-gold/10 border-tefa-gold/40'}`}>
+                                <div className={`font-bold text-lg ${analysis.effectiveTier3Rate === 100 ? 'text-green-800' : 'text-tefa-red'}`}>
                                     Tier 3 — 200-500% FPL (29%) — All 3 Iddings Children
                                 </div>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3 text-sm">
@@ -1182,25 +1156,30 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                         <div className="font-bold">{analysis.demandT3.toLocaleString()}</div>
                                     </div>
                                     <div>
-                                        <div className="text-xs text-tefa-body/50">Funded</div>
-                                        <div className="font-bold">{analysis.fundedT3.toLocaleString()}</div>
+                                        <div className="text-xs text-tefa-body/50">Funded (incl. waitlist)</div>
+                                        <div className="font-bold">{analysis.effectiveFundedT3.toLocaleString()}</div>
                                     </div>
                                     <div>
                                         <div className="text-xs text-tefa-body/50">Per-Child Rate</div>
-                                        <div className={`font-bold ${analysis.tier3Rate > 80 ? 'text-green-600' : analysis.tier3Rate > 50 ? 'text-amber-600' : 'text-red-600'}`}>
-                                            {analysis.tier3Rate.toFixed(1)}%
+                                        <div className={`font-bold ${analysis.effectiveTier3Rate > 80 ? 'text-green-600' : analysis.effectiveTier3Rate > 50 ? 'text-amber-600' : 'text-red-600'}`}>
+                                            {analysis.effectiveTier3Rate.toFixed(1)}%
                                         </div>
                                     </div>
                                     <div>
                                         <div className="text-xs text-tefa-body/50">Family Rate (Sibling Rule)</div>
-                                        <div className={`font-bold ${analysis.familySuccessRate > 80 ? 'text-green-600' : analysis.familySuccessRate > 50 ? 'text-amber-600' : 'text-red-600'}`}>
-                                            {analysis.familySuccessRate.toFixed(1)}%
+                                        <div className={`font-bold ${analysis.effectiveFamilyRate > 80 ? 'text-green-600' : analysis.effectiveFamilyRate > 50 ? 'text-amber-600' : 'text-red-600'}`}>
+                                            {analysis.effectiveFamilyRate.toFixed(1)}%
                                         </div>
                                     </div>
                                 </div>
                                 <div className="mt-3 text-xs text-tefa-body/60">
-                                    Sibling math: P(family) = 1 - P(all 3 lose) = 1 - (1 - {(analysis.tier3Rate / 100).toFixed(4)})³ = {(analysis.familySuccessRate / 100).toFixed(4)}
+                                    Sibling math: P(family) = 1 - P(all 3 lose) = 1 - (1 - {(analysis.effectiveTier3Rate / 100).toFixed(4)})³ = {(analysis.effectiveFamilyRate / 100).toFixed(4)}
                                 </div>
+                                {analysis.t3FromWaitlist > 0 && (
+                                    <div className="mt-2 text-xs text-tefa-body/50">
+                                        Initial lottery: {analysis.fundedT3.toLocaleString()} funded ({analysis.tier3Rate.toFixed(1)}%) + {analysis.t3FromWaitlist.toLocaleString()} from waitlist cascade
+                                    </div>
+                                )}
                             </div>
                             <div className={`p-3 border rounded ${analysis.tier4Rate > 0 ? 'bg-red-50 border-red-200' : 'bg-tefa-light border-gray-200'}`}>
                                 <div className={`font-bold ${analysis.tier4Rate > 50 ? 'text-tefa-red' : 'text-tefa-red'}`}>
@@ -1216,11 +1195,11 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         <h3 className="font-bold text-tefa-navy text-lg mb-2">4. Per-Student Breakdown</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                             {students.map((student) => (
-                                <div key={student.name} className={`p-4 rounded-lg border ${analysis.familySuccessRate > 80 ? 'bg-green-50 border-green-200' : analysis.familySuccessRate > 50 ? 'bg-tefa-gold/10 border-tefa-gold/30' : 'bg-red-50 border-red-200'}`}>
+                                <div key={student.name} className={`p-4 rounded-lg border ${analysis.effectiveFamilyRate > 80 ? 'bg-green-50 border-green-200' : analysis.effectiveFamilyRate > 50 ? 'bg-tefa-gold/10 border-tefa-gold/30' : 'bg-red-50 border-red-200'}`}>
                                     <div className="font-bold text-tefa-navy">{student.name}</div>
                                     <div className="text-xs text-tefa-body/60">{student.grade} — Tier 3</div>
-                                    <div className={`text-2xl font-bold mt-2 ${analysis.tier3Rate > 80 ? 'text-green-600' : analysis.tier3Rate > 50 ? 'text-amber-600' : 'text-red-600'}`}>
-                                        {analysis.tier3Rate.toFixed(1)}%
+                                    <div className={`text-2xl font-bold mt-2 ${analysis.effectiveTier3Rate > 80 ? 'text-green-600' : analysis.effectiveTier3Rate > 50 ? 'text-amber-600' : 'text-red-600'}`}>
+                                        {analysis.effectiveTier3Rate.toFixed(1)}%
                                     </div>
                                     <div className="text-xs text-tefa-body/50 mt-1">
                                         {student.wasInPublicSchool ? 'Was in public school last year' : 'Was not in public school last year'}
@@ -1229,14 +1208,14 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             ))}
                         </div>
 
-                        <div className={`p-4 rounded-lg border-2 mb-6 ${analysis.familySuccessRate > 80 ? 'bg-green-50 border-green-300' : analysis.familySuccessRate > 50 ? 'bg-tefa-gold/10 border-tefa-gold/40' : 'bg-red-50 border-red-300'}`}>
+                        <div className={`p-4 rounded-lg border-2 mb-6 ${analysis.effectiveFamilyRate > 80 ? 'bg-green-50 border-green-300' : analysis.effectiveFamilyRate > 50 ? 'bg-tefa-gold/10 border-tefa-gold/40' : 'bg-red-50 border-red-300'}`}>
                             <div className="flex items-center justify-between">
                                 <div>
                                     <div className="text-xs text-tefa-body/50 uppercase font-bold">Family Probability (All 3 Funded via Sibling Rule)</div>
-                                    <div className="text-xs text-tefa-body/60 mt-1">1 win in Tier 3 lottery = all 3 children automatically accepted</div>
+                                    <div className="text-xs text-tefa-body/60 mt-1">1 win in Tier 3 lottery or waitlist = all 3 children automatically accepted</div>
                                 </div>
-                                <div className={`text-4xl font-bold ${analysis.familySuccessRate > 80 ? 'text-green-600' : analysis.familySuccessRate > 50 ? 'text-amber-600' : 'text-red-600'}`}>
-                                    {analysis.familySuccessRate.toFixed(1)}%
+                                <div className={`text-4xl font-bold ${analysis.effectiveFamilyRate > 80 ? 'text-green-600' : analysis.effectiveFamilyRate > 50 ? 'text-amber-600' : 'text-red-600'}`}>
+                                    {analysis.effectiveFamilyRate.toFixed(1)}%
                                 </div>
                             </div>
                         </div>
@@ -1253,8 +1232,8 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                 <div className="bg-white rounded p-3 border border-tefa-gold/20">
                                     <div className="text-xs text-tefa-body/50 uppercase font-bold mb-1">Comptroller's Rules (Current Reality)</div>
                                     <div className="text-tefa-body/70">All 3 kids in Tier 3 (same pool)</div>
-                                    <div className={`text-xl font-bold mt-1 ${analysis.familySuccessRate > 80 ? 'text-green-600' : 'text-amber-600'}`}>
-                                        {analysis.familySuccessRate.toFixed(1)}% Family Rate
+                                    <div className={`text-xl font-bold mt-1 ${analysis.effectiveFamilyRate > 80 ? 'text-green-600' : 'text-amber-600'}`}>
+                                        {analysis.effectiveFamilyRate.toFixed(1)}% Family Rate
                                     </div>
                                 </div>
                                 <div className="bg-white rounded p-3 border border-tefa-gold/20">
@@ -1357,16 +1336,16 @@ Respectfully,
 
                         <h3 className="font-bold text-tefa-navy text-lg mb-2">8. Conclusion</h3>
                         <p className="mb-3">
-                            Under the Comptroller's actual implementation, your family has a
-                            <strong> {analysis.familySuccessRate.toFixed(1)}%</strong> probability of all 3 children receiving TEFA funding
+                            Under the Comptroller's actual implementation, accounting for {Math.round(attritionRate * 100)}% attrition and waitlist cascade, your family has a
+                            <strong> {analysis.effectiveFamilyRate.toFixed(1)}%</strong> probability of all 3 children receiving TEFA funding
                             at the current ineligibility rate ({Math.round(ineligibilityRate * 100)}%).
-                            {analysis.familySuccessRate > 90
-                                ? " The combination of Tier 3 placement and the sibling rule puts you in an excellent position."
-                                : analysis.familySuccessRate > 50
-                                ? " The sibling rule significantly boosts your odds — 3 independent lottery draws with 1 win covering all."
-                                : analysis.familySuccessRate > 10
-                                ? " Odds are low but not zero — the sibling rule triples your effective lottery entries."
-                                : " The Comptroller projects funding will exhaust in Tier 2. Tier 3 families are expected to be waitlisted. The waitlist will be reported to the legislature to inform future funding decisions."}
+                            {analysis.effectiveFamilyRate > 90
+                                ? " The combination of Tier 3 placement, the sibling rule, and waitlist movement puts you in an excellent position."
+                                : analysis.effectiveFamilyRate > 50
+                                ? " The sibling rule significantly boosts your odds — 3 independent lottery draws with 1 win covering all. Waitlist cascade from attrition further improves your chances."
+                                : analysis.effectiveFamilyRate > 10
+                                ? " Odds are low but not zero — the sibling rule triples your effective lottery entries, and waitlist movement from attrition may open additional spots."
+                                : " The Comptroller projects funding will exhaust in Tier 2. Tier 3 families are expected to be waitlisted. Whether attrition spots reach Tier 3 depends on the size of the unfunded Tier 2 waitlist."}
                         </p>
                         <p className="text-xs text-tefa-body/60 mb-3">
                             Under the stricter SB 2 reading, Dorothy & Sebastian's public school history would place them in the priority pool,
