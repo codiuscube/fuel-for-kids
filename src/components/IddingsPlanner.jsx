@@ -33,14 +33,13 @@ const IddingsPlanner = () => {
   // Scenario State - Updated to ~301k total per Comptroller comprehensive review (Apr 3)
   const [applicantScenario, setApplicantScenario] = useState(301000);
   const [ineligibilityRate, setIneligibilityRate] = useState(0.09); // ~9% per Comptroller Apr 3 review (~25k ineligible, ~2k under review)
-  const [publicSchoolPct, setPublicSchoolPct] = useState(0.24); // TCVT data: ~24% were in public school last year
   const [attritionRate, setAttritionRate] = useState(0.15); // Est. 15% of lottery winners don't follow through
 
   // Student Data
   const students = [
-    { name: 'Cassius', grade: '9th Grade', school: 'High School', aceAmount: 4000, nbcaAid: 5850, wasInPublicSchool: false },
-    { name: 'Dorothy', grade: '7th Grade', school: 'Middle School', aceAmount: 3000, nbcaAid: 5600, wasInPublicSchool: true },
-    { name: 'Sebastian', grade: '4th Grade', school: 'Elementary', aceAmount: 3000, nbcaAid: 4750, wasInPublicSchool: true }
+    { name: 'Cassius', grade: '9th Grade', school: 'High School', aceAmount: 4000, nbcaAid: 5850 },
+    { name: 'Dorothy', grade: '7th Grade', school: 'Middle School', aceAmount: 3000, nbcaAid: 5600 },
+    { name: 'Sebastian', grade: '4th Grade', school: 'Elementary', aceAmount: 3000, nbcaAid: 4750 }
   ];
 
   // Financial Data State - "Most Likely Scenario" Defaults
@@ -196,25 +195,6 @@ const IddingsPlanner = () => {
     const familySuccessRate = (1 - Math.pow(singleFailRate, 3)) * 100;
 
     // =====================================================
-    // MODEL B: STRICT SB 2 READING (Legal Risk Scenario)
-    // (If a court enforces §29.356(b) public school requirement)
-    // =====================================================
-    const incomeOrDisabilityRate = 0.75; // ~72% ≤500% FPL + ~3% disabled above
-    const priorityDemand = Math.round(eligibleApps * publicSchoolPct * incomeOrDisabilityRate);
-    const priorityCapacity = Math.floor(capacity * 0.80);
-    const priorityFunded = Math.min(priorityCapacity, priorityDemand);
-    const priorityRate = priorityDemand > 0 ? Math.min(100, (priorityFunded / priorityDemand) * 100) : 100;
-
-    const generalDemand = eligibleApps - priorityDemand;
-    const generalCapacity = capacity - priorityFunded;
-    const generalRate = generalDemand > 0 ? Math.min(100, (Math.min(generalCapacity, generalDemand) / generalDemand) * 100) : 100;
-
-    // Under strict reading with sibling rule:
-    // Dorothy & Sebastian → priority pool, Cassius → general pool
-    // P(family) = 1 - P(D loses) * P(S loses) * P(C loses)
-    const strictFamilyRate = (1 - (1 - priorityRate / 100) * (1 - priorityRate / 100) * (1 - generalRate / 100)) * 100;
-
-    // =====================================================
     // ATTRITION MODEL: Lottery winners who don't participate
     // Freed spots cascade down the waitlist (T1→T2→T3→T4)
     // =====================================================
@@ -259,9 +239,6 @@ const IddingsPlanner = () => {
         t3FromWaitlist, t3Attrition, unfundedT2,
         effectiveFundedT3, effectiveTier3Rate, effectiveFamilyRate,
         totalInitialFunded, totalAttritionFreed,
-        // Model B: Strict SB 2
-        priorityDemand, priorityCapacity, priorityFunded, priorityRate,
-        generalDemand, generalCapacity, generalRate, strictFamilyRate,
     };
   };
 
@@ -344,6 +321,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
     { date: 'Apr 01', day: 'Wed', isoDate: '2026-04-01', event: 'TEFA Surpasses 274,000 Applications (AFC)', type: 'tefa', desc: 'AFC press release confirms 274,000+ eligible applications — largest school choice launch in history.', funding: 'N/A' },
     { date: 'Apr 02', day: 'Thu', isoDate: '2026-04-02', event: 'Comptroller Releases Initial TEFA Breakdown', type: 'tefa', desc: 'Initial breakdown (PDF): 274k apps, 77% private / 23% homeschool, tiers 12/31/30/5/22%. Funding expected to exhaust within Tier 2.', funding: 'N/A' },
     { date: 'Apr 03', day: 'Fri', isoDate: '2026-04-03', event: 'Comptroller Comprehensive Review Released', type: 'tefa', desc: '274,000+ ELIGIBLE students (~301k total). ~25,000 ineligible (~9%), ~2,000 under review. Pre-K: 50%+ ineligible (18,677 of 36,666). Tiers: 12/32/29/5/22%. 43,000 disability apps (80% IEP). 43,000 first-day apps. Notifications "later in April", funds start July.', funding: 'N/A' },
+    { date: 'Apr 03', day: 'Fri', isoDate: '2026-04-03', event: 'Comptroller Confirms: Public School Priority Only Applies to Tier 4', type: 'tefa', desc: 'TEFA team email response to our inquiry confirms: per Sec. 29.3521(d), prior public school enrollment priority only applies to Tier 4 (≥500% FPL). For Tier 3 (200-500% FPL), public school history provides no priority advantage. Also confirmed: $1B spending cap for 2025-2027 biennium, 20% cap on Tier 4 spending.', funding: 'N/A' },
     { date: 'Apr 02', day: 'Thu', isoDate: '2026-04-02', event: 'NBCA Enrollment Fee Paid', type: 'nbca', desc: 'Enrolled all 3 children. Paid ($175 + $55) x 3 = $690.', funding: '$690 Paid' },
     { date: 'Apr 15', day: 'Wed', isoDate: '2026-04-15', event: 'ACE Scholarship Deadline', type: 'ace', desc: 'Closes 11:59 PM (Tax Day).', funding: 'Deadline' },
     { date: 'Apr 24', day: 'Fri', isoDate: '2026-04-24', event: 'Federal Injunction Hearing', type: 'tefa', desc: 'Key hearing in Muslim schools v. Texas. Court decides whether to maintain, modify, or dissolve the injunction blocking Comptroller Hancock from excluding Islamic schools. TEFA funding timeline depends on outcome.', funding: 'Court Date' },
@@ -931,33 +909,6 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     </div>
                 </div>
 
-                {/* Prior Public School Rate */}
-                <div className="mt-5 pt-4 border-t border-gray-100">
-                    <div className="flex items-center justify-between mb-2">
-                        <label className="text-sm font-medium text-tefa-navy">Prior Public School Enrollment Rate</label>
-                        <span className="text-sm font-bold text-tefa-navy">{Math.round(publicSchoolPct * 100)}%</span>
-                    </div>
-                    <input
-                        type="range"
-                        min="10"
-                        max="60"
-                        step="1"
-                        value={Math.round(publicSchoolPct * 100)}
-                        onChange={(e) => setPublicSchoolPct(parseInt(e.target.value) / 100)}
-                        className="w-full accent-tefa-navy"
-                    />
-                    <div className="flex justify-between text-xs text-tefa-body/50 mt-1">
-                        <span>10%</span>
-                        <span>24% (TCVT)</span>
-                        <span>60%</span>
-                    </div>
-                    <div className="mt-2 text-sm text-tefa-body/70">
-                        Est. {Math.round(publicSchoolPct * 100)}% of applicants were enrolled in public school last year
-                    </div>
-                    <div className="mt-1 text-xs text-tefa-body/50">
-                        SB 2 §29.356(b)(1) requires prior public school enrollment for the 80% priority pool. TCVT data suggests ~24% of applicants qualify. The Comptroller has not published this breakdown.
-                    </div>
-                </div>
 
                 {/* Attrition / Non-Participation Rate */}
                 <div className="mt-5 pt-4 border-t border-gray-100">
@@ -1127,7 +1078,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             </p>
                             <p className="text-xs text-tefa-navy/70">
                                 All 3 children (Cassius, Dorothy, Sebastian) are in <strong>Tier 3 (200-500% FPL)</strong> under the Comptroller's implementation,
-                                which does not enforce the public school attendance requirement for Tiers 1-3.
+                                The Comptroller confirmed (Apr 3 email, citing Sec. 29.3521(d)) that public school enrollment only affects Tier 4 priority — not Tiers 1-3.
                             </p>
                         </div>
 
@@ -1202,7 +1153,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                         {analysis.effectiveTier3Rate.toFixed(1)}%
                                     </div>
                                     <div className="text-xs text-tefa-body/50 mt-1">
-                                        {student.wasInPublicSchool ? 'Was in public school last year' : 'Was not in public school last year'}
+                                        Public school history: no effect on Tier 3 (confirmed Apr 3)
                                     </div>
                                 </div>
                             ))}
@@ -1220,71 +1171,29 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             </div>
                         </div>
 
-                        <h3 className="font-bold text-tefa-navy text-lg mb-2">5. Legal Risk: Comptroller vs. SB 2 Text</h3>
-                        <div className="bg-tefa-gold/10 border border-tefa-gold/30 rounded-lg p-4 mb-4">
-                            <p className="text-sm text-tefa-body mb-3">
-                                <strong>The Comptroller is not enforcing SB 2's public school requirement.</strong> The law (§29.356(b)(1)) mandates that 80% of positions
-                                be reserved for children who attended public school last year AND are low-income/disabled. The Comptroller's website only applies
-                                this requirement to Tier 4 (≥500% FPL), ignoring it entirely for Tiers 1-3. This benefits your family
-                                (Cassius stays in Tier 3) but creates legal vulnerability if challenged.
-                            </p>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                                <div className="bg-white rounded p-3 border border-tefa-gold/20">
-                                    <div className="text-xs text-tefa-body/50 uppercase font-bold mb-1">Comptroller's Rules (Current Reality)</div>
-                                    <div className="text-tefa-body/70">All 3 kids in Tier 3 (same pool)</div>
-                                    <div className={`text-xl font-bold mt-1 ${analysis.effectiveFamilyRate > 80 ? 'text-green-600' : 'text-amber-600'}`}>
-                                        {analysis.effectiveFamilyRate.toFixed(1)}% Family Rate
-                                    </div>
-                                </div>
-                                <div className="bg-white rounded p-3 border border-tefa-gold/20">
-                                    <div className="text-xs text-tefa-body/50 uppercase font-bold mb-1">If SB 2 Text Enforced (Legal Risk)</div>
-                                    <div className="text-tefa-body/70">D&S in priority pool, Cassius in general</div>
-                                    <div className={`text-xl font-bold mt-1 ${analysis.strictFamilyRate > 80 ? 'text-green-600' : 'text-amber-600'}`}>
-                                        {analysis.strictFamilyRate.toFixed(1)}% Family Rate
-                                    </div>
-                                    <div className="text-xs text-tefa-body/50 mt-1">
-                                        Priority: {analysis.priorityRate.toFixed(1)}% (D&S) | General: {analysis.generalRate.toFixed(1)}% (Cassius)
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <h3 className="font-bold text-tefa-navy text-lg mb-2">6. Draft Email: SB 2 Interpretation Inquiry</h3>
+                        <h3 className="font-bold text-tefa-navy text-lg mb-2">5. Comptroller Email Exchange (Apr 3)</h3>
                         <div className="bg-tefa-sky/10 border border-tefa-sky/30 rounded-lg p-4 mb-4">
-                            <p className="text-xs text-tefa-body/60 mb-2">
-                                Send to the Comptroller's TEFA team to ask about the SB 2 public school enrollment interpretation for Tier 3 families.
+                            <p className="text-xs text-tefa-body/60 mb-3">
+                                Sent to tefa@cpa.texas.gov on Apr 3 regarding SB 2 public school enrollment interpretation for Tier 3 families.
                             </p>
-                            <div className="bg-white rounded p-4 border border-gray-200 text-sm text-tefa-body font-mono whitespace-pre-wrap">
-{`To: tefa@cpa.texas.gov
-Subject: Question Regarding Priority Tier Placement and Prior Public School Enrollment (SB 2 §29.356)
-
-Dear Texas Education Freedom Account Team,
-
-My family applied for TEFA for three children — two of whom were enrolled in Texas public schools last year, and one who was not. All three fall within the 200-500% FPL income range and are currently placed in Tier 3 under the Comptroller's priority system.
-
-I am writing to understand how prior public school enrollment is factored into the priority tier placement for families in our income bracket.
-
-SB 2 §29.356(b)(1) references reserving positions for students who "attended a public school in this state during the preceding school year" and who meet income or disability criteria. The Comptroller's current tier system appears to apply the public school enrollment distinction only within Tier 4 (at or above 500% FPL), where it creates a sub-priority (Tier 4a vs. 4b).
-
-My question: For families in the 200-500% FPL range (Tier 3), does prior public school enrollment provide any priority advantage? Specifically, would children who attended public school last year receive any higher consideration within Tier 3 compared to children who did not?
-
-I want to make sure I understand how the statute is being applied so our family can plan accordingly as we await notification later this month.
-
-Thank you for your time and for the work your office is doing to administer this program.
-
-Respectfully,
-[Your Name]
-[Your TEFA Application ID(s)]`}
+                            <div className="bg-white rounded p-4 border border-gray-200 text-sm text-tefa-body mb-3">
+                                <div className="text-xs text-tefa-body/50 uppercase font-bold mb-2">Our Question</div>
+                                <p className="text-tefa-body/70">
+                                    For families in the 200-500% FPL range (Tier 3), does prior public school enrollment provide any priority advantage?
+                                </p>
                             </div>
-                            <button
-                                onClick={() => copyToClipboard(`To: tefa@cpa.texas.gov\nSubject: Question Regarding Priority Tier Placement and Prior Public School Enrollment (SB 2 §29.356)\n\nDear Texas Education Freedom Account Team,\n\nMy family applied for TEFA for three children — two of whom were enrolled in Texas public schools last year, and one who was not. All three fall within the 200-500% FPL income range and are currently placed in Tier 3 under the Comptroller's priority system.\n\nI am writing to understand how prior public school enrollment is factored into the priority tier placement for families in our income bracket.\n\nSB 2 §29.356(b)(1) references reserving positions for students who "attended a public school in this state during the preceding school year" and who meet income or disability criteria. The Comptroller's current tier system appears to apply the public school enrollment distinction only within Tier 4 (at or above 500% FPL), where it creates a sub-priority (Tier 4a vs. 4b).\n\nMy question: For families in the 200-500% FPL range (Tier 3), does prior public school enrollment provide any priority advantage? Specifically, would children who attended public school last year receive any higher consideration within Tier 3 compared to children who did not?\n\nI want to make sure I understand how the statute is being applied so our family can plan accordingly as we await notification later this month.\n\nThank you for your time and for the work your office is doing to administer this program.\n\nRespectfully,\n[Your Name]\n[Your TEFA Application ID(s)]`)}
-                                className="mt-3 px-4 py-2 bg-tefa-navy text-white rounded-lg text-sm font-medium hover:bg-tefa-navy/90 transition flex items-center gap-2"
-                            >
-                                <Copy size={14} /> Copy Email to Clipboard
-                            </button>
+                            <div className="bg-green-50 rounded p-4 border border-green-200 text-sm text-tefa-body">
+                                <div className="text-xs text-green-800 uppercase font-bold mb-2">Comptroller's Response (Apr 3, 2026)</div>
+                                <ul className="text-green-700 space-y-2 text-sm">
+                                    <li>Per <strong>Sec. 29.3521(d)</strong>, prior public school enrollment priority <strong>only applies to Tier 4</strong> (≥500% FPL)</li>
+                                    <li>For Tier 3 (200-500% FPL), public school history provides <strong>no priority advantage</strong></li>
+                                    <li>Cited Sec. 29.3521 (not 29.356) as the governing section for Tier 4 sub-prioritization</li>
+                                    <li>Confirmed: $1B spending cap for 2025-2027 biennium, 20% of appropriated money cap for Tier 4 children</li>
+                                </ul>
+                            </div>
                         </div>
 
-                        <h3 className="font-bold text-tefa-navy text-lg mb-2">7. Federal Lawsuit & Political Conflict</h3>
+                        <h3 className="font-bold text-tefa-navy text-lg mb-2">6. Federal Lawsuit & Political Conflict</h3>
                         <div className="bg-tefa-red/5 border border-tefa-red/20 rounded-lg p-4 mb-4">
                             <p className="text-sm text-tefa-red mb-3">
                                 <strong>The TEFA program is caught in a federal civil rights lawsuit and a political feud.</strong> Acting
@@ -1334,9 +1243,9 @@ Respectfully,
                             </div>
                         </div>
 
-                        <h3 className="font-bold text-tefa-navy text-lg mb-2">8. Conclusion</h3>
+                        <h3 className="font-bold text-tefa-navy text-lg mb-2">7. Conclusion</h3>
                         <p className="mb-3">
-                            Under the Comptroller's actual implementation, accounting for {Math.round(attritionRate * 100)}% attrition and waitlist cascade, your family has a
+                            Under the Comptroller's confirmed implementation, accounting for {Math.round(attritionRate * 100)}% attrition and waitlist cascade, your family has a
                             <strong> {analysis.effectiveFamilyRate.toFixed(1)}%</strong> probability of all 3 children receiving TEFA funding
                             at the current ineligibility rate ({Math.round(ineligibilityRate * 100)}%).
                             {analysis.effectiveFamilyRate > 90
@@ -1346,11 +1255,6 @@ Respectfully,
                                 : analysis.effectiveFamilyRate > 10
                                 ? " Odds are low but not zero — the sibling rule triples your effective lottery entries, and waitlist movement from attrition may open additional spots."
                                 : " The Comptroller projects funding will exhaust in Tier 2. Tier 3 families are expected to be waitlisted. Whether attrition spots reach Tier 3 depends on the size of the unfunded Tier 2 waitlist."}
-                        </p>
-                        <p className="text-xs text-tefa-body/60 mb-3">
-                            Under the stricter SB 2 reading, Dorothy & Sebastian's public school history would place them in the priority pool,
-                            potentially improving your family's odds ({analysis.strictFamilyRate.toFixed(1)}% family rate). The Comptroller is not currently
-                            applying this interpretation — public school history only matters for Tier 4 sub-prioritization.
                         </p>
                         <p className="text-xs text-tefa-red/80 bg-tefa-gold/10 border border-tefa-gold/30 rounded p-3">
                             <strong>Timing caveat:</strong> The federal lawsuit and Comptroller-AG political conflict have introduced significant timing uncertainty.
