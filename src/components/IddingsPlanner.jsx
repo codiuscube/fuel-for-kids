@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   Calendar,
   CheckSquare,
+  Square,
+  ExternalLink,
   DollarSign,
   Users,
   AlertCircle,
@@ -80,7 +82,7 @@ const IddingsPlanner = () => {
     { item: "NBCA Enrollment Fee", status: "Paid ($690)", date: "April 2", type: "success", funding: "($175 + $55) x 3" },
     { item: "NBCA Financial Aid", status: "Granted ($16,200)", date: "March 31", type: "success", funding: "Tuition Credit" },
     { item: "NBCA Scholarship", status: "Pending (depends on TEFA)", date: "End of April", type: "pending", funding: "Tuition Credit" },
-    { item: "TEFA Scholarship", status: "Waiting (Tier 3 — likely waitlisted)", date: "April (notifications this month)", type: "pending", funding: "Digital Wallet" },
+    { item: "TEFA Grant (ESA)", status: "Waiting (Tier 3 — likely waitlisted)", date: "Notifications later in April", type: "pending", funding: "Odyssey ESA Account" },
   ];
 
   // Checklist Data
@@ -346,7 +348,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
     { date: 'Apr 02', day: 'Thu', isoDate: '2026-04-02', event: 'Comptroller Releases Initial TEFA Breakdown', type: 'tefa', desc: 'Initial breakdown: 274,183 total applications, 77% private / 23% homeschool.', funding: 'N/A' },
     { date: 'Apr 03', day: 'Fri', isoDate: '2026-04-03', event: 'Comptroller Confirms: Public School Priority Only Applies to Tier 4', type: 'tefa', desc: 'TEFA team email response to our inquiry confirms: per Sec. 29.3521(d), prior public school enrollment priority only applies to Tier 4 (≥500% FPL). For Tier 3 (200-500% FPL), public school history provides no priority advantage. Also confirmed: $1B spending cap for 2025-2027 biennium, 20% cap on Tier 4 spending.', funding: 'N/A' },
     { date: 'Apr 02', day: 'Thu', isoDate: '2026-04-02', event: 'NBCA Enrollment Fee Paid', type: 'nbca', desc: 'Enrolled all 3 children. Paid ($175 + $55) x 3 = $690.', funding: '$690 Paid' },
-    { date: 'Apr 08', day: 'Wed', isoDate: '2026-04-08', event: 'Comptroller Publishes TEFA Application Insights: Year 1', type: 'tefa', desc: 'Official Year 1 PDF released. 274,183 total applications, ~9% ineligible (~25k, Pre-K drives most: 18,677 of 36,666). Tiers (PDF page 8): T1 12%, T2 32%, T3 29% (Iddings), T4a 5%, T4b 22%. Demographics: 45% White, 23% Hispanic, 12% Black, 11% multiracial, 8% API, 1% AI/AN. 37% ≤200% FPL, 36% 200-500% FPL. 77% private / 23% homeschool. Capacity ~95,475 (SB 2: $1B ÷ $10,474 per-student max). Funding exhausts within Tier 2 per Comptroller press release.', funding: 'N/A' },
+    { date: 'Apr 08', day: 'Wed', isoDate: '2026-04-08', event: 'Comptroller Publishes TEFA Application Insights: Year 1', type: 'tefa', desc: 'Official Year 1 PDF released — 274,183 applications, tier breakdown, demographics, ISD-level data.', funding: 'N/A', link: { href: '/TEFA-Application-Insights-Year-1.pdf', label: 'View PDF' } },
     { date: 'Apr 15', day: 'Wed', isoDate: '2026-04-15', event: 'ACE Scholarship Deadline', type: 'ace', desc: 'Closes 11:59 PM (Tax Day).', funding: 'Deadline' },
     { date: 'Apr 24', day: 'Fri', isoDate: '2026-04-24', event: 'Federal Injunction Hearing', type: 'tefa', desc: 'Key hearing in Muslim schools v. Texas. Court decides whether to maintain, modify, or dissolve the injunction blocking Comptroller Hancock from excluding Islamic schools. TEFA funding timeline depends on outcome.', funding: 'Court Date' },
     { date: 'Mid-Apr', day: 'TBD', isoDate: '2026-04-15', event: 'TEFA Funding Notification (est.)', type: 'tefa', desc: 'Comptroller says notifications "later in April". 274,183 total apps (247,032 eligible per PDF). Per Comptroller Apr 2 press release, funding exhausts within Tier 2 — Iddings family (Tier 3) is expected to receive a waitlist notification, not an award. Per NBCA: notify school if awarded.', funding: 'Paid to Digital Wallet' },
@@ -410,10 +412,9 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                 {appStatus.map((row, idx) => (
                                     <tr key={idx} className="hover:bg-tefa-light transition">
                                         <td className="px-4 py-3 font-medium text-tefa-body flex items-center gap-2">
-                                            {row.status === 'Submitted' ? <CheckCircle size={16} className={row.type === 'success' ? 'text-green-600' : 'text-amber-500'}/> :
-                                             row.status === 'Scheduled' ? <Calendar size={16} className="text-tefa-navy"/> :
-                                             <Clock size={16} className="text-amber-500"/>
-                                            }
+                                            {row.type === 'success'
+                                                ? <CheckSquare size={16} className="text-green-600"/>
+                                                : <Square size={16} className="text-tefa-body/40"/>}
                                             {row.item}
                                         </td>
                                         <td className="px-4 py-3">
@@ -788,6 +789,16 @@ The contribution amount we listed represents the maximum we can sustainably budg
                       <div className="md:col-span-6">
                         <h3 className="font-bold text-tefa-navy">{evt.event}</h3>
                         <p className="text-sm text-tefa-body/70 mt-1">{evt.desc}</p>
+                        {evt.link && (
+                          <a
+                            href={evt.link.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-xs font-bold text-tefa-navy hover:text-tefa-red mt-2"
+                          >
+                            <ExternalLink size={12}/> {evt.link.label}
+                          </a>
+                        )}
                       </div>
                       <div className="md:col-span-3 flex items-center">
                          <div className="text-xs font-medium text-tefa-body/60 bg-tefa-light px-3 py-2 rounded border border-gray-100 w-full text-center">
@@ -975,48 +986,48 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <TrendingUp size={18}/> Tier 3 Outlook — Iddings Family
                 </h3>
                 <p className="text-xs text-tefa-body/60 mb-4">
-                    Initial lottery odds AND waitlist odds after attrition ({Math.round(attritionRate * 100)}% non-participation). Freed spots cascade: T1/T2 dropouts → backfill T2 waitlist → overflow reaches T3.
+                    Eligibility is fixed at 9.9% (per PDF — official). The variable here is <strong>attrition</strong>: the percentage of T1/T2 lottery winners who don't follow through on enrollment. Their freed spots cascade: T1/T2 dropouts → backfill unfunded T2 → overflow reaches T3.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="p-4 rounded-lg bg-green-50 border border-green-200">
-                        <div className="text-xs text-green-800 uppercase font-bold mb-1">Best Case (15% Ineligible)</div>
-                        <div className="text-xs text-green-700 mb-2">Higher rejection rate opens T3 in initial lottery</div>
+                        <div className="text-xs text-green-800 uppercase font-bold mb-1">Best Case (25% Attrition)</div>
+                        <div className="text-xs text-green-700 mb-2">High dropout → more spots cascade past unfunded T2 to reach T3</div>
                         <div className="flex items-baseline gap-2">
                             <div className="text-2xl font-bold text-green-700">{scenarioOutlook.best.effectiveFamilyRate.toFixed(1)}%</div>
-                            <div className="text-xs text-green-600">family w/ attrition</div>
+                            <div className="text-xs text-green-600">family rate</div>
                         </div>
                         <div className="text-xs text-green-600 mt-1">
-                            Lottery: {scenarioOutlook.best.familySuccessRate.toFixed(1)}% | +{scenarioOutlook.best.t3FromWaitlist.toLocaleString()} from waitlist
+                            +{scenarioOutlook.best.t3FromWaitlist.toLocaleString()} spots reach T3 via waitlist
                         </div>
                         <div className="text-xs text-green-600">{scenarioOutlook.best.effectiveFundedT3.toLocaleString()} total T3 funded</div>
                     </div>
                     <div className="p-4 rounded-lg bg-amber-50 border-2 border-amber-300">
-                        <div className="text-xs text-amber-800 uppercase font-bold mb-1">Most Likely (9% Ineligible)</div>
-                        <div className="text-xs text-amber-700 mb-2">Per Year 1 PDF — T3 waitlisted, depends on attrition</div>
+                        <div className="text-xs text-amber-800 uppercase font-bold mb-1">Most Likely (15% Attrition)</div>
+                        <div className="text-xs text-amber-700 mb-2">School-choice programs typically see 10-20% non-participation</div>
                         <div className="flex items-baseline gap-2">
                             <div className="text-2xl font-bold text-amber-700">{scenarioOutlook.mostLikely.effectiveFamilyRate.toFixed(1)}%</div>
-                            <div className="text-xs text-amber-600">family w/ attrition</div>
+                            <div className="text-xs text-amber-600">family rate</div>
                         </div>
                         <div className="text-xs text-amber-600 mt-1">
-                            Lottery: {scenarioOutlook.mostLikely.familySuccessRate.toFixed(1)}% | +{scenarioOutlook.mostLikely.t3FromWaitlist.toLocaleString()} from waitlist
+                            +{scenarioOutlook.mostLikely.t3FromWaitlist.toLocaleString()} spots reach T3 via waitlist
                         </div>
                         <div className="text-xs text-amber-600">{scenarioOutlook.mostLikely.effectiveFundedT3.toLocaleString()} total T3 funded</div>
                     </div>
                     <div className="p-4 rounded-lg bg-red-50 border border-red-200">
-                        <div className="text-xs text-red-800 uppercase font-bold mb-1">Worst Case (6% Ineligible)</div>
-                        <div className="text-xs text-red-700 mb-2">Large T2 waitlist absorbs all attrition spots</div>
+                        <div className="text-xs text-red-800 uppercase font-bold mb-1">Worst Case (8% Attrition)</div>
+                        <div className="text-xs text-red-700 mb-2">Low dropout — unfunded T2 absorbs all freed spots, T3 sees nothing</div>
                         <div className="flex items-baseline gap-2">
                             <div className="text-2xl font-bold text-red-700">{scenarioOutlook.worst.effectiveFamilyRate.toFixed(1)}%</div>
-                            <div className="text-xs text-red-600">family w/ attrition</div>
+                            <div className="text-xs text-red-600">family rate</div>
                         </div>
                         <div className="text-xs text-red-600 mt-1">
-                            Lottery: {scenarioOutlook.worst.familySuccessRate.toFixed(1)}% | +{scenarioOutlook.worst.t3FromWaitlist.toLocaleString()} from waitlist
+                            +{scenarioOutlook.worst.t3FromWaitlist.toLocaleString()} spots reach T3 via waitlist
                         </div>
                         <div className="text-xs text-red-600">{scenarioOutlook.worst.effectiveFundedT3.toLocaleString()} total T3 funded</div>
                     </div>
                 </div>
                 <div className="mt-4 p-3 bg-tefa-navy/5 rounded-lg text-xs text-tefa-body/70">
-                    <strong>Key factor:</strong> Whether attrition spots reach T3 depends on how many unfunded T2 students are ahead on the waitlist. At 9% ineligibility, there are ~{scenarioOutlook.mostLikely.unfundedT2.toLocaleString()} unfunded T2 students — they must be backfilled before T3 sees any spots.
+                    <strong>Key factor:</strong> ~{scenarioOutlook.mostLikely.unfundedT2.toLocaleString()} unfunded T2 students sit ahead of Tier 3 on the waitlist. For Iddings to see <em>any</em> spots, attrition must free more than that number — which requires an attrition rate above ~{((scenarioOutlook.mostLikely.unfundedT2 / analysis.capacity) * 100).toFixed(1)}%.
                 </div>
             </div>
 
