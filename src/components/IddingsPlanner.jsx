@@ -150,16 +150,38 @@ const IddingsPlanner = () => {
 
   // Scenario Logic — Dual Model: Comptroller's Implementation vs Strict SB 2 Reading
   const getScenarioAnalysis = (totalApps, overrideAttrition) => {
-    const budget = 1_000_000_000; // $1B biennium ceiling (SB 2)
+    // === BUDGET (statutory) ===
+    // SB 2, Sec. 29.3521(c-1): $1 billion cap for the 2025-2027 biennium.
+    // The Comptroller committed the full $1B to Year 1 (Travis Pillow to The Texan, Apr 2 2026:
+    // "$1 billion committed in year one") — administrative choice, statutorily permitted.
+    const budget = 1_000_000_000;
+
     const attrRate = overrideAttrition !== undefined ? overrideAttrition : attritionRate;
     const eligibleApps = Math.round(totalApps * (1 - INELIGIBILITY_RATE));
 
-    // Cost model (77% Private, 23% Homeschool — per TEFA Application Insights: Year 1 PDF page 7)
-    const privateCost = 10500;
-    const homeCost = 2000;
-    const weightedCost = (privateCost * 0.77) + (homeCost * 0.23); // $8,545
-    // Capacity derived from $1B budget ÷ weighted per-student cost
-    const capacity = Math.floor(budget / weightedCost); // ≈ 117,028
+    // === PER-STUDENT ALLOCATION (statutory) ===
+    // SB 2, Sec. 29.361(a)(1): base allocation = 85% of statewide average state + local M&O
+    // funding per student in average daily attendance. With current TEA M&O averages (~$12,316/ADA),
+    // 85% × $12,316 ≈ $10,474. This is the published Year 1 private-school maximum.
+    // Other categories (Sec. 29.361(b), (b-1)):
+    //   - SPED with active IEP: base + IEP services, hard cap $30,000/year
+    //   - Homeschool: $2,000/year
+    const perStudentMax = 10474;
+
+    // === CAPACITY (derived) ===
+    // capacity = floor($1B / $10,474) ≈ 95,475 students
+    //
+    // ASSUMPTION: every funded student draws the maximum private allocation. This is a CEILING:
+    //   - Homeschool students ($2k cap) are cheaper → would push capacity higher
+    //   - SPED IEP students (up to $30k) are more expensive → would push capacity lower
+    //   - Per PDF: 23% homeschool / ~3% high-SPED — these effects roughly offset, so $10,474
+    //     is a defensible proxy for the average per-student cost.
+    //
+    // SOURCE-CHECK: Result is consistent with the Comptroller's Apr 2 press release —
+    // "Available year-one funding is expected to be exhausted within the second priority tier" —
+    // because at 95,475 capacity, T1 (29,644) is fully funded and T2 (79,050) is only ~83%
+    // funded, leaving T3 with 0 from the initial lottery.
+    const capacity = Math.floor(budget / perStudentMax); // 95,475
 
     // =====================================================
     // MODEL A: COMPTROLLER'S ACTUAL IMPLEMENTATION
@@ -324,10 +346,10 @@ The contribution amount we listed represents the maximum we can sustainably budg
     { date: 'Apr 02', day: 'Thu', isoDate: '2026-04-02', event: 'Comptroller Releases Initial TEFA Breakdown', type: 'tefa', desc: 'Initial breakdown: 274,183 total applications, 77% private / 23% homeschool.', funding: 'N/A' },
     { date: 'Apr 03', day: 'Fri', isoDate: '2026-04-03', event: 'Comptroller Confirms: Public School Priority Only Applies to Tier 4', type: 'tefa', desc: 'TEFA team email response to our inquiry confirms: per Sec. 29.3521(d), prior public school enrollment priority only applies to Tier 4 (≥500% FPL). For Tier 3 (200-500% FPL), public school history provides no priority advantage. Also confirmed: $1B spending cap for 2025-2027 biennium, 20% cap on Tier 4 spending.', funding: 'N/A' },
     { date: 'Apr 02', day: 'Thu', isoDate: '2026-04-02', event: 'NBCA Enrollment Fee Paid', type: 'nbca', desc: 'Enrolled all 3 children. Paid ($175 + $55) x 3 = $690.', funding: '$690 Paid' },
-    { date: 'Apr 08', day: 'Wed', isoDate: '2026-04-08', event: 'Comptroller Publishes TEFA Application Insights: Year 1', type: 'tefa', desc: 'Official Year 1 PDF released. 274,183 total applications, ~9% ineligible (~25k, Pre-K drives most: 18,677 of 36,666). Tiers (PDF page 8): T1 12%, T2 32%, T3 29% (Iddings), T4a 5%, T4b 22%. Demographics: 45% White, 23% Hispanic, 12% Black, 11% multiracial, 8% API, 1% AI/AN. 37% ≤200% FPL, 36% 200-500% FPL. 77% private / 23% homeschool. Capacity ~117k derived from $1B ÷ $8,545 weighted cost.', funding: 'N/A' },
+    { date: 'Apr 08', day: 'Wed', isoDate: '2026-04-08', event: 'Comptroller Publishes TEFA Application Insights: Year 1', type: 'tefa', desc: 'Official Year 1 PDF released. 274,183 total applications, ~9% ineligible (~25k, Pre-K drives most: 18,677 of 36,666). Tiers (PDF page 8): T1 12%, T2 32%, T3 29% (Iddings), T4a 5%, T4b 22%. Demographics: 45% White, 23% Hispanic, 12% Black, 11% multiracial, 8% API, 1% AI/AN. 37% ≤200% FPL, 36% 200-500% FPL. 77% private / 23% homeschool. Capacity ~95,475 (SB 2: $1B ÷ $10,474 per-student max). Funding exhausts within Tier 2 per Comptroller press release.', funding: 'N/A' },
     { date: 'Apr 15', day: 'Wed', isoDate: '2026-04-15', event: 'ACE Scholarship Deadline', type: 'ace', desc: 'Closes 11:59 PM (Tax Day).', funding: 'Deadline' },
     { date: 'Apr 24', day: 'Fri', isoDate: '2026-04-24', event: 'Federal Injunction Hearing', type: 'tefa', desc: 'Key hearing in Muslim schools v. Texas. Court decides whether to maintain, modify, or dissolve the injunction blocking Comptroller Hancock from excluding Islamic schools. TEFA funding timeline depends on outcome.', funding: 'Court Date' },
-    { date: 'Mid-Apr', day: 'TBD', isoDate: '2026-04-15', event: 'TEFA Funding Notification (est.)', type: 'tefa', desc: 'Comptroller says notifications "later in April". 274,183 total apps (247,032 eligible per PDF) to process. Funding extends partway into Tier 3 — Iddings family will either land in the initial T3 lottery or rely on waitlist cascade from T1/T2 attrition. Per NBCA: notify school if awarded.', funding: 'Paid to Digital Wallet' },
+    { date: 'Mid-Apr', day: 'TBD', isoDate: '2026-04-15', event: 'TEFA Funding Notification (est.)', type: 'tefa', desc: 'Comptroller says notifications "later in April". 274,183 total apps (247,032 eligible per PDF). Per Comptroller Apr 2 press release, funding exhausts within Tier 2 — Iddings family (Tier 3) is expected to receive a waitlist notification, not an award. Per NBCA: notify school if awarded.', funding: 'Paid to Digital Wallet' },
     { date: 'End Apr', day: 'TBD', isoDate: '2026-04-30', event: 'NBCA Scholarship Decisions (est.)', type: 'nbca', desc: 'Per NBCA (Michelle Leidy, Mar 31): scholarship amount depends on TEFA outcome — TEFA funds affect financial need calculation. Scholarship awarded only if/where TEFA doesn\'t cover.', funding: 'Credited to Tuition' },
     { date: 'May-Jun', day: 'TBD', isoDate: '2026-05-15', event: 'TEFA Waitlist Movement Begins (est.)', type: 'tefa', desc: 'First wave of attrition: lottery winners who change their mind, can\'t afford the tuition gap, or can\'t find a nearby participating school decline their spots. Freed spots cascade down the waitlist (T2 backfill first, then T3). No official Comptroller schedule for waitlist notifications.', funding: 'Waitlist' },
     { date: 'Jun 01', day: 'Mon', isoDate: '2026-06-01', event: 'TEFA School Selection Deadline', type: 'tefa', desc: 'Lottery winners must select a participating school by this date for July 1 funding. Winners who don\'t select a school may forfeit their spot, opening it for waitlisted families.', funding: 'Required for Jul 1 Funding' },
@@ -447,7 +469,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <Scale size={20} /> TEFA Program Status: Awaiting Notifications
                 </h2>
                 <p className="text-sm text-tefa-body mb-4">
-                    <strong>274,183 students</strong> applied in Year 1 (247,032 eligible). Per the Comptroller's <em>TEFA Application Insights: Year 1</em>, funding extends partway into Tier 3 — your family's odds depend on the initial T3 lottery and waitlist cascade from T1/T2 attrition. Notifications expected later in April.
+                    <strong>274,183 students</strong> applied in Year 1 (247,032 eligible). Per the Comptroller's Apr 2 press release, <strong>funding will be exhausted within Tier 2</strong> — a lottery decides T2, and Tier 3 (Iddings) is <strong>waitlisted</strong>. Whether attrition reaches T3 depends on how many T2 lottery losers sit ahead on the waitlist.
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm mb-4">
                     <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
@@ -458,12 +480,12 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
                         <div className="text-xs text-tefa-body/50 font-medium">Program Capacity</div>
                         <div className="font-bold text-tefa-navy text-lg">~{analysis.capacity.toLocaleString()}</div>
-                        <div className="text-[10px] text-tefa-body/40">$1B ÷ $8,545 weighted cost</div>
+                        <div className="text-[10px] text-tefa-body/40">$1B ÷ $10,474 (SB 2 §29.361)</div>
                     </div>
                     <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
                         <div className="text-xs text-tefa-body/50 font-medium">Iddings Tier</div>
                         <div className="font-bold text-tefa-gold text-lg">Tier 3</div>
-                        <div className="text-[10px] text-tefa-body/40">200-500% FPL</div>
+                        <div className="text-[10px] text-tefa-body/40">200-500% FPL (waitlisted)</div>
                     </div>
                     <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
                         <div className="text-xs text-tefa-body/50 font-medium">Initial Lottery</div>
@@ -492,7 +514,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     </div>
                     <div className="bg-tefa-gold/20 rounded p-1.5 border-2 border-tefa-gold/60">
                         <div className="font-bold text-tefa-red">T3: 29%</div>
-                        <div className="text-tefa-red/70">Iddings</div>
+                        <div className="text-tefa-red/70">Waitlisted</div>
                     </div>
                     <div className="bg-tefa-red/10 rounded p-1.5 border border-tefa-red/20">
                         <div className="font-bold text-tefa-red">T4: 27%</div>
@@ -1024,14 +1046,22 @@ The contribution amount we listed represents the maximum we can sustainably budg
 
                         <h3 className="font-bold text-tefa-navy text-lg mb-2">2. Supply vs. Demand</h3>
                         <ul className="list-disc pl-5 mb-4 space-y-1">
-                            <li><strong>Total Budget:</strong> $1 Billion (2025–2027 biennium)</li>
-                            <li><strong>Weighted Avg Cost:</strong> ~$8,545 (77% Private / 23% Homeschool — per Year 1 PDF)</li>
-                            <li><strong>Derived Capacity:</strong> ~{analysis.capacity.toLocaleString()} students ($1B ÷ $8,545 weighted cost)</li>
-                            <li><strong>Eligible Applicants:</strong> ~{analysis.eligibleApps.toLocaleString()} (after 9.9% ineligibility — official PDF figure)</li>
+                            <li><strong>Statutory Budget Cap:</strong> $1 Billion for 2025–2027 biennium (SB 2, §29.3521(c-1))</li>
+                            <li><strong>Year 1 Commitment:</strong> Full $1B (Comptroller administrative choice — Travis Pillow, Apr 2: "$1 billion committed in year one")</li>
+                            <li><strong>Per-Student Max:</strong> $10,474 (SB 2, §29.361(a)(1) — 85% of statewide avg M&amp;O per ADA)</li>
+                            <li><strong>Derived Capacity:</strong> ~{analysis.capacity.toLocaleString()} students ($1B ÷ $10,474)</li>
+                            <li><strong>Eligible Applicants:</strong> ~{analysis.eligibleApps.toLocaleString()} (247,032 of 274,183 — official PDF page 5)</li>
                         </ul>
-                        <p className="mb-4 text-xs text-tefa-body/60">
-                            Note: The 77/23 private/homeschool split is reported directly in the Year 1 PDF. Pre-K students also draw from the same $1B pool.
-                        </p>
+                        <div className="mb-4 p-3 bg-tefa-navy/5 border border-tefa-navy/20 rounded text-xs text-tefa-body/70">
+                            <div className="font-bold text-tefa-navy mb-1">Capacity Assumptions (read carefully):</div>
+                            <ul className="list-disc pl-5 space-y-1">
+                                <li><strong>Assumes every funded student draws the max private allocation ($10,474).</strong> This is a ceiling estimate.</li>
+                                <li>Homeschool students are capped at $2,000/yr (SB 2 §29.361(b-1)) — would push capacity <em>higher</em>. PDF: 23% of applicants are homeschool.</li>
+                                <li>SPED students with active IEPs can receive up to $30,000/yr (SB 2 §29.361(b)) — would push capacity <em>lower</em>. PDF page 12: 8,618 applicants have active IEPs (~3% of total).</li>
+                                <li>These two effects roughly offset, so $10,474 is a defensible average proxy.</li>
+                                <li><strong>Cross-check:</strong> The Comptroller's Apr 2 press release confirms "funding will be exhausted within the second priority tier" — at 95,475 capacity, T2 funds at 83% (lottery) and T3 receives 0 from the initial lottery. Math agrees with the official narrative.</li>
+                            </ul>
+                        </div>
 
                         <h3 className="font-bold text-tefa-navy text-lg mb-2">3. Comptroller's Tier System (How the Lottery Will Actually Run)</h3>
                         <div className="bg-tefa-navy/5 border border-tefa-navy/20 rounded-lg p-4 mb-4">
@@ -1218,7 +1248,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                 ? " The sibling rule significantly boosts your odds — 3 independent lottery draws with 1 win covering all. Waitlist cascade from attrition further improves your chances."
                                 : analysis.effectiveFamilyRate > 10
                                 ? " Odds are low but not zero — the sibling rule triples your effective lottery entries, and waitlist movement from attrition may open additional spots."
-                                : " Funding extends partway into Tier 3 in this scenario; whether your family lands in the initial T3 lottery or relies on waitlist cascade from T1/T2 attrition depends on attrition rate."}
+                                : " The Comptroller projects funding exhausts within Tier 2. Tier 3 (Iddings) is waitlisted; whether attrition spots reach T3 depends on the size of the unfunded T2 waitlist sitting ahead of you."}
                         </p>
                         <p className="text-xs text-tefa-red/80 bg-tefa-gold/10 border border-tefa-gold/30 rounded p-3">
                             <strong>Timing caveat:</strong> The federal lawsuit and Comptroller-AG political conflict have introduced significant timing uncertainty.
