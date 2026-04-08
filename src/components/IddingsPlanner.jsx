@@ -31,8 +31,8 @@ const IddingsPlanner = () => {
   const setActiveTab = (t) => navigate(`/${t}`);
 
   // Scenario State - Official total per TEFA Application Insights: Year 1 (Apr 2026 Comptroller PDF)
-  const [applicantScenario, setApplicantScenario] = useState(274183);
-  // PDF (page 5): 247,032 eligible of 274,183 → 9.90% ineligible. Fixed, official.
+  // PDF (page 5): 274,183 total apps, 247,032 eligible → 9.90% ineligible. Fixed, official.
+  const TOTAL_APPLICATIONS = 274183;
   const INELIGIBILITY_RATE = 1 - (247032 / 274183);
   const [attritionRate, setAttritionRate] = useState(0.15); // Est. 15% of lottery winners don't follow through
 
@@ -243,14 +243,14 @@ const IddingsPlanner = () => {
     };
   };
 
-  const analysis = getScenarioAnalysis(applicantScenario);
+  const analysis = getScenarioAnalysis(TOTAL_APPLICATIONS);
 
   // Scenario Outlook: Best / Most Likely / Worst (fixed ineligibility rates, current applicant count)
   // Best/worst now driven by attrition (the real uncertainty), since ineligibility is fixed.
   const scenarioOutlook = {
-    best: getScenarioAnalysis(applicantScenario, 0.25),       // high attrition → more T3 cascade
-    mostLikely: getScenarioAnalysis(applicantScenario, 0.15),
-    worst: getScenarioAnalysis(applicantScenario, 0.08),      // low attrition
+    best: getScenarioAnalysis(TOTAL_APPLICATIONS, 0.25),       // high attrition → more T3 cascade
+    mostLikely: getScenarioAnalysis(TOTAL_APPLICATIONS, 0.15),
+    worst: getScenarioAnalysis(TOTAL_APPLICATIONS, 0.08),      // low attrition
   };
 
   // Tier 2 funding rate for display
@@ -862,34 +862,16 @@ The contribution amount we listed represents the maximum we can sustainably budg
               <BarChart2 /> Strategic Financial Analysis Report
             </h2>
 
-            {/* Scenario Selector */}
+            {/* Official Applicant Figures */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-                <h3 className="font-bold text-tefa-navy mb-4 flex items-center gap-2">
-                    <Layers size={18}/> Select Applicant Volume Scenario
+                <h3 className="font-bold text-tefa-navy mb-3 flex items-center gap-2">
+                    <Layers size={18}/> Official Applicant Pool (Year 1 PDF)
                 </h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {[260000, 274183, 285000, 300000].map((count) => (
-                        <button
-                            key={count}
-                            onClick={() => setApplicantScenario(count)}
-                            className={`py-2 px-3 rounded-lg text-sm font-medium border transition
-                                ${applicantScenario === count
-                                ? 'bg-tefa-navy text-white border-tefa-navy'
-                                : 'bg-white text-tefa-navy border-tefa-navy/30 hover:border-tefa-navy'}`}
-                        >
-                            {count === 274183 ? '274,183 (Official)' : `${(count / 1000).toFixed(0)}k Applicants`}
-                        </button>
-                    ))}
+                <div className="text-sm text-tefa-body/70">
+                    <strong>274,183</strong> total applications · <strong>247,032</strong> eligible (9.9% ineligible) — per Comptroller Year 1 PDF (page 5).
                 </div>
-
-                {/* Eligibility — fixed, official figure (no slider) */}
-                <div className="mt-5 pt-4 border-t border-gray-100">
-                    <div className="text-sm text-tefa-body/70">
-                        <strong>247,032</strong> eligible of <strong>274,183</strong> total (9.9% ineligible) — per Comptroller Year 1 PDF (page 5).
-                    </div>
-                    <div className="mt-1 text-xs text-tefa-body/50">
-                        Pre-K accounts for most ineligibility (18,677 of 36,666); K-12 ineligibility is much lower.
-                    </div>
+                <div className="mt-1 text-xs text-tefa-body/50">
+                    Pre-K accounts for most ineligibility (18,677 of 36,666); K-12 ineligibility is much lower.
                 </div>
 
 
@@ -1030,7 +1012,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             <strong>274,183</strong> students applied in Year 1, per the Comptroller's <em>TEFA Application Insights: Year 1</em> (April 2026).
                             The application window closed <strong>March 31 at 11:59 PM CT</strong> per a federal court order (Judge Bennett, S.D. Texas).
                             More than 2,300 participating schools are listed in the school finder tool, including a growing number of accredited online schools.
-                            The current scenario is set to <strong>{applicantScenario.toLocaleString()}</strong> total applicants.
+                            Total applicant count: <strong>{TOTAL_APPLICATIONS.toLocaleString()}</strong>.
                         </p>
                         <p className="mb-4">
                             <strong>Not all applicants are eligible.</strong> The Year 1 PDF reports ~9% overall ineligibility
