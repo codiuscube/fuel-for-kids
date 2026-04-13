@@ -934,6 +934,76 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <div className="mt-1 text-xs text-tefa-body/50">
                         School choice programs typically see 10-30% non-participation. Reasons: can't afford tuition gap, no nearby school, life changes, applied "just in case." Spots freed go to waitlist in tier order.
                     </div>
+
+                    {/* Historical Attrition Benchmarks */}
+                    <div className="mt-4 pt-4 border-t border-gray-100">
+                        <div className="text-xs text-tefa-body/50 uppercase font-bold mb-2">Historical Benchmarks — Why 15% Is Conservative</div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-xs text-left border-collapse">
+                                <thead>
+                                    <tr className="border-b border-gray-200 text-tefa-body/50">
+                                        <th className="py-2 pr-3 font-bold">Program</th>
+                                        <th className="py-2 pr-3 font-bold">Attrition</th>
+                                        <th className="py-2 font-bold">Primary Drivers</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="text-tefa-body/70">
+                                    <tr className="border-b border-gray-100">
+                                        <td className="py-2 pr-3 font-medium">Milwaukee Parental Choice</td>
+                                        <td className="py-2 pr-3 font-bold text-red-600">30%</td>
+                                        <td className="py-2">School closures, logistical hurdles, no transportation</td>
+                                    </tr>
+                                    <tr className="border-b border-gray-100">
+                                        <td className="py-2 pr-3 font-medium">NYC Voucher (Year 3)</td>
+                                        <td className="py-2 pr-3 font-bold text-red-600">38%</td>
+                                        <td className="py-2">Unmanageable tuition gaps, transport issues</td>
+                                    </tr>
+                                    <tr className="border-b border-gray-100">
+                                        <td className="py-2 pr-3 font-medium">D.C. Opportunity Scholarship</td>
+                                        <td className="py-2 pr-3 font-bold text-amber-600">14.3%</td>
+                                        <td className="py-2">Couldn't find suitable school, waitlist fatigue</td>
+                                    </tr>
+                                    <tr className="border-b border-gray-100">
+                                        <td className="py-2 pr-3 font-medium">Virginia Pre-K Initiative</td>
+                                        <td className="py-2 pr-3 font-bold text-red-600">20–34%</td>
+                                        <td className="py-2">State budget forecasting rate — lack of local capacity</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="py-2 pr-3 font-medium">Queueing Theory Baseline</td>
+                                        <td className="py-2 pr-3 font-bold text-amber-600">8–10%</td>
+                                        <td className="py-2">Minimum renege rate in constrained waitlist environments</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div className="mt-2 text-[10px] text-tefa-body/40">
+                            Sources: ERIC ED472999 (Milwaukee), AEA (NYC), Hoover Institution (D.C.), VA Budget Bills (VPI), Kanoria (queueing theory)
+                        </div>
+                    </div>
+
+                    {/* Tuition Gap / Sticker Shock */}
+                    <div className="mt-4 pt-4 border-t border-gray-100">
+                        <div className="text-xs text-tefa-body/50 uppercase font-bold mb-2">Tuition Gap — The "Sticker Shock" Driver</div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                            <div className="bg-tefa-navy/5 rounded p-3">
+                                <div className="text-tefa-body/50 mb-1">TEFA Max Award</div>
+                                <div className="font-bold text-tefa-navy text-lg">$10,474</div>
+                            </div>
+                            <div className="bg-red-50 rounded p-3">
+                                <div className="text-tefa-body/50 mb-1">NBCA Actual Cost (w/ fees)</div>
+                                <div className="font-bold text-red-600 text-lg">~$14,000+</div>
+                                <div className="text-[10px] text-tefa-body/40 mt-1">Tuition $12,350–$13,650 + app/tech/uniform fees</div>
+                            </div>
+                            <div className="bg-amber-50 rounded p-3">
+                                <div className="text-tefa-body/50 mb-1">Residual Gap Per Child</div>
+                                <div className="font-bold text-amber-600 text-lg">$3,000–3,500</div>
+                                <div className="text-[10px] text-tefa-body/40 mt-1">~$10,000 for 3 children</div>
+                            </div>
+                        </div>
+                        <div className="mt-2 text-xs text-tefa-body/60">
+                            79,050 Tier 2 applicants (under 200% FPL) face this gap at most private schools. Low-income families are highly price-elastic — many applied "just in case" and will renege upon discovering the residual bill. National avg private tuition: $12,790 (elementary) to $16,420 (high school). This sticker shock is the primary engine driving attrition above the 10% queueing-theory baseline.
+                        </div>
+                    </div>
                 </div>
 
                 {/* Scenario Result — After Attrition / Waitlist */}
@@ -985,49 +1055,61 @@ The contribution amount we listed represents the maximum we can sustainably budg
                 <h3 className="font-bold text-tefa-navy mb-2 flex items-center gap-2">
                     <TrendingUp size={18}/> Tier 3 Outlook — Iddings Family
                 </h3>
-                <p className="text-xs text-tefa-body/60 mb-4">
+                <p className="text-xs text-tefa-body/60 mb-2">
                     Eligibility is fixed at 9.9% (per PDF — official). The variable here is <strong>attrition</strong>: the percentage of T1/T2 lottery winners who don't follow through on enrollment. Their freed spots cascade: T1/T2 dropouts → backfill unfunded T2 → overflow reaches T3.
                 </p>
+                <div className="bg-tefa-navy/5 rounded p-3 mb-4 text-xs text-tefa-body/70">
+                    <strong>Critical Threshold:</strong> ~{scenarioOutlook.mostLikely.unfundedT2.toLocaleString()} unfunded T2 students must be backfilled before T3 sees any spots. This requires attrition above <strong>{((scenarioOutlook.mostLikely.unfundedT2 / analysis.capacity) * 100).toFixed(1)}%</strong>. Every marginal point above that threshold produces an explosive relative increase in T3 probability — the relationship is highly non-linear.
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="p-4 rounded-lg bg-green-50 border border-green-200">
                         <div className="text-xs text-green-800 uppercase font-bold mb-1">Best Case (25% Attrition)</div>
-                        <div className="text-xs text-green-700 mb-2">High dropout → more spots cascade past unfunded T2 to reach T3</div>
+                        <div className="text-xs text-green-700 mb-2">Timeline delays + sticker shock among low-income T2 → mass non-participation (mirrors Milwaukee 30%, Virginia 25-34%)</div>
                         <div className="flex items-baseline gap-2">
                             <div className="text-2xl font-bold text-green-700">{scenarioOutlook.best.effectiveFamilyRate.toFixed(1)}%</div>
                             <div className="text-xs text-green-600">family rate</div>
                         </div>
                         <div className="text-xs text-green-600 mt-1">
-                            +{scenarioOutlook.best.t3FromWaitlist.toLocaleString()} spots reach T3 via waitlist
+                            Per-child: {scenarioOutlook.best.effectiveTier3Rate.toFixed(1)}% · +{scenarioOutlook.best.t3FromWaitlist.toLocaleString()} spots reach T3
                         </div>
-                        <div className="text-xs text-green-600">{scenarioOutlook.best.effectiveFundedT3.toLocaleString()} total T3 funded</div>
+                        <div className="text-xs text-green-600">{scenarioOutlook.best.effectiveFundedT3.toLocaleString()} / {scenarioOutlook.best.demandT3.toLocaleString()} T3 funded</div>
                     </div>
                     <div className="p-4 rounded-lg bg-amber-50 border-2 border-amber-300">
                         <div className="text-xs text-amber-800 uppercase font-bold mb-1">Most Likely (15% Attrition)</div>
-                        <div className="text-xs text-amber-700 mb-2">School-choice programs typically see 10-20% non-participation</div>
+                        <div className="text-xs text-amber-700 mb-2">Conservative baseline — D.C. Opportunity Scholarship saw 14.3%, and TEFA has greater friction (new platform, tuition gaps, CAIR delay)</div>
                         <div className="flex items-baseline gap-2">
                             <div className="text-2xl font-bold text-amber-700">{scenarioOutlook.mostLikely.effectiveFamilyRate.toFixed(1)}%</div>
                             <div className="text-xs text-amber-600">family rate</div>
                         </div>
                         <div className="text-xs text-amber-600 mt-1">
-                            +{scenarioOutlook.mostLikely.t3FromWaitlist.toLocaleString()} spots reach T3 via waitlist
+                            Per-child: {scenarioOutlook.mostLikely.effectiveTier3Rate.toFixed(1)}% · +{scenarioOutlook.mostLikely.t3FromWaitlist.toLocaleString()} spots reach T3
                         </div>
-                        <div className="text-xs text-amber-600">{scenarioOutlook.mostLikely.effectiveFundedT3.toLocaleString()} total T3 funded</div>
+                        <div className="text-xs text-amber-600">{scenarioOutlook.mostLikely.effectiveFundedT3.toLocaleString()} / {scenarioOutlook.mostLikely.demandT3.toLocaleString()} T3 funded</div>
                     </div>
                     <div className="p-4 rounded-lg bg-red-50 border border-red-200">
                         <div className="text-xs text-red-800 uppercase font-bold mb-1">Worst Case (8% Attrition)</div>
-                        <div className="text-xs text-red-700 mb-2">Low dropout — unfunded T2 absorbs all freed spots, T3 sees nothing</div>
+                        <div className="text-xs text-red-700 mb-2">Abnormally low — most T1/T2 winners already in low-cost parochial schools, voucher merely supplants existing tuition</div>
                         <div className="flex items-baseline gap-2">
                             <div className="text-2xl font-bold text-red-700">{scenarioOutlook.worst.effectiveFamilyRate.toFixed(1)}%</div>
                             <div className="text-xs text-red-600">family rate</div>
                         </div>
                         <div className="text-xs text-red-600 mt-1">
-                            +{scenarioOutlook.worst.t3FromWaitlist.toLocaleString()} spots reach T3 via waitlist
+                            Per-child: {scenarioOutlook.worst.effectiveTier3Rate.toFixed(1)}% · +{scenarioOutlook.worst.t3FromWaitlist.toLocaleString()} spots reach T3
                         </div>
-                        <div className="text-xs text-red-600">{scenarioOutlook.worst.effectiveFundedT3.toLocaleString()} total T3 funded</div>
+                        <div className="text-xs text-red-600">{scenarioOutlook.worst.effectiveFundedT3.toLocaleString()} / {scenarioOutlook.worst.demandT3.toLocaleString()} T3 funded</div>
                     </div>
                 </div>
-                <div className="mt-4 p-3 bg-tefa-navy/5 rounded-lg text-xs text-tefa-body/70">
-                    <strong>Key factor:</strong> ~{scenarioOutlook.mostLikely.unfundedT2.toLocaleString()} unfunded T2 students sit ahead of Tier 3 on the waitlist. For Iddings to see <em>any</em> spots, attrition must free more than that number — which requires an attrition rate above ~{((scenarioOutlook.mostLikely.unfundedT2 / analysis.capacity) * 100).toFixed(1)}%.
+                <div className="mt-4 p-3 bg-tefa-navy/5 rounded-lg text-xs text-tefa-body/70 space-y-2">
+                    <div>
+                        <strong>Sibling Rule Formula:</strong>{' '}
+                        <span className="font-mono bg-white px-2 py-0.5 rounded border border-gray-200">
+                            P(family) = 1 - (1 - P<sub>child</sub>)<sup>3</sup>
+                        </span>
+                        {' '}— three independent draws from the Tier 3 waitlist pool. One win funds all three children automatically.
+                    </div>
+                    <div>
+                        <strong>Non-linear dynamics:</strong> The first {((scenarioOutlook.mostLikely.unfundedT2 / analysis.capacity) * 100).toFixed(1)}% of attrition is "dead volume" — absorbed entirely by {scenarioOutlook.mostLikely.unfundedT2.toLocaleString()} unfunded T2 students ahead on the waitlist. Every marginal percentage point above that threshold produces an explosive relative increase in T3 funding probability.
+                    </div>
                 </div>
             </div>
 
@@ -1237,6 +1319,16 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                     <li>274,183 total applications (~249k eligible after 9% ineligibility) to process once the legal path is clear</li>
                                 </ul>
                             </div>
+                            <div className="bg-amber-50 rounded p-3 border border-amber-200 mb-3">
+                                <div className="text-xs text-amber-800 uppercase font-bold mb-1">Timeline Attrition — Why Delays Help Tier 3</div>
+                                <ul className="text-amber-700 space-y-1 text-xs">
+                                    <li>Private schools enforce early summer deadlines (June 1–30) for enrollment deposits and binding tuition contracts</li>
+                                    <li>If award notifications arrive after these deadlines, lottery winners face signing $13,000+ contracts without guaranteed state funding</li>
+                                    <li>Risk-averse families — especially the 79,050 Tier 2 applicants under 200% FPL — will default to free public school rather than take on that financial exposure</li>
+                                    <li>This "waitlist fatigue" drives a massive late-stage cascade of abandoned accounts directly benefiting Tier 3</li>
+                                    <li>Odyssey platform is backlogged processing extended Mar 31 applications, compounding the delay</li>
+                                </ul>
+                            </div>
                             <div className="bg-tefa-green/5 rounded p-3 border border-tefa-green/20">
                                 <div className="text-xs text-tefa-green uppercase font-bold mb-1">What This Means for Your Family</div>
                                 <ul className="text-tefa-green/70 space-y-1 text-xs">
@@ -1248,7 +1340,68 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             </div>
                         </div>
 
-                        <h3 className="font-bold text-tefa-navy text-lg mb-2">7. Conclusion</h3>
+                        <h3 className="font-bold text-tefa-navy text-lg mb-2">7. Supply-Side Capacity Constraints</h3>
+                        <div className="bg-tefa-navy/5 border border-tefa-navy/20 rounded-lg p-4 mb-4">
+                            <p className="text-sm text-tefa-body/70 mb-3">
+                                Even with a funded TEFA account, families must independently secure admission at a participating private school.
+                                The private school market is structurally inelastic in the short term — schools cannot rapidly expand capacity to absorb
+                                274,183 new applicants.
+                            </p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                                <div className="bg-white rounded p-3 border border-gray-200">
+                                    <div className="font-bold text-tefa-body/50 uppercase mb-1">Capacity Limits</div>
+                                    <ul className="text-tefa-body/70 space-y-1">
+                                        <li>High-performing schools (like NBCA) operate at or near max enrollment</li>
+                                        <li>Growth typically limited to incremental kindergarten cohort expansions</li>
+                                        <li>NBCA enforces strict admissions standards and biblical lifestyle covenants</li>
+                                    </ul>
+                                </div>
+                                <div className="bg-white rounded p-3 border border-gray-200">
+                                    <div className="font-bold text-tefa-body/50 uppercase mb-1">Opt-Out Schools</div>
+                                    <ul className="text-tefa-body/70 space-y-1">
+                                        <li>Many elite private schools opted out of TEFA entirely</li>
+                                        <li>Some avoid state administrative oversight</li>
+                                        <li>Others charge $30,000+ — the $10,474 voucher is negligible</li>
+                                        <li>Rural families face severe geographic mismatch</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div className="mt-3 text-xs text-tefa-body/60">
+                                Thousands of lottery winners will be unable to find a suitable, geographically accessible private school — forcing them to forfeit awards back to the waitlist pool.
+                            </div>
+                        </div>
+
+                        <h3 className="font-bold text-tefa-navy text-lg mb-2">8. Strategic Risk Management — June 30 Decision Point</h3>
+                        <div className="bg-tefa-gold/10 border border-tefa-gold/30 rounded-lg p-4 mb-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-3">
+                                <div className="bg-white rounded p-3 border border-green-200">
+                                    <div className="text-xs text-green-800 uppercase font-bold mb-1">Withdraw by June 30</div>
+                                    <ul className="text-green-700 space-y-1 text-xs">
+                                        <li>Exit with only $690 enrollment fee lost</li>
+                                        <li>No tuition liability</li>
+                                        <li>Nullifies any subsequent TEFA waitlist offer</li>
+                                    </ul>
+                                </div>
+                                <div className="bg-white rounded p-3 border border-red-200">
+                                    <div className="text-xs text-red-800 uppercase font-bold mb-1">Commit Past June 30</div>
+                                    <ul className="text-red-700 space-y-1 text-xs">
+                                        <li>Full tuition contracts bind — ~$40,950 for 3 children</li>
+                                        <li>Preserves eligibility for late-summer TEFA cascade</li>
+                                        <li>Maximum financial exposure without guaranteed funding</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div className="bg-white rounded p-3 border border-tefa-navy/10">
+                                <div className="text-xs text-tefa-body/50 uppercase font-bold mb-1">Dual-Track Mitigation Strategy</div>
+                                <ul className="text-tefa-body/70 space-y-1 text-xs">
+                                    <li><strong>TEFA + NBCA FACTS Aid ($16,200 granted):</strong> If TEFA is awarded ($10,474 x 3 = $31,422) plus granted aid ($16,200), total coverage exceeds tuition — fully subsidized</li>
+                                    <li><strong>NBCA Scholarship (pending):</strong> NBCA calculates scholarship after TEFA decision — designed to bridge remaining gap. Up to 35% of tuition (~$4,777/child max)</li>
+                                    <li><strong>Without TEFA:</strong> NBCA Aid ($16,200) + potential scholarship reduces out-of-pocket, but significant gap remains. June 30 withdrawal is the safety valve.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <h3 className="font-bold text-tefa-navy text-lg mb-2">9. Conclusion</h3>
                         <p className="mb-3">
                             Under the Comptroller's confirmed implementation, accounting for {Math.round(attritionRate * 100)}% attrition and waitlist cascade, your family has a
                             <strong> {analysis.effectiveFamilyRate.toFixed(1)}%</strong> probability of all 3 children receiving TEFA funding
@@ -1258,9 +1411,12 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                 : analysis.effectiveFamilyRate > 50
                                 ? " The sibling rule significantly boosts your odds — 3 independent lottery draws with 1 win covering all. Waitlist cascade from attrition further improves your chances."
                                 : analysis.effectiveFamilyRate > 10
-                                ? " Odds are low but not zero — the sibling rule triples your effective lottery entries, and waitlist movement from attrition may open additional spots."
+                                ? " Odds are low but not zero — the sibling rule triples your effective lottery entries, and waitlist movement from attrition may open additional spots. The Sibling Rule is the single most powerful demographic advantage available to Tier 3 families."
                                 : " The Comptroller projects funding exhausts within Tier 2. Tier 3 (Iddings) is waitlisted; whether attrition spots reach T3 depends on the size of the unfunded T2 waitlist sitting ahead of you."}
                         </p>
+                        <div className="text-xs text-tefa-body/70 bg-tefa-sky/10 border border-tefa-sky/30 rounded p-3 mb-3">
+                            <strong>Attrition is the sole mechanism by which Tier 3 receives funding.</strong> A 15% rate is not speculative — it represents the conservative floor supported by decades of school choice research (D.C. at 14.3%, Virginia at 20-34%, Milwaukee at 30%). TEFA's novel platform (Odyssey), unprecedented scale, tuition gaps, and active federal injunction create conditions that historically produce non-participation rates well above this baseline.
+                        </div>
                         <p className="text-xs text-tefa-red/80 bg-tefa-gold/10 border border-tefa-gold/30 rounded p-3">
                             <strong>Timing caveat:</strong> The federal lawsuit and Comptroller-AG political conflict have introduced significant timing uncertainty.
                             The program is in a holding pattern until at least the April 24 hearing. Plan for the
