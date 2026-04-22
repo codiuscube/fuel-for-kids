@@ -71,6 +71,20 @@ All figures below are statutory (SB 2) or drawn from the Texas Comptroller's *TE
 
 **Simple first-round threshold for T3 to see spots:** ~19,124 / 89,570 ≈ **21.4%** of T1+T2 winners would need to drop in round 1 to fully clear T2 backlog. The cascade model also counts second-round attrition (from newly funded T2 replacements), which drips small numbers to T3 below this threshold.
 
+### 1.6 Capacity sensitivity (IEP scalar)
+
+The $17,650 baseline is a defensible middle, not the only defensible choice. The TEFA Special Education Funding Table (TEA, SY 2026–27) shows supplements vary ~5× across district × instructional-code combinations. Different reasonable assumptions yield:
+
+| IEP scalar ($/student) | Source/assumption | Capacity | T2 funding | T3 family @ 15% | T3 family @ 25% |
+|---|---|---|---|---|---|
+| **$14,000** | Urban Code 01 (mainstream IEP in 10 largest ISDs) | ~92,573 | ~79.6% | ~8.5% | ~39.5% |
+| **$17,650** (baseline) | SAISD median across 59 codes | ~89,570 | ~75.8% | ~8.2% | ~30.1% |
+| **$22,769** | Statewide median of all 59-code × district cells | ~85,358 | ~70.5% | ~7.8% | ~20.7% |
+
+**Why urban skew matters:** Per the TEFA SPED Funding Table, the 10 largest Texas ISDs cluster at ~$3,500–$3,800 Code 01 supplements (vs. $5,500–$7,000 in small rural districts). Since private schools concentrate in metros, realized TEFA IEP costs may skew toward the $14k–$16k range — but we don't have the actual IEP-code distribution of the 8,618 applicants to justify moving the baseline down. Cite the range, keep the baseline at $17,650.
+
+**Bounds:** A $10,474-flat model (no IEP supplement) yields 95,475 — the absolute ceiling. A $30,000 cap model yields ~70,000 — the floor. The range in the table is the zone where defensible assumptions live.
+
 ---
 
 ## 2. Attrition Assumptions

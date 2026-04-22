@@ -1243,6 +1243,56 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             </ul>
                         </div>
 
+                        <div className="mb-4 p-3 bg-white border border-tefa-navy/20 rounded text-xs">
+                            <div className="font-bold text-tefa-navy mb-2">Capacity Sensitivity — IEP Scalar Range</div>
+                            <div className="text-tefa-body/70 mb-2">
+                                Per the <strong>TEFA Special Education Funding Table (TEA, SY 2026-27)</strong>, IEP supplements vary ~5× across district × instructional-code combinations. The $17,650 baseline is defensibly middle — but different reasonable assumptions produce this range:
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-xs">
+                                    <thead className="bg-tefa-navy/5 text-tefa-navy">
+                                        <tr>
+                                            <th className="px-2 py-1.5 text-left">IEP Scalar</th>
+                                            <th className="px-2 py-1.5 text-left">Assumption</th>
+                                            <th className="px-2 py-1.5 text-right">Capacity</th>
+                                            <th className="px-2 py-1.5 text-right">T2 Rate</th>
+                                            <th className="px-2 py-1.5 text-right">T3 Fam @ 15%</th>
+                                            <th className="px-2 py-1.5 text-right">T3 Fam @ 25%</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100 text-tefa-body/80">
+                                        <tr>
+                                            <td className="px-2 py-1.5 font-mono">$14,000</td>
+                                            <td className="px-2 py-1.5">Urban Code 01 (mainstream, top-10 ISDs)</td>
+                                            <td className="px-2 py-1.5 text-right font-mono">~92,573</td>
+                                            <td className="px-2 py-1.5 text-right font-mono">~79.6%</td>
+                                            <td className="px-2 py-1.5 text-right font-mono">~8.5%</td>
+                                            <td className="px-2 py-1.5 text-right font-mono">~39.5%</td>
+                                        </tr>
+                                        <tr className="bg-tefa-gold/10 font-medium">
+                                            <td className="px-2 py-1.5 font-mono">$17,650</td>
+                                            <td className="px-2 py-1.5">SAISD 59-code median <strong>(baseline)</strong></td>
+                                            <td className="px-2 py-1.5 text-right font-mono">~89,570</td>
+                                            <td className="px-2 py-1.5 text-right font-mono">~75.8%</td>
+                                            <td className="px-2 py-1.5 text-right font-mono">~8.2%</td>
+                                            <td className="px-2 py-1.5 text-right font-mono">~30.1%</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="px-2 py-1.5 font-mono">$22,769</td>
+                                            <td className="px-2 py-1.5">Statewide all-cell median</td>
+                                            <td className="px-2 py-1.5 text-right font-mono">~85,358</td>
+                                            <td className="px-2 py-1.5 text-right font-mono">~70.5%</td>
+                                            <td className="px-2 py-1.5 text-right font-mono">~7.8%</td>
+                                            <td className="px-2 py-1.5 text-right font-mono">~20.7%</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div className="text-tefa-body/70 mt-2">
+                                <strong>Why urban skew matters:</strong> The 10 largest Texas ISDs cluster at ~$3,500–$3,800 Code 01 supplements (vs. $5,500–$7,000 in small rural districts). Since private schools concentrate in metros, realized TEFA IEP costs may skew toward the $14k end — but we don't have the actual IEP-code distribution of the 8,618 applicants to justify moving the baseline down. <strong>Bounds:</strong> $10,474-flat ceiling ≈ 95,475; $30,000-cap floor ≈ 70,000.
+                            </div>
+                        </div>
+
                         <h3 className="font-bold text-tefa-navy text-lg mb-2">3. Comptroller's Tier System (How the Lottery Will Actually Run)</h3>
                         <div className="bg-tefa-navy/5 border border-tefa-navy/20 rounded-lg p-4 mb-4">
                             <p className="text-sm text-tefa-navy mb-2">
