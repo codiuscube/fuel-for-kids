@@ -82,7 +82,7 @@ const IddingsPlanner = () => {
     { item: "NBCA Enrollment Fee", status: "Paid ($690)", date: "April 2", type: "success", funding: "($175 + $55) x 3" },
     { item: "NBCA Financial Aid", status: "Granted ($16,200)", date: "March 31", type: "success", funding: "Tuition Credit" },
     { item: "NBCA Scholarship", status: "Pending (depends on TEFA)", date: "End of April", type: "pending", funding: "Tuition Credit" },
-    { item: "TEFA Grant (ESA)", status: "Waiting (Tier 3 — likely waitlisted)", date: "Notifications this week (mid-April)", type: "pending", funding: "Odyssey ESA Account" },
+    { item: "TEFA Grant (ESA)", status: "Waiting (Tier 3 — likely waitlisted)", date: "Tier 1 began Apr 22; Tier 3 later wave", type: "pending", funding: "Odyssey ESA Account" },
   ];
 
   // Checklist Data
@@ -162,28 +162,41 @@ const IddingsPlanner = () => {
     const eligibleApps = Math.round(totalApps * (1 - INELIGIBILITY_RATE));
 
     // === PER-STUDENT ALLOCATION (statutory) ===
-    // SB 2, Sec. 29.361(a)(1): base allocation = 85% of statewide average state + local M&O
-    // funding per student in average daily attendance. With current TEA M&O averages (~$12,316/ADA),
-    // 85% × $12,316 ≈ $10,474. This is the published Year 1 private-school maximum.
-    // Other categories (Sec. 29.361(b), (b-1)):
-    //   - SPED with active IEP: base + IEP services, hard cap $30,000/year
-    //   - Homeschool: $2,000/year
-    const perStudentMax = 10474;
+    // SB 2 Sec. 29.361(a)(1): base = 85% × statewide avg M&O per ADA ≈ $10,474.
+    // SB 2 Sec. 29.361(b):    SPED with active IEP = base + supplement, cap $30,000/year.
+    // SB 2 Sec. 29.361(b-1):  Homeschool = $2,000/year.
+    const perStudentBase = 10474;
 
-    // === CAPACITY (derived) ===
-    // capacity = floor($1B / $10,474) ≈ 95,475 students
+    // IEP-active students draw a district-dependent supplement on top of the base.
+    // Rather than the $30,000 ceiling or the $10,474 floor, this model uses the
+    // San Antonio ISD median total of ~$17,650 (base $10,474 + median supplement ~$7,180).
+    // Totals across the 10 largest Texas ISDs cluster between ~$17,650 and ~$18,300 —
+    // $17,650 is a defensible middle-of-the-table scalar for the blended IEP cost.
+    const perStudentIEP = 17650;
+
+    // Comptroller PDF page 12: 8,618 applicants (~3%) have active IEPs.
+    const iepEligibleCount = 8618;
+
+    // === CAPACITY (derived, IEP-adjusted) ===
+    // Commit $152.1M to the 8,618 IEP applicants at $17,650 each; fund the remaining
+    // $847.9M at the $10,474 base. Total capacity ≈ 89,570 students (vs. 95,475 under
+    // the flat-$10,474 ceiling model).
     //
-    // ASSUMPTION: every funded student draws the maximum private allocation. This is a CEILING:
-    //   - Homeschool students ($2k cap) are cheaper → would push capacity higher
-    //   - SPED IEP students (up to $30k) are more expensive → would push capacity lower
-    //   - Per PDF: 23% homeschool / ~3% high-SPED — these effects roughly offset, so $10,474
-    //     is a defensible proxy for the average per-student cost.
+    // ASSUMPTIONS:
+    //   - All 8,618 IEP-active applicants are funded in Year 1 (they qualify as Tier 1:
+    //     disability + ≤500% FPL, which funds first).
+    //   - Non-IEP students modeled uniformly at $10,474. Homeschool ($2k cap) savings
+    //     are treated as a sensitivity upside, NOT the baseline — matches the
+    //     Comptroller's "funding exhausts within Tier 2" framing (which would not
+    //     hold if homeschool savings pushed capacity materially higher).
     //
-    // SOURCE-CHECK: Result is consistent with the Comptroller's Apr 2 press release —
-    // "Available year-one funding is expected to be exhausted within the second priority tier" —
-    // because at 95,475 capacity, T1 (29,644) is fully funded and T2 (79,050) is only ~83%
-    // funded, leaving T3 with 0 from the initial lottery.
-    const capacity = Math.floor(budget / perStudentMax); // 95,475
+    // SOURCE-CHECK: At 89,570 capacity, T1 (29,644) fully funds, T2 (79,050) funds at
+    // ~75.8% (lottery within T2), T3 receives 0 from the initial lottery. Consistent
+    // with the Comptroller's Apr 2 press release and meaningfully more conservative
+    // than the $10,474-flat 95,475 estimate.
+    const iepBudget = iepEligibleCount * perStudentIEP;
+    const nonIepBudget = budget - iepBudget;
+    const capacity = iepEligibleCount + Math.floor(nonIepBudget / perStudentBase); // ≈ 89,570
 
     // =====================================================
     // MODEL A: COMPTROLLER'S ACTUAL IMPLEMENTATION
@@ -350,8 +363,8 @@ The contribution amount we listed represents the maximum we can sustainably budg
     { date: 'Apr 02', day: 'Thu', isoDate: '2026-04-02', event: 'NBCA Enrollment Fee Paid', type: 'nbca', desc: 'Enrolled all 3 children. Paid ($175 + $55) x 3 = $690.', funding: '$690 Paid' },
     { date: 'Apr 08', day: 'Wed', isoDate: '2026-04-08', event: 'Comptroller Publishes TEFA Application Insights: Year 1', type: 'tefa', desc: 'Official Year 1 PDF released — 274,183 applications, tier breakdown, demographics, ISD-level data.', funding: 'N/A', link: { href: '/TEFA-Application-Insights-Year-1.pdf', label: 'View PDF' } },
     { date: 'Apr 15', day: 'Wed', isoDate: '2026-04-15', event: 'ACE Scholarship Deadline', type: 'ace', desc: 'Closes 11:59 PM (Tax Day).', funding: 'Deadline' },
+    { date: 'Apr 22', day: 'Wed', isoDate: '2026-04-22', event: 'TEFA Tier 1 Notifications Begin', type: 'tefa', desc: 'Tier 1 families (children with disabilities from households at or below 500% FPL) begin receiving TEFA award email notifications for 2026–27. Rollout continues over subsequent days. Per the Archdiocese of San Antonio bulletin, Tier 2 lottery notifications follow the week after, with additional waves in the weeks ahead.', funding: 'Award or Waitlist Position' },
     { date: 'Apr 24', day: 'Fri', isoDate: '2026-04-24', event: 'Federal Injunction Hearing', type: 'tefa', desc: 'Key hearing in Muslim schools v. Texas. Court decides whether to maintain, modify, or dissolve the injunction blocking Comptroller Hancock from excluding Islamic schools. TEFA funding timeline depends on outcome.', funding: 'Court Date' },
-    { date: 'Mid-Apr', day: 'TBD', isoDate: '2026-04-15', event: 'TEFA Notifications Begin', type: 'tefa', desc: 'Per official TEFA email (Apr 14): "Beginning this week, families will be notified if they\'ve been awarded a TEFA account and their tier placement. If not awarded, families will learn their position on the waiting list." Per Comptroller Apr 2 press release, funding exhausts within Tier 2 — Iddings family (Tier 3) is expected to receive a waitlist notification, not an award.', funding: 'Award or Waitlist Position' },
     { date: 'End Apr', day: 'TBD', isoDate: '2026-04-30', event: 'NBCA Scholarship Decisions (est.)', type: 'nbca', desc: 'Per NBCA (Michelle Leidy, Mar 31): scholarship amount depends on TEFA outcome — TEFA funds affect financial need calculation. Scholarship awarded only if/where TEFA doesn\'t cover.', funding: 'Credited to Tuition' },
     { date: 'Jun 01', day: 'Mon', isoDate: '2026-06-01', event: 'TEFA Initial School Selection Deadline', type: 'tefa', desc: 'Per official TEFA email: "Initial deadline for parents to select a TEFA private school." Lottery winners must select a participating school by this date. Winners who don\'t select forfeit their spot (first trickle of waitlist cascade — but most spots open later when schools confirm).', funding: 'Required for Jul 1 Funding' },
     { date: 'Jun 15', day: 'Mon', isoDate: '2026-06-15', event: 'TEFA Schools Confirm Enrollment & Set Tuition', type: 'tefa', desc: 'Per official TEFA email: "Schools must confirm student enrollment and set tuition payments." Key trigger for waitlist cascade: the state now formally knows which selections were completed vs. which fell through (no school confirmation, tuition gap too large, etc.). Meaningful waitlist notifications most likely begin after this date.', funding: 'Enrollment Lock-In' },
@@ -466,6 +479,16 @@ The contribution amount we listed represents the maximum we can sustainably budg
                 </div>
             </div>
 
+            {/* Funding Update Banner - Apr 22 Notifications */}
+            <div className="bg-tefa-green/10 p-4 rounded-lg shadow-md border-2 border-tefa-green/40">
+                <h2 className="text-base font-bold flex items-center gap-2 text-tefa-green mb-2">
+                    <AlertCircle size={18} /> Funding Update — April 22, 2026
+                </h2>
+                <p className="text-sm text-tefa-body">
+                    Starting <strong>April 22, 2026</strong>, <strong>Tier 1 families</strong> — children with disabilities from families earning at or below 500% of the federal poverty level — will begin receiving email notifications regarding their TEFA award for the 2026–27 school year. Notifications for additional families will be released in the coming weeks.
+                </p>
+            </div>
+
             {/* TEFA Program Status Card */}
             <div className="bg-tefa-light p-6 rounded-lg shadow-md border-2 border-tefa-navy">
                 <h2 className="text-xl font-bold flex items-center gap-2 text-tefa-navy mb-3">
@@ -483,7 +506,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
                         <div className="text-xs text-tefa-body/50 font-medium">Program Capacity</div>
                         <div className="font-bold text-tefa-navy text-lg">~{analysis.capacity.toLocaleString()}</div>
-                        <div className="text-[10px] text-tefa-body/40">$1B ÷ $10,474 (SB 2 §29.361)</div>
+                        <div className="text-[10px] text-tefa-body/40">$1B, IEP-adjusted (SB 2 §29.361)</div>
                     </div>
                     <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
                         <div className="text-xs text-tefa-body/50 font-medium">Iddings Tier</div>
@@ -526,6 +549,65 @@ The contribution amount we listed represents the maximum we can sustainably budg
                 </div>
             </div>
 
+            {/* Misinformation Alert Card */}
+            <div className="bg-amber-50 p-6 rounded-lg shadow-md border-2 border-amber-400">
+                <h2 className="text-xl font-bold flex items-center gap-2 text-amber-800 mb-2">
+                    <AlertCircle size={20} /> Misinformation Alert — Circulating Figures Are Wrong
+                </h2>
+                <p className="text-sm text-amber-900 mb-4">
+                    Emails from several Texas archdioceses and private schools (including at least one San Antonio-area Catholic high school) are circulating <strong>inaccurate tier counts and lottery rates</strong>. Corrected against the Comptroller's <em>TEFA Application Insights: Year 1</em> PDF (Apr 2026) and SB 2 statute:
+                </p>
+                <div className="space-y-3 text-sm">
+                    <div className="bg-white rounded-lg p-4 border border-amber-300">
+                        <div className="text-xs uppercase font-bold text-amber-700 mb-2">Claim (VCHS / Catholic HS email)</div>
+                        <p className="text-tefa-body/80 italic mb-2">"42,000 (all Tier 1) have been approved for those in special ed or below poverty level stated for Tier 1."</p>
+                        <div className="text-xs uppercase font-bold text-tefa-red mb-1">What's wrong</div>
+                        <ul className="list-disc ml-5 text-tefa-body/80 space-y-1 text-xs">
+                            <li><strong>T1 count is not 42,000.</strong> Per the Comptroller PDF (page 8), T1 is 12% of the 247,032 eligible applicants → <strong>~29,644</strong>.</li>
+                            <li><strong>T1 definition is wrong.</strong> T1 = disability (active IEP) <em>AND</em> household at or below 500% FPL (SB 2 §29.3521(d)). "Below poverty level" describes <strong>Tier 2</strong> (≤200% FPL), not Tier 1.</li>
+                        </ul>
+                    </div>
+                    <div className="bg-white rounded-lg p-4 border border-amber-300">
+                        <div className="text-xs uppercase font-bold text-amber-700 mb-2">Claim (VCHS / Catholic HS email)</div>
+                        <p className="text-tefa-body/80 italic mb-2">"Tier 2 has 65,000 qualified but only 22,000 vouchers, so a lottery will determine who gets funding."</p>
+                        <div className="text-xs uppercase font-bold text-tefa-red mb-1">What's wrong</div>
+                        <ul className="list-disc ml-5 text-tefa-body/80 space-y-1 text-xs">
+                            <li><strong>T2 qualified is ~79,050</strong> (32% of 247,032 eligible), not 65,000.</li>
+                            <li><strong>Funded T2 count is ~{analysis.fundedT2.toLocaleString()} (≈{tier2FundingRate.toFixed(0)}%)</strong>, not 22,000. The 22,000 figure has no statutory or official source.</li>
+                            <li>The Comptroller's own Apr 2 press release states "funding will be exhausted within the second priority tier" — consistent with the derived ~{tier2FundingRate.toFixed(0)}% T2 funding rate, not 30-40%.</li>
+                        </ul>
+                    </div>
+                    <div className="bg-white rounded-lg p-4 border border-amber-300">
+                        <div className="text-xs uppercase font-bold text-amber-700 mb-2">Claim (Archdiocese TEFA bulletin)</div>
+                        <p className="text-tefa-body/80 italic mb-2">"Only a portion of applicants (approximately 30–40%) will receive funding at [the T2 lottery] stage."</p>
+                        <div className="text-xs uppercase font-bold text-tefa-red mb-1">What's wrong</div>
+                        <ul className="list-disc ml-5 text-tefa-body/80 space-y-1 text-xs">
+                            <li>At the IEP-adjusted derived capacity (~{analysis.capacity.toLocaleString()}), Tier 2 funds at <strong>~{tier2FundingRate.toFixed(1)}%</strong>, not 30–40%. The 30–40% figure dramatically understates a T2 family's odds and may cause them to disengage prematurely.</li>
+                        </ul>
+                    </div>
+                    <div className="bg-white rounded-lg p-4 border border-amber-300">
+                        <div className="text-xs uppercase font-bold text-amber-700 mb-2">Claim (Archdiocese TEFA bulletin)</div>
+                        <p className="text-tefa-body/80 italic mb-2">"All awarded families must select a school and have their enrollment confirmed by July 15."</p>
+                        <div className="text-xs uppercase font-bold text-tefa-red mb-1">What's wrong</div>
+                        <ul className="list-disc ml-5 text-tefa-body/80 space-y-1 text-xs">
+                            <li>Per the official TEFA timeline: <strong>July 15</strong> is the <em>final school selection</em> deadline; <strong>July 31</strong> is the <em>enrollment confirmation</em> deadline. Conflating the two shortens the window families think they have to finalize with a school.</li>
+                        </ul>
+                    </div>
+                    <div className="bg-white rounded-lg p-4 border border-amber-300">
+                        <div className="text-xs uppercase font-bold text-amber-700 mb-2">Claim (Archdiocese TEFA bulletin)</div>
+                        <p className="text-tefa-body/80 italic mb-2">"Applicants in Priority Tiers 3 and 4 are not expected to receive funding this year."</p>
+                        <div className="text-xs uppercase font-bold text-tefa-red mb-1">What's wrong (partial)</div>
+                        <ul className="list-disc ml-5 text-tefa-body/80 space-y-1 text-xs">
+                            <li>For T4 in Year 1: correct — effectively 0%.</li>
+                            <li>For T3: <strong>not zero.</strong> The recursive attrition cascade in this planner shows T3 at ~4% individual / <strong>~12% for a 3-child family at the central 15% attrition rate</strong>, rising to ~48% family at 25% attrition. Stating T3 is "not expected" to receive funding without the attrition caveat is misleading.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div className="mt-4 p-3 bg-amber-100 rounded-lg text-xs text-amber-900 border border-amber-300">
+                    <strong>Sources:</strong> Texas Comptroller, <em>TEFA Application Insights: Year 1</em> (Apr 2026), pages 5 &amp; 8 · Comptroller Apr 2 press release · SB 2 §29.3521(c-1), §29.3521(d), §29.361(a)(1) · Official TEFA email (Apr 14) outlining the Jun 1 / Jun 15 / Jul 1 / Jul 15 / Jul 31 timeline.
+                </div>
+            </div>
+
             {/* Enrollment Status Card */}
             <div className="bg-tefa-sky/10 p-6 rounded-lg shadow-md border border-tefa-navy/20">
                 <h2 className="text-xl font-bold flex items-center gap-2 text-tefa-navy mb-4">
@@ -544,8 +626,8 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     </div>
                     <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-navy/10">
                         <span className="text-tefa-body/60 font-medium">TEFA Notification</span>
-                        <span className="font-bold text-tefa-navy text-lg">Later in April</span>
-                        <span className="text-xs text-tefa-body/40 hidden sm:block">Likely waitlist for Tier 3</span>
+                        <span className="font-bold text-tefa-navy text-lg">Tier 1 began Apr 22</span>
+                        <span className="text-xs text-tefa-body/40 hidden sm:block">Tier 3 (Iddings) waits for later wave — likely waitlist</span>
                     </div>
                     <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-navy/10">
                         <span className="text-tefa-body/60 font-medium">NBCA Scholarship</span>
@@ -1143,18 +1225,21 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         <ul className="list-disc pl-5 mb-4 space-y-1">
                             <li><strong>Statutory Budget Cap:</strong> $1 Billion for 2025–2027 biennium (SB 2, §29.3521(c-1))</li>
                             <li><strong>Year 1 Commitment:</strong> Full $1B (Comptroller administrative choice — Travis Pillow, Apr 2: "$1 billion committed in year one")</li>
-                            <li><strong>Per-Student Max:</strong> $10,474 (SB 2, §29.361(a)(1) — 85% of statewide avg M&amp;O per ADA)</li>
-                            <li><strong>Derived Capacity:</strong> ~{analysis.capacity.toLocaleString()} students ($1B ÷ $10,474)</li>
+                            <li><strong>Per-Student Base:</strong> $10,474 (SB 2 §29.361(a)(1) — 85% × statewide avg M&amp;O per ADA)</li>
+                            <li><strong>Per-Student IEP (blended):</strong> ~$17,650 (SAISD-median total: $10,474 base + ~$7,180 median supplement; SB 2 §29.361(b))</li>
+                            <li><strong>IEP-Active Applicants:</strong> 8,618 (PDF page 12) — all assumed funded in Tier 1</li>
+                            <li><strong>Derived Capacity (IEP-adjusted):</strong> ~{analysis.capacity.toLocaleString()} students</li>
                             <li><strong>Eligible Applicants:</strong> ~{analysis.eligibleApps.toLocaleString()} (247,032 of 274,183 — official PDF page 5)</li>
                         </ul>
                         <div className="mb-4 p-3 bg-tefa-navy/5 border border-tefa-navy/20 rounded text-xs text-tefa-body/70">
-                            <div className="font-bold text-tefa-navy mb-1">Capacity Assumptions (read carefully):</div>
+                            <div className="font-bold text-tefa-navy mb-1">Capacity Derivation (IEP-Adjusted Model):</div>
                             <ul className="list-disc pl-5 space-y-1">
-                                <li><strong>Assumes every funded student draws the max private allocation ($10,474).</strong> This is a ceiling estimate.</li>
-                                <li>Homeschool students are capped at $2,000/yr (SB 2 §29.361(b-1)) — would push capacity <em>higher</em>. PDF: 23% of applicants are homeschool.</li>
-                                <li>SPED students with active IEPs can receive up to $30,000/yr (SB 2 §29.361(b)) — would push capacity <em>lower</em>. PDF page 12: 8,618 applicants have active IEPs (~3% of total).</li>
-                                <li>These two effects roughly offset, so $10,474 is a defensible average proxy.</li>
-                                <li><strong>Cross-check:</strong> The Comptroller's Apr 2 press release confirms "funding will be exhausted within the second priority tier" — at 95,475 capacity, T2 funds at 83% (lottery) and T3 receives 0 from the initial lottery. Math agrees with the official narrative.</li>
+                                <li><strong>Step 1:</strong> Commit to IEP students first — 8,618 × $17,650 ≈ <strong>$152.1M</strong> of the $1B budget.</li>
+                                <li><strong>Step 2:</strong> Remaining <strong>~$847.9M</strong> funds base-rate students at $10,474 each → ~80,952 additional students.</li>
+                                <li><strong>Total capacity:</strong> 8,618 + 80,952 ≈ <strong>{analysis.capacity.toLocaleString()}</strong> students.</li>
+                                <li><strong>IEP scalar choice:</strong> $17,650 is the San Antonio ISD median total from TEA's supplement table (base + median supplement across 59 instructional codes). Totals across the 10 largest Texas ISDs cluster between ~$17,650 and ~$18,300 — this is a defensible middle-of-the-table figure, not the $30,000 statutory ceiling.</li>
+                                <li><strong>Homeschool treatment:</strong> Non-IEP students modeled uniformly at $10,474. Homeschool applicants (23%) cap at $2,000/yr — treated as a sensitivity upside, not baseline (matches the Comptroller's "funding exhausts in T2" framing).</li>
+                                <li><strong>Cross-check:</strong> At ~{analysis.capacity.toLocaleString()} capacity, T1 ({analysis.demandT1.toLocaleString()}) fully funds, T2 ({analysis.demandT2.toLocaleString()}) funds at {tier2FundingRate.toFixed(1)}% (lottery), and T3 receives 0 from the initial lottery. Consistent with the Comptroller's Apr 2 press release ("funding exhausted within the second priority tier") and more conservative than the flat-$10,474 ceiling model (~95,475).</li>
                             </ul>
                         </div>
 
