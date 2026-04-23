@@ -21,11 +21,22 @@ All figures below are statutory (SB 2) or drawn from the Texas Comptroller's *TE
 - Educational setting: **77%** private / **23%** homeschool
 - **8,618** applicants (~3%) have active IEPs eligible for SPED supplements (PDF page 12)
 
+### 1.1a First-round awards (Comptroller press release, Apr 22, 2026)
+
+- **More than 42,600 students** received first-round award notices Apr 22–24
+- Includes **all of Tier 1** (disability + ≤500% FPL) **plus their siblings** pulled in by the sibling rule
+- **Two-thirds have a documented disability** → ~28,400 T1 proper
+- **One-third (~14,200) are non-T1 siblings** funded alongside T1 at the base rate
+- **Approximately half previously attended a public school**
+- T1-family block consumed ~$650M of the $1B budget; ~$350M remains for the Tier 2 lottery
+- **Tier 2 lottery:** held during the week of Apr 27, 2026; the same lottery assigns ranked waitlist positions to the remaining T2 students and all of T3/T4
+- **Appeals window:** 30 days from notice receipt; adjustments only on school-district or IEP documentation
+
 ### 1.2 Priority tiers (Comptroller PDF page 8)
 
 | Tier | Definition | Share of eligible | Approx. count |
 |------|------------|-------------------|---------------|
-| **T1** | Disability + ≤500% FPL | 12% | ~29,644 |
+| **T1** | Disability + ≤500% FPL | 12% | ~29,644 (PDF estimate); **~28,400 empirically** per Apr 22 press release (2/3 of 42,600 first-round awards had documented disability) |
 | **T2** | ≤200% FPL | 32% | ~79,050 |
 | **T3** | 200–500% FPL | 29% | ~71,639 |
 | **T4a** | ≥500% FPL + prior public school | 5% | ~12,352 |
@@ -40,50 +51,48 @@ All figures below are statutory (SB 2) or drawn from the Texas Comptroller's *TE
 - **SPED (active IEP) cap:** up to $30,000/student/year (SB 2 §29.361(b)) — actual award = base + district-dependent IEP supplement, not the $30k ceiling
 - **IEP blended scalar used in this model:** **~$17,650/student** (base $10,474 + SAISD median supplement ~$7,180). Medians across the 10 largest Texas ISDs cluster between $17,650 and $18,300 — a defensible middle-of-the-table figure rather than the $30k ceiling or $10,474 floor.
 
-### 1.4 Year 1 capacity (derived — IEP-adjusted)
+### 1.4 Year 1 capacity (derived — Apr 22 press-release calibration)
 
-**Step 1:** Commit to the 8,618 IEP-active applicants (PDF page 12) first, at $17,650 each:
-  - $8,618 × $17,650 ≈ **$152.1M**
+**Step 1 — T1 family block:** From the Apr 22 press release, 42,600 first-round awards went out. Split two-thirds (~28,400) T1 proper (documented disability, modeled at the $17,650 IEP rate) and one-third (~14,200) non-T1 siblings funded at the $10,474 base via the sibling rule:
+  - 28,400 × $17,650 + 14,200 × $10,474 ≈ **$650M**
 
-**Step 2:** Fund the remainder of the budget at the $10,474 base:
-  - Remaining: $1,000,000,000 − $152,107,700 = **$847.9M**
-  - $847.9M ÷ $10,474 ≈ **80,952 base-rate students**
+**Step 2 — T2 lottery pool:** Fund the remainder of the budget at the $10,474 base:
+  - Remaining: $1,000,000,000 − $650,000,000 = **$350M**
+  - $350M ÷ $10,474 ≈ **~33,419 T2 lottery slots**
 
-**Capacity ≈ 8,618 + 80,952 = ~89,570 students.**
+**Capacity ≈ 42,600 + 33,419 = ~76,019 students.**
 
-**Why not the flat-$10,474 ceiling (95,475)?** That earlier model leaned on a hand-wave that homeschool savings ($2k cap) would "roughly offset" SPED supplements. In practice, the IEP-supplement math alone drops capacity by ~5,900 seats, and treating homeschool savings as baseline (rather than sensitivity upside) would contradict the Comptroller's "funding exhausts within Tier 2" framing. The $17,650 scalar is an explicit, auditable modeling choice; $30k would be a worst case (~70,000 capacity), and $10,474-flat is a best case (95,475).
+**Why lower than the prior ~89,570 estimate?** The earlier IEP-adjusted model funded the 8,618 PDF-reported IEP students at $17,650 and spread the remaining budget across everyone else at $10,474 — but it did **not** account for the ~14,200 non-T1 siblings pulled in by the sibling rule alongside T1. Those siblings consume ~$149M at the base rate, which the old model had implicitly re-allocated to T2. Correcting for the sibling pull-up shrinks the T2 lottery pool from ~59,926 to ~33,419 and drops total capacity from ~89,570 to ~76,019.
 
-**Source-check:** Consistent with the Comptroller's Apr 2 press release: *"Available year-one funding is expected to be exhausted within the second priority tier."* At ~89,570 capacity, T1 (29,644) is fully funded and T2 (79,050) is ~75.8% funded, leaving T3 with 0 from the initial lottery.
+**Source-check:** Consistent with the Comptroller's Apr 2 press release (*"Available year-one funding is expected to be exhausted within the second priority tier"*) AND the Apr 22 press release (42,600 first-round awards). At ~76,019 capacity: T1-family fully funds, T2 (79,050 demand) funds at ~42.3%, T3 and T4 receive 0 from the initial lottery.
 
-> Do NOT use "90,000 students" — that figure is not in the statute or the official PDF. Use the derived **~89,570** (IEP-adjusted) or call out the flat-ceiling **95,475** alternative as a sensitivity upper bound.
+> Do NOT use "~89,570" or "75.8% T2 rate" — those figures predate the Apr 22 press release and overstate T2 capacity by ignoring the sibling pull-up. Use the **~76,019 / ~42.3%** figures derived above.
 
-### 1.5 Funding cascade at ~89,570 capacity
+### 1.5 Funding cascade at ~76,019 capacity
 
 | Tier | Demand | Funded | Rate |
 |------|--------|--------|------|
-| T1 | 29,644 | 29,644 | 100% |
-| T2 | 79,050 | 59,926 | **75.8%** (lottery within T2) |
-| T3 | 71,639 | 0 | 0% (waitlisted) |
+| T1 (incl. siblings) | — | 42,600 | 100% (first-round) |
+| T2 | 79,050 | 33,419 | **~42.3%** (lottery within T2) |
+| T3 | 71,639 | 0 | 0% (waitlisted, ranked position assigned wk of Apr 27) |
 | T4a | 12,352 | 0 | 0% |
 | T4b | 54,347 | 0 | 0% |
 
-**Unfunded T2 on the waitlist: ~19,124 students** (79,050 − 59,926). These must be backfilled by attrition *before any T3 family sees a spot*.
+**Unfunded T2 on the waitlist: ~45,631 students** (79,050 − 33,419). These must be backfilled by attrition *before any T3 family sees a spot*.
 
-**Simple first-round threshold for T3 to see spots:** ~19,124 / 89,570 ≈ **21.4%** of T1+T2 winners would need to drop in round 1 to fully clear T2 backlog. The cascade model also counts second-round attrition (from newly funded T2 replacements), which drips small numbers to T3 below this threshold.
+**Simple first-round threshold for T3 to see spots:** ~45,631 / 42,600 ≈ **107%** of T1-family winners would need to drop for T3 to see spots from first-round cascade alone. In practice T3 relies on a combination of T1 + T2 attrition plus second-round attrition from newly backfilled T2 winners (see §4).
 
-### 1.6 Capacity sensitivity (IEP scalar)
+### 1.6 Capacity sensitivity (legacy — pre-Apr 22 IEP-scalar model)
 
-The $17,650 baseline is a defensible middle, not the only defensible choice. The TEFA Special Education Funding Table (TEA, SY 2026–27) shows supplements vary ~5× across district × instructional-code combinations. Different reasonable assumptions yield:
+*The table below reflects the old derivation that funded 8,618 IEP students + everyone else at the base rate, without accounting for the sibling pull-up. It overstates capacity by ~14,200 seats in every row. Retained for transparency; the live model above supersedes it.*
 
-| IEP scalar ($/student) | Source/assumption | Capacity | T2 funding | T3 family @ 15% | T3 family @ 25% |
-|---|---|---|---|---|---|
-| **$14,000** | Urban Code 01 (mainstream IEP in 10 largest ISDs) | ~92,573 | ~79.6% | ~8.5% | ~39.5% |
-| **$17,650** (baseline) | SAISD median across 59 codes | ~89,570 | ~75.8% | ~8.2% | ~30.1% |
-| **$22,769** | Statewide median of all 59-code × district cells | ~85,358 | ~70.5% | ~7.8% | ~20.7% |
+| IEP scalar ($/student) | Source/assumption | Capacity (legacy) | T2 funding (legacy) |
+|---|---|---|---|
+| $14,000 | Urban Code 01 (mainstream IEP in 10 largest ISDs) | ~92,573 | ~79.6% |
+| $17,650 (old baseline) | SAISD median across 59 codes | ~89,570 | ~75.8% |
+| $22,769 | Statewide median of all 59-code × district cells | ~85,358 | ~70.5% |
 
-**Why urban skew matters:** Per the TEFA SPED Funding Table, the 10 largest Texas ISDs cluster at ~$3,500–$3,800 Code 01 supplements (vs. $5,500–$7,000 in small rural districts). Since private schools concentrate in metros, realized TEFA IEP costs may skew toward the $14k–$16k range — but we don't have the actual IEP-code distribution of the 8,618 applicants to justify moving the baseline down. Cite the range, keep the baseline at $17,650.
-
-**Bounds:** A $10,474-flat model (no IEP supplement) yields 95,475 — the absolute ceiling. A $30,000 cap model yields ~70,000 — the floor. The range in the table is the zone where defensible assumptions live.
+**Bounds:** A $10,474-flat model (no IEP supplement, no sibling pull-up) yields 95,475 — absolute ceiling. A $30,000 IEP cap (also no sibling pull-up) yields ~70,000. The Apr 22 recalibration lands at ~76,019, inside this legacy range but materially below the old baseline.
 
 ---
 
@@ -144,13 +153,13 @@ Pre-K has a ~51% ineligibility rate (18,677 of 36,666 apps). If the student is P
 
 These numbers come from the exact recursive cascade in `src/components/IddingsPlanner.jsx`. Do **not** compute T3 rates by hand with a single-round threshold — the model includes second-round attrition from newly backfilled T2 winners, which feeds additional spots to T3.
 
-### 4.1 Individual-student rates by attrition scenario (IEP-adjusted capacity ~89,570)
+### 4.1 Individual-student rates by attrition scenario (Apr 22–calibrated capacity ~76,019)
 
 | Tier | Initial lottery | At 8% attr. | At 15% attr. (central) | At 25% attr. |
 |------|-----------------|-------------|------------------------|--------------|
-| **T1** | 100% | 100% | 100% | 100% |
-| **T2** | ~75.8% | ~85% | ~96% | ~100% |
-| **T3** | 0% | **~0.80%** | **~2.81%** | **~11.24%** |
+| **T1** (incl. siblings) | 100% | 100% | 100% | 100% |
+| **T2** | ~42.3% | ~56% | ~71% | ~89% |
+| **T3** | 0% | **~0.68%** | **~2.39%** | **~6.63%** |
 | **T4a/b** | 0% | ~0% | ~0% | ~0% |
 
 ### 4.2 Family-level rates (sibling rule)
@@ -165,24 +174,27 @@ T3 family rates computed from §4.1:
 
 | # kids | At 8% attr. | At 15% attr. (central) | At 25% attr. |
 |--------|-------------|------------------------|--------------|
-| 1 | ~0.80% | ~2.81% | ~11.24% |
-| 2 | ~1.6% | ~5.5% | ~21.2% |
-| **3** | **~2.4%** | **~8.2%** | **~30.1%** |
+| 1 | ~0.68% | ~2.39% | ~6.63% |
+| 2 | ~1.4% | ~4.7% | ~12.8% |
+| **3** | **~2.0%** | **~7.0%** | **~18.6%** |
 
 ### 4.3 Why the cascade is non-linear
 
-Under the IEP-adjusted capacity (~89,570), the T2 waitlist ahead of T3 grows to **~19,124 students**. At 15% attrition, first-round freed spots (~13,436) are still ~5,700 short of clearing that T2 backlog outright; only second-round attrition from newly funded T2 replacements (~2,015 spots) drips to T3. At 25% attrition, first-round freed spots (~22,393) fully clear the T2 backlog with ~3,269 left over, and second-round attrition adds ~4,781 more → ~8,050 total to T3. Every percentage point of attrition above ~20% produces a large relative jump in T3 probability because of this compounding.
+Under the Apr 22–calibrated capacity (~76,019), the T2 waitlist ahead of T3 grows to **~45,631 students** (up from ~19,124 under the prior model). At 15% attrition, first-round freed spots (~11,402) are far short of clearing that T2 backlog outright; only second-round attrition from newly funded T2 replacements (~1,710 spots) drips to T3. At 25% attrition, first-round freed spots (~19,004) still don't clear the T2 backlog — but the second-round attrition compounds more favorably (~4,751 spots to T3). Every percentage point of attrition matters, but the bigger T2 backlog means the non-linear inflection is shifted rightward: T3 only meaningfully benefits once attrition clears most of the T2 waitlist, which now requires ~60%+ cumulative attrition rather than ~21% under the old model.
 
 ### 4.4 For T3 families — honest framing
 
 - Initial lottery: 0%.
-- With central 15% attrition: **~3% individual / ~8% family of 3** — not zero, but long odds.
-- With 25% attrition (matching Milwaukee/VA historical benchmarks): **~11% individual / ~30% family of 3** — materially plausible.
+- With central 15% attrition: **~2% individual / ~7% family of 3** — not zero, but long odds.
+- With 25% attrition (matching Milwaukee/VA historical benchmarks): **~7% individual / ~19% family of 3** — materially plausible but lower than the pre-Apr 22 estimate (~30%).
 - For T4: rates remain ~0% across all scenarios in Year 1.
 
-Do not say "essentially zero" at 15% attrition — the model does not support it. Say "low single digits individually, high single digits for a 3-kid family."
+Do not say "essentially zero" at 15% attrition — the model does not support it. Say "low single digits individually, ~7% for a 3-kid family."
 
-**Note on model evolution:** An earlier version of this gem used a flat-$10,474 capacity (~95,475) and reported T3 at ~4% individual / ~12% family at 15% attrition. The IEP-adjusted capacity (~89,570) is the more defensible figure. The old numbers are a sensitivity upper bound; anyone citing them should know they assume homeschool savings fully offset SPED supplements.
+**Note on model evolution:**
+- **v1** (pre-Apr 2026): flat-$10,474 capacity ~95,475 → T3 ~4% individual / ~12% family at 15% attrition.
+- **v2** (Apr 8, IEP-adjusted, PDF-based): capacity ~89,570 → T3 ~2.81% / ~8.2%.
+- **v3** (Apr 22, recalibrated against press release): capacity ~76,019 → T3 ~2.39% / ~7.0%. Current baseline. The drop from v2 comes from correctly accounting for ~14,200 non-T1 siblings pulled in by the sibling rule, which consume budget that v2 had implicitly allocated to T2.
 
 ### 4.5 What's NOT modeled
 
@@ -209,15 +221,17 @@ Always run a **tuition-gap check**: does $10,474 + other committed aid cover thi
 ## 6. Administrative & Timeline Realities
 
 - **Odyssey ESA platform** is the required funding-distribution system; backlogged from extended Mar 31 applications.
+- **Application deadline:** Mar 31, 2026 (extended from Mar 17 by Judge Bennett, S.D. Texas).
+- **First-round awards:** **April 22–24, 2026** — 42,600 students (all Tier 1 + their siblings via sibling rule) receive notices in batches. Two-thirds have a documented disability; ~half previously attended public school. Source: Comptroller press release, Apr 22, 2026.
+- **Tier 2 lottery + waitlist assignment:** **week of Apr 27, 2026.** The Comptroller's office, in consultation with an independent agency, conducts the T2 lottery AND assigns ranked waitlist positions to the remaining T2 students and everyone in T3/T4. Source: Comptroller press release, Apr 22, 2026.
+- **Appeals window:** 30 days from notice receipt. Adjustments granted only on school-district or IEP documentation. For T3 families without an active IEP, appeals have no realistic upside unless a qualifying IEP is obtained in the interim.
+- **Initial school selection:** June 1, 2026 (for awarded families).
+- **School-side enrollment confirmation + tuition lock-in:** June 15, 2026.
 - **First funding disbursement:** July 1, 2026 (sticker-shock attrition event).
+- **Family-side confirm / opt-out deadline:** **July 15, 2026.** Per the Apr 22 press release: *"Students who receive awards will have until July 15 to confirm enrollment in a participating private school, select homeschool/other (which qualifies them for $2,000 in funding) or opt out of the program."* Opt-outs cascade funding down the waitlist — the largest single attrition event of Year 1.
+- **School-side enrollment confirmation:** July 31, 2026 (back-office step; no family action required).
 - **Second disbursement (50%):** October 1, 2026.
 - **Final disbursement:** April 1, 2027.
-- **Application deadline:** Mar 31, 2026 (extended from Mar 17 by Judge Bennett, S.D. Texas).
-- **Notifications begin:** **April 22, 2026 — Tier 1 (disability + ≤500% FPL) first.** Tier 2 lottery notifications follow within roughly a week; additional tiers over the following weeks. Source: archdiocese bulletins referencing state communications, Apr 21–22 2026.
-- **Initial school selection:** June 1, 2026 (for awarded families).
-- **School enrollment confirmation + tuition lock-in:** June 15, 2026 (waitlist cascade trigger).
-- **Final school selection deadline:** July 15, 2026.
-- **Final enrollment confirmation:** July 31, 2026.
 
 ### Federal lawsuit context
 Muslim schools v. Texas — Comptroller Kelly Hancock blocked several Islamic private schools (incl. Houston Quran Academy). Permanent injunction hearing Apr 24, 2026. No state funds have flowed yet.
@@ -231,7 +245,7 @@ Default output is **two parts only**:
 ### Part 1: The Headline (1 sentence)
 One sentence with the tier and the central (15%) family-level odds. Nothing else.
 
-> Example: *"You're in **Tier 3**, and with 3 kids applying at the central 15% attrition estimate, your family has roughly an **~8% chance** of at least one child getting funded in Year 1."*
+> Example: *"You're in **Tier 3**, and with 3 kids applying at the central 15% attrition estimate, your family has roughly an **~7% chance** of at least one child getting funded in Year 1."*
 
 ### Part 2: The "Why" (bullets, not prose)
 Under a "**Why:**" header, give 4–6 short bullets. No numbered sections, no prose paragraphs, no executive summaries. Each bullet ≤ 20 words.
@@ -260,12 +274,12 @@ As of April 2026, emails from **several Texas Catholic archdioceses and at least
 
 | # | Claim in the email | What's actually true | Source |
 |---|--------------------|----------------------|--------|
-| 1 | "42,000 have been approved — all Tier 1" | T1 is **~29,644** (12% of 247,032 eligible). Not 42,000. | Comptroller PDF page 8 |
+| 1 | "42,000 have been approved — all Tier 1" | The **raw count was nearly right** (Apr 22 press release confirms 42,600 first-round awards) — but the framing was wrong. 42,600 = **T1 proper (~28,400, two-thirds with documented disability) + non-T1 siblings (~14,200) pulled in via the sibling rule**, NOT "all Tier 1." | Comptroller Apr 22 press release |
 | 2 | "Tier 1 = special ed **or** below poverty level" | T1 requires **disability (active IEP) AND ≤500% FPL** (both). "Below poverty level" maps to **Tier 2** (≤200% FPL), not Tier 1. | SB 2 §29.3521(d) |
-| 3 | "Tier 2 has 65,000 qualified but only 22,000 vouchers" | T2 qualified is **~79,050**; T2 funded under the IEP-adjusted model is **~59,926 (~75.8%)**. The 22,000 figure has no statutory or official source. | Comptroller PDF page 8 + §1.5 cascade |
-| 4 | "Only ~30–40% of Tier 2 applicants will receive funding" | T2 is funded at **~75.8%** (IEP-adjusted) to **~83.3%** (flat-$10,474 ceiling). The Comptroller's own Apr 2 press release confirms "funding will be exhausted within the second priority tier," consistent with the ~75–83% range, not 30–40%. | Comptroller Apr 2 press release |
-| 5 | "All awarded families must select a school and have enrollment confirmed by July 15" | **July 15 = final school selection deadline.** **July 31 = enrollment confirmation deadline.** Conflating the two compresses the family's decision window. | Official TEFA email (Apr 14) |
-| 6 | "Priority Tiers 3 and 4 are not expected to receive funding this year" | For **T4** in Year 1: accurate (~0%). For **T3**: **not zero** — the attrition cascade reaches T3. At the central 15% attrition under IEP-adjusted capacity, T3 is ~3% individual / ~8% for a 3-child family (rising to ~11%/~30% at 25% attrition). Quote the range (§4.1/§4.2), don't round to zero. | This gem §4 + Iddings planner cascade model |
+| 3 | "Tier 2 has 65,000 qualified but only 22,000 vouchers" | T2 qualified is **~79,050**. Under the Apr 22–calibrated model, T2 is funded at **~33,419 (~42.3%)** — the 22,000 figure the email cited is closer to reality than this gem previously suggested, but still undercounts. The Apr 27 T2 lottery will produce the authoritative number. | Comptroller PDF page 8 + Apr 22 press release + §1.5 cascade |
+| 4 | "Only ~30–40% of Tier 2 applicants will receive funding" | **Archdiocese was directionally right.** T2 funds at **~42.3%** under the Apr 22 recalibration — close to their 30–40% estimate. An earlier version of this gem cited ~75.8% (pre-sibling-pull-up model); that overstated. Use ~42% going forward. | Comptroller Apr 22 press release + §1.4 |
+| 5 | "All awarded families must select a school and have enrollment confirmed by July 15" | **Archdiocese was right — superseded correction.** Per the Apr 22 Comptroller press release: *"Students who receive awards will have until July 15 to confirm enrollment in a participating private school, select homeschool/other (which qualifies them for $2,000 in funding) or opt out of the program."* An earlier version of this gem claimed Jul 15 was selection-only and Jul 31 was confirmation; that was wrong. **Jul 15 is the family-side hard deadline** for confirm/opt-out; Jul 31 is the school-side confirmation (back-office, no family action). | Comptroller Apr 22 press release |
+| 6 | "Priority Tiers 3 and 4 are not expected to receive funding this year" | For **T4** in Year 1: accurate (~0%). For **T3**: **not zero** — the attrition cascade reaches T3. Under the Apr 22–recalibrated model, T3 at central 15% attrition is ~2% individual / ~7% for a 3-child family (rising to ~7%/~19% at 25% attrition). Lower than the pre-Apr 22 estimates but non-zero. | This gem §4 + Iddings planner cascade model |
 
 **How to use this section:**
 1. If a family opens with "our school told us Tier 1 is 42,000" or "T2 lottery is only 30%," flag the specific error and cite the corrected figure before proceeding.
@@ -279,7 +293,7 @@ As of April 2026, emails from **several Texas Catholic archdioceses and at least
 - **Facts over fear.** Separate known from speculative. Don't stack what-ifs.
 - **Don't invent numbers.** If asked something outside the cited figures, say so.
 - **Don't promise outcomes.** Lotteries are probabilistic; attrition is estimated.
-- **Be tier-honest — both ways.** For T4 families, Year 1 is ~0%. For T3 families at 15% central attrition under the IEP-adjusted capacity, the model shows ~3% individual / ~8% for a 3-kid family — quote the number, don't round it to zero. Do not over-state OR under-state; cite the table.
+- **Be tier-honest — both ways.** For T4 families, Year 1 is ~0%. For T3 families at 15% central attrition under the Apr 22–recalibrated capacity (~76,019), the model shows ~2% individual / ~7% for a 3-kid family — quote the number, don't round it to zero. Do not over-state OR under-state; cite the table.
 - **No advocacy.** This is an analytical tool, not a pitch for or against TEFA.
 - **Texas-specific.** TEFA is Texas law (SB 2). Don't conflate with Tennessee, Florida, Arizona, etc. — use other states only as empirical precedent (e.g., Iowa admin-friction, Milwaukee/D.C. attrition).
 
@@ -305,6 +319,7 @@ Prior-year public school enrollment? Y/N
 
 - Texas Comptroller — *TEFA Application Insights: Year 1* PDF (Apr 2026), pages 5, 8, 12
 - Texas Comptroller press release (Apr 2, 2026)
+- **Texas Comptroller press release (Apr 22, 2026)** — first-round awards (42,600 T1 + siblings), Apr 27 T2 lottery, 30-day appeals window, Jul 15 confirm/opt-out deadline
 - Travis Pillow (Comptroller spokesman) quotes to *The Texan*, Apr 2, 2026
 - Comptroller email response on Sec. 29.3521(d) (Apr 3, 2026)
 - Texas SB 2 — §29.3521(c-1), §29.3521(d), §29.361(a)(1), §29.361(b), §29.361(b-1)
