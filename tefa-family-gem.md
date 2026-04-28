@@ -93,15 +93,16 @@ Sample is small and self-selected, but the bimodality is hard to fake — it dir
 
 **Step 2 — T2/T3 blended cost:** T2 (≤200% FPL) and T3 (200-500% FPL) carry no SPED supplement by tier definition. Per-student cost depends only on setting. Apply the 77/23 split: blended cost = 0.77 × $10,474 + 0.23 × $2,000 ≈ **$8,525/student**.
 
-**Step 3 — T2 lottery pool:** Remaining $1,000M − $415M = **$585M** funds the T2 lottery at the blended rate:
-  - Central (77/23 mix): $585M ÷ $8,525 ≈ **~68,622 T2 slots**
-  - Floor (100% private): $585M ÷ $10,474 ≈ **~55,856 T2 slots**
+**Step 3 — T2 lottery pool:** Funds the T2 lottery at the blended rate. Three sensitivity scenarios:
+  - **Central** (77/23 mix, no admin haircut): $585M ÷ $8,525 ≈ **~68,622 T2 slots**
+  - **Admin-adjusted** (77/23 mix, $55M overhead): $530M ÷ $8,525 ≈ **~62,170 T2 slots**
+  - **Floor** (100% private, no admin haircut): $585M ÷ $10,474 ≈ **~55,856 T2 slots**
 
-**Capacity (central) ≈ 42,642 + 68,622 = ~111,264 students.** Floor ≈ ~98,498.
+**Capacity (central) ≈ 42,642 + 68,622 = ~111,264 students.** Admin-adjusted ≈ ~104,812. Floor ≈ ~98,498.
 
-**Source-check:** Consistent with the Comptroller's Apr 2 press release (*"Available year-one funding is expected to be exhausted within the second priority tier"*) AND the Apr 28 PDF (42,642 first-round awards, T2 lottery week of Apr 27). At central capacity, T2 (72,927 empirical demand) funds at **~94%**; even at the conservative all-private floor, T2 still funds at **~77%** — both materially higher than prior models suggested. T3 and T4 still receive 0 from the initial lottery.
+**Source-check:** Consistent with the Comptroller's Apr 2 press release (*"Available year-one funding is expected to be exhausted within the second priority tier"*) AND the Apr 28 PDF (42,642 first-round awards, T2 lottery week of Apr 27). At central capacity, T2 (72,927 empirical demand) funds at **~94%**; admin-adjusted at **~85%**; conservative all-private floor at **~77%** — all materially higher than prior models suggested. T3 and T4 still receive 0 from the initial lottery.
 
-> Do NOT use any of the legacy figures: "~89,570 / 75.8%", "~76,019 / ~42.3%", or "~76,942 / ~47.0%". All predate the Apr 28 PDF's empirical $415M T1-family allocation. Use **~111,264 central / ~98,498 floor** and the corresponding T2 rates of **~94% / ~77%** above.
+> Do NOT use any of the legacy figures: "~89,570 / 75.8%", "~76,019 / ~42.3%", or "~76,942 / ~47.0%". All predate the Apr 28 PDF's empirical $415M T1-family allocation. Use **~111,264 central / ~104,812 admin-adjusted / ~98,498 floor** and the corresponding T2 rates of **~94% / ~85% / ~77%** above.
 
 ### 1.5 Funding cascade — central / admin-adjusted / floor
 
@@ -122,7 +123,7 @@ T1 (incl. siblings) is 100% funded — AWARDED & NOTIFIED — in all three scena
 
 ### 1.6 Capacity sensitivity (legacy IEP-scalar models — DO NOT USE)
 
-*All legacy IEP-scalar derivations (~89,570, ~85,358, ~92,573, ~76,019, ~76,942) predate the Apr 28 PDF's empirical $415M T1-family allocation. The Parent Application Guide's "Prioritization Only" sub-class confirms that most T1 students do NOT receive the SPED supplement — invalidating any model that derives T1 cost from an IEP scalar. The live model uses the empirical $415M directly; the only remaining sensitivity is the T2 setting mix (central 77/23 vs. all-private floor — see §1.4).*
+*All legacy IEP-scalar derivations (~89,570, ~85,358, ~92,573, ~76,019, ~76,942) predate the Apr 28 PDF's empirical $415M T1-family allocation. The Parent Application Guide's "Prioritization Only" sub-class confirms that most T1 students do NOT receive the SPED supplement — invalidating any model that derives T1 cost from an IEP scalar. The live model uses the empirical $415M directly; the remaining sensitivities are (a) the T2 setting mix (central 77/23 vs. all-private floor) and (b) Odyssey's administrator fee + appeals reserve (the admin-adjusted scenario, $55M overhead) — see §1.4 and §1.5.*
 
 ---
 
@@ -262,7 +263,9 @@ T3 family rates (**admin-adjusted** scenario, $55M overhead):
 
 ### 4.3 Why the cascade is now broader, not non-linear
 
-Under the prior $640.7M model, the T2 backlog ahead of T3 was ~38,627 — large enough that first-round attrition was almost entirely "dead volume" absorbed by T2 backfill, and only second-round attrition reached T3. Under the Apr 28 PDF empirical $415M T1-family allocation and the central 77/23 T2 setting mix, T2 fills at ~94% and the unfunded T2 backlog collapses to **~4,305 students**. Every attrition scenario now overflows that backlog and cascades meaningfully to T3:
+Under the prior $640.7M model, the T2 backlog ahead of T3 was ~38,627 — large enough that first-round attrition was almost entirely "dead volume" absorbed by T2 backfill, and only second-round attrition reached T3. Under the Apr 28 PDF empirical $415M T1-family allocation and the central 77/23 T2 setting mix, T2 fills at ~94% and the unfunded T2 backlog collapses to **~4,305 students** (central) or **~10,757** (admin-adjusted). Every attrition scenario now overflows that backlog and cascades meaningfully to T3.
+
+**Central scenario (T2 backlog ~4,305):**
 
 | Attr. rate | T1+T2 freed (Round 1) | T2 backlog | Spillover to T3 (Round 1) | + Round 2 cascade | T3 spots |
 |-----------|----------------------|-----------|---------------------------|-------------------|----------|
@@ -270,7 +273,15 @@ Under the prior $640.7M model, the T2 backlog ahead of T3 was ~38,627 — large 
 | 15% (central) | ~16,689 | 4,305 | 12,384 | +646 | ~13,030 |
 | 25% | ~27,816 | 4,305 | 23,511 | +1,076 | ~24,587 |
 
-The earlier "explosive non-linearity" framing no longer applies — every scenario delivers material T3 cascade.
+**Admin-adjusted scenario (T2 backlog ~10,757):**
+
+| Attr. rate | T1+T2 freed (Round 1) | T2 backlog | Spillover to T3 (Round 1) | + Round 2 cascade | T3 spots |
+|-----------|----------------------|-----------|---------------------------|-------------------|----------|
+| 8% | ~8,385 | 10,757 | 0 (backlog absorbs all) | +671 | ~671 |
+| 15% | ~15,722 | 10,757 | 4,965 | +1,614 | ~6,579 |
+| 25% | ~26,204 | 10,757 | 15,447 | +2,689 | ~18,136 |
+
+The earlier "explosive non-linearity" framing no longer applies in the central scenario — every attrition rate delivers material T3 cascade. The admin-adjusted scenario does revive a mild non-linearity at 8% attrition (T2 backlog absorbs the entire first-round freed pool, only second-round attrition reaches T3), but 15% / 25% still cascade healthily.
 
 ### 4.4 For T3 families — honest framing
 
@@ -374,8 +385,8 @@ As of April 2026, emails from **several Texas Catholic archdioceses and at least
 |---|--------------------|----------------------|--------|
 | 1 | "42,000 have been approved — all Tier 1" | The **raw count was nearly right** (Apr 28 Lottery Update PDF confirms 42,642 first-round awards) — but the framing was wrong. 42,642 = **T1 proper (27,050 students) + T1 siblings (15,592) pulled in via the sibling rule**, NOT "all Tier 1." | Apr 28 Lottery Update PDF |
 | 2 | "Tier 1 = special ed **or** below poverty level" | T1 requires **disability (active IEP) AND ≤500% FPL** (both). "Below poverty level" maps to **Tier 2** (≤200% FPL), not Tier 1. | SB 2 §29.3521(d) |
-| 3 | "Tier 2 has 65,000 qualified but only 22,000 vouchers" | T2 qualified is **72,927** (Apr 28 PDF empirical). Under the Apr 28 PDF empirical T1-family allocation ($415M), T2 is funded at **~68,622 (~94%)** central / ~55,856 (~77%) floor. The 22,000 figure undercounts T2 funding by tens of thousands of seats. The Apr 27 T2 lottery results will produce the authoritative number. | Apr 28 Lottery Update PDF + §1.5 cascade |
-| 4 | "Only ~30–40% of Tier 2 applicants will receive funding" | **Archdiocese substantially understated.** T2 funds at **~94% central / ~77% floor** under the Apr 28 PDF empirical recalibration. The 30–40% range was directionally wrong — Year 1 T2 funding is overwhelming, not partial. Earlier versions of this gem cited 47% / 75.8%; both predate the empirical $415M T1-family figure. | Apr 28 Lottery Update PDF + §1.4 |
+| 3 | "Tier 2 has 65,000 qualified but only 22,000 vouchers" | T2 qualified is **72,927** (Apr 28 PDF empirical). Under the Apr 28 PDF empirical T1-family allocation ($415M), T2 is funded at **~68,622 (~94%) central / ~62,170 (~85%) admin-adjusted / ~55,856 (~77%) floor**. The 22,000 figure undercounts T2 funding by tens of thousands of seats under any scenario. The Apr 27 T2 lottery results will produce the authoritative number. | Apr 28 Lottery Update PDF + §1.5 cascade |
+| 4 | "Only ~30–40% of Tier 2 applicants will receive funding" | **Archdiocese substantially understated.** T2 funds at **~94% central / ~85% admin-adjusted / ~77% floor** under the Apr 28 PDF empirical recalibration. The 30–40% range was directionally wrong even under the deepest sensitivity — Year 1 T2 funding is overwhelming, not partial. Earlier versions of this gem cited 47% / 75.8%; both predate the empirical $415M T1-family figure. | Apr 28 Lottery Update PDF + §1.4 |
 | 5 | "All awarded families must select a school and have enrollment confirmed by July 15" | **Archdiocese was right — superseded correction.** Per the Apr 28 PDF, July 15 is the family-side hard deadline on the **August funding track** (confirm enrollment, select homeschool/other for $2,000, or opt out). Note: there is also a **July 1 funding track** with an earlier Jun 1 family deadline. Jul 31 is the August-track school-side confirmation (back-office, no family action). | Apr 28 Lottery Update PDF |
 | 6 | "Priority Tiers 3 and 4 are not expected to receive funding this year" | For **T4** in Year 1: accurate (~0%). For **T3**: **materially wrong.** Under the Apr 28 PDF empirical recalibration, the T2 backlog ahead of T3 collapses to ~4,305 students, so attrition cascades meaningfully. T3 at central 15% attrition is **~19.7% individual / ~48.2% for a 3-child family** (rising to ~37% / ~75% at 25%). Lower-attrition floor (8%) still gives ~7.5% / ~20.8%. The archdiocese guidance fit earlier (lower-capacity) models but the Apr 28 PDF moved the goalposts substantially. | This gem §4 + Iddings planner cascade model |
 | 7 | "~40% of Tier 2 will be funded" (circulating in the Texas School Voucher Discussion FB group, posted by admin Kassi Edwards Mowrey) | Same family of error as the archdiocese row 4. Apr 28 PDF empirical T1-family ($415M) leaves $585M for T2; at the central 77/23 setting mix that funds **~94%** of T2; even the all-private floor funds ~77%. The "~40%" figure circulates because it propagates the same pre-Apr 28 derivation logic the archdiocese used. Group also asserts T3/T4/T5 (sic — there is no T5) have "little to no hope," which understates T3 specifically — see row 6. | Apr 28 Lottery Update PDF + §1.4 + Texas School Voucher Discussion Group (FB, ~406 members) |
@@ -392,7 +403,7 @@ As of April 2026, emails from **several Texas Catholic archdioceses and at least
 - **Facts over fear.** Separate known from speculative. Don't stack what-ifs.
 - **Don't invent numbers.** If asked something outside the cited figures, say so.
 - **Don't promise outcomes.** Lotteries are probabilistic; attrition is estimated.
-- **Be tier-honest — both ways.** For T4 families, Year 1 is ~0%. For T3 families at 15% central attrition under the Apr 28 PDF empirical recalibration (~111,264 capacity, T2 funded at ~94%), the model shows **~19.7% individual / ~48.2% for a 3-kid family** — quote the number, don't round to zero and don't round up either. Do not over-state OR under-state; cite the table.
+- **Be tier-honest — both ways.** For T4 families, Year 1 is ~0%. For T3 families at 15% central attrition under the Apr 28 PDF empirical recalibration (~111,264 capacity, T2 funded at ~94%), the model shows **~19.7% individual / ~48.2% for a 3-kid family**; the admin-adjusted sensitivity (Odyssey at the SB 2 5% cap + appeals reserve) drops this to **~10.0% / ~27.0%**. Quote the central number, surface admin-adjusted when downside is asked. Do not over-state OR under-state; cite the table.
 - **No advocacy.** This is an analytical tool, not a pitch for or against TEFA.
 - **Texas-specific.** TEFA is Texas law (SB 2). Don't conflate with Tennessee, Florida, Arizona, etc. — use other states only as empirical precedent (e.g., Iowa admin-friction, Milwaukee/D.C. attrition).
 
