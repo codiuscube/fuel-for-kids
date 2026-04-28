@@ -1308,7 +1308,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                             <th className="px-2 py-1.5 text-right">T2 budget</th>
                                             <th className="px-2 py-1.5 text-right">T2 slots</th>
                                             <th className="px-2 py-1.5 text-right">T2 rate</th>
-                                            <th className="px-2 py-1.5 text-right">T3 fam @ 15%</th>
+                                            <th className="px-2 py-1.5 text-right">T3 fam @ {Math.round(attritionRate * 100)}% attr.</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100 text-tefa-body/80">
@@ -1318,7 +1318,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                             <td className="px-2 py-1.5 text-right font-mono">${(analysis.t2Budget / 1e6).toFixed(0)}M</td>
                                             <td className="px-2 py-1.5 text-right font-mono">{analysis.t2LotteryCapacity.toLocaleString()}</td>
                                             <td className="px-2 py-1.5 text-right font-mono">{tier2FundingRate.toFixed(1)}%</td>
-                                            <td className="px-2 py-1.5 text-right font-mono">{scenarioOutlook.mostLikely.effectiveFamilyRate.toFixed(1)}%</td>
+                                            <td className="px-2 py-1.5 text-right font-mono">{analysis.effectiveFamilyRate.toFixed(1)}%</td>
                                         </tr>
                                         <tr>
                                             <td className="px-2 py-1.5">Admin-adjusted</td>
