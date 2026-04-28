@@ -32,10 +32,15 @@ const IddingsPlanner = () => {
   const activeTab = VALID_TABS.includes(tab) ? tab : 'dashboard';
   const setActiveTab = (t) => navigate(`/${t}`);
 
-  // Scenario State - Official total per TEFA Application Insights: Year 1 (Apr 2026 Comptroller PDF)
-  // PDF (page 5): 274,183 total apps, 247,032 eligible → 9.90% ineligible. Fixed, official.
-  const TOTAL_APPLICATIONS = 274183;
-  const INELIGIBILITY_RATE = 1 - (247032 / 274183);
+  // Scenario State - Empirical tier breakdown from the Apr 28, 2026 TEFA Lottery Update PDF,
+  // superseding the Apr 8 Year 1 PDF's percentage-based estimates. Lottery-week update gives
+  // hard counts: 25,400 ineligible / 27,050 T1 (awarded) / 15,592 T1 siblings (awarded) /
+  // 72,927 T2 awaiting lottery / 66,119 T3 awaiting / 66,950 T4 awaiting (13,246 T4a + 53,704 T4b).
+  // Sum: 274,038 total applications, 248,638 eligible. Replaces the prior 274,183 / 247,032 figures.
+  const TOTAL_APPLICATIONS = 274038;
+  const INELIGIBLE_APPLICATIONS = 25400;
+  const ELIGIBLE_APPLICATIONS = TOTAL_APPLICATIONS - INELIGIBLE_APPLICATIONS;
+  const INELIGIBILITY_RATE = INELIGIBLE_APPLICATIONS / TOTAL_APPLICATIONS;
   const [attritionRate, setAttritionRate] = useState(0.15); // Est. 15% of lottery winners don't follow through
 
   // Student Data
@@ -82,7 +87,7 @@ const IddingsPlanner = () => {
     { item: "NBCA Enrollment Fee", status: "Paid ($690)", date: "April 2", type: "success", funding: "($175 + $55) x 3" },
     { item: "NBCA Financial Aid", status: "Granted ($16,200)", date: "March 31", type: "success", funding: "Tuition Credit" },
     { item: "NBCA Scholarship", status: "Pending (depends on TEFA)", date: "End of April", type: "pending", funding: "Tuition Credit" },
-    { item: "TEFA Grant (ESA)", status: "Waitlisted (Tier 3)", date: "T1 awards Apr 22–24; T3 waitlist position assigned wk of Apr 27", type: "pending", funding: "Odyssey ESA Account" },
+    { item: "TEFA Grant (ESA)", status: "Waitlisted (Tier 3)", date: "T1 awards Apr 22–24; T3 ranked waitlist position notified by May 11", type: "pending", funding: "Odyssey ESA Account" },
   ];
 
   // Checklist Data
@@ -159,7 +164,7 @@ const IddingsPlanner = () => {
     const budget = 1_000_000_000;
 
     const attrRate = overrideAttrition !== undefined ? overrideAttrition : attritionRate;
-    const eligibleApps = Math.round(totalApps * (1 - INELIGIBILITY_RATE));
+    const eligibleApps = ELIGIBLE_APPLICATIONS;
 
     // === PER-STUDENT ALLOCATION (statutory) ===
     // SB 2 Sec. 29.361(a)(1): base = 85% × statewide avg M&O per ADA ≈ $10,474.
@@ -174,55 +179,52 @@ const IddingsPlanner = () => {
     // $17,650 is a defensible middle-of-the-table scalar for the blended IEP cost.
     const perStudentIEP = 17650;
 
-    // === FIRST-ROUND AWARDS (Comptroller press release, Apr 22, 2026) ===
-    // 42,600 students received award notices Apr 22–24: all of Tier 1 (disability +
-    // ≤500% FPL) plus their siblings pulled in by the sibling rule. Two-thirds have a
-    // documented disability (~28,400 T1 proper); one-third (~14,200) are non-T1 siblings
-    // funded alongside T1 at the base rate. Approximately half previously attended a
-    // public school.
-    const firstRoundAwards = 42600;
-    const fundedT1 = Math.round(firstRoundAwards * 2 / 3); // ~28,400 — T1 proper (documented disability)
-    const siblingsFunded = firstRoundAwards - fundedT1;    // ~14,200 — non-T1 siblings pulled up
+    // === FIRST-ROUND AWARDS (Apr 28, 2026 Lottery Update PDF — empirical) ===
+    // The Apr 28 lottery-week PDF gives hard counts: 27,050 T1 students + 15,592 T1 siblings
+    // = 42,642 first-round awards (consistent with the Apr 22 press release's "more than
+    // 42,600"). The split is 63.4% T1 / 36.6% siblings — slightly different from the prior
+    // 67/33 estimate the Apr 22 release implied.
+    const fundedT1 = 27050;             // T1 proper (Apr 28 PDF — AWARDED & NOTIFIED)
+    const siblingsFunded = 15592;       // Non-T1 siblings pulled in by sibling rule (Apr 28 PDF)
+    const firstRoundAwards = fundedT1 + siblingsFunded; // 42,642
 
-    // === CAPACITY (derived from Apr 22 ground truth) ===
-    // Commit the T1-family cost first: 28,400 IEP kids at $17,650 + 14,200 non-IEP siblings
-    // at $10,474 ≈ $650M. Remaining ~$350M funds the T2 lottery at $10,474 base → ~33,419
-    // T2 slots. Total capacity ≈ 76,019 (vs. the prior 89,570 model that did not account
-    // for non-T1 siblings funded alongside T1).
+    // === CAPACITY (derived from Apr 28 empirical first-round counts) ===
+    // T1 family cost: 27,050 × $17,650 + 15,592 × $10,474 ≈ $640.7M.
+    // Remaining ~$359.3M funds the T2 lottery at $10,474 base → ~34,300 T2 slots.
+    // Total capacity ≈ 76,942 (up from ~76,019 in the prior 28,400/14,200 model — the
+    // empirical split shifts ~$9M from the IEP scalar to the base rate, freeing ~875 more
+    // T2 seats).
     //
     // ASSUMPTIONS:
-    //   - "Documented disability" (press release) ≈ "active IEP" for funding purposes.
-    //     Slight overstatement of IEP cost; actual count may be lower, modestly improving
-    //     T2 capacity. Treat as a conservative anchor.
+    //   - "T1 students" (Apr 28 PDF) ≈ "active IEP" for funding purposes. Slight overstatement
+    //     of IEP cost; some Tier 1 qualifiers may have non-IEP disability documentation.
+    //     Treat as a conservative anchor.
     //   - Non-T1 siblings are funded at the $10,474 base (no IEP premium).
     //   - Non-IEP students still modeled uniformly at $10,474. Homeschool ($2k cap) savings
     //     are kept as a sensitivity upside, not baseline.
+    //   - Reserve budget for successful appeals (Apr 28 PDF, item 5) is not separately
+    //     modeled — any unused reserve cascades to the waitlist as a small upside vector.
     //
-    // SOURCE-CHECK: At ~76,019 capacity, T2 (79,050 demand) lotteries at ~33,419 → ~42.3%,
-    // leaving ~45,631 unfunded T2 on the waitlist ahead of T3. Consistent with the
-    // Comptroller's Apr 2 "funding exhausted within T2" framing and sharper than the prior
-    // 89,570 model which overstated T2 capacity by ignoring the sibling pull-up.
+    // SOURCE-CHECK: At ~76,942 capacity, T2 (72,927 empirical demand) lotteries at ~34,300
+    // → ~47.0%, leaving ~38,627 unfunded T2 on the waitlist ahead of T3. Consistent with the
+    // Comptroller's Apr 2 "funding exhausted within T2" framing.
     const t1FamilyCost = fundedT1 * perStudentIEP + siblingsFunded * perStudentBase;
     const t2Budget = budget - t1FamilyCost;
-    const t2LotteryCapacity = Math.floor(t2Budget / perStudentBase); // ≈ 33,419
-    const capacity = firstRoundAwards + t2LotteryCapacity;            // ≈ 76,019
+    const t2LotteryCapacity = Math.floor(t2Budget / perStudentBase); // ≈ 34,300
+    const capacity = firstRoundAwards + t2LotteryCapacity;            // ≈ 76,942
 
     // =====================================================
     // MODEL A: COMPTROLLER'S ACTUAL IMPLEMENTATION
-    // (4-tier system — per TEFA Application Insights: Year 1 PDF, Apr 2026,
-    //  recalibrated against the Apr 22 first-round awards press release)
+    // (4-tier system — empirical tier counts from the Apr 28, 2026 Lottery Update PDF;
+    //  no longer percentage-derived from eligibleApps)
     // =====================================================
-    const tier1_pct  = 0.12; // Disability + ≤500% FPL (PDF page 8)
-    const tier2_pct  = 0.32; // ≤200% FPL (PDF page 8)
-    const tier3_pct  = 0.29; // 200-500% FPL — Iddings family, ALL 3 kids (PDF page 8)
-    const tier4a_pct = 0.05; // ≥500% FPL + prior public school (PDF page 8)
-    const tier4b_pct = 0.22; // ≥500% FPL (PDF page 8)
-
-    const demandT1 = Math.round(eligibleApps * tier1_pct);
-    const demandT2 = Math.round(eligibleApps * tier2_pct);
-    const demandT3 = Math.round(eligibleApps * tier3_pct);
-    const demandT4a = Math.round(eligibleApps * tier4a_pct);
-    const demandT4b = Math.round(eligibleApps * tier4b_pct);
+    // T1 demand = T1 awarded (27,050) + T1 siblings (15,592) = full T1 family block.
+    // Siblings are funded alongside T1 by the sibling rule, so they count as T1-family demand.
+    const demandT1 = fundedT1 + siblingsFunded; // 42,642 — AWARDED & NOTIFIED per Apr 28 PDF
+    const demandT2 = 72927;  // T2 awaiting lottery (Apr 28 PDF)
+    const demandT3 = 66119;  // T3 awaiting lottery & waitlisting (Apr 28 PDF)
+    const demandT4a = 13246; // T4a: prior public school 2024-25 (Apr 28 PDF)
+    const demandT4b = 53704; // T4b: not enrolled in public school 2024-25 (Apr 28 PDF)
 
     // T1 + T1-siblings committed first (Apr 22 press release — fundedT1 and siblingsFunded
     // computed above). T2 lottery funds the remaining budget. T3 and T4 receive 0 from the
@@ -378,19 +380,21 @@ The contribution amount we listed represents the maximum we can sustainably budg
     { date: 'Apr 02', day: 'Thu', isoDate: '2026-04-02', event: 'NBCA Enrollment Fee Paid', type: 'nbca', desc: 'Enrolled all 3 children. Paid ($175 + $55) x 3 = $690.', funding: '$690 Paid' },
     { date: 'Apr 08', day: 'Wed', isoDate: '2026-04-08', event: 'Comptroller Publishes TEFA Application Insights: Year 1', type: 'tefa', desc: 'Official Year 1 PDF released — 274,183 applications, tier breakdown, demographics, ISD-level data.', funding: 'N/A', link: { href: '/TEFA-Application-Insights-Year-1.pdf', label: 'View PDF' } },
     { date: 'Apr 15', day: 'Wed', isoDate: '2026-04-15', event: 'ACE Scholarship Deadline', type: 'ace', desc: 'Closes 11:59 PM (Tax Day).', funding: 'Deadline' },
-    { date: 'Apr 22', day: 'Wed', isoDate: '2026-04-22', event: 'TEFA Tier 1 Notifications Begin — 42,600 Awards', type: 'tefa', desc: 'Per the Comptroller\'s Apr 22 press release: more than 42,600 students receive award notices this week (Apr 22–24), including all of Tier 1 (disability + ≤500% FPL) plus their siblings pulled in by the sibling rule. Two-thirds have a documented disability (~28,400); approximately half previously attended a public school. 30-day appeal window opens from notice receipt — adjustments only on school-district or IEP documentation.', funding: 'Award or Waitlist Position' },
+    { date: 'Apr 22', day: 'Wed', isoDate: '2026-04-22', event: 'TEFA Tier 1 Notifications Begin — 42,642 Awards', type: 'tefa', desc: 'Per the Apr 22 press release and the Apr 28 Lottery Update PDF: 42,642 students receive award notices Apr 22–24 — 27,050 Tier 1 students (disability + ≤500% FPL) plus 15,592 of their siblings pulled in by the sibling rule. Approximately half previously attended a public school. 30-day appeal window opens from notice receipt — adjustments only on school-district or IEP documentation.', funding: 'Award or Waitlist Position' },
     { date: 'Apr 24', day: 'Fri', isoDate: '2026-04-24', event: 'Federal Injunction Hearing', type: 'tefa', desc: 'Key hearing in Muslim schools v. Texas. Court decides whether to maintain, modify, or dissolve the injunction blocking Comptroller Hancock from excluding Islamic schools. TEFA funding timeline depends on outcome.', funding: 'Court Date' },
-    { date: 'Apr 27', day: 'Mon', isoDate: '2026-04-27', event: 'TEFA Tier 2 Lottery + Waitlist Assignment', type: 'tefa', desc: 'Per Apr 22 press release: "In consultation with an independent agency, the Comptroller\'s office will conduct a lottery during the week of April 27 to determine which students in the second priority tier — students in lower-income households — will receive award notifications." The SAME lottery assigns waitlist positions to the remaining T2 students AND everyone in T3/T4. Iddings family learns their ranked waitlist position within ~1–2 weeks — a much sharper signal than the probabilistic model.', funding: 'Lottery + Ranked Waitlist' },
+    { date: 'Apr 27', day: 'Mon', isoDate: '2026-04-27', event: 'TEFA Tier 2 Lottery + Waitlist Assignment', type: 'tefa', desc: 'Per Apr 22 press release: "In consultation with an independent agency, the Comptroller\'s office will conduct a lottery during the week of April 27 to determine which students in the second priority tier — students in lower-income households — will receive award notifications." The SAME lottery assigns waitlist positions to the remaining T2 students AND everyone in T3/T4. Per the Apr 28 PDF, T2 award notifications begin this week; all tiers are notified of approximate waitlist position by May 11.', funding: 'Lottery + Ranked Waitlist' },
+    { date: 'May 11', day: 'Mon', isoDate: '2026-05-11', event: 'TEFA Waitlist Notifications + Opt-In Portal Opens', type: 'tefa', desc: 'Per the Apr 28 Lottery Update PDF: by May 11, the program notifies students in all tiers of their approximate waitlist position. The Odyssey portal also flips on this date to allow parents of awarded students to "opt in" to accept the award and select their participating private school. Iddings family (T3) learns their ranked waitlist position by today — the sharpest available signal before the Jun 30 NBCA withdrawal deadline.', funding: 'Waitlist Position + Portal Live' },
     { date: 'End Apr', day: 'TBD', isoDate: '2026-04-30', event: 'NBCA Scholarship Decisions (est.)', type: 'nbca', desc: 'Per NBCA (Michelle Leidy, Mar 31): scholarship amount depends on TEFA outcome — TEFA funds affect financial need calculation. Scholarship awarded only if/where TEFA doesn\'t cover.', funding: 'Credited to Tuition' },
     { date: 'May 22', day: 'Fri', isoDate: '2026-05-22', event: 'T1 Appeals Window Closes (est.)', type: 'tefa', desc: '30 days after the first Apr 22 notifications. Per the Apr 22 press release: "Parents may appeal funding determinations within 30 days of receiving their notice; however, adjustments will be made only based on school district and Individualized Education Program documentation." Narrow relevance to Iddings — would only matter if a child obtained a qualifying IEP (moving from T3 to T1).', funding: 'Appeal Deadline' },
-    { date: 'Jun 01', day: 'Mon', isoDate: '2026-06-01', event: 'TEFA Initial School Selection Deadline', type: 'tefa', desc: 'Per official TEFA email: "Initial deadline for parents to select a TEFA private school." Lottery winners must select a participating school by this date. Winners who don\'t select forfeit their spot (first trickle of waitlist cascade — but most spots open later when schools confirm).', funding: 'Required for Jul 1 Funding' },
-    { date: 'Jun 15', day: 'Mon', isoDate: '2026-06-15', event: 'TEFA Schools Confirm Enrollment & Set Tuition', type: 'tefa', desc: 'Per official TEFA email: "Schools must confirm student enrollment and set tuition payments." Key trigger for waitlist cascade: the state now formally knows which selections were completed vs. which fell through (no school confirmation, tuition gap too large, etc.). Meaningful waitlist movement most likely begins after this date — though since Apr 27, waitlisted families already know their ranked position.', funding: 'Enrollment Lock-In' },
+    { date: 'Jun 01', day: 'Mon', isoDate: '2026-06-01', event: 'TEFA July-Funding Track: Family Opt-In Deadline', type: 'tefa', desc: 'Per the Apr 28 Lottery Update PDF: parents on the July 1 funding track must opt in and select their participating private school by this date. Awarded families who miss this deadline shift to the August-funding track (Jul 15 family deadline). Non-confirmations begin trickling waitlist movement — but the bulk arrives later.', funding: 'July Track Family Deadline' },
+    { date: 'Jun 15', day: 'Mon', isoDate: '2026-06-15', event: 'TEFA July-Funding Track: School Confirms Enrollment', type: 'tefa', desc: 'Per the Apr 28 Lottery Update PDF: participating private schools must confirm enrollment through the program portal by this date for July 1 funding. Key trigger for waitlist cascade — the state now formally knows which Jun 1 selections were completed vs. which fell through. Waitlisted families already know their ranked position from May 11; this is when actual movement picks up.', funding: 'July Track School Lock-In' },
     { date: 'Jun 15', day: 'Mon', isoDate: '2026-06-15', event: 'ACE Award Notification', type: 'ace', desc: 'Scholarship decisions released.', funding: 'Paid directly to School' },
-    { date: 'Jun 16', day: 'TBD', isoDate: '2026-06-16', event: 'TEFA Waitlist Movement Accelerates (est.)', type: 'tefa', desc: 'After schools confirm enrollment on Jun 15, unfilled spots cascade down the waitlist (T2 backfill first, then T3). Waitlist position was already assigned Apr 27, so families know where they sit; this date is when actual movement picks up. Biggest cascade event will be post-Jul 15 opt-outs (the Comptroller-confirmed opt-out deadline).', funding: 'Waitlist Movement' },
+    { date: 'Jun 16', day: 'TBD', isoDate: '2026-06-16', event: 'TEFA Waitlist Movement Accelerates (est.)', type: 'tefa', desc: 'After Jun 15 school confirmations on the July-funding track, unfilled spots cascade down the waitlist (T2 backfill first, then T3). Waitlisted families already know their ranked position from May 11. Biggest cascade event will be post-Jul 15 opt-outs on the August-funding track.', funding: 'Waitlist Movement' },
     { date: 'Jun 30', day: 'Tue', isoDate: '2026-06-30', event: 'NBCA Withdrawal Deadline', type: 'nbca', desc: 'Can withdraw penalty-free before this date. No tuition due until July. Critical tension: June 30 falls ~2 weeks before the Jul 15 TEFA opt-out/confirmation deadline — meaning the NBCA withdrawal decision is made BEFORE the main waitlist-cascade event (Jul 15 opt-outs free the largest block of funding).', funding: 'N/A' },
     { date: 'Jul 01', day: 'Wed', isoDate: '2026-07-01', event: 'TEFA First Round Funding Available', type: 'tefa', desc: 'Per official TEFA email: "First round of funding becomes available in Odyssey\'s platform." This is when award recipients first see real dollar amounts vs. their actual tuition bill — potential sticker-shock attrition event. Families who drop here create a second wave of waitlist opportunities for those not yet called up.', funding: 'Distribution' },
-    { date: 'Jul 15', day: 'Wed', isoDate: '2026-07-15', event: 'TEFA Confirm / Opt-Out Deadline (Comptroller)', type: 'tefa', desc: 'Per Apr 22 press release: "Students who receive awards will have until July 15 to confirm enrollment in a participating private school, select homeschool/other (which qualifies them for $2,000 in funding) or opt out of the program." This is the family-side hard deadline. Opt-outs immediately cascade funding down the waitlist — the largest single attrition event of Year 1.', funding: 'Family Decision Deadline' },
-    { date: 'Jul 31', day: 'Fri', isoDate: '2026-07-31', event: 'TEFA School-Side Enrollment Confirmation', type: 'tefa', desc: 'Per official TEFA email: schools must confirm enrollments for students who confirmed by Jul 15. No family action required on this date — it\'s a back-office step between the state and participating schools. Any subsequent attrition (mid-school-year) generates late waitlist movement.', funding: 'Admin — No Family Action' },
+    { date: 'Jul 15', day: 'Wed', isoDate: '2026-07-15', event: 'TEFA August-Funding Track: Family Opt-In Deadline', type: 'tefa', desc: 'Per the Apr 22 press release and the Apr 28 PDF: families on the August funding track have until July 15 to confirm enrollment in a participating private school, select homeschool/other ($2,000), or opt out of the program. This is the largest single attrition event of Year 1 — opt-outs cascade funding down the waitlist for both T2 and T3.', funding: 'August Track Family Deadline' },
+    { date: 'Jul 31', day: 'Fri', isoDate: '2026-07-31', event: 'TEFA August-Funding Track: School Confirms Enrollment', type: 'tefa', desc: 'Per the Apr 28 Lottery Update PDF: participating private schools must confirm enrollments by this date for August funding. Back-office step — no family action required. Any subsequent attrition (mid-school-year) generates late waitlist movement.', funding: 'August Track School Lock-In' },
+    { date: 'Aug 01', day: 'TBD', isoDate: '2026-08-01', event: 'TEFA Appeals Reserve → Waitlist (est.)', type: 'tefa', desc: 'Per the Apr 28 PDF item 5: the Comptroller has set aside a reserve budget for successful eligibility / priority-tier / funding-amount appeals. Once the appeals window closes and adjustments are made, any unused reserve cascades to the next-available students on the waitlist — a small upside for waitlisted T2 and T3 families. Magnitude is undisclosed; treat as a sensitivity vector, not baseline.', funding: 'Reserve Cascade' },
     { date: 'Oct 01', day: 'Thu', isoDate: '2026-10-01', event: 'TEFA Second Funding Release (50%)', type: 'tefa', desc: 'At least 50% of approved funding available. Some families may have re-enrolled in public school by now, freeing additional waitlist spots.', funding: 'Distribution' },
     { date: 'Apr 01', day: 'Thu', isoDate: '2027-04-01', event: 'TEFA Final Funding Release', type: 'tefa', desc: 'Remaining funding available in participant accounts. Unused funds roll over if child remains in TEFA program.', funding: 'Distribution' },
   ];
@@ -496,18 +500,20 @@ The contribution amount we listed represents the maximum we can sustainably budg
                 </div>
             </div>
 
-            {/* Funding Update Banner - Apr 22 Notifications */}
+            {/* Funding Update Banner - Apr 28 Lottery Update */}
             <div className="bg-tefa-green/10 p-4 rounded-lg shadow-md border-2 border-tefa-green/40">
                 <h2 className="text-base font-bold flex items-center gap-2 text-tefa-green mb-2">
-                    <AlertCircle size={18} /> Funding Update — April 22, 2026 (Comptroller Press Release)
+                    <AlertCircle size={18} /> Funding Update — April 28, 2026 (TEFA Lottery Update PDF)
                 </h2>
                 <p className="text-sm text-tefa-body mb-2">
-                    Acting Comptroller Kelly Hancock announced <strong>more than 42,600 first-round awards</strong> this week (Apr 22–24), covering all Tier 1 students (disability + ≤500% FPL) and their siblings via the sibling rule. Two-thirds have a documented disability; approximately half previously attended a public school.
+                    The Comptroller's Apr 28 Lottery Update gives empirical tier counts: <strong>42,642 first-round awards</strong> (27,050 Tier 1 students + 15,592 T1 siblings via the sibling rule) consumed ~$640M of the $1B Year 1 budget. T2 demand is <strong>72,927</strong> (lower than the prior 79,050 estimate); T3 demand is <strong>66,119</strong>; T4 totals <strong>66,950</strong> (13,246 T4a + 53,704 T4b).
                 </p>
                 <ul className="text-xs text-tefa-body/80 space-y-1 list-disc pl-5">
-                    <li><strong>Week of Apr 27:</strong> Comptroller conducts Tier 2 lottery AND assigns waitlist positions to T3/T4 — Iddings family learns their ranked waitlist position in early May.</li>
-                    <li><strong>30-day appeal window</strong> from notice receipt; adjustments only on school-district or IEP documentation.</li>
-                    <li><strong>Jul 15:</strong> hard deadline for awarded families to confirm enrollment, select homeschool/other ($2,000), OR opt out — opt-outs cascade funding down the waitlist.</li>
+                    <li><strong>Week of Apr 27:</strong> T2 lottery runs; T2 award notifications begin.</li>
+                    <li><strong>By May 11:</strong> all tiers (incl. Iddings/T3) notified of approximate waitlist position; Odyssey portal opens for awarded families to opt in and select a school.</li>
+                    <li><strong>Jun 1 / Jun 15:</strong> family opt-in / school confirmation for the <em>July 1 funding</em> track.</li>
+                    <li><strong>Jul 15 / Jul 31:</strong> family opt-in / school confirmation for the <em>August funding</em> track — Jul 15 opt-outs are the largest cascade event of Year 1.</li>
+                    <li><strong>Reserve budget:</strong> the program holds funds for successful appeals; unused reserve cascades to the next available waitlisted students.</li>
                 </ul>
             </div>
 
@@ -517,13 +523,13 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <Scale size={20} /> TEFA Program Status: Awaiting Notifications
                 </h2>
                 <p className="text-sm text-tefa-body mb-4">
-                    <strong>274,183 students</strong> applied in Year 1 (247,032 eligible). Per the Comptroller's Apr 22 press release, <strong>42,600 first-round awards</strong> (T1 + siblings) committed ~$650M of the $1B budget; ~$350M remains for the <strong>T2 lottery (week of Apr 27)</strong>, funding ~{analysis.fundedT2.toLocaleString()} of ~79,050 T2 applicants (~{tier2FundingRate.toFixed(0)}%). Tier 3 (Iddings) is <strong>waitlisted</strong> with a ranked position assigned the same week. Whether attrition reaches T3 depends on how many unfunded T2 students sit ahead on the waitlist.
+                    <strong>{TOTAL_APPLICATIONS.toLocaleString()} students</strong> applied in Year 1 ({ELIGIBLE_APPLICATIONS.toLocaleString()} eligible per the Apr 28 Lottery Update PDF). <strong>{analysis.firstRoundAwards.toLocaleString()} first-round awards</strong> (T1 + siblings) committed ~${(analysis.t1FamilyCost / 1e6).toFixed(0)}M of the $1B budget; ~${((1_000_000_000 - analysis.t1FamilyCost) / 1e6).toFixed(0)}M remains for the <strong>T2 lottery (week of Apr 27)</strong>, funding ~{analysis.fundedT2.toLocaleString()} of {analysis.demandT2.toLocaleString()} T2 applicants (~{tier2FundingRate.toFixed(0)}%). Tier 3 (Iddings) is <strong>waitlisted</strong> with a ranked position notified by May 11. Whether attrition reaches T3 depends on how many unfunded T2 students sit ahead on the waitlist.
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm mb-4">
                     <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
                         <div className="text-xs text-tefa-body/50 font-medium">Total Apps</div>
-                        <div className="font-bold text-tefa-navy text-lg">274,183</div>
-                        <div className="text-[10px] text-tefa-body/40">Year 1 official (Apr 2026 PDF)</div>
+                        <div className="font-bold text-tefa-navy text-lg">{TOTAL_APPLICATIONS.toLocaleString()}</div>
+                        <div className="text-[10px] text-tefa-body/40">Apr 28 Lottery Update PDF</div>
                     </div>
                     <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
                         <div className="text-xs text-tefa-body/50 font-medium">Program Capacity</div>
@@ -553,19 +559,19 @@ The contribution amount we listed represents the maximum we can sustainably budg
                 </div>
                 <div className="grid grid-cols-4 gap-1 text-xs text-center">
                     <div className="bg-tefa-green/10 rounded p-1.5 border border-tefa-green/20">
-                        <div className="font-bold text-tefa-green">T1: 12%</div>
-                        <div className="text-tefa-green/70">Funded first</div>
+                        <div className="font-bold text-tefa-green">T1: {analysis.firstRoundAwards.toLocaleString()}</div>
+                        <div className="text-tefa-green/70">Awarded (incl. sibs)</div>
                     </div>
                     <div className="bg-tefa-navy/10 rounded p-1.5 border border-tefa-navy/20">
-                        <div className="font-bold text-tefa-navy">T2: 32%</div>
+                        <div className="font-bold text-tefa-navy">T2: {analysis.demandT2.toLocaleString()}</div>
                         <div className="text-tefa-navy/70">Lottery</div>
                     </div>
                     <div className="bg-tefa-gold/20 rounded p-1.5 border-2 border-tefa-gold/60">
-                        <div className="font-bold text-tefa-red">T3: 29%</div>
+                        <div className="font-bold text-tefa-red">T3: {analysis.demandT3.toLocaleString()}</div>
                         <div className="text-tefa-red/70">Waitlisted</div>
                     </div>
                     <div className="bg-tefa-red/10 rounded p-1.5 border border-tefa-red/20">
-                        <div className="font-bold text-tefa-red">T4: 27%</div>
+                        <div className="font-bold text-tefa-red">T4: {(analysis.demandT4a + analysis.demandT4b).toLocaleString()}</div>
                         <div className="text-tefa-red/70">Waitlisted</div>
                     </div>
                 </div>
@@ -585,7 +591,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         <p className="text-tefa-body/80 italic mb-2">"42,000 (all Tier 1) have been approved for those in special ed or below poverty level stated for Tier 1."</p>
                         <div className="text-xs uppercase font-bold text-tefa-red mb-1">What's wrong (mostly a definition problem — raw count was close)</div>
                         <ul className="list-disc ml-5 text-tefa-body/80 space-y-1 text-xs">
-                            <li><strong>The 42,000 number was directionally correct.</strong> Per the Apr 22 Comptroller press release, 42,600 students received first-round awards — but that is NOT "all Tier 1." It's Tier 1 (<strong>~28,400</strong> with documented disability, or two-thirds of 42,600) <strong>plus their siblings</strong> (~14,200) pulled in by the sibling rule. T1 proper is ~28,400, not 42,000.</li>
+                            <li><strong>The 42,000 number was directionally correct.</strong> Per the Apr 28 Lottery Update PDF, <strong>{analysis.firstRoundAwards.toLocaleString()}</strong> students received first-round awards — but that is NOT "all Tier 1." It's Tier 1 (<strong>{analysis.fundedT1.toLocaleString()}</strong> students) <strong>plus their siblings</strong> ({analysis.siblingsFunded.toLocaleString()}) pulled in by the sibling rule. T1 proper is {analysis.fundedT1.toLocaleString()}, not 42,000.</li>
                             <li><strong>T1 definition is still wrong in the email.</strong> T1 = disability (active IEP) <em>AND</em> household at or below 500% FPL (SB 2 §29.3521(d)). "Below poverty level" describes <strong>Tier 2</strong> (≤200% FPL), not Tier 1.</li>
                         </ul>
                     </div>
@@ -594,17 +600,17 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         <p className="text-tefa-body/80 italic mb-2">"Tier 2 has 65,000 qualified but only 22,000 vouchers, so a lottery will determine who gets funding."</p>
                         <div className="text-xs uppercase font-bold text-tefa-red mb-1">What's wrong</div>
                         <ul className="list-disc ml-5 text-tefa-body/80 space-y-1 text-xs">
-                            <li><strong>T2 qualified is ~79,050</strong> (32% of 247,032 eligible), not 65,000.</li>
-                            <li><strong>Funded T2 count after Apr 22 recalibration is ~{analysis.fundedT2.toLocaleString()} (≈{tier2FundingRate.toFixed(0)}%)</strong>. The 22,000 figure is closer to reality than earlier estimates suggested — but still undercounts the T2 lottery pool. The Apr 27 T2 lottery will produce the authoritative number.</li>
+                            <li><strong>T2 qualified is {analysis.demandT2.toLocaleString()}</strong> per the Apr 28 Lottery Update PDF, not 65,000.</li>
+                            <li><strong>Funded T2 count is ~{analysis.fundedT2.toLocaleString()} (≈{tier2FundingRate.toFixed(0)}%)</strong>. The 22,000 figure undercounts the T2 lottery pool by ~12,000 seats. The Apr 27 T2 lottery results will produce the authoritative number.</li>
                         </ul>
                     </div>
                     <div className="bg-white rounded-lg p-4 border border-amber-300">
                         <div className="text-xs uppercase font-bold text-amber-700 mb-2">Claim (Archdiocese TEFA bulletin)</div>
                         <p className="text-tefa-body/80 italic mb-2">"Only a portion of applicants (approximately 30–40%) will receive funding at [the T2 lottery] stage."</p>
-                        <div className="text-xs uppercase font-bold text-tefa-red mb-1">What's wrong (partial — archdiocese was directionally right)</div>
+                        <div className="text-xs uppercase font-bold text-tefa-red mb-1">What's wrong (close, but understated)</div>
                         <ul className="list-disc ml-5 text-tefa-body/80 space-y-1 text-xs">
-                            <li>After recalibrating to the Apr 22 press release (42,600 first-round awards, including ~14,200 non-T1 siblings pulled in by the sibling rule), the T2 lottery funds at <strong>~{tier2FundingRate.toFixed(1)}%</strong> — close to the 30–40% the archdiocese cited, not the 75–83% the prior model projected.</li>
-                            <li>The earlier 75–83% estimate did not account for the sibling rule's budget impact. The archdiocese understated slightly; this planner previously overstated meaningfully. Call it a draw.</li>
+                            <li>Under the Apr 28 empirical recalibration (42,642 first-round awards + 72,927 T2 demand), the T2 lottery funds at <strong>~{tier2FundingRate.toFixed(1)}%</strong> — closer to ~50% than the 30–40% range the archdiocese cited.</li>
+                            <li>The archdiocese was directionally right that T2 wouldn't be fully funded, but their range understated by ~5–15 percentage points. An earlier version of this planner overstated at 75–83% (legacy IEP-scalar model). Both have been superseded.</li>
                         </ul>
                     </div>
                     <div className="bg-white rounded-lg p-4 border border-amber-300">
@@ -627,7 +633,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     </div>
                 </div>
                 <div className="mt-4 p-3 bg-amber-100 rounded-lg text-xs text-amber-900 border border-amber-300">
-                    <strong>Sources:</strong> Texas Comptroller, <em>TEFA Application Insights: Year 1</em> (Apr 2026), pages 5 &amp; 8 · Comptroller Apr 2 press release · <strong>Comptroller Apr 22 press release</strong> (first-round awards + Jul 15 confirm/opt-out deadline + 30-day appeals window) · SB 2 §29.3521(c-1), §29.3521(d), §29.361(a)(1) · Official TEFA email (Apr 14) outlining the Jun 1 / Jun 15 / Jul 1 / Jul 15 timeline.
+                    <strong>Sources:</strong> Texas Comptroller, <em>TEFA Application Insights: Year 1</em> (Apr 2026), pages 5 &amp; 8 · Comptroller Apr 2 press release · Comptroller Apr 22 press release · <strong>TEFA Lottery Update PDF (Apr 28, 2026)</strong> with empirical tier counts (27,050 T1 / 15,592 siblings / 72,927 T2 / 66,119 T3 / 13,246 T4a / 53,704 T4b), May 11 waitlist-position date, and two-track Jun 1/Jul 15 family deadlines · SB 2 §29.3521(c-1), §29.3521(d), §29.361(a)(1).
                 </div>
             </div>
 
@@ -649,8 +655,8 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     </div>
                     <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-navy/10">
                         <span className="text-tefa-body/60 font-medium">TEFA Notification</span>
-                        <span className="font-bold text-tefa-navy text-lg">T2 Lottery: Wk of Apr 27</span>
-                        <span className="text-xs text-tefa-body/40 hidden sm:block">Iddings (T3) gets ranked waitlist position same week</span>
+                        <span className="font-bold text-tefa-navy text-lg">Waitlist Position: by May 11</span>
+                        <span className="text-xs text-tefa-body/40 hidden sm:block">Iddings (T3) ranked position notified by May 11 (Apr 28 PDF)</span>
                     </div>
                     <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-navy/10">
                         <span className="text-tefa-body/60 font-medium">NBCA Scholarship</span>
@@ -669,7 +675,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     </div>
                 </div>
                 <div className="mt-4 p-3 bg-tefa-navy/5 rounded-lg text-xs text-tefa-body/70">
-                    <strong>Sunk cost:</strong> $690 enrollment fee (non-refundable). All other costs can be avoided by withdrawing before June 30. Per the Apr 22 Comptroller press release, the <strong>Jul 15 opt-out deadline</strong> is the largest single attrition event of Year 1 — but it falls ~2 weeks AFTER the Jun 30 NBCA withdrawal deadline. The Iddings family knows their waitlist position starting the week of Apr 27 (T2 lottery + ranked waitlist assignment), which is the sharpest available signal before Jun 30.
+                    <strong>Sunk cost:</strong> $690 enrollment fee (non-refundable). All other costs can be avoided by withdrawing before June 30. Per the Apr 28 Lottery Update PDF, the <strong>Jul 15 opt-in deadline</strong> for the August-funding track is the largest single attrition event of Year 1 — but it falls ~2 weeks AFTER the Jun 30 NBCA withdrawal deadline. The Iddings family knows their ranked waitlist position by May 11 (Apr 28 PDF), which is the sharpest available signal before Jun 30.
                 </div>
             </div>
 
@@ -1008,10 +1014,10 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <Layers size={18}/> Official Applicant Pool (Year 1 PDF)
                 </h3>
                 <div className="text-sm text-tefa-body/70">
-                    <strong>274,183</strong> total applications · <strong>247,032</strong> eligible (9.9% ineligible) — per Comptroller Year 1 PDF (page 5).
+                    <strong>{TOTAL_APPLICATIONS.toLocaleString()}</strong> total applications · <strong>{ELIGIBLE_APPLICATIONS.toLocaleString()}</strong> eligible ({(INELIGIBILITY_RATE * 100).toFixed(1)}% ineligible) — per the Apr 28, 2026 TEFA Lottery Update PDF (empirical tier breakdown).
                 </div>
                 <div className="mt-1 text-xs text-tefa-body/50">
-                    Pre-K accounts for most ineligibility (18,677 of 36,666); K-12 ineligibility is much lower.
+                    Pre-K accounts for most ineligibility (18,677 of 36,666 per the Apr 8 Year 1 PDF); K-12 ineligibility is much lower.
                 </div>
 
 
@@ -1108,7 +1114,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             </div>
                         </div>
                         <div className="mt-2 text-xs text-tefa-body/60">
-                            79,050 Tier 2 applicants (under 200% FPL) face this gap at most private schools. Low-income families are highly price-elastic — many applied "just in case" and will renege upon discovering the residual bill. National avg private tuition: $12,790 (elementary) to $16,420 (high school). This sticker shock is the primary engine driving attrition above the 10% queueing-theory baseline.
+                            {analysis.demandT2.toLocaleString()} Tier 2 applicants (under 200% FPL) face this gap at most private schools. Low-income families are highly price-elastic — many applied "just in case" and will renege upon discovering the residual bill. National avg private tuition: $12,790 (elementary) to $16,420 (high school). This sticker shock is the primary engine driving attrition above the 10% queueing-theory baseline.
                         </div>
                     </div>
                 </div>
@@ -1231,17 +1237,15 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <div className="prose prose-sm max-w-none text-tefa-navy">
                         <h3 className="font-bold text-tefa-navy text-lg mb-2">1. The Projection Model</h3>
                         <p className="mb-4">
-                            <strong>274,183</strong> students applied in Year 1, per the Comptroller's <em>TEFA Application Insights: Year 1</em> (April 2026).
+                            <strong>{TOTAL_APPLICATIONS.toLocaleString()}</strong> students applied in Year 1. The Apr 28, 2026 TEFA Lottery Update PDF
+                            now provides empirical tier counts (replacing the percentage-derived estimates from the Apr 8 Year 1 PDF).
                             The application window closed <strong>March 31 at 11:59 PM CT</strong> per a federal court order (Judge Bennett, S.D. Texas).
                             More than 2,300 participating schools are listed in the school finder tool, including a growing number of accredited online schools.
-                            Total applicant count: <strong>{TOTAL_APPLICATIONS.toLocaleString()}</strong>.
                         </p>
                         <p className="mb-4">
-                            <strong>Not all applicants are eligible.</strong> The Year 1 PDF reports ~9% overall ineligibility
-                            (~25,000 of 274,183 total). Pre-K has the highest ineligibility rate (50%+, with 18,677 of 36,666 pre-K apps ineligible),
-                            while K-12 is much lower.
-                            This model uses the official 9.9% ineligibility figure,
-                            reducing the eligible pool to <strong>{analysis.eligibleApps.toLocaleString()}</strong> applicants competing for funding.
+                            <strong>Not all applicants are eligible.</strong> The Apr 28 PDF reports <strong>{INELIGIBLE_APPLICATIONS.toLocaleString()}</strong> ineligible applications
+                            ({(INELIGIBILITY_RATE * 100).toFixed(1)}% of total). Pre-K has the highest ineligibility rate (50%+, with 18,677 of 36,666 pre-K apps ineligible per the Apr 8 PDF),
+                            while K-12 is much lower. This leaves <strong>{ELIGIBLE_APPLICATIONS.toLocaleString()}</strong> eligible applicants competing for funding.
                         </p>
 
                         <h3 className="font-bold text-tefa-navy text-lg mb-2">2. Supply vs. Demand</h3>
@@ -1250,26 +1254,27 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             <li><strong>Year 1 Commitment:</strong> Full $1B (Comptroller administrative choice — Travis Pillow, Apr 2: "$1 billion committed in year one")</li>
                             <li><strong>Per-Student Base:</strong> $10,474 (SB 2 §29.361(a)(1) — 85% × statewide avg M&amp;O per ADA)</li>
                             <li><strong>Per-Student IEP (blended):</strong> ~$17,650 (SAISD-median total: $10,474 base + ~$7,180 median supplement; SB 2 §29.361(b))</li>
-                            <li><strong>Apr 22 First-Round Awards:</strong> <strong>{analysis.firstRoundAwards.toLocaleString()}</strong> (all T1 + siblings) — ~{analysis.fundedT1.toLocaleString()} T1 proper, ~{analysis.siblingsFunded.toLocaleString()} non-T1 siblings pulled in via the sibling rule (Comptroller press release)</li>
-                            <li><strong>Derived Capacity (Apr 22–recalibrated):</strong> ~{analysis.capacity.toLocaleString()} students</li>
-                            <li><strong>Eligible Applicants:</strong> ~{analysis.eligibleApps.toLocaleString()} (247,032 of 274,183 — official PDF page 5)</li>
+                            <li><strong>First-Round Awards (Apr 28 PDF):</strong> <strong>{analysis.firstRoundAwards.toLocaleString()}</strong> (all T1 + siblings) — {analysis.fundedT1.toLocaleString()} T1 students, {analysis.siblingsFunded.toLocaleString()} T1 siblings via the sibling rule (empirical tier counts from the Apr 28 Lottery Update PDF)</li>
+                            <li><strong>Derived Capacity (Apr 28–recalibrated):</strong> ~{analysis.capacity.toLocaleString()} students</li>
+                            <li><strong>Eligible Applicants:</strong> {analysis.eligibleApps.toLocaleString()} of {TOTAL_APPLICATIONS.toLocaleString()} ({INELIGIBLE_APPLICATIONS.toLocaleString()} ineligible per Apr 28 PDF)</li>
                         </ul>
                         <div className="mb-4 p-3 bg-tefa-navy/5 border border-tefa-navy/20 rounded text-xs text-tefa-body/70">
-                            <div className="font-bold text-tefa-navy mb-1">Capacity Derivation (Apr 22 Press-Release Calibration):</div>
+                            <div className="font-bold text-tefa-navy mb-1">Capacity Derivation (Apr 28 Lottery-Update Calibration):</div>
                             <ul className="list-disc pl-5 space-y-1">
-                                <li><strong>Step 1 — T1 family block:</strong> {analysis.firstRoundAwards.toLocaleString()} first-round awards. Two-thirds (~{analysis.fundedT1.toLocaleString()}) have a documented disability (T1 proper, modeled at $17,650 IEP rate); one-third (~{analysis.siblingsFunded.toLocaleString()}) are non-T1 siblings funded at the $10,474 base via the sibling rule. Total T1-family cost ≈ <strong>${(analysis.t1FamilyCost / 1e6).toFixed(0)}M</strong>.</li>
+                                <li><strong>Step 1 — T1 family block:</strong> {analysis.firstRoundAwards.toLocaleString()} first-round awards (Apr 28 PDF empirical counts). T1 proper ({analysis.fundedT1.toLocaleString()}) modeled at the $17,650 IEP rate; T1 siblings ({analysis.siblingsFunded.toLocaleString()}) funded at the $10,474 base via the sibling rule. Total T1-family cost ≈ <strong>${(analysis.t1FamilyCost / 1e6).toFixed(0)}M</strong>.</li>
                                 <li><strong>Step 2 — T2 lottery pool:</strong> Remaining <strong>~${((1_000_000_000 - analysis.t1FamilyCost) / 1e6).toFixed(0)}M</strong> funds T2 at $10,474 each → <strong>{analysis.fundedT2.toLocaleString()}</strong> T2 lottery slots.</li>
                                 <li><strong>Total capacity:</strong> {analysis.firstRoundAwards.toLocaleString()} + {analysis.fundedT2.toLocaleString()} ≈ <strong>{analysis.capacity.toLocaleString()}</strong> students.</li>
-                                <li><strong>Why lower than the prior 89,570 estimate:</strong> The earlier model funded 8,618 IEP students and spread the rest at $10,474, but did not account for the ~{analysis.siblingsFunded.toLocaleString()} non-T1 siblings who get pulled in alongside T1. Those siblings consume ~${(analysis.siblingsFunded * 10474 / 1e6).toFixed(0)}M that the old model had implicitly re-allocated to T2 — shrinking the T2 lottery pool from ~59,926 to ~{analysis.fundedT2.toLocaleString()}.</li>
-                                <li><strong>Homeschool treatment:</strong> Non-IEP students modeled uniformly at $10,474. Homeschool applicants (23%) cap at $2,000/yr — sensitivity upside, not baseline.</li>
-                                <li><strong>Cross-check:</strong> At ~{analysis.capacity.toLocaleString()} capacity, T1-family fully funds, T2 ({analysis.demandT2.toLocaleString()}) funds at {tier2FundingRate.toFixed(1)}% (lottery), T3 and T4 receive 0 from the initial lottery. Consistent with the Apr 22 "42,600 first-round awards" release and the Apr 2 "funding exhausted within T2" framing.</li>
+                                <li><strong>Why this differs from prior estimates:</strong> The Apr 28 PDF's empirical 27,050 / 15,592 split (63.4 / 36.6) replaces the earlier 28,400 / 14,200 (67/33) approximation. The smaller IEP block frees ~$9M for T2, lifting the lottery pool by ~875 seats and total capacity from ~76,019 to ~{analysis.capacity.toLocaleString()}.</li>
+                                <li><strong>Homeschool treatment:</strong> Non-IEP students modeled uniformly at $10,474. Homeschool applicants (~23% of original demand) cap at $2,000/yr — sensitivity upside, not baseline.</li>
+                                <li><strong>Appeals reserve:</strong> Per Apr 28 PDF item 5, the program holds a reserve for successful appeals. Unused reserve cascades to the waitlist — small upside vector, not baseline.</li>
+                                <li><strong>Cross-check:</strong> At ~{analysis.capacity.toLocaleString()} capacity, T1-family fully funds, T2 ({analysis.demandT2.toLocaleString()}) funds at {tier2FundingRate.toFixed(1)}% (lottery), T3 and T4 receive 0 from the initial lottery. Consistent with the Apr 28 PDF's stated process and the Apr 2 "funding exhausted within T2" framing.</li>
                             </ul>
                         </div>
 
                         <div className="mb-4 p-3 bg-white border border-tefa-navy/20 rounded text-xs">
                             <div className="font-bold text-tefa-navy mb-2">Capacity Sensitivity — IEP Scalar Range <span className="font-normal text-amber-700">(pre-Apr 22 model, retained for transparency)</span></div>
                             <div className="text-amber-800 bg-amber-50 border border-amber-200 rounded p-2 mb-2">
-                                <strong>Superseded by the Apr 22 press release.</strong> The capacities below were derived by spreading the budget across 8,618 IEP students + everyone else at $10,474, without accounting for the ~{analysis.siblingsFunded.toLocaleString()} non-T1 siblings pulled in by the sibling rule. Each row overstates capacity by ~{analysis.siblingsFunded.toLocaleString()} seats. The live model above uses the Apr 22 empirical first-round count; these rows are the legacy sensitivity.
+                                <strong>Superseded by the Apr 28 Lottery Update PDF.</strong> The capacities below were derived by spreading the budget across 8,618 IEP students + everyone else at $10,474, without accounting for the {analysis.siblingsFunded.toLocaleString()} T1 siblings pulled in by the sibling rule. Each row overstates capacity by ~{analysis.siblingsFunded.toLocaleString()} seats. The live model above uses the Apr 28 empirical first-round counts (27,050 T1 + 15,592 siblings); these rows are the legacy sensitivity.
                             </div>
                             <div className="text-tefa-body/70 mb-2">
                                 Per the <strong>TEFA Special Education Funding Table (TEA, SY 2026-27)</strong>, IEP supplements vary ~5× across district × instructional-code combinations. The $17,650 baseline is defensibly middle — but different reasonable assumptions produce this range:
@@ -1336,20 +1341,20 @@ The contribution amount we listed represents the maximum we can sustainably budg
 
                         <div className="space-y-4 mb-6">
                             <div className="p-3 bg-green-50 border border-green-200 rounded">
-                                <div className="font-bold text-green-800">Tier 1 — Disability + ≤500% FPL (12%)</div>
+                                <div className="font-bold text-green-800">Tier 1 — Disability + ≤500% FPL (incl. siblings)</div>
                                 <div className="text-sm text-green-700">
-                                    {analysis.demandT1.toLocaleString()} applicants — Funded first, 100% funded
+                                    {analysis.demandT1.toLocaleString()} students ({analysis.fundedT1.toLocaleString()} T1 + {analysis.siblingsFunded.toLocaleString()} siblings) — Funded first, 100% funded (Apr 28 PDF: AWARDED &amp; NOTIFIED)
                                 </div>
                             </div>
                             <div className={`p-3 border rounded ${tier2FundingRate >= 100 ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}`}>
-                                <div className={`font-bold ${tier2FundingRate >= 100 ? 'text-green-800' : 'text-amber-800'}`}>Tier 2 — ≤200% FPL (32%)</div>
+                                <div className={`font-bold ${tier2FundingRate >= 100 ? 'text-green-800' : 'text-amber-800'}`}>Tier 2 — ≤200% FPL</div>
                                 <div className={`text-sm ${tier2FundingRate >= 100 ? 'text-green-700' : 'text-amber-700'}`}>
                                     {analysis.demandT2.toLocaleString()} applicants — {tier2FundingRate >= 100 ? '100% funded' : `${tier2FundingRate.toFixed(1)}% funded (${analysis.fundedT2.toLocaleString()} of ${analysis.demandT2.toLocaleString()} — lottery within tier)`}
                                 </div>
                             </div>
                             <div className={`p-4 border-2 rounded-lg ${analysis.effectiveTier3Rate === 100 ? 'bg-green-50 border-green-300' : 'bg-tefa-gold/10 border-tefa-gold/40'}`}>
                                 <div className={`font-bold text-lg ${analysis.effectiveTier3Rate === 100 ? 'text-green-800' : 'text-tefa-red'}`}>
-                                    Tier 3 — 200-500% FPL (29%) — All 3 Iddings Children
+                                    Tier 3 — 200-500% FPL — All 3 Iddings Children
                                 </div>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3 text-sm">
                                     <div>
@@ -1384,8 +1389,8 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             </div>
                             <div className={`p-3 border rounded ${analysis.tier4Rate > 0 ? 'bg-red-50 border-red-200' : 'bg-tefa-light border-gray-200'}`}>
                                 <div className={`font-bold ${analysis.tier4Rate > 50 ? 'text-tefa-red' : 'text-tefa-red'}`}>
-                                    Tier 4 — ≥500% FPL (27%){' '}
-                                    <span className="text-xs font-normal text-tefa-body/60">(4a: prior public school 5% | 4b: all others 22%)</span>
+                                    Tier 4 — ≥500% FPL{' '}
+                                    <span className="text-xs font-normal text-tefa-body/60">(4a: prior public school {analysis.demandT4a.toLocaleString()} | 4b: all others {analysis.demandT4b.toLocaleString()})</span>
                                 </div>
                                 <div className={`text-sm ${analysis.tier4Rate > 50 ? 'text-tefa-red/80' : 'text-tefa-red/80'}`}>
                                     {(analysis.demandT4a + analysis.demandT4b).toLocaleString()} applicants — {analysis.tier4Rate.toFixed(1)}% funded
@@ -1479,7 +1484,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                     <li>No state funds have been ordered to flow yet</li>
                                     <li>Financial side of the program is stalled until court proceedings resolve</li>
                                     <li>Internal Comptroller-AG conflict adds additional unpredictability to administration</li>
-                                    <li>274,183 total applications (~249k eligible after 9% ineligibility) to process once the legal path is clear</li>
+                                    <li>{TOTAL_APPLICATIONS.toLocaleString()} total applications ({ELIGIBLE_APPLICATIONS.toLocaleString()} eligible per Apr 28 PDF) to process once the legal path is clear</li>
                                 </ul>
                             </div>
                             <div className="bg-amber-50 rounded p-3 border border-amber-200 mb-3">
@@ -1487,7 +1492,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                 <ul className="text-amber-700 space-y-1 text-xs">
                                     <li>Private schools enforce early summer deadlines (June 1–30) for enrollment deposits and binding tuition contracts</li>
                                     <li>If award notifications arrive after these deadlines, lottery winners face signing $13,000+ contracts without guaranteed state funding</li>
-                                    <li>Risk-averse families — especially the 79,050 Tier 2 applicants under 200% FPL — will default to free public school rather than take on that financial exposure</li>
+                                    <li>Risk-averse families — especially the {analysis.demandT2.toLocaleString()} Tier 2 applicants under 200% FPL — will default to free public school rather than take on that financial exposure</li>
                                     <li>This "waitlist fatigue" drives a massive late-stage cascade of abandoned accounts directly benefiting Tier 3</li>
                                     <li>Odyssey platform is backlogged processing extended Mar 31 applications, compounding the delay</li>
                                 </ul>
@@ -1508,7 +1513,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             <p className="text-sm text-tefa-body/70 mb-3">
                                 Even with a funded TEFA account, families must independently secure admission at a participating private school.
                                 The private school market is structurally inelastic in the short term — schools cannot rapidly expand capacity to absorb
-                                274,183 new applicants.
+                                {TOTAL_APPLICATIONS.toLocaleString()} new applicants.
                             </p>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                                 <div className="bg-white rounded p-3 border border-gray-200">
@@ -1543,7 +1548,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                         <li>Exit with only $690 enrollment fee lost</li>
                                         <li>No tuition liability</li>
                                         <li>Nullifies any subsequent TEFA waitlist offer</li>
-                                        <li>Apr 27 ranked waitlist position is the sharpest signal available before this date</li>
+                                        <li>May 11 ranked waitlist position is the sharpest signal available before this date</li>
                                     </ul>
                                 </div>
                                 <div className="bg-white rounded p-3 border border-red-200">
@@ -1582,8 +1587,8 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             <strong>Attrition is the sole mechanism by which Tier 3 receives funding.</strong> A 15% rate is not speculative — it represents the conservative floor supported by decades of school choice research (D.C. at 14.3%, Virginia at 20-34%, Milwaukee at 30%). TEFA's novel platform (Odyssey), unprecedented scale, tuition gaps, and active federal injunction create conditions that historically produce non-participation rates well above this baseline.
                         </div>
                         <p className="text-xs text-tefa-red/80 bg-tefa-gold/10 border border-tefa-gold/30 rounded p-3">
-                            <strong>Timing caveat (updated Apr 22):</strong> Per the Apr 22 Comptroller press release, the locked-in timeline is: T1 awards Apr 22–24 (42,600 students), <strong>T2 lottery + waitlist assignment week of Apr 27</strong>, 30-day appeal window, initial school selection Jun 1, school-side confirmation Jun 15, first funding Jul 1, <strong>Jul 15 family-side hard deadline to confirm / opt out</strong>, Jul 31 school-side confirmation.
-                            The critical tension for Tier 3 families: the Iddings know their ranked waitlist position starting the week of Apr 27 — a sharper signal than the probabilistic model. But the biggest waitlist-cascade event is the Jul 15 opt-out deadline, which falls AFTER the Jun 30 NBCA withdrawal deadline. Withdrawing on Jun 30 means exiting before the main cascade plays out; staying past Jun 30 binds the family to ~$40,950 in tuition contracts for uncertain funding.
+                            <strong>Timing caveat (updated Apr 28):</strong> Per the Apr 28 Lottery Update PDF, the locked-in timeline is: T1 awards Apr 22–24 ({analysis.firstRoundAwards.toLocaleString()} students), <strong>T2 lottery week of Apr 27</strong>, ranked waitlist position notified by <strong>May 11</strong> (portal opens for opt-in same day), then a two-track funding cascade: <strong>July funding</strong> (Jun 1 family opt-in, Jun 15 school confirmation, Jul 1 first disbursement) and <strong>August funding</strong> (Jul 15 family opt-in/opt-out, Jul 31 school confirmation).
+                            The critical tension for Tier 3 families: the Iddings know their ranked waitlist position by May 11 — a sharper signal than the probabilistic model. But the biggest waitlist-cascade event is the Jul 15 opt-out deadline, which falls AFTER the Jun 30 NBCA withdrawal deadline. Withdrawing on Jun 30 means exiting before the main cascade plays out; staying past Jun 30 binds the family to ~$40,950 in tuition contracts for uncertain funding.
                         </p>
                     </div>
                 </div>
