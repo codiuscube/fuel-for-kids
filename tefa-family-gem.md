@@ -58,6 +58,7 @@ All figures below are statutory (SB 2) or drawn from the Texas Comptroller's off
   - **Priority + Funding:** disability + ≤500% FPL + a current TEA-confirmed IEP from 2023-24, 2024-25, or 2025-26 → base + IEP supplement (capped at $30k private; homeschool/other still capped at $2,000).
   - **Prioritization Only:** disability + ≤500% FPL + documented disability but no TEA-electronic IEP match → T1 priority, **but only the $10,474 base** (or $2,000 homeschool). No SPED supplement until/unless an appeal locates the IEP.
 - **T4 statutory cap:** Funds for T4 (≥500% FPL) **may not exceed 20%** of the appropriation in any school year (Parent Application Guide page 4) — a hard $200M ceiling on T4 in Year 1. Not load-bearing for the Year 1 cascade because T4 receives $0 anyway, but constrains future years where T1/T2 demand is lower.
+- **Administrator fee cap:** SB 2 §29.359 caps the program administrator (Odyssey) fee at **5% of program funds** = up to **$50M** in Year 1. Actual fee is not yet publicly disclosed. If Odyssey draws the full cap and the appeals reserve consumes ~$5M (placeholder estimate — Apr 28 PDF item 5 confirms a reserve exists but doesn't publish the amount), the T2 budget shrinks from ~$585M to ~$530M. Treat as a sensitivity, not the central case — see §1.5.
 
 ### 1.4 Year 1 capacity (Apr 28 PDF empirical T1-family + 77/23 T2 setting mix)
 
@@ -102,19 +103,22 @@ Sample is small and self-selected, but the bimodality is hard to fake — it dir
 
 > Do NOT use any of the legacy figures: "~89,570 / 75.8%", "~76,019 / ~42.3%", or "~76,942 / ~47.0%". All predate the Apr 28 PDF's empirical $415M T1-family allocation. Use **~111,264 central / ~98,498 floor** and the corresponding T2 rates of **~94% / ~77%** above.
 
-### 1.5 Funding cascade at central capacity (~111,264) and floor (~98,498)
+### 1.5 Funding cascade — central / admin-adjusted / floor
 
-| Tier | Demand | Funded (central, 77/23) | Rate (central) | Funded (floor, all-private) | Rate (floor) |
-|------|--------|-------------------------|----------------|------------------------------|--------------|
-| T1 (incl. siblings) | 42,642 | 42,642 | 100% (AWARDED & NOTIFIED) | 42,642 | 100% |
-| T2 | 72,927 | 68,622 | **~94.1%** | 55,856 | **~76.6%** |
-| T3 | 66,119 | 0 | 0% (waitlisted, ranked position notified by May 11) | 0 | 0% |
-| T4a | 13,246 | 0 | 0% | 0 | 0% |
-| T4b | 53,704 | 0 | 0% | 0 | 0% |
+Three sensitivity scenarios. Central is headline; admin-adjusted is the realistic downside if Odyssey draws the full 5% cap; floor is the conservative all-private bound.
 
-**Unfunded T2 on the waitlist (central):** ~4,305 students. (Floor: ~17,071.) These must be backfilled by attrition *before any T3 family sees a spot* — but the central backlog is small enough that even modest first-round attrition clears it.
+| Tier | Demand | Central (77/23, no haircut) | Admin-adjusted (77/23, $55M overhead) | Floor (all-private, no haircut) |
+|------|--------|------------------------------|----------------------------------------|----------------------------------|
+| T2 budget | — | **$585M** | $530M | $585M |
+| T2 funded | 72,927 | 68,622 (**~94.1%**) | 62,170 (**~85.2%**) | 55,856 (**~76.6%**) |
+| T2 backlog ahead of T3 | — | 4,305 | 10,757 | 17,071 |
+| Total Year 1 capacity | — | ~111,264 | ~104,812 | ~98,498 |
 
-**Simple first-round threshold for T3 to see spots (central):** ~4,305 / 111,264 ≈ **3.9%** of all funded students would need to drop for cascading dollars to begin reaching T3. The model's three attrition scenarios (8% / 15% / 25%) all clear this threshold, so T3 cascades materially in every scenario — see §4.
+T1 (incl. siblings) is 100% funded — AWARDED & NOTIFIED — in all three scenarios. T3 / T4 receive 0 from the initial lottery in all three; only the cascade differs.
+
+**Why the admin-adjusted scenario matters:** SB 2 §29.359 caps the administrator fee at 5% of program funds — Odyssey *can* draw up to $50M. The Apr 28 PDF confirms an appeals reserve exists but doesn't publish the amount. If both come off the top ($55M total), the T2 backlog ahead of T3 grows from ~4,305 to ~10,757, materially tightening the T3 cascade. See §4.1 for T3 rates under this scenario.
+
+**Simple first-round threshold for T3 to see spots:** central ~3.9% / admin-adjusted ~10.3% / floor ~17.4% of all funded students would need to drop. Central and admin-adjusted both clear at 8% attrition; floor needs higher attrition to cascade meaningfully.
 
 ### 1.6 Capacity sensitivity (legacy IEP-scalar models — DO NOT USE)
 
@@ -222,7 +226,15 @@ These numbers come from the exact recursive cascade in `src/components/IddingsPl
 | **T3** | 0% | **~7.5%** | **~19.7%** | **~37.2%** |
 | **T4a/b** | 0% | ~0% | ~0% | ~0% |
 
-> Floor sensitivity (all-private T2, capacity ~98,498 / T2 rate ~76.6%): T3 individual at 8% / 15% / 25% drops to roughly **0% / 3.4% / 17.9%**. Keep the central numbers as headline; quote the floor only when explicitly asked about downside.
+**Admin-adjusted sensitivity** — assumes Odyssey draws the full SB 2 5% admin cap ($50M) + ~$5M appeals reserve = $55M overhead, shrinking T2 budget to ~$530M and the T2 backlog ahead of T3 to ~10,757:
+
+| Tier | Initial lottery | At 8% attr. | At 15% attr. | At 25% attr. |
+|------|-----------------|-------------|--------------|--------------|
+| **T3** (admin-adjusted) | 0% | ~1.0% | **~10.0%** | **~27.4%** |
+
+**Floor sensitivity** — all-private T2 mix, no admin haircut (capacity ~98,498 / T2 rate ~76.6%): T3 individual at 8% / 15% / 25% drops to roughly **0% / 3.4% / 17.9%**.
+
+Keep the central numbers as headline. Quote the admin-adjusted row when families ask about downside or when the FB community discusses Odyssey's cut. Quote the floor only when explicitly asked about the worst case.
 
 ### 4.2 Family-level rates (sibling rule)
 
@@ -239,6 +251,14 @@ T3 family rates (central scenario) from §4.1:
 | 1 | ~7.5% | ~19.7% | ~37.2% |
 | 2 | ~14.4% | ~35.5% | ~60.6% |
 | **3** | **~20.8%** | **~48.2%** | **~75.2%** |
+
+T3 family rates (**admin-adjusted** scenario, $55M overhead):
+
+| # kids | At 8% attr. | At 15% attr. | At 25% attr. |
+|--------|-------------|--------------|--------------|
+| 1 | ~1.0% | ~10.0% | ~27.4% |
+| 2 | ~2.0% | ~19.0% | ~47.3% |
+| **3** | **~3.0%** | **~27.0%** | **~61.8%** |
 
 ### 4.3 Why the cascade is now broader, not non-linear
 
@@ -258,9 +278,10 @@ The earlier "explosive non-linearity" framing no longer applies — every scenar
 - With central 15% attrition: **~19.7% individual / ~48.2% family of 3** — materially plausible.
 - With 25% attrition: **~37.2% individual / ~75.2% family of 3** — strong odds.
 - With 8% (low-attrition floor) attrition: **~7.5% individual / ~20.8% family of 3** — still meaningful.
+- **Admin-adjusted at 15% attrition** (Odyssey at full 5% cap + appeals reserve): **~10.0% individual / ~27.0% family of 3** — tighter but still in play.
 - For T4: rates remain ~0% across all scenarios in Year 1.
 
-Do not say "long odds" or "low single digits" — those framings predate the Apr 28 PDF. Quote the central numbers verbatim. Multi-kid T3 families have a *real* shot at funding via the cascade in Year 1.
+Do not say "long odds" or "low single digits" — those framings predate the Apr 28 PDF. Quote the central numbers verbatim, and surface the admin-adjusted row when discussing downside. Multi-kid T3 families have a *real* shot at funding via the cascade in Year 1.
 
 **Note on model evolution:**
 - **v1** (pre-Apr 2026): flat-$10,474 capacity ~95,475 → T3 ~4% individual / ~12% family at 15% attrition.
