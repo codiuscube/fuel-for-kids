@@ -156,7 +156,12 @@ const IddingsPlanner = () => {
   };
 
   // Scenario Logic — Dual Model: Comptroller's Implementation vs Strict SB 2 Reading
-  const getScenarioAnalysis = (totalApps, overrideAttrition) => {
+  // adminFeeAdjustment: optional overhead to subtract from the T2 budget for the
+  // admin-fee-adjusted sensitivity (Odyssey administrator fee + appeals reserve).
+  // SB 2 §29.359 caps administrator costs at 5% of program funds = $50M ceiling.
+  // Apr 28 PDF item 5 confirms a reserve exists but doesn't publish the amount;
+  // $5M is a placeholder estimate. Together: $55M overhead in the sensitivity scenario.
+  const getScenarioAnalysis = (totalApps, overrideAttrition, adminFeeAdjustment = 0) => {
     // === BUDGET (statutory) ===
     // SB 2, Sec. 29.3521(c-1): $1 billion cap for the 2025-2027 biennium.
     // The Comptroller committed the full $1B to Year 1 (Travis Pillow to The Texan, Apr 2 2026:
@@ -215,11 +220,12 @@ const IddingsPlanner = () => {
 
     // T2 lottery slot count, central scenario (77/23 setting mix). Floor sensitivity:
     // if 100% of T2 winners select private, T2 funding rate falls to ~77% (55,856 slots)
-    // instead of ~94%. We carry the floor as a separate field for the dashboard.
-    const t2Budget = budget - t1FamilyCost;
-    const t2LotteryCapacity = Math.floor(t2Budget / perStudentT2Blended); // ≈ 68,622
-    const t2LotteryCapacityFloor = Math.floor(t2Budget / perStudentBase); // ≈ 55,856
-    const capacity = firstRoundAwards + t2LotteryCapacity; // central ~111,264
+    // instead of ~94%. Admin-adjusted sensitivity: subtract Odyssey overhead ($50M cap
+    // per SB 2 §29.359) + appeals reserve estimate (~$5M); T2 budget shrinks to ~$530M.
+    const t2Budget = budget - t1FamilyCost - adminFeeAdjustment;
+    const t2LotteryCapacity = Math.floor(t2Budget / perStudentT2Blended); // ≈ 68,622 (no admin haircut) / ≈ 62,170 ($55M haircut)
+    const t2LotteryCapacityFloor = Math.floor(t2Budget / perStudentBase); // ≈ 55,856 / ≈ 50,597
+    const capacity = firstRoundAwards + t2LotteryCapacity; // central ~111,264 (no haircut) / ~104,812 ($55M haircut)
 
     // =====================================================
     // MODEL A: COMPTROLLER'S ACTUAL IMPLEMENTATION
@@ -307,6 +313,12 @@ const IddingsPlanner = () => {
   };
 
   const analysis = getScenarioAnalysis(TOTAL_APPLICATIONS);
+
+  // Admin-fee sensitivity: assumes Odyssey takes the SB 2 5% admin cap ($50M) and
+  // the appeals reserve consumes ~$5M, leaving ~$530M for T2 instead of ~$585M.
+  // Surfaces in the capacity sensitivity table only — central remains the headline.
+  const ADMIN_FEE_HAIRCUT = 55_000_000; // $50M Odyssey + $5M reserve estimate
+  const analysisAdminAdjusted = getScenarioAnalysis(TOTAL_APPLICATIONS, undefined, ADMIN_FEE_HAIRCUT);
 
   // Scenario Outlook: Best / Most Likely / Worst (fixed ineligibility rates, current applicant count)
   // Best/worst now driven by attrition (the real uncertainty), since ineligibility is fixed.
@@ -1283,44 +1295,52 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         </div>
 
                         <div className="mb-4 p-3 bg-white border border-tefa-navy/20 rounded text-xs">
-                            <div className="font-bold text-tefa-navy mb-2">Capacity Sensitivity — T2 Setting Mix</div>
+                            <div className="font-bold text-tefa-navy mb-2">Capacity Sensitivity — T2 Setting Mix &amp; Admin Overhead</div>
                             <div className="text-tefa-body/70 mb-2">
-                                With the T1-family block fixed at $415M (Apr 28 PDF), T2 capacity depends entirely on the educational-setting mix among T2 lottery winners. The central scenario applies the Apr 8 PDF's overall 77/23 split to T2; the floor assumes all winners go private:
+                                With the T1-family block fixed at $415M (Apr 28 PDF), T2 capacity depends on the educational-setting mix among T2 lottery winners and on whether Odyssey's administrator fee + appeals reserve come off the top. SB 2 §29.359 caps the administrator fee at 5% ($50M ceiling); the Apr 28 PDF confirms an appeals reserve exists but doesn't publish the dollar amount. The admin-adjusted row below assumes $50M Odyssey + $5M reserve = $55M overhead.
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-xs">
                                     <thead className="bg-tefa-navy/5 text-tefa-navy">
                                         <tr>
                                             <th className="px-2 py-1.5 text-left">Scenario</th>
-                                            <th className="px-2 py-1.5 text-left">T2 setting mix</th>
-                                            <th className="px-2 py-1.5 text-right">Per-student cost</th>
+                                            <th className="px-2 py-1.5 text-left">Assumptions</th>
+                                            <th className="px-2 py-1.5 text-right">T2 budget</th>
                                             <th className="px-2 py-1.5 text-right">T2 slots</th>
                                             <th className="px-2 py-1.5 text-right">T2 rate</th>
-                                            <th className="px-2 py-1.5 text-right">Capacity</th>
+                                            <th className="px-2 py-1.5 text-right">T3 fam @ 15%</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100 text-tefa-body/80">
                                         <tr className="bg-tefa-gold/10 font-medium">
                                             <td className="px-2 py-1.5">Central <strong>(baseline)</strong></td>
-                                            <td className="px-2 py-1.5">77% private / 23% homeschool</td>
-                                            <td className="px-2 py-1.5 text-right font-mono">${analysis.perStudentT2Blended.toLocaleString()}</td>
+                                            <td className="px-2 py-1.5">77/23 setting mix · no admin haircut</td>
+                                            <td className="px-2 py-1.5 text-right font-mono">${(analysis.t2Budget / 1e6).toFixed(0)}M</td>
                                             <td className="px-2 py-1.5 text-right font-mono">{analysis.t2LotteryCapacity.toLocaleString()}</td>
                                             <td className="px-2 py-1.5 text-right font-mono">{tier2FundingRate.toFixed(1)}%</td>
-                                            <td className="px-2 py-1.5 text-right font-mono">{analysis.capacity.toLocaleString()}</td>
+                                            <td className="px-2 py-1.5 text-right font-mono">{scenarioOutlook.mostLikely.effectiveFamilyRate.toFixed(1)}%</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="px-2 py-1.5">Admin-adjusted</td>
+                                            <td className="px-2 py-1.5">77/23 mix · $55M overhead ($50M Odyssey + $5M reserve)</td>
+                                            <td className="px-2 py-1.5 text-right font-mono">${(analysisAdminAdjusted.t2Budget / 1e6).toFixed(0)}M</td>
+                                            <td className="px-2 py-1.5 text-right font-mono">{analysisAdminAdjusted.t2LotteryCapacity.toLocaleString()}</td>
+                                            <td className="px-2 py-1.5 text-right font-mono">{((analysisAdminAdjusted.fundedT2 / analysisAdminAdjusted.demandT2) * 100).toFixed(1)}%</td>
+                                            <td className="px-2 py-1.5 text-right font-mono">{analysisAdminAdjusted.effectiveFamilyRate.toFixed(1)}%</td>
                                         </tr>
                                         <tr>
                                             <td className="px-2 py-1.5">Floor (all-private)</td>
-                                            <td className="px-2 py-1.5">100% private / 0% homeschool</td>
-                                            <td className="px-2 py-1.5 text-right font-mono">$10,474</td>
+                                            <td className="px-2 py-1.5">100% private mix · no admin haircut</td>
+                                            <td className="px-2 py-1.5 text-right font-mono">${(analysis.t2Budget / 1e6).toFixed(0)}M</td>
                                             <td className="px-2 py-1.5 text-right font-mono">{analysis.t2LotteryCapacityFloor.toLocaleString()}</td>
                                             <td className="px-2 py-1.5 text-right font-mono">{((analysis.t2LotteryCapacityFloor / analysis.demandT2) * 100).toFixed(1)}%</td>
-                                            <td className="px-2 py-1.5 text-right font-mono">{(analysis.firstRoundAwards + analysis.t2LotteryCapacityFloor).toLocaleString()}</td>
+                                            <td className="px-2 py-1.5 text-right font-mono">—</td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
                             <div className="text-tefa-body/70 mt-2">
-                                T2 families specifically applied for tuition support, so the realistic T2 setting mix likely sits between these bounds — but probably closer to the central 77/23 estimate than to the floor. The model uses central as headline; the floor is a conservative downside.
+                                T2 families specifically applied for tuition support, so the realistic T2 setting mix likely sits closer to the central 77/23 estimate than to the all-private floor. The admin-adjusted scenario is plausible but not officially confirmed — the comptroller hasn't published actual administrator fee or reserve figures. Use central as headline; flag the admin-adjusted row when families ask about downside or when the FB community discusses Odyssey's cut.
                             </div>
                             <div className="text-tefa-body/60 mt-2 text-[11px] italic">
                                 Earlier IEP-scalar sensitivity tables ($14k / $17,650 / $22,769) have been removed — the Apr 28 PDF's empirical $415M T1-family allocation supersedes any IEP-scalar derivation.
