@@ -79,6 +79,17 @@ T1 siblings homeschool   : 15,592 × 0.23 × $2,000  ≈   $7.2M
                                                        ≈ $411.2M  (PDF: ~$415M)
 ```
 
+**Cross-validation (Facebook group poll, Apr 2026):** The Texas School Voucher Discussion Group (~406 members) ran an informal poll of T1 awardees on actual award amounts. The distribution is bimodal in exactly the way the v5 sub-class model predicts:
+
+| Award range | Poll share | v5 interpretation |
+|---|---|---|
+| $10,000–$11,000 | ~42% | Priority Only (private base $10,474, no IEP supplement) |
+| $14,001–$17,000 | ~42% | Priority + Funding (mid-range IEP supplements) |
+| $11,001–$14,000 / $17,001–$20,000 / $20,001–$23,000 | ~5% / ~5% / ~4% | Higher-coded IEP supplements |
+| $2,000 (homeschool with IEP) | (mentioned in comments) | Homeschool cap applies regardless of disability |
+
+Sample is small and self-selected, but the bimodality is hard to fake — it directly reflects the Priority+Funding / Prioritization Only split formalized in the Parent Application Guide.
+
 **Step 2 — T2/T3 blended cost:** T2 (≤200% FPL) and T3 (200-500% FPL) carry no SPED supplement by tier definition. Per-student cost depends only on setting. Apply the 77/23 split: blended cost = 0.77 × $10,474 + 0.23 × $2,000 ≈ **$8,525/student**.
 
 **Step 3 — T2 lottery pool:** Remaining $1,000M − $415M = **$585M** funds the T2 lottery at the blended rate:
@@ -141,7 +152,20 @@ T1 siblings homeschool   : 15,592 × 0.23 × $2,000  ≈   $7.2M
 
 **Waitlist-fatigue driver:** Private schools enforce Jun 1–30 enrollment-deposit deadlines. If award notifications arrive after those deadlines, winners face signing $13,000+ contracts without guaranteed state funding. Risk-averse T2 families default to free public school. Odyssey platform is backlogged, compounding delays.
 
+**Tranche cash-flow driver:** Per educationfreedom.texas.gov, funds disburse on a **25 / 50 / 25** schedule — only **25% by Jul 1** (~$2,618 of a $10,474 private award), 75% by Oct 1, balance by Apr 1, 2027. T2 winners must commit to schools (signing tuition contracts that often demand a multi-thousand-dollar deposit by Jun 1 or Jul 15) against a $2,618 first tranche. The cash-flow mismatch is its own attrition driver, distinct from tuition-gap and waitlist-fatigue, and disproportionately hits low-income T2 families with no float.
+
 Keep 15% as the default. Don't stack worst-cases into doom scenarios.
+
+### 2.4 Real-time signal from awarded T1 families (selection-bias caveat)
+
+The **Texas School Voucher Discussion Group (TEFA)** Facebook group (~406 members, public) is dominated by T1 awardees who *can't use* their funding:
+
+- No participating private school for the child's specific needs (especially for severe-disability cases — one parent of a Level 2–3 autistic child in Tarrant County reported no appropriate private school exists locally).
+- Tuition still exceeds the award even with the IEP supplement.
+- IEP/application records "disappeared" from the Odyssey portal mid-process; pending appeals.
+- Mismatch between TEFA notification timing and private-school enrollment deadlines (some private schools required signed contracts back in March, before any TEFA notification).
+
+This is upstream attrition that feeds the T2/T3 cascade — first empirical evidence the 15% baseline is not too high. **Caveat:** the group skews to frustrated families (satisfied awardees rarely post). Sample is ~1% of T1 awardees and self-selected. Treat as directional support for the 15% floor, not as a basis for raising the central estimate.
 
 ---
 
@@ -279,12 +303,12 @@ Always run a **tuition-gap check**: does $10,474 + other committed aid cover thi
 - **Appeals window:** 30 days from notice receipt. Realistic appeal pathways:
   - **TEA-side errors** (IEP on file at TEA but not electronically located, school-district record mismatches): real upside. Can move T2/T3 → T1, sometimes unlock SPED supplement. The Comptroller is *inviting* affected applicants to appeal (Apr 28 PDF).
   - **Application correction / new information** (income docs not provided originally, residency proof obtained after deadline): **unlikely to succeed** per the Apr 28 PDF.
+  - **How to file (operational):** the appeal button does not appear in the Odyssey portal automatically — families must **call Odyssey support** (737-379-2362 / help.tx@withodyssey.com) to have the appeal link unlocked.
 - **Two-track funding deadlines** (Apr 28 PDF):
   - **July 1 funding track:** family opt-in + school selection by **Jun 1**; participating school confirms enrollment by **Jun 15**; first disbursement Jul 1.
   - **August funding track:** family opt-in + school selection by **Jul 15**; participating school confirms enrollment by **Jul 31**. The Jul 15 deadline doubles as the family-side hard deadline to confirm, switch to homeschool/other ($2,000), or opt out — opt-outs cascade funding down the waitlist (largest single attrition event of Year 1).
 - **Appeals reserve:** the program holds funds for successful appeals; once appeals are resolved, unused reserve cascades to the next available waitlisted students. Magnitude undisclosed — small upside vector, not baseline.
-- **Second disbursement (50%):** October 1, 2026.
-- **Final disbursement:** April 1, 2027.
+- **Disbursement schedule (educationfreedom.texas.gov):** funds release in three tranches — **25% by Jul 1**, cumulative **75% by Oct 1**, **100% by Apr 1, 2027**. Per a $10,474 private award: ~$2,618 / $7,856 / $10,474 cumulative. Funds do **not** carry over year to year if unused (per program rules); a participant handbook covering eligible-expense detail has not been published yet, so families currently rely on the Odyssey portal's approved-vendor list + the Comptroller PDFs.
 
 ### Federal lawsuit context
 Muslim schools v. Texas — Comptroller Kelly Hancock blocked several Islamic private schools (incl. Houston Quran Academy). Permanent injunction hearing Apr 24, 2026. No state funds have flowed yet.
@@ -333,6 +357,7 @@ As of April 2026, emails from **several Texas Catholic archdioceses and at least
 | 4 | "Only ~30–40% of Tier 2 applicants will receive funding" | **Archdiocese substantially understated.** T2 funds at **~94% central / ~77% floor** under the Apr 28 PDF empirical recalibration. The 30–40% range was directionally wrong — Year 1 T2 funding is overwhelming, not partial. Earlier versions of this gem cited 47% / 75.8%; both predate the empirical $415M T1-family figure. | Apr 28 Lottery Update PDF + §1.4 |
 | 5 | "All awarded families must select a school and have enrollment confirmed by July 15" | **Archdiocese was right — superseded correction.** Per the Apr 28 PDF, July 15 is the family-side hard deadline on the **August funding track** (confirm enrollment, select homeschool/other for $2,000, or opt out). Note: there is also a **July 1 funding track** with an earlier Jun 1 family deadline. Jul 31 is the August-track school-side confirmation (back-office, no family action). | Apr 28 Lottery Update PDF |
 | 6 | "Priority Tiers 3 and 4 are not expected to receive funding this year" | For **T4** in Year 1: accurate (~0%). For **T3**: **materially wrong.** Under the Apr 28 PDF empirical recalibration, the T2 backlog ahead of T3 collapses to ~4,305 students, so attrition cascades meaningfully. T3 at central 15% attrition is **~19.7% individual / ~48.2% for a 3-child family** (rising to ~37% / ~75% at 25%). Lower-attrition floor (8%) still gives ~7.5% / ~20.8%. The archdiocese guidance fit earlier (lower-capacity) models but the Apr 28 PDF moved the goalposts substantially. | This gem §4 + Iddings planner cascade model |
+| 7 | "~40% of Tier 2 will be funded" (circulating in the Texas School Voucher Discussion FB group, posted by admin Kassi Edwards Mowrey) | Same family of error as the archdiocese row 4. Apr 28 PDF empirical T1-family ($415M) leaves $585M for T2; at the central 77/23 setting mix that funds **~94%** of T2; even the all-private floor funds ~77%. The "~40%" figure circulates because it propagates the same pre-Apr 28 derivation logic the archdiocese used. Group also asserts T3/T4/T5 (sic — there is no T5) have "little to no hope," which understates T3 specifically — see row 6. | Apr 28 Lottery Update PDF + §1.4 + Texas School Voucher Discussion Group (FB, ~406 members) |
 
 **How to use this section:**
 1. If a family opens with "our school told us Tier 1 is 42,000" or "T2 lottery is only 30–40%," flag the specific error and cite the corrected figure before proceeding.
