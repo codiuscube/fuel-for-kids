@@ -58,6 +58,7 @@ const IddingsPlanner = () => {
   const [includeTefa, setIncludeTefa] = useState(false);
   const [includeAce, setIncludeAce] = useState(false);
   const [paymentTefaTrack, setPaymentTefaTrack] = useState('august');
+  const [paymentPlanMode, setPaymentPlanMode] = useState('recommended');
 
   // NBCA Aid - Granted: Cassius $5,850 + Dorothy $5,600 + Sebastian $4,750 = $16,200
   const nbcaAidAmount = 16200;
@@ -82,7 +83,8 @@ const IddingsPlanner = () => {
 
   const totalAid = totalTefa + totalAce + nbcaAidAmount + siblingDiscountAmount + nbcaScholarshipAmount;
   const finalCost = tuition - totalAid;
-  const monthlyCost = finalCost > 0 ? finalCost / 10 : 0; // 10 month plan estimate
+  const factsBalanceDue = Math.max(0, finalCost);
+  const monthlyCost = factsBalanceDue / 10; // 10 month plan estimate
   const monthlyDraftWithCardFee = monthlyCost > 0 ? monthlyCost + factsCardTransactionFee : 0;
 
   // Status Tracking Data
@@ -425,22 +427,70 @@ The contribution amount we listed represents the maximum we can sustainably budg
     { date: 'Apr 01', day: 'Thu', isoDate: '2027-04-01', event: 'TEFA Final Funding Release', type: 'tefa', desc: 'Remaining funding available in participant accounts. Per SB 2 §29.361(c), unused funds carry forward while the child remains eligible and participating; remaining money returns to the program fund when the account closes.', funding: 'Distribution' },
   ];
 
-  const factsPaymentSchedule = [
-    { date: 'Jul 6, 2026', isoDate: '2026-07-06' },
-    { date: 'Aug 5, 2026', isoDate: '2026-08-05' },
-    { date: 'Sep 8, 2026', isoDate: '2026-09-08' },
-    { date: 'Oct 5, 2026', isoDate: '2026-10-05' },
-    { date: 'Nov 5, 2026', isoDate: '2026-11-05' },
-    { date: 'Dec 7, 2026', isoDate: '2026-12-07' },
-    { date: 'Jan 5, 2027', isoDate: '2027-01-05' },
-    { date: 'Feb 5, 2027', isoDate: '2027-02-05' },
-    { date: 'Mar 5, 2027', isoDate: '2027-03-05' },
-    { date: 'Apr 5, 2027', isoDate: '2027-04-05' },
-  ].map((payment, idx) => ({
+  const paymentPlanOptions = {
+    full: {
+      label: 'Pay In Full',
+      note: 'One large draft after the July 15 TEFA opt-in deadline.',
+      dates: [
+        { date: 'Aug 5, 2026', isoDate: '2026-08-05' },
+      ],
+    },
+    eleven: {
+      label: '11 Month',
+      note: 'Starts in June, before the June 30 withdrawal safety valve.',
+      dates: [
+        { date: 'Jun 5, 2026', isoDate: '2026-06-05' },
+        { date: 'Jul 6, 2026', isoDate: '2026-07-06' },
+        { date: 'Aug 5, 2026', isoDate: '2026-08-05' },
+        { date: 'Sep 8, 2026', isoDate: '2026-09-08' },
+        { date: 'Oct 5, 2026', isoDate: '2026-10-05' },
+        { date: 'Nov 5, 2026', isoDate: '2026-11-05' },
+        { date: 'Dec 7, 2026', isoDate: '2026-12-07' },
+        { date: 'Jan 5, 2027', isoDate: '2027-01-05' },
+        { date: 'Feb 5, 2027', isoDate: '2027-02-05' },
+        { date: 'Mar 5, 2027', isoDate: '2027-03-05' },
+        { date: 'Apr 5, 2027', isoDate: '2027-04-05' },
+      ],
+    },
+    ten: {
+      label: '10 Month',
+      note: 'Current FACTS schedule: starts July 6.',
+      dates: [
+        { date: 'Jul 6, 2026', isoDate: '2026-07-06' },
+        { date: 'Aug 5, 2026', isoDate: '2026-08-05' },
+        { date: 'Sep 8, 2026', isoDate: '2026-09-08' },
+        { date: 'Oct 5, 2026', isoDate: '2026-10-05' },
+        { date: 'Nov 5, 2026', isoDate: '2026-11-05' },
+        { date: 'Dec 7, 2026', isoDate: '2026-12-07' },
+        { date: 'Jan 5, 2027', isoDate: '2027-01-05' },
+        { date: 'Feb 5, 2027', isoDate: '2027-02-05' },
+        { date: 'Mar 5, 2027', isoDate: '2027-03-05' },
+        { date: 'Apr 5, 2027', isoDate: '2027-04-05' },
+      ],
+    },
+    recommended: {
+      label: 'Recommended',
+      note: 'Every other month, starts after July 15, ends in April.',
+      dates: [
+        { date: 'Aug 5, 2026', isoDate: '2026-08-05' },
+        { date: 'Oct 5, 2026', isoDate: '2026-10-05' },
+        { date: 'Dec 7, 2026', isoDate: '2026-12-07' },
+        { date: 'Feb 5, 2027', isoDate: '2027-02-05' },
+        { date: 'Apr 5, 2027', isoDate: '2027-04-05' },
+      ],
+    },
+  };
+
+  const selectedPaymentPlan = paymentPlanOptions[paymentPlanMode] || paymentPlanOptions.recommended;
+  const selectedPlanPaymentAmount = selectedPaymentPlan.dates.length > 0
+    ? factsBalanceDue / selectedPaymentPlan.dates.length
+    : 0;
+
+  const factsPaymentSchedule = selectedPaymentPlan.dates.map((payment, idx) => ({
     ...payment,
     number: idx + 1,
-    amount: monthlyCost,
-    cardAmount: monthlyDraftWithCardFee,
+    amount: selectedPlanPaymentAmount,
+    cardAmount: selectedPlanPaymentAmount + factsCardTransactionFee,
   }));
 
   const totalFactsCardFees = factsCardTransactionFee * factsPaymentSchedule.length;
@@ -491,7 +541,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
   };
 
   const buildPaymentProjection = (track) => {
-    let remainingBalance = finalCost;
+    let remainingBalance = factsBalanceDue;
     let tefaAvailable = 0;
     let previousCumulativeTefa = 0;
 
@@ -1024,18 +1074,47 @@ The contribution amount we listed represents the maximum we can sustainably budg
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-white rounded-lg p-4 border border-tefa-navy/10 shadow-sm">
                 <div className="text-xs uppercase font-bold text-tefa-body/50">FACTS Balance</div>
-                <div className="text-2xl font-bold text-tefa-navy">${finalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                <div className="text-2xl font-bold text-tefa-navy">${factsBalanceDue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                 <div className="text-xs text-tefa-body/60 mt-1">After sibling discount + $16,200 aid</div>
               </div>
               <div className="bg-white rounded-lg p-4 border border-tefa-navy/10 shadow-sm">
-                <div className="text-xs uppercase font-bold text-tefa-body/50">ACH Draft</div>
-                <div className="text-2xl font-bold text-tefa-navy">${monthlyCost.toFixed(2)}</div>
-                <div className="text-xs text-tefa-body/60 mt-1">10 monthly payments</div>
+                <div className="text-xs uppercase font-bold text-tefa-body/50">Selected ACH Draft</div>
+                <div className="text-2xl font-bold text-tefa-navy">${selectedPlanPaymentAmount.toFixed(2)}</div>
+                <div className="text-xs text-tefa-body/60 mt-1">{selectedPaymentPlan.label}: {factsPaymentSchedule.length} payment{factsPaymentSchedule.length === 1 ? '' : 's'}</div>
               </div>
               <div className="bg-white rounded-lg p-4 border border-amber-300 shadow-sm">
-                <div className="text-xs uppercase font-bold text-amber-700">Cash Due Before TEFA</div>
-                <div className="text-2xl font-bold text-amber-700">${totalFamilyPaidUnderSelectedTrack.toFixed(2)}</div>
-                <div className="text-xs text-tefa-body/60 mt-1">{selectedTrackLabel}</div>
+                <div className="text-xs uppercase font-bold text-amber-700">Avoided Card Fees</div>
+                <div className="text-2xl font-bold text-amber-700">${totalFactsCardFees.toFixed(2)}</div>
+                <div className="text-xs text-tefa-body/60 mt-1">Checking/savings ACH vs card</div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div>
+                  <h3 className="font-bold text-tefa-navy">Payment Plan Option</h3>
+                  <p className="text-xs text-tefa-body/60 mt-1">
+                    The recommended plan starts in August, drafts every other month, and ends in April.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(paymentPlanOptions).map(([id, option]) => (
+                    <button
+                      key={id}
+                      onClick={() => setPaymentPlanMode(id)}
+                      className={`px-3 py-1.5 rounded-full text-sm font-bold border transition ${
+                        paymentPlanMode === id
+                          ? 'bg-tefa-green text-white border-tefa-green'
+                          : 'bg-white text-tefa-navy border-tefa-navy/20 hover:bg-tefa-navy/5'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="mt-4 rounded-lg bg-tefa-green/10 border border-tefa-green/20 p-3 text-sm text-tefa-body">
+                <strong>{selectedPaymentPlan.label}:</strong> {selectedPaymentPlan.note} Scheduled ACH draft: <strong>${selectedPlanPaymentAmount.toFixed(2)}</strong>.
               </div>
             </div>
 
