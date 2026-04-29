@@ -86,6 +86,9 @@ const IddingsPlanner = () => {
   const factsBalanceDue = Math.max(0, finalCost);
   const monthlyCost = factsBalanceDue / 10; // 10 month plan estimate
   const monthlyDraftWithCardFee = monthlyCost > 0 ? monthlyCost + factsCardTransactionFee : 0;
+  const tefaTotalAward = tefaPerStudent * students.length;
+  const tefaFirstTranche = tefaTotalAward * 0.25;
+  const tefaCumulativeSecondTranche = tefaTotalAward * 0.75;
 
   // Status Tracking Data
   const appStatus = [
@@ -427,6 +430,23 @@ The contribution amount we listed represents the maximum we can sustainably budg
     { date: 'Apr 01', day: 'Thu', isoDate: '2027-04-01', event: 'TEFA Final Funding Release', type: 'tefa', desc: 'Remaining funding available in participant accounts. Per SB 2 §29.361(c), unused funds carry forward while the child remains eligible and participating; remaining money returns to the program fund when the account closes.', funding: 'Distribution' },
   ];
 
+  const buildRecommendedPaymentDates = () => {
+    const recommendedDates = [
+      { date: 'Aug 5, 2026', isoDate: '2026-08-05' },
+      { date: 'Oct 5, 2026', isoDate: '2026-10-05' },
+      { date: 'Dec 7, 2026', isoDate: '2026-12-07' },
+      { date: 'Feb 5, 2027', isoDate: '2027-02-05' },
+      { date: 'Apr 5, 2027', isoDate: '2027-04-05' },
+    ];
+
+    return recommendedDates.map((payment, idx) => {
+      return {
+        ...payment,
+        amount: idx < 4 ? factsBalanceDue * 0.15 : factsBalanceDue * 0.4,
+      };
+    });
+  };
+
   const paymentPlanOptions = {
     full: {
       label: 'Pay In Full',
@@ -470,14 +490,9 @@ The contribution amount we listed represents the maximum we can sustainably budg
     },
     recommended: {
       label: 'Recommended',
-      note: 'Every other month, starts after July 15, ends in April.',
-      dates: [
-        { date: 'Aug 5, 2026', isoDate: '2026-08-05' },
-        { date: 'Oct 5, 2026', isoDate: '2026-10-05' },
-        { date: 'Dec 7, 2026', isoDate: '2026-12-07' },
-        { date: 'Feb 5, 2027', isoDate: '2027-02-05' },
-        { date: 'Apr 5, 2027', isoDate: '2027-04-05' },
-      ],
+      note: 'Five payments starting in August: four 15% drafts, then the April remainder.',
+      dates: buildRecommendedPaymentDates(),
+      hasVariableAmounts: true,
     },
   };
 
@@ -489,14 +504,14 @@ The contribution amount we listed represents the maximum we can sustainably budg
   const factsPaymentSchedule = selectedPaymentPlan.dates.map((payment, idx) => ({
     ...payment,
     number: idx + 1,
-    amount: selectedPlanPaymentAmount,
-    cardAmount: selectedPlanPaymentAmount + factsCardTransactionFee,
+    amount: payment.amount ?? selectedPlanPaymentAmount,
+    cardAmount: (payment.amount ?? selectedPlanPaymentAmount) + factsCardTransactionFee,
   }));
 
   const totalFactsCardFees = factsCardTransactionFee * factsPaymentSchedule.length;
-  const tefaTotalAward = tefaPerStudent * students.length;
-  const tefaFirstTranche = tefaTotalAward * 0.25;
-  const tefaCumulativeSecondTranche = tefaTotalAward * 0.75;
+  const selectedPlanDraftDisplay = selectedPaymentPlan.hasVariableAmounts
+    ? 'Variable'
+    : `$${selectedPlanPaymentAmount.toFixed(2)}`;
 
   const possibleTefaInflows = [
     {
@@ -1079,7 +1094,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
               </div>
               <div className="bg-white rounded-lg p-4 border border-tefa-navy/10 shadow-sm">
                 <div className="text-xs uppercase font-bold text-tefa-body/50">Selected ACH Draft</div>
-                <div className="text-2xl font-bold text-tefa-navy">${selectedPlanPaymentAmount.toFixed(2)}</div>
+                <div className="text-2xl font-bold text-tefa-navy">{selectedPlanDraftDisplay}</div>
                 <div className="text-xs text-tefa-body/60 mt-1">{selectedPaymentPlan.label}: {factsPaymentSchedule.length} payment{factsPaymentSchedule.length === 1 ? '' : 's'}</div>
               </div>
               <div className="bg-white rounded-lg p-4 border border-amber-300 shadow-sm">
@@ -1114,7 +1129,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                 </div>
               </div>
               <div className="mt-4 rounded-lg bg-tefa-green/10 border border-tefa-green/20 p-3 text-sm text-tefa-body">
-                <strong>{selectedPaymentPlan.label}:</strong> {selectedPaymentPlan.note} Scheduled ACH draft: <strong>${selectedPlanPaymentAmount.toFixed(2)}</strong>.
+                <strong>{selectedPaymentPlan.label}:</strong> {selectedPaymentPlan.note} {selectedPaymentPlan.hasVariableAmounts ? 'Drafts are shaped around the August-track TEFA release dates.' : <>Scheduled ACH draft: <strong>${selectedPlanPaymentAmount.toFixed(2)}</strong>.</>}
               </div>
             </div>
 
