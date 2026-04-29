@@ -86,7 +86,7 @@ const IddingsPlanner = () => {
     { item: "NBCA Application", status: "Accepted (3/3)", date: "All 3 Accepted", type: "success", funding: "N/A" },
     { item: "NBCA Enrollment Fee", status: "Paid ($690)", date: "April 2", type: "success", funding: "($175 + $55) x 3" },
     { item: "NBCA Financial Aid", status: "Granted ($16,200)", date: "March 31", type: "success", funding: "Tuition Credit" },
-    { item: "NBCA Scholarship", status: "Pending (depends on TEFA)", date: "End of April", type: "pending", funding: "Tuition Credit" },
+    { item: "NBCA Scholarship", status: "Pending (applications complete)", date: "By May 31", type: "pending", funding: "Tuition Credit" },
     { item: "TEFA Grant (ESA)", status: "Waitlisted (Tier 3)", date: "T1 awards Apr 22–24; T3 ranked waitlist position notified by May 11", type: "pending", funding: "Odyssey ESA Account" },
   ];
 
@@ -403,8 +403,9 @@ The contribution amount we listed represents the maximum we can sustainably budg
     { date: 'Apr 22', day: 'Wed', isoDate: '2026-04-22', event: 'TEFA Tier 1 Notifications Begin — 42,642 Awards', type: 'tefa', desc: 'Per the Apr 22 press release and the Apr 28 Lottery Update PDF: 42,642 students receive award notices Apr 22–24 — 27,050 Tier 1 students (disability + ≤500% FPL) plus 15,592 of their siblings pulled in by the sibling rule. Approximately half previously attended a public school. 30-day appeal window opens from notice receipt — adjustments only on school-district or IEP documentation.', funding: 'Award or Waitlist Position' },
     { date: 'Apr 24', day: 'Fri', isoDate: '2026-04-24', event: 'Federal Injunction Hearing', type: 'tefa', desc: 'Key hearing in Muslim schools v. Texas. Court decides whether to maintain, modify, or dissolve the injunction blocking Comptroller Hancock from excluding Islamic schools. TEFA funding timeline depends on outcome.', funding: 'Court Date' },
     { date: 'Apr 27', day: 'Mon', isoDate: '2026-04-27', event: 'TEFA Tier 2 Lottery + Waitlist Assignment', type: 'tefa', desc: 'Per Apr 22 press release: "In consultation with an independent agency, the Comptroller\'s office will conduct a lottery during the week of April 27 to determine which students in the second priority tier — students in lower-income households — will receive award notifications." The SAME lottery assigns waitlist positions to the remaining T2 students AND everyone in T3/T4. Per the Apr 28 PDF, T2 award notifications begin this week; all tiers are notified of approximate waitlist position by May 11.', funding: 'Lottery + Ranked Waitlist' },
-    { date: 'May 11', day: 'Mon', isoDate: '2026-05-11', event: 'TEFA Waitlist Notifications + Opt-In Portal Opens', type: 'tefa', desc: 'Per the Apr 28 Lottery Update PDF: by May 11, the program notifies students in all tiers of their approximate waitlist position. The Odyssey portal also flips on this date to allow parents of awarded students to "opt in" to accept the award and select their participating private school. Iddings family (T3) learns their ranked waitlist position by today — the sharpest available signal before the Jun 30 NBCA withdrawal deadline.', funding: 'Waitlist Position + Portal Live' },
-    { date: 'End Apr', day: 'TBD', isoDate: '2026-04-30', event: 'NBCA Scholarship Decisions (est.)', type: 'nbca', desc: 'Per NBCA (Michelle Leidy, Mar 31): scholarship amount depends on TEFA outcome — TEFA funds affect financial need calculation. Scholarship awarded only if/where TEFA doesn\'t cover.', funding: 'Credited to Tuition' },
+    { date: 'May 11', day: 'Mon', isoDate: '2026-05-11', event: 'TEFA Waitlist Notifications + Opt-In Portal Opens', type: 'tefa', desc: 'Per the Apr 28 Lottery Update PDF: by May 11, the program notifies students in all tiers of their approximate waitlist position. The Odyssey portal also flips on this date to allow parents of awarded students to "opt in" to accept the award and select their participating private school. Iddings family (T3) learns their ranked waitlist position by today — the sharpest available TEFA signal before NBCA scholarship awards are finalized by May 31.', funding: 'Waitlist Position + Scholarship Input' },
+    { date: 'May 15', day: 'Fri', isoDate: '2026-05-15', event: 'NBCA Financial Aid / Scholarship Application Deadline', type: 'nbca', desc: 'Per Nanette Jones (Apr 28), Iddings financial aid and scholarship applications are in order, with all documents and recommendations uploaded. No further action needed unless the committee requests clarification.', funding: 'Application Window Closes' },
+    { date: 'May 31', day: 'Sun', isoDate: '2026-05-31', event: 'NBCA Scholarship Awards Finalized (est.)', type: 'nbca', desc: 'Per NBCA (Nanette Jones / Michelle Leidy, Apr 28): financial aid and NBCA scholarship awards are expected by May 31. TEFA waitlist position from May 11 should be forwarded if useful before the committee finalizes scholarship decisions.', funding: 'Credited to Tuition' },
     { date: 'May 22', day: 'Fri', isoDate: '2026-05-22', event: 'T1 Appeals Window Closes (est.)', type: 'tefa', desc: '30 days after the first Apr 22 notifications. Per the Apr 22 press release: "Parents may appeal funding determinations within 30 days of receiving their notice; however, adjustments will be made only based on school district and Individualized Education Program documentation." Narrow relevance to Iddings — would only matter if a child obtained a qualifying IEP (moving from T3 to T1).', funding: 'Appeal Deadline' },
     { date: 'Jun 01', day: 'Mon', isoDate: '2026-06-01', event: 'TEFA July-Funding Track: Family Opt-In Deadline', type: 'tefa', desc: 'Per the Apr 28 Lottery Update PDF: parents on the July 1 funding track must opt in and select their participating private school by this date. Awarded families who miss this deadline shift to the August-funding track (Jul 15 family deadline). Non-confirmations begin trickling waitlist movement — but the bulk arrives later.', funding: 'July Track Family Deadline' },
     { date: 'Jun 15', day: 'Mon', isoDate: '2026-06-15', event: 'TEFA July-Funding Track: School Confirms Enrollment', type: 'tefa', desc: 'Per the Apr 28 Lottery Update PDF: participating private schools must confirm enrollment through the program portal by this date for July 1 funding. Key trigger for waitlist cascade — the state now formally knows which Jun 1 selections were completed vs. which fell through. Waitlisted families already know their ranked position from May 11; this is when actual movement picks up.', funding: 'July Track School Lock-In' },
@@ -415,8 +416,8 @@ The contribution amount we listed represents the maximum we can sustainably budg
     { date: 'Jul 15', day: 'Wed', isoDate: '2026-07-15', event: 'TEFA August-Funding Track: Family Opt-In Deadline', type: 'tefa', desc: 'Per the Apr 22 press release and the Apr 28 PDF: families on the August funding track have until July 15 to confirm enrollment in a participating private school, select homeschool/other ($2,000), or opt out of the program. This is the largest single attrition event of Year 1 — opt-outs cascade funding down the waitlist for both T2 and T3.', funding: 'August Track Family Deadline' },
     { date: 'Jul 31', day: 'Fri', isoDate: '2026-07-31', event: 'TEFA August-Funding Track: School Confirms Enrollment', type: 'tefa', desc: 'Per the Apr 28 Lottery Update PDF: participating private schools must confirm enrollments by this date for August funding. Back-office step — no family action required. Any subsequent attrition (mid-school-year) generates late waitlist movement.', funding: 'August Track School Lock-In' },
     { date: 'Aug 01', day: 'TBD', isoDate: '2026-08-01', event: 'TEFA Appeals Reserve → Waitlist (est.)', type: 'tefa', desc: 'Per the Apr 28 PDF item 5: the Comptroller has set aside a reserve budget for successful eligibility / priority-tier / funding-amount appeals. Once the appeals window closes and adjustments are made, any unused reserve cascades to the next-available students on the waitlist — a small upside for waitlisted T2 and T3 families. Magnitude is undisclosed; treat as a sensitivity vector, not baseline.', funding: 'Reserve Cascade' },
-    { date: 'Oct 01', day: 'Thu', isoDate: '2026-10-01', event: 'TEFA Second Funding Release (50%)', type: 'tefa', desc: 'At least 50% of approved funding available. Some families may have re-enrolled in public school by now, freeing additional waitlist spots.', funding: 'Distribution' },
-    { date: 'Apr 01', day: 'Thu', isoDate: '2027-04-01', event: 'TEFA Final Funding Release', type: 'tefa', desc: 'Remaining funding available in participant accounts. Unused funds roll over if child remains in TEFA program.', funding: 'Distribution' },
+    { date: 'Oct 01', day: 'Thu', isoDate: '2026-10-01', event: 'TEFA Second Funding Release (50%)', type: 'tefa', desc: 'Per the TEFA site, at least 50% of approved funding becomes available by Oct 1. Some families may have re-enrolled in public school by now, freeing additional waitlist spots. SB 2 sets a default quarterly account-payment structure unless Comptroller rule determines otherwise.', funding: 'Distribution' },
+    { date: 'Apr 01', day: 'Thu', isoDate: '2027-04-01', event: 'TEFA Final Funding Release', type: 'tefa', desc: 'Remaining funding available in participant accounts. Per SB 2 §29.361(c), unused funds carry forward while the child remains eligible and participating; remaining money returns to the program fund when the account closes.', funding: 'Distribution' },
   ];
 
   return (
@@ -645,10 +646,10 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <div className="bg-white rounded-lg p-4 border border-amber-300">
                         <div className="text-xs uppercase font-bold text-amber-700 mb-2">Claim (Archdiocese TEFA bulletin)</div>
                         <p className="text-tefa-body/80 italic mb-2">"Applicants in Priority Tiers 3 and 4 are not expected to receive funding this year."</p>
-                        <div className="text-xs uppercase font-bold text-tefa-red mb-1">What's wrong (T3 is materially funded; T4 is correct)</div>
+                        <div className="text-xs uppercase font-bold text-tefa-red mb-1">What's wrong (T3 is possible; T4 is correct)</div>
                         <ul className="list-disc ml-5 text-tefa-body/80 space-y-1 text-xs">
                             <li>For T4 in Year 1: correct — effectively 0%.</li>
-                            <li>For T3: <strong>materially funded.</strong> Under the Apr 28 PDF empirical recalibration (T1-family at $415M, T2 at the 77/23 setting mix), the T2 backlog ahead of T3 collapses to ~{analysis.unfundedT2.toLocaleString()} students. Attrition cascades much faster: T3 sits at <strong>~{analysis.effectiveTier3Rate.toFixed(1)}% individual / ~{analysis.effectiveFamilyRate.toFixed(1)}% for a 3-child family at the central 15% attrition rate</strong>, rising to ~{scenarioOutlook.best.effectiveFamilyRate.toFixed(0)}% family at 25% attrition. The archdiocese guidance was correct under earlier (lower-capacity) models but the Apr 28 PDF moved the goalposts substantially.</li>
+                            <li>For T3: <strong>possible, but uncertain.</strong> Under the Apr 28 PDF empirical recalibration plus the full SB 2 admin-cap assumption, the T2 backlog ahead of T3 is ~{analysis.unfundedT2.toLocaleString()} students. Attrition must clear that backlog first: T3 sits at <strong>~{analysis.effectiveTier3Rate.toFixed(1)}% individual / ~{analysis.effectiveFamilyRate.toFixed(1)}% for a 3-child family at the central 15% attrition rate</strong>, rising to ~{scenarioOutlook.best.effectiveFamilyRate.toFixed(0)}% family at 25% attrition. "No shot" is too strong; "possible but uncertain" is more accurate.</li>
                         </ul>
                     </div>
                 </div>
@@ -680,8 +681,8 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     </div>
                     <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-navy/10">
                         <span className="text-tefa-body/60 font-medium">NBCA Scholarship</span>
-                        <span className="font-bold text-tefa-navy text-lg">End of April</span>
-                        <span className="text-xs text-tefa-body/40 hidden sm:block">Depends on TEFA outcome</span>
+                        <span className="font-bold text-tefa-navy text-lg">By May 31</span>
+                        <span className="text-xs text-tefa-body/40 hidden sm:block">May 11 TEFA waitlist update feeds review</span>
                     </div>
                     <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-navy/10">
                         <span className="text-tefa-body/60 font-medium">Withdraw penalty-free by</span>
@@ -794,7 +795,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                           <div className="flex justify-between items-center mb-2">
                             <div className="font-bold text-tefa-green flex items-center gap-2">
                                 <GraduationCap size={14}/> NBCA Scholarship
-                                <span className="text-[10px] bg-amber-400 text-white px-1.5 py-0.5 rounded uppercase tracking-wide">Pending End of Apr</span>
+                                <span className="text-[10px] bg-amber-400 text-white px-1.5 py-0.5 rounded uppercase tracking-wide">Pending May 31</span>
                             </div>
                             <div className="text-xs font-bold text-tefa-green/70 bg-white px-2 py-0.5 rounded border border-tefa-green/20">
                               ${nbcaScholarshipAmount.toLocaleString()}
@@ -817,7 +818,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                 Credited to Tuition
                           </div>
                           <div className="text-[10px] text-amber-600 mt-1 font-medium">
-                                NBCA calculates scholarship after TEFA decision — either/or, not both
+                                NBCA expects awards by May 31; May 11 TEFA waitlist position informs need
                           </div>
                         </div>
 
@@ -1579,7 +1580,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                 <div className="text-xs text-tefa-body/50 uppercase font-bold mb-1">Dual-Track Mitigation Strategy</div>
                                 <ul className="text-tefa-body/70 space-y-1 text-xs">
                                     <li><strong>TEFA + NBCA FACTS Aid ($16,200 granted):</strong> If TEFA is awarded ($10,474 x 3 = $31,422) plus granted aid ($16,200), total coverage exceeds tuition — fully subsidized</li>
-                                    <li><strong>NBCA Scholarship (pending):</strong> NBCA calculates scholarship after TEFA decision — designed to bridge remaining gap. Up to 35% of tuition (~$4,777/child max)</li>
+                                    <li><strong>NBCA Scholarship (pending):</strong> NBCA expects awards by May 31; the May 11 TEFA waitlist position should help clarify remaining need. Up to 35% of tuition (~$4,777/child max)</li>
                                     <li><strong>Without TEFA:</strong> NBCA Aid ($16,200) + potential scholarship reduces out-of-pocket, but significant gap remains. June 30 withdrawal is the safety valve.</li>
                                 </ul>
                             </div>
