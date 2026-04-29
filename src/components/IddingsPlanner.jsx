@@ -57,6 +57,7 @@ const IddingsPlanner = () => {
   // Default: TEFA unlikely for T3 (OFF per Comptroller Apr 3), ACE unlikely (OFF)
   const [includeTefa, setIncludeTefa] = useState(false);
   const [includeAce, setIncludeAce] = useState(false);
+  const [paymentTefaTrack, setPaymentTefaTrack] = useState('august');
 
   // NBCA Aid - Granted: Cassius $5,850 + Dorothy $5,600 + Sebastian $4,750 = $16,200
   const nbcaAidAmount = 16200;
@@ -520,6 +521,18 @@ The contribution amount we listed represents the maximum we can sustainably budg
   const noTefaPaymentProjection = buildPaymentProjection('none');
   const julyTefaPaymentProjection = buildPaymentProjection('july');
   const augustTefaPaymentProjection = buildPaymentProjection('august');
+  const selectedTefaPaymentProjection = paymentTefaTrack === 'july'
+    ? julyTefaPaymentProjection
+    : paymentTefaTrack === 'august'
+      ? augustTefaPaymentProjection
+      : noTefaPaymentProjection;
+  const selectedTrackLabel = paymentTefaTrack === 'july'
+    ? 'July funding track'
+    : paymentTefaTrack === 'august'
+      ? 'August funding track'
+      : 'No TEFA';
+  const totalFamilyPaidUnderSelectedTrack = selectedTefaPaymentProjection.reduce((sum, payment) => sum + payment.familyPaid, 0);
+  const totalTefaAppliedUnderSelectedTrack = selectedTefaPaymentProjection.reduce((sum, payment) => sum + payment.tefaApplied, 0);
 
   return (
     <div className="min-h-screen bg-tefa-light font-sans text-tefa-body pb-12">
@@ -1004,7 +1017,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                 <DollarSign /> Payment Schedule
               </h2>
               <p className="text-sm text-tefa-body/70">
-                Current FACTS plan uses checking/savings ACH, so the 3% card fee is avoided. Payment amounts will change if NBCA scholarship, ACE, or TEFA funds are applied.
+                Current FACTS plan uses checking/savings ACH, so the 3% card fee is avoided. TEFA can cover the annual balance if awarded, but timing matters: August-track funds may arrive after the July FACTS draft.
               </p>
             </div>
 
@@ -1020,9 +1033,53 @@ The contribution amount we listed represents the maximum we can sustainably budg
                 <div className="text-xs text-tefa-body/60 mt-1">10 monthly payments</div>
               </div>
               <div className="bg-white rounded-lg p-4 border border-amber-300 shadow-sm">
-                <div className="text-xs uppercase font-bold text-amber-700">Avoided Card Fees</div>
-                <div className="text-2xl font-bold text-amber-700">${totalFactsCardFees.toFixed(2)}</div>
-                <div className="text-xs text-tefa-body/60 mt-1">$92.43 x 10 if using card</div>
+                <div className="text-xs uppercase font-bold text-amber-700">Cash Due Before TEFA</div>
+                <div className="text-2xl font-bold text-amber-700">${totalFamilyPaidUnderSelectedTrack.toFixed(2)}</div>
+                <div className="text-xs text-tefa-body/60 mt-1">{selectedTrackLabel}</div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div>
+                  <h3 className="font-bold text-tefa-navy">TEFA Timing Scenario</h3>
+                  <p className="text-xs text-tefa-body/60 mt-1">
+                    Use August track as the planning case for T3 waitlist movement. July track is shown only as an upside case.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { id: 'none', label: 'No TEFA' },
+                    { id: 'july', label: 'July Track' },
+                    { id: 'august', label: 'August Track' },
+                  ].map((option) => (
+                    <button
+                      key={option.id}
+                      onClick={() => setPaymentTefaTrack(option.id)}
+                      className={`px-3 py-1.5 rounded-full text-sm font-bold border transition ${
+                        paymentTefaTrack === option.id
+                          ? 'bg-tefa-navy text-white border-tefa-navy'
+                          : 'bg-white text-tefa-navy border-tefa-navy/20 hover:bg-tefa-navy/5'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4 text-sm">
+                <div className="bg-tefa-light rounded p-3">
+                  <div className="text-xs uppercase font-bold text-tefa-body/50">TEFA Award</div>
+                  <div className="font-mono font-bold text-tefa-navy">${tefaTotalAward.toLocaleString()}</div>
+                </div>
+                <div className="bg-tefa-light rounded p-3">
+                  <div className="text-xs uppercase font-bold text-tefa-body/50">TEFA Applied In Schedule</div>
+                  <div className="font-mono font-bold text-tefa-green">${totalTefaAppliedUnderSelectedTrack.toFixed(2)}</div>
+                </div>
+                <div className="bg-tefa-light rounded p-3">
+                  <div className="text-xs uppercase font-bold text-tefa-body/50">Net Cash Drafts</div>
+                  <div className="font-mono font-bold text-amber-700">${totalFamilyPaidUnderSelectedTrack.toFixed(2)}</div>
+                </div>
               </div>
             </div>
 
@@ -1040,29 +1097,26 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         <th className="text-left px-4 py-2">#</th>
                         <th className="text-left px-4 py-2">Date</th>
                         <th className="text-right px-4 py-2">Due</th>
-                        <th className="text-right px-4 py-2">Balance After</th>
-                        <th className="text-right px-4 py-2">TEFA Applied (July)</th>
-                        <th className="text-right px-4 py-2">Family Pays (July)</th>
-                        <th className="text-right px-4 py-2">TEFA Applied (Aug)</th>
-                        <th className="text-right px-4 py-2">Family Pays (Aug)</th>
+                        <th className="text-right px-4 py-2">TEFA Applied</th>
+                        <th className="text-right px-4 py-2">Family Pays</th>
+                        <th className="text-right px-4 py-2">TEFA Left</th>
+                        <th className="text-right px-4 py-2">FACTS Balance After</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                       {factsPaymentSchedule.map((payment, idx) => {
                         const noTefa = noTefaPaymentProjection[idx];
-                        const july = julyTefaPaymentProjection[idx];
-                        const august = augustTefaPaymentProjection[idx];
+                        const selected = selectedTefaPaymentProjection[idx];
 
                         return (
                           <tr key={payment.isoDate}>
                             <td className="px-4 py-2 font-mono text-tefa-body/60">{payment.number}</td>
                             <td className="px-4 py-2 font-medium text-tefa-navy">{payment.date}</td>
                             <td className="px-4 py-2 text-right font-mono">${payment.amount.toFixed(2)}</td>
+                            <td className="px-4 py-2 text-right font-mono text-tefa-green">${selected.tefaApplied.toFixed(2)}</td>
+                            <td className="px-4 py-2 text-right font-mono text-amber-700">{selected.familyPaid > 0 ? `$${selected.familyPaid.toFixed(2)}` : '$0.00'}</td>
+                            <td className="px-4 py-2 text-right font-mono">${selected.tefaAvailable.toFixed(2)}</td>
                             <td className="px-4 py-2 text-right font-mono">${noTefa.remainingBalance.toFixed(2)}</td>
-                            <td className="px-4 py-2 text-right font-mono text-tefa-green">${july.tefaApplied.toFixed(2)}</td>
-                            <td className="px-4 py-2 text-right font-mono">{july.familyPaid > 0 ? `$${july.familyPaid.toFixed(2)}` : '$0.00'}</td>
-                            <td className="px-4 py-2 text-right font-mono text-tefa-green">${august.tefaApplied.toFixed(2)}</td>
-                            <td className="px-4 py-2 text-right font-mono">{august.familyPaid > 0 ? `$${august.familyPaid.toFixed(2)}` : '$0.00'}</td>
                           </tr>
                         );
                       })}
@@ -1070,7 +1124,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                   </table>
                 </div>
                 <div className="p-4 text-xs text-tefa-body/60 bg-tefa-light/60">
-                  Balance After shows the remaining FACTS balance after each scheduled draft. TEFA columns assume funds can be applied as they become available in Odyssey. If TEFA is awarded after a payment has already drafted, actual school/FACTS handling may differ.
+                  FACTS Balance After shows the scheduled school balance after each draft. TEFA Applied shows how much of that month's draft could be covered by available Odyssey funds under the selected track. If TEFA arrives after a draft has already processed, NBCA/FACTS may handle it as a credit or adjustment rather than reversing the payment.
                 </div>
               </div>
 
