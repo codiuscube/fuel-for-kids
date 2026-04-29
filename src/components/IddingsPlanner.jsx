@@ -531,7 +531,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
             <p className="text-tefa-sky mt-1">NBCA Enrollment 2026-2027</p>
           </div>
           <div className="mt-4 md:mt-0 flex flex-wrap gap-2 text-sm font-medium">
-            {['dashboard', 'timeline', 'analysis'].map(tab => (
+            {VALID_TABS.map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
