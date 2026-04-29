@@ -24,7 +24,7 @@ import {
   Scale
 } from 'lucide-react';
 
-const VALID_TABS = ['dashboard', 'timeline', 'analysis'];
+const VALID_TABS = ['dashboard', 'payments', 'timeline', 'analysis'];
 
 const IddingsPlanner = () => {
   const { tab } = useParams();
@@ -423,6 +423,103 @@ The contribution amount we listed represents the maximum we can sustainably budg
     { date: 'Oct 01', day: 'Thu', isoDate: '2026-10-01', event: 'TEFA Second Funding Release (50%)', type: 'tefa', desc: 'Per the TEFA site, at least 50% of approved funding becomes available by Oct 1. Some families may have re-enrolled in public school by now, freeing additional waitlist spots. SB 2 sets a default quarterly account-payment structure unless Comptroller rule determines otherwise.', funding: 'Distribution' },
     { date: 'Apr 01', day: 'Thu', isoDate: '2027-04-01', event: 'TEFA Final Funding Release', type: 'tefa', desc: 'Remaining funding available in participant accounts. Per SB 2 §29.361(c), unused funds carry forward while the child remains eligible and participating; remaining money returns to the program fund when the account closes.', funding: 'Distribution' },
   ];
+
+  const factsPaymentSchedule = [
+    { date: 'Jul 6, 2026', isoDate: '2026-07-06' },
+    { date: 'Aug 5, 2026', isoDate: '2026-08-05' },
+    { date: 'Sep 8, 2026', isoDate: '2026-09-08' },
+    { date: 'Oct 5, 2026', isoDate: '2026-10-05' },
+    { date: 'Nov 5, 2026', isoDate: '2026-11-05' },
+    { date: 'Dec 7, 2026', isoDate: '2026-12-07' },
+    { date: 'Jan 5, 2027', isoDate: '2027-01-05' },
+    { date: 'Feb 5, 2027', isoDate: '2027-02-05' },
+    { date: 'Mar 5, 2027', isoDate: '2027-03-05' },
+    { date: 'Apr 5, 2027', isoDate: '2027-04-05' },
+  ].map((payment, idx) => ({
+    ...payment,
+    number: idx + 1,
+    amount: monthlyCost,
+    cardAmount: monthlyDraftWithCardFee,
+  }));
+
+  const totalFactsCardFees = factsCardTransactionFee * factsPaymentSchedule.length;
+  const tefaTotalAward = tefaPerStudent * students.length;
+  const tefaFirstTranche = tefaTotalAward * 0.25;
+  const tefaCumulativeSecondTranche = tefaTotalAward * 0.75;
+
+  const possibleTefaInflows = [
+    {
+      date: 'Jul 1, 2026',
+      scenario: 'July funding track',
+      amount: tefaFirstTranche,
+      likelihood: 'Unlikely for T3',
+      note: 'Only if pulled early enough to opt in by Jun 1 and NBCA confirms by Jun 15.',
+    },
+    {
+      date: 'Early Aug 2026',
+      scenario: 'August funding track',
+      amount: tefaFirstTranche,
+      likelihood: 'More plausible if T3 is reached',
+      note: 'Requires being pulled by Jul 15 and NBCA confirming by Jul 31.',
+    },
+    {
+      date: 'Oct 1, 2026',
+      scenario: 'Second TEFA release',
+      amount: tefaCumulativeSecondTranche,
+      likelihood: 'Only if already funded',
+      note: 'TEFA site says accounts reach at least 75% cumulative by Oct 1.',
+    },
+    {
+      date: 'Apr 1, 2027',
+      scenario: 'Final TEFA release',
+      amount: tefaTotalAward,
+      likelihood: 'Only if already funded',
+      note: 'Remaining funds available; unused funds carry forward while eligible.',
+    },
+  ];
+
+  const getTefaCumulativeByDate = (track, isoDate) => {
+    if (track === 'none') return 0;
+
+    const firstReleaseDate = track === 'july' ? '2026-07-01' : '2026-08-01';
+
+    if (isoDate >= '2027-04-01') return tefaTotalAward;
+    if (isoDate >= '2026-10-01') return tefaCumulativeSecondTranche;
+    if (isoDate >= firstReleaseDate) return tefaFirstTranche;
+    return 0;
+  };
+
+  const buildPaymentProjection = (track) => {
+    let remainingBalance = finalCost;
+    let tefaAvailable = 0;
+    let previousCumulativeTefa = 0;
+
+    return factsPaymentSchedule.map((payment) => {
+      const cumulativeTefa = getTefaCumulativeByDate(track, payment.isoDate);
+      tefaAvailable += Math.max(0, cumulativeTefa - previousCumulativeTefa);
+      previousCumulativeTefa = cumulativeTefa;
+
+      const scheduledDue = Math.min(payment.amount, Math.max(0, remainingBalance));
+      const tefaApplied = Math.min(scheduledDue, tefaAvailable);
+      const familyPaid = scheduledDue - tefaApplied;
+
+      tefaAvailable -= tefaApplied;
+      remainingBalance -= scheduledDue;
+
+      return {
+        ...payment,
+        scheduledDue,
+        tefaApplied,
+        familyPaid,
+        tefaAvailable,
+        remainingBalance: Math.max(0, remainingBalance),
+      };
+    });
+  };
+
+  const noTefaPaymentProjection = buildPaymentProjection('none');
+  const julyTefaPaymentProjection = buildPaymentProjection('july');
+  const augustTefaPaymentProjection = buildPaymentProjection('august');
 
   return (
     <div className="min-h-screen bg-tefa-light font-sans text-tefa-body pb-12">
@@ -895,6 +992,115 @@ The contribution amount we listed represents the maximum we can sustainably budg
                       </div>
                   </div>
                 </div>
+            </div>
+          </div>
+        )}
+
+        {/* PAYMENTS VIEW */}
+        {activeTab === 'payments' && (
+          <div className="max-w-5xl mx-auto space-y-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <h2 className="text-2xl font-bold text-tefa-navy flex items-center gap-2 mb-2">
+                <DollarSign /> Payment Schedule
+              </h2>
+              <p className="text-sm text-tefa-body/70">
+                Current FACTS plan uses checking/savings ACH, so the 3% card fee is avoided. Payment amounts will change if NBCA scholarship, ACE, or TEFA funds are applied.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white rounded-lg p-4 border border-tefa-navy/10 shadow-sm">
+                <div className="text-xs uppercase font-bold text-tefa-body/50">FACTS Balance</div>
+                <div className="text-2xl font-bold text-tefa-navy">${finalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                <div className="text-xs text-tefa-body/60 mt-1">After sibling discount + $16,200 aid</div>
+              </div>
+              <div className="bg-white rounded-lg p-4 border border-tefa-navy/10 shadow-sm">
+                <div className="text-xs uppercase font-bold text-tefa-body/50">ACH Draft</div>
+                <div className="text-2xl font-bold text-tefa-navy">${monthlyCost.toFixed(2)}</div>
+                <div className="text-xs text-tefa-body/60 mt-1">10 monthly payments</div>
+              </div>
+              <div className="bg-white rounded-lg p-4 border border-amber-300 shadow-sm">
+                <div className="text-xs uppercase font-bold text-amber-700">Avoided Card Fees</div>
+                <div className="text-2xl font-bold text-amber-700">${totalFactsCardFees.toFixed(2)}</div>
+                <div className="text-xs text-tefa-body/60 mt-1">$92.43 x 10 if using card</div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden lg:col-span-2">
+                <div className="px-4 py-3 bg-tefa-navy/5 border-b border-tefa-navy/10">
+                  <h3 className="font-bold text-tefa-navy flex items-center gap-2">
+                    <CreditCard size={18} /> Monthly Balance + TEFA Application
+                  </h3>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="text-xs uppercase text-tefa-body/50 bg-tefa-light">
+                      <tr>
+                        <th className="text-left px-4 py-2">#</th>
+                        <th className="text-left px-4 py-2">Date</th>
+                        <th className="text-right px-4 py-2">Due</th>
+                        <th className="text-right px-4 py-2">Balance After</th>
+                        <th className="text-right px-4 py-2">TEFA Applied (July)</th>
+                        <th className="text-right px-4 py-2">Family Pays (July)</th>
+                        <th className="text-right px-4 py-2">TEFA Applied (Aug)</th>
+                        <th className="text-right px-4 py-2">Family Pays (Aug)</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {factsPaymentSchedule.map((payment, idx) => {
+                        const noTefa = noTefaPaymentProjection[idx];
+                        const july = julyTefaPaymentProjection[idx];
+                        const august = augustTefaPaymentProjection[idx];
+
+                        return (
+                          <tr key={payment.isoDate}>
+                            <td className="px-4 py-2 font-mono text-tefa-body/60">{payment.number}</td>
+                            <td className="px-4 py-2 font-medium text-tefa-navy">{payment.date}</td>
+                            <td className="px-4 py-2 text-right font-mono">${payment.amount.toFixed(2)}</td>
+                            <td className="px-4 py-2 text-right font-mono">${noTefa.remainingBalance.toFixed(2)}</td>
+                            <td className="px-4 py-2 text-right font-mono text-tefa-green">${july.tefaApplied.toFixed(2)}</td>
+                            <td className="px-4 py-2 text-right font-mono">{july.familyPaid > 0 ? `$${july.familyPaid.toFixed(2)}` : '$0.00'}</td>
+                            <td className="px-4 py-2 text-right font-mono text-tefa-green">${august.tefaApplied.toFixed(2)}</td>
+                            <td className="px-4 py-2 text-right font-mono">{august.familyPaid > 0 ? `$${august.familyPaid.toFixed(2)}` : '$0.00'}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="p-4 text-xs text-tefa-body/60 bg-tefa-light/60">
+                  Balance After shows the remaining FACTS balance after each scheduled draft. TEFA columns assume funds can be applied as they become available in Odyssey. If TEFA is awarded after a payment has already drafted, actual school/FACTS handling may differ.
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden lg:col-span-2">
+                <div className="px-4 py-3 bg-tefa-navy/5 border-b border-tefa-navy/10">
+                  <h3 className="font-bold text-tefa-navy flex items-center gap-2">
+                    <Briefcase size={18} /> Possible TEFA Money Timing
+                  </h3>
+                </div>
+                <div className="divide-y divide-gray-100">
+                  {possibleTefaInflows.map((item) => (
+                    <div key={`${item.date}-${item.scenario}`} className="p-4">
+                      <div className="flex justify-between gap-4">
+                        <div>
+                          <div className="text-xs font-bold uppercase text-tefa-body/50">{item.date}</div>
+                          <div className="font-bold text-tefa-navy">{item.scenario}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-mono font-bold text-tefa-green">${item.amount.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
+                          <div className="text-[10px] uppercase font-bold text-tefa-body/50">{item.likelihood}</div>
+                        </div>
+                      </div>
+                      <p className="text-xs text-tefa-body/60 mt-2">{item.note}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="p-4 text-xs text-amber-900 bg-amber-50 border-t border-amber-200">
+                  T3 initial lottery is 0%. Any TEFA funding would likely come from waitlist cascade; for this family, August track or later is more realistic than July 1 funding.
+                </div>
+              </div>
             </div>
           </div>
         )}
