@@ -51,7 +51,7 @@ const IddingsPlanner = () => {
   ];
 
   // Financial Data State - "Most Likely Scenario" Defaults
-  const [tuition, setTuition] = useState(43505);
+  const [tuition, setTuition] = useState(48025);
   const [tefaPerStudent, setTefaPerStudent] = useState(10474);
 
   // Default: TEFA unlikely for T3 (OFF per Comptroller Apr 3), ACE unlikely (OFF)
@@ -60,6 +60,8 @@ const IddingsPlanner = () => {
 
   // NBCA Aid - Granted: Cassius $5,850 + Dorothy $5,600 + Sebastian $4,750 = $16,200
   const nbcaAidAmount = 16200;
+  const siblingDiscountAmount = 1518.5;
+  const factsCardTransactionFee = 92.43;
 
   // NBCA Scholarship - Depends on TEFA outcome (either/or per NBCA). Defaulting to 0.
   const [nbcaScholarshipAmount, setNbcaScholarshipAmount] = useState(0);
@@ -77,9 +79,10 @@ const IddingsPlanner = () => {
   const totalTefa = includeTefa ? tefaPerStudent * 3 : 0;
   const totalAce = includeAce ? students.reduce((acc, s) => acc + s.aceAmount, 0) : 0;
 
-  const totalAid = totalTefa + totalAce + nbcaAidAmount + nbcaScholarshipAmount;
+  const totalAid = totalTefa + totalAce + nbcaAidAmount + siblingDiscountAmount + nbcaScholarshipAmount;
   const finalCost = tuition - totalAid;
   const monthlyCost = finalCost > 0 ? finalCost / 10 : 0; // 10 month plan estimate
+  const monthlyDraftWithCardFee = monthlyCost > 0 ? monthlyCost + factsCardTransactionFee : 0;
 
   // Status Tracking Data
   const appStatus = [
@@ -393,7 +396,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
     { date: 'Mar 14', day: 'Sat', isoDate: '2026-03-14', event: 'NBCA Round 1 Notification', type: 'nbca', desc: 'Acceptance letters emailed to families.', funding: 'Decision Only' },
     { date: 'Mar 17', day: 'Tue', isoDate: '2026-03-17', event: 'TEFA Original Deadline (Extended)', type: 'tefa', desc: 'Original deadline. Extended by federal court order.', funding: 'Superseded' },
     { date: 'Mar 31', day: 'Tue', isoDate: '2026-03-31', event: 'TEFA Application Closes (Extended)', type: 'tefa', desc: 'New deadline per federal court order (Judge Bennett, S.D. Texas). 11:59 PM CT. After today: cannot switch homeschool/other to private school (can switch private to homeschool/other).', funding: 'Deadline' },
-    { date: 'Mar 31', day: 'Tue', isoDate: '2026-03-31', event: 'NBCA Financial Aid Granted ($16,200)', type: 'nbca', desc: 'Financial aid awarded: Cassius $5,850, Dorothy $5,600, Sebastian $4,750. Credited to tuition.', funding: 'Credited to Tuition' },
+    { date: 'Mar 31', day: 'Tue', isoDate: '2026-03-31', event: 'NBCA Financial Aid Granted ($16,200)', type: 'nbca', desc: 'Financial aid awarded: Cassius $5,850, Dorothy $5,600, Sebastian $4,750. Nanette confirmed 2026-27 gross tuition is $48,025; after $1,518.50 sibling discount and $16,200 financial aid, FACTS balance is $30,306.50, or 10 payments of $3,030.65. The $92.43 monthly transaction fee applies only to debit/credit card payments, not checking/savings ACH.', funding: 'Credited to Tuition' },
     { date: 'Apr 01', day: 'Wed', isoDate: '2026-04-01', event: 'TEFA Surpasses 274,000 Applications (AFC)', type: 'tefa', desc: 'AFC press release confirms 274,000+ applications — largest school choice launch in history.', funding: 'N/A' },
     { date: 'Apr 02', day: 'Thu', isoDate: '2026-04-02', event: 'Comptroller Releases Initial TEFA Breakdown', type: 'tefa', desc: 'Initial breakdown: 274,183 total applications, 77% private / 23% homeschool.', funding: 'N/A' },
     { date: 'Apr 03', day: 'Fri', isoDate: '2026-04-03', event: 'Comptroller Confirms: Public School Priority Only Applies to Tier 4', type: 'tefa', desc: 'TEFA team email response to our inquiry confirms: per Sec. 29.3521(d), prior public school enrollment priority only applies to Tier 4 (≥500% FPL). For Tier 3 (200-500% FPL), public school history provides no priority advantage. Also confirmed: $1B spending cap for 2025-2027 biennium, 20% cap on Tier 4 spending.', funding: 'N/A' },
@@ -411,7 +414,8 @@ The contribution amount we listed represents the maximum we can sustainably budg
     { date: 'Jun 15', day: 'Mon', isoDate: '2026-06-15', event: 'TEFA July-Funding Track: School Confirms Enrollment', type: 'tefa', desc: 'Per the Apr 28 Lottery Update PDF: participating private schools must confirm enrollment through the program portal by this date for July 1 funding. Key trigger for waitlist cascade — the state now formally knows which Jun 1 selections were completed vs. which fell through. Waitlisted families already know their ranked position from May 11; this is when actual movement picks up.', funding: 'July Track School Lock-In' },
     { date: 'Jun 15', day: 'Mon', isoDate: '2026-06-15', event: 'ACE Award Notification', type: 'ace', desc: 'Scholarship decisions released.', funding: 'Paid directly to School' },
     { date: 'Jun 16', day: 'TBD', isoDate: '2026-06-16', event: 'TEFA Waitlist Movement Accelerates (est.)', type: 'tefa', desc: 'After Jun 15 school confirmations on the July-funding track, unfilled spots cascade down the waitlist (T2 backfill first, then T3). Waitlisted families already know their ranked position from May 11. Biggest cascade event will be post-Jul 15 opt-outs on the August-funding track.', funding: 'Waitlist Movement' },
-    { date: 'Jun 30', day: 'Tue', isoDate: '2026-06-30', event: 'NBCA Withdrawal Deadline', type: 'nbca', desc: 'Can withdraw penalty-free before this date. No tuition due until July. Critical tension: June 30 falls ~2 weeks before the Jul 15 TEFA opt-out/confirmation deadline — meaning the NBCA withdrawal decision is made BEFORE the main waitlist-cascade event (Jul 15 opt-outs free the largest block of funding).', funding: 'N/A' },
+    { date: 'Jun 30', day: 'Tue', isoDate: '2026-06-30', event: 'NBCA Withdrawal Deadline', type: 'nbca', desc: 'Can withdraw penalty-free before this date per Michelle Leidy. Assume July tuition obligation begins if not withdrawn by June 30 unless NBCA clarifies otherwise. Critical tension: June 30 falls ~2 weeks before the Jul 15 TEFA opt-out/confirmation deadline — meaning the NBCA withdrawal decision is made BEFORE the main waitlist-cascade event.', funding: 'N/A' },
+    { date: 'Jul 06', day: 'Mon', isoDate: '2026-07-06', event: 'First FACTS Tuition Payment', type: 'nbca', desc: 'Current FACTS schedule shows $3,030.65 due. Nanette confirmed the $92.43 monthly transaction fee applies only to debit/credit cards; checking/savings automatic payments avoid the card usage fee.', funding: 'Tuition Draft' },
     { date: 'Jul 01', day: 'Wed', isoDate: '2026-07-01', event: 'TEFA First Round Funding Available', type: 'tefa', desc: 'Per official TEFA email: "First round of funding becomes available in Odyssey\'s platform." This is when award recipients first see real dollar amounts vs. their actual tuition bill — potential sticker-shock attrition event. Families who drop here create a second wave of waitlist opportunities for those not yet called up.', funding: 'Distribution' },
     { date: 'Jul 15', day: 'Wed', isoDate: '2026-07-15', event: 'TEFA August-Funding Track: Family Opt-In Deadline', type: 'tefa', desc: 'Per the Apr 22 press release and the Apr 28 PDF: families on the August funding track have until July 15 to confirm enrollment in a participating private school, select homeschool/other ($2,000), or opt out of the program. This is the largest single attrition event of Year 1 — opt-outs cascade funding down the waitlist for both T2 and T3.', funding: 'August Track Family Deadline' },
     { date: 'Jul 31', day: 'Fri', isoDate: '2026-07-31', event: 'TEFA August-Funding Track: School Confirms Enrollment', type: 'tefa', desc: 'Per the Apr 28 Lottery Update PDF: participating private schools must confirm enrollments by this date for August funding. Back-office step — no family action required. Any subsequent attrition (mid-school-year) generates late waitlist movement.', funding: 'August Track School Lock-In' },
@@ -691,12 +695,12 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     </div>
                     <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-navy/10">
                         <span className="text-tefa-body/60 font-medium">No tuition due until</span>
-                        <span className="font-bold text-tefa-navy text-lg">July</span>
-                        <span className="text-xs text-tefa-body/40 hidden sm:block">First payment</span>
+                        <span className="font-bold text-tefa-navy text-lg">July 6</span>
+                        <span className="text-xs text-tefa-body/40 hidden sm:block">$3,030.65 via ACH</span>
                     </div>
                 </div>
                 <div className="mt-4 p-3 bg-tefa-navy/5 rounded-lg text-xs text-tefa-body/70">
-                    <strong>Sunk cost:</strong> $690 enrollment fee (non-refundable). All other costs can be avoided by withdrawing before June 30. Per the Apr 28 Lottery Update PDF, the <strong>Jul 15 opt-in deadline</strong> for the August-funding track is the largest single attrition event of Year 1 — but it falls ~2 weeks AFTER the Jun 30 NBCA withdrawal deadline. The Iddings family knows their ranked waitlist position by May 11 (Apr 28 PDF), which is the sharpest available signal before Jun 30.
+                    <strong>Sunk cost:</strong> $690 enrollment fee (non-refundable). Current working assumption: all other costs can be avoided by withdrawing before June 30, but if not withdrawn, the first FACTS draft is due July 6 ($3,030.65 via checking/savings ACH; card payments add a $92.43 usage fee). Per the Apr 28 Lottery Update PDF, the <strong>Jul 15 opt-in deadline</strong> for the August-funding track is the largest single attrition event of Year 1 — but it falls ~2 weeks AFTER the Jun 30 NBCA withdrawal deadline. The Iddings family knows their ranked waitlist position by May 11 (Apr 28 PDF), which is the sharpest available signal before Jun 30.
                 </div>
             </div>
 
@@ -712,9 +716,9 @@ The contribution amount we listed represents the maximum we can sustainably budg
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div className="space-y-6">
-                        {/* Tuition Input */}
+                        {/* Tuition input */}
                         <div>
-                          <label className="text-xs font-bold text-tefa-body/50 uppercase">Gross Annual Tuition (3 Kids)</label>
+                          <label className="text-xs font-bold text-tefa-body/50 uppercase">Gross 2026-27 Tuition (3 Kids)</label>
                           <div className="flex items-center mt-1">
                             <span className="text-tefa-body/40 mr-2">$</span>
                             <input
@@ -723,6 +727,9 @@ The contribution amount we listed represents the maximum we can sustainably budg
                               onChange={(e) => setTuition(Number(e.target.value))}
                               className="w-full bg-tefa-light border border-gray-200 rounded p-2 font-mono font-bold text-right"
                             />
+                          </div>
+                          <div className="text-[10px] text-tefa-body/50 mt-1">
+                            Nanette confirmed: HS $16,790 + MS $16,050 + Elem $15,185 = $48,025. After $1,518.50 sibling discount and $16,200 aid, FACTS balance is $30,306.50.
                           </div>
                         </div>
 
@@ -830,8 +837,8 @@ The contribution amount we listed represents the maximum we can sustainably budg
 
                         <div className="space-y-3 mb-6">
                             <div className="flex justify-between text-sm text-tefa-body/60">
-                              <span>Tuition Total:</span>
-                              <span>${tuition.toLocaleString()}</span>
+                              <span>FACTS Balance + Aid Basis:</span>
+                              <span>${tuition.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                             </div>
                             {includeTefa && (
                               <div className="flex justify-between text-sm text-tefa-navy font-medium bg-tefa-navy/5 px-2 py-1 rounded">
@@ -843,6 +850,12 @@ The contribution amount we listed represents the maximum we can sustainably budg
                               <div className="flex justify-between text-sm text-tefa-red font-medium bg-tefa-red/5 px-2 py-1 rounded">
                                 <span>ACE Credit:</span>
                                 <span>-${totalAce.toLocaleString()}</span>
+                              </div>
+                            )}
+                            {siblingDiscountAmount > 0 && (
+                              <div className="flex justify-between text-sm text-tefa-green/80 font-medium bg-tefa-green/5 px-2 py-1 rounded">
+                                <span>Sibling Discount:</span>
+                                <span>-${siblingDiscountAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                               </div>
                             )}
                              {nbcaAidAmount > 0 && (
@@ -867,7 +880,10 @@ The contribution amount we listed represents the maximum we can sustainably budg
                               </span>
                             </div>
                             <div className="text-right text-sm text-tefa-body/50 mt-1 font-medium">
-                              approx ${Math.max(0, monthlyCost).toFixed(0)} / month (10-mo)
+                              approx ${Math.max(0, monthlyCost).toFixed(2)} / month (10-mo)
+                            </div>
+                            <div className="text-right text-xs text-tefa-body/50 mt-1">
+                              ACH draft avoids card fee; card draft would be ${monthlyDraftWithCardFee.toFixed(2)} / month
                             </div>
                             {finalCost < 0 && (
                               <div className="flex justify-between items-center mt-3 bg-green-50 px-3 py-2 rounded-lg border border-green-200">
