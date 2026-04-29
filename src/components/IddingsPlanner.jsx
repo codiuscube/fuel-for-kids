@@ -163,15 +163,15 @@ const IddingsPlanner = () => {
     // "$1 billion committed in year one") — administrative choice, statutorily permitted.
     const budget = 1_000_000_000;
 
-    // === ADMINISTRATIVE OVERHEAD (baked into baseline) ===
-    // SB 2 §29.359 caps the program administrator (Odyssey) fee at 5% of program funds = $50M.
-    // The Apr 28 Lottery Update PDF item 5 confirms an appeals reserve exists (amount not
-    // published; $5M is a conservative placeholder). Both come off the top before the T2
-    // lottery, so the model treats $55M overhead as part of the baseline rather than a
-    // sensitivity. If Odyssey draws less than the full cap, T2 capacity grows accordingly.
-    const ODYSSEY_ADMIN_FEE = 50_000_000;
+    // === ADMINISTRATIVE OVERHEAD + APPEALS RESERVE (baked into baseline) ===
+    // SB 2 §29.361(b)-(c) allows up to 3% for Comptroller administration plus
+    // up to 5% for certified educational assistance organizations = $80M on
+    // the $1B Year 1 program. The Apr 28 Lottery Update PDF item 5 confirms an
+    // appeals reserve exists (amount not published; $5M is a conservative placeholder).
+    // The model treats the full statutory admin cap plus reserve as baseline.
+    const STATUTORY_ADMIN_CAP = 80_000_000;
     const APPEALS_RESERVE = 5_000_000;
-    const programOverhead = ODYSSEY_ADMIN_FEE + APPEALS_RESERVE;
+    const programOverhead = STATUTORY_ADMIN_CAP + APPEALS_RESERVE;
 
     const attrRate = overrideAttrition !== undefined ? overrideAttrition : attritionRate;
     const eligibleApps = ELIGIBLE_APPLICATIONS;
@@ -223,13 +223,13 @@ const IddingsPlanner = () => {
     const perStudentT2Blended = privateShare * perStudentBase
       + (1 - privateShare) * perStudentHomeschool; // ≈ $8,525
 
-    // T2 lottery slot count, central scenario (77/23 setting mix), with $55M
-    // program overhead (Odyssey + appeals reserve) baked into the baseline budget.
+    // T2 lottery slot count, central scenario (77/23 setting mix), with $85M
+    // admin/reserve assumption baked into the baseline budget.
     // Floor sensitivity: if 100% of T2 winners select private, T2 rate drops further.
     const t2Budget = budget - t1FamilyCost - programOverhead;
-    const t2LotteryCapacity = Math.floor(t2Budget / perStudentT2Blended); // ≈ 62,170
-    const t2LotteryCapacityFloor = Math.floor(t2Budget / perStudentBase); // ≈ 50,597
-    const capacity = firstRoundAwards + t2LotteryCapacity; // ~104,812
+    const t2LotteryCapacity = Math.floor(t2Budget / perStudentT2Blended); // ≈ 58,651
+    const t2LotteryCapacityFloor = Math.floor(t2Budget / perStudentBase); // ≈ 47,737
+    const capacity = firstRoundAwards + t2LotteryCapacity; // ~101,293
 
     // =====================================================
     // MODEL A: COMPTROLLER'S ACTUAL IMPLEMENTATION
@@ -320,7 +320,7 @@ const IddingsPlanner = () => {
 
   // Scenario Outlook: Best / Most Likely / Worst (fixed ineligibility rates, current applicant count)
   // Best/worst now driven by attrition (the real uncertainty), since ineligibility is fixed.
-  // All scenarios include the $55M program overhead baked into the baseline budget.
+  // All scenarios include the $85M admin/reserve assumption baked into the baseline budget.
   const scenarioOutlook = {
     best: getScenarioAnalysis(TOTAL_APPLICATIONS, 0.25),       // high attrition → more T3 cascade
     mostLikely: getScenarioAnalysis(TOTAL_APPLICATIONS, 0.15),
@@ -526,7 +526,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <AlertCircle size={18} /> Funding Update — April 28, 2026 (TEFA Lottery Update PDF)
                 </h2>
                 <p className="text-sm text-tefa-body mb-2">
-                    The Comptroller's Apr 28 Lottery Update gives empirical tier counts: <strong>42,642 first-round awards</strong> (27,050 Tier 1 students + 15,592 T1 siblings via the sibling rule) committed <strong>~$415M</strong> of the $1B Year 1 budget (PDF item 1, verbatim). T2 demand is <strong>72,927</strong>; T3 demand is <strong>66,119</strong>; T4 totals <strong>66,950</strong> (13,246 T4a + 53,704 T4b). After ~$55M in program overhead (Odyssey admin fee at the SB 2 5% cap + appeals reserve), <strong>~${(analysis.t2Budget / 1e6).toFixed(0)}M</strong> funds the T2 lottery — at the central 77/23 setting mix, that's ~{analysis.t2LotteryCapacity.toLocaleString()} T2 slots (~{tier2FundingRate.toFixed(0)}%).
+                    The Comptroller's Apr 28 Lottery Update gives empirical tier counts: <strong>42,642 first-round awards</strong> (27,050 Tier 1 students + 15,592 T1 siblings via the sibling rule) committed <strong>~$415M</strong> of the $1B Year 1 budget (PDF item 1, verbatim). T2 demand is <strong>72,927</strong>; T3 demand is <strong>66,119</strong>; T4 totals <strong>66,950</strong> (13,246 T4a + 53,704 T4b). After ~$85M in admin/reserve assumptions (SB 2 §29.361(b)-(c) 8% statutory admin cap + appeals reserve), <strong>~${(analysis.t2Budget / 1e6).toFixed(0)}M</strong> funds the T2 lottery — at the central 77/23 setting mix, that's ~{analysis.t2LotteryCapacity.toLocaleString()} T2 slots (~{tier2FundingRate.toFixed(0)}%).
                 </p>
                 <ul className="text-xs text-tefa-body/80 space-y-1 list-disc pl-5">
                     <li><strong>Week of Apr 27:</strong> T2 lottery runs; T2 award notifications begin.</li>
@@ -554,7 +554,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
                         <div className="text-xs text-tefa-body/50 font-medium">Program Capacity</div>
                         <div className="font-bold text-tefa-navy text-lg">~{analysis.capacity.toLocaleString()}</div>
-                        <div className="text-[10px] text-tefa-body/40">$415M T1-fam + $55M overhead + $530M T2</div>
+                        <div className="text-[10px] text-tefa-body/40">$415M T1-fam + $85M admin/reserve + $500M T2</div>
                     </div>
                     <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
                         <div className="text-xs text-tefa-body/50 font-medium">Iddings Tier</div>
@@ -629,7 +629,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         <p className="text-tefa-body/80 italic mb-2">"Only a portion of applicants (approximately 30–40%) will receive funding at [the T2 lottery] stage."</p>
                         <div className="text-xs uppercase font-bold text-tefa-red mb-1">What's wrong (severely understated)</div>
                         <ul className="list-disc ml-5 text-tefa-body/80 space-y-1 text-xs">
-                            <li>The Apr 28 PDF empirically pegs the T1-family block at <strong>~$415M</strong>; another $55M comes off for Odyssey administration + appeals reserve, leaving <strong>~$530M</strong> for T2. At the central 77/23 setting mix, the T2 lottery funds at <strong>~{tier2FundingRate.toFixed(1)}%</strong> — well above the 30–40% range the archdiocese cited.</li>
+                            <li>The Apr 28 PDF empirically pegs the T1-family block at <strong>~$415M</strong>; another ~$85M comes off for the SB 2 admin cap + appeals reserve, leaving <strong>~$500M</strong> for T2. At the central 77/23 setting mix, the T2 lottery funds at <strong>~{tier2FundingRate.toFixed(1)}%</strong> — well above the 30–40% range the archdiocese cited.</li>
                             <li>Even the conservative all-private floor scenario funds T2 at ~{((analysis.t2LotteryCapacityFloor / analysis.demandT2) * 100).toFixed(0)}%. The archdiocese was directionally wrong: T2 in Year 1 is overwhelmingly funded, not the other way around. Earlier versions of this planner ($640.7M T1-family derivation → 47%) also understated.</li>
                         </ul>
                     </div>
@@ -731,7 +731,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             <div>
                                 <div className="font-bold text-tefa-navy flex items-center gap-2">
                                     TEFA Voucher
-                                    <span className={`text-[10px] text-white px-1.5 py-0.5 rounded uppercase tracking-wide ${analysis.effectiveFamilyRate > 80 ? 'bg-green-500' : analysis.effectiveFamilyRate > 50 ? 'bg-tefa-gold/100' : analysis.effectiveFamilyRate > 10 ? 'bg-amber-500' : 'bg-red-500'}`}>{analysis.effectiveFamilyRate > 80 ? 'Excellent' : analysis.effectiveFamilyRate > 50 ? 'Good' : analysis.effectiveFamilyRate > 10 ? 'Possible' : 'Unlikely'} ({analysis.effectiveFamilyRate.toFixed(1)}%)</span>
+                                    <span className={`text-[10px] text-white px-1.5 py-0.5 rounded uppercase tracking-wide ${analysis.effectiveFamilyRate > 80 ? 'bg-green-500' : analysis.effectiveFamilyRate > 50 ? 'bg-tefa-gold' : analysis.effectiveFamilyRate > 10 ? 'bg-amber-500' : 'bg-red-500'}`}>{analysis.effectiveFamilyRate > 80 ? 'Excellent' : analysis.effectiveFamilyRate > 50 ? 'Good' : analysis.effectiveFamilyRate > 10 ? 'Possible' : 'Unlikely'} ({analysis.effectiveFamilyRate.toFixed(1)}%)</span>
                                 </div>
                                 <div className="text-xs text-tefa-navy/70 mt-1">3 x $10,474 (Est)</div>
                                 <div className="text-[10px] text-tefa-navy/50 mt-2 flex items-center gap-1">
@@ -1285,7 +1285,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             <ul className="list-disc pl-5 space-y-1">
                                 <li><strong>Step 1 — T1 family block (empirical):</strong> Apr 28 PDF item 1, verbatim: <em>"all eligible tier 1 applicants and siblings will qualify for funding of approximately $415 million."</em> {analysis.firstRoundAwards.toLocaleString()} students at an avg ~${Math.round(analysis.t1FamilyCost / analysis.firstRoundAwards).toLocaleString()}/student. Reliable because the Parent Application Guide establishes that educational setting (private $10,474 vs. homeschool $2,000) <em>locks</em> at application close (Mar 31) — the program knew the exact per-student cost at lottery time.</li>
                                 <li><strong>Step 2 — T2/T3 blended cost:</strong> T2 (≤200% FPL) and T3 (200-500% FPL) both have no SPED supplement by tier definition. Per-student cost depends only on setting. Apr 8 PDF reports the overall application setting split as 77% private / 23% homeschool. Blended cost = 0.77 × $10,474 + 0.23 × $2,000 ≈ <strong>${analysis.perStudentT2Blended.toLocaleString()}/student</strong>.</li>
-                                <li><strong>Step 3 — Program overhead:</strong> SB 2 §29.359 caps the Odyssey administrator fee at 5% of program funds ($50M); the Apr 28 PDF item 5 confirms an appeals reserve (~$5M placeholder). Both come off the top: <strong>${(analysis.programOverhead / 1e6).toFixed(0)}M total overhead</strong>.</li>
+                                <li><strong>Step 3 — Admin/reserve:</strong> SB 2 §29.361(b)-(c) allows up to 3% for Comptroller administration plus up to 5% for certified educational assistance organizations ($80M total cap); the Apr 28 PDF item 5 confirms an appeals reserve (~$5M placeholder). Both come off the top: <strong>${(analysis.programOverhead / 1e6).toFixed(0)}M total</strong>.</li>
                                 <li><strong>Step 4 — T2 lottery pool:</strong> Remaining <strong>~${(analysis.t2Budget / 1e6).toFixed(0)}M</strong> ($1B − $415M − ${(analysis.programOverhead / 1e6).toFixed(0)}M) funds T2 at the blended rate → <strong>{analysis.fundedT2.toLocaleString()}</strong> T2 lottery slots (central). Floor sensitivity (100% private): {analysis.t2LotteryCapacityFloor.toLocaleString()} slots.</li>
                                 <li><strong>Total capacity:</strong> {analysis.firstRoundAwards.toLocaleString()} + {analysis.fundedT2.toLocaleString()} ≈ <strong>{analysis.capacity.toLocaleString()}</strong> students central / ~{(analysis.firstRoundAwards + analysis.t2LotteryCapacityFloor).toLocaleString()} floor.</li>
                                 <li><strong>Why this supersedes the prior $640.7M derivation:</strong> The earlier model assumed all 27,050 T1 students received the $17,650 IEP-blended rate. Reality (per the Parent Guide's "Prioritization Only" sub-class + the Apr 8 PDF's 8,618 IEP-active count + 77/23 setting split) reconciles the $415M PDF figure within ~1%: most T1 students receive only the base rate, and ~23% homeschool dramatically lowers the per-student cost.</li>
@@ -1297,7 +1297,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         <div className="mb-4 p-3 bg-white border border-tefa-navy/20 rounded text-xs">
                             <div className="font-bold text-tefa-navy mb-2">Capacity Sensitivity — T2 Setting Mix</div>
                             <div className="text-tefa-body/70 mb-2">
-                                The model now bakes <strong>$55M of program overhead</strong> into the baseline ($50M Odyssey administrator fee per the SB 2 §29.359 5% cap + $5M appeals reserve estimate per Apr 28 PDF item 5). With the T1-family block fixed at $415M and overhead of $55M, the T2 lottery pool is <strong>${(analysis.t2Budget / 1e6).toFixed(0)}M</strong>. The remaining sensitivity is the educational-setting mix among T2 winners.
+                                The model now bakes <strong>$85M of admin/reserve assumptions</strong> into the baseline ($80M statutory admin cap per SB 2 §29.361(b)-(c) + $5M appeals reserve estimate per Apr 28 PDF item 5). With the T1-family block fixed at $415M and admin/reserve of $85M, the T2 lottery pool is <strong>${(analysis.t2Budget / 1e6).toFixed(0)}M</strong>. The remaining sensitivity is the educational-setting mix among T2 winners.
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-xs">
@@ -1332,7 +1332,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                 </table>
                             </div>
                             <div className="text-tefa-body/70 mt-2">
-                                T2 families specifically applied for tuition support, so the realistic T2 setting mix likely sits closer to the central 77/23 estimate than to the all-private floor. Both rows include the $55M program overhead. If Odyssey draws less than the full SB 2 5% cap, capacity grows accordingly — that's an upside vector, not modeled as a separate scenario.
+                                T2 families specifically applied for tuition support, so the realistic T2 setting mix likely sits closer to the central 77/23 estimate than to the all-private floor. Both rows include the $85M admin/reserve assumption. If actual admin or reserve usage is lower than the statutory cap assumption, capacity grows accordingly — that's an upside vector, not modeled as a separate scenario.
                             </div>
                             <div className="text-tefa-body/60 mt-2 text-[11px] italic">
                                 Earlier IEP-scalar sensitivity tables ($14k / $17,650 / $22,769) have been removed — the Apr 28 PDF's empirical $415M T1-family allocation supersedes any IEP-scalar derivation.
