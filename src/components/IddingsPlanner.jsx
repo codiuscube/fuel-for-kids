@@ -811,7 +811,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                           <input
                             type="range"
                             min="0"
-                            max="15000"
+                            max="30000"
                             step="100"
                             value={nbcaScholarshipAmount}
                             onChange={(e) => setNbcaScholarshipAmount(Number(e.target.value))}
@@ -819,7 +819,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                           />
                           <div className="flex justify-between text-xs text-tefa-green/60 mt-1 font-medium">
                             <span>$0</span>
-                            <span>$15k Max</span>
+                            <span>$30k Max</span>
                           </div>
                           <div className="text-[10px] text-tefa-green/80 mt-1">
                                 Credited to Tuition
