@@ -1,12 +1,12 @@
 # FB reply to disabled-children, >500% FPL parent
 
-## Main reply (~155 words, Cody voice)
+## Main reply (~165 words, Cody voice)
 
-You're right, and unfortunately the answer is worse than "policy gap" — it's hardcoded into the enrolled text. The version of SB 2 that actually passed (89R) rewrote §29.356(b). The within-group priority order in §29.356(b)(2) is: **(A) disability + ≤500% FPL, (B) ≤200% FPL, (C) 200–500% FPL** — disability isn't a category above 500%. The 20% T4 cap on funding for families above 500% is also baked into the statute, with priority inside T4 turning only on prior-public-school enrollment.
+Your frustration is real and the gap is real — but worth flagging where it isn't coming from. The enrolled SB 2 (89R) and the TEFA official materials have been consistent the whole time. §29.356(b)(2) of the enrolled bill sets the within-group priority order as **(A) disability + ≤500% FPL, (B) ≤200% FPL, (C) 200–500% FPL** — disability genuinely isn't a priority category above 500% FPL, and the 20% T4 cap is hardcoded too.
 
-So the Comptroller is enforcing the letter of the law, not misinterpreting it. That means rulemaking can't fix this for you — the Comptroller's hands really are tied. A special session or an amendment in the next regular session is the only actual remedy.
+The third-party articles that said disabled kids above 500% would still be "prioritized in some kind of way" weren't reading the enrolled text. The introduced version of SB 2 had broader disability language that didn't survive the legislative process. The bill that became law and TEFA's own communications never promised that priority.
 
-If you can get the comptroller's "policy gap" comment in writing, that's exactly the kind of evidence a legislator needs to move an amendment.
+Which means the Comptroller isn't misinterpreting anything — they're enforcing the literal statute. Rulemaking can't fix this. A legislative amendment is the only real path. A written "policy gap" acknowledgement is the strongest lever.
 
 Full breakdown: https://fuel-for-kids-xi.vercel.app/
 
@@ -14,20 +14,21 @@ Full breakdown: https://fuel-for-kids-xi.vercel.app/
 
 ## Notes
 
-- Validates the commenter — they read the final statute correctly. Disabled children above 500% FPL really were dropped from the priority tiers in the enrolled bill.
-- The introduced version of SB 2 had a broader §29.356(b) (the OR construction between low-income and disability without an income condition on disability). That language did not survive. The repo's `tx-sb2.md` is the **introduced** text, not enrolled — flag for future drafts so we don't repeat the earlier mistake.
-- Channels the practical path: rulemaking is a dead end here, legislative fix is the only lever. Surfaces the comptroller's written acknowledgement as the highest-leverage piece of evidence for that fix.
+- Validates the underlying concern (the gap is real) without endorsing the framing that the comptroller dropped the ball.
+- Pins the source of the false expectation on the third-party articles, not the bill or TEFA. Both official channels have been consistent.
+- Sets up the legislative-amendment path as the only honest remedy and surfaces the written "policy gap" acknowledgement as the strongest evidence for moving one.
+- The repo's `tx-sb2.md` is the introduced text, not enrolled — flag for future drafts so we don't lean on it again.
 
-## Shorter version (~100 words)
+## Shorter version (~110 words)
 
-You're right — and unfortunately worse than a policy gap. The enrolled SB 2 (89R) rewrote §29.356(b). The within-group priority order in (b)(2) is (A) disability + ≤500% FPL, (B) ≤200% FPL, (C) 200–500% FPL. Disability isn't a category above 500%, and the 20% T4 cap is also in the statute. So the Comptroller is enforcing the letter of the law, not misinterpreting it — rulemaking can't fix this. Legislative amendment is the only real remedy. If you have the comptroller's "policy gap" comment in writing, that's the lever for a special-session ask.
+The gap is real, but the Comptroller isn't the problem. Enrolled SB 2 §29.356(b)(2) sets the within-group priority as (A) disability + ≤500% FPL, (B) ≤200% FPL, (C) 200–500% FPL — disability isn't a category above 500%, and the 20% T4 cap is also hardcoded. The bill and TEFA's own materials have been consistent throughout. The articles that said disabled kids above 500% would still be "prioritized in some kind of way" weren't reading the enrolled text. So rulemaking can't fix this — only a legislative amendment can. A written "policy gap" acknowledgement is the lever for that ask.
 
 ## Quote-and-respond version
 
 > "They are mentioned zero times in legislation."
 
-Confirmed against the enrolled text — you're reading it right. The 89R enrolled SB 2 rewrote §29.356(b). The within-group priority order in (b)(2) is (A) disability + ≤500% FPL, (B) ≤200% FPL, (C) 200–500% FPL. Disability drops out as a priority category above 500%. The introduced bill was actually broader; the enrolled version narrowed (b)(1)(B) to income-conditioned and hardcoded the 20% T4 cap. So this isn't a Comptroller misinterpretation — it's the literal statute.
+The gap is real — but worth pinning the source. The enrolled SB 2 §29.356(b)(2) sets the within-group priority as (A) disability + ≤500% FPL, (B) ≤200% FPL, (C) 200–500% FPL. Disability isn't a priority category above 500%, and the 20% T4 cap is hardcoded too. The bill and TEFA's own communications have been consistent on this throughout.
 
-> "warrants a special session to remedy if the comptroller is unwilling/unable to interpret."
+> "All of the articles I saw prior to applying for TEFA said that disabled children from higher income families would be prioritized…"
 
-The comptroller can't interpret around hardcoded statutory language, so you're right — a legislative fix is the only real remedy. If the "policy gap" comment from the comptroller's office is in writing, that's exactly what a legislator needs to move an amendment in a special session or in the next regular session.
+Those articles weren't reading the enrolled text. The introduced version of SB 2 had broader disability language that didn't survive the legislative process. So the Comptroller isn't misinterpreting anything — they're enforcing the literal statute. That means rulemaking can't fix this; only a legislative amendment can. If the "policy gap" comment is in writing, that's the lever.
