@@ -30,7 +30,7 @@ All figures below are statutory (SB 2) or drawn from the Texas Comptroller's off
 - **15,592 T1 siblings** — AWARDED & NOTIFIED (non-T1 siblings pulled in by the sibling rule)
 - Split: **63.4% T1 proper / 36.6% siblings** (replaces the earlier 67/33 approximation)
 - **Approximately half previously attended a public school** (Apr 22 press release)
-- T1-family block consumed **~$415M** of the $1B budget (Apr 28 PDF item 1, verbatim); after **~$85M in admin/reserve assumptions** (SB 2 §29.361(b)-(c)'s 8% statutory admin cap + appeals reserve), **~$500M** remains for the Tier 2 lottery
+- T1-family block consumed **~$415M** of the $1B budget (Apr 28 PDF item 1, verbatim); after **~$85M in admin/reserve assumptions** (SB 2 §29.362(b)-(c)'s 8% statutory admin cap + appeals reserve), **~$500M** remains for the Tier 2 lottery
 - **Tier 2 lottery:** held during the week of Apr 27, 2026; the same lottery assigns ranked waitlist positions to the remaining T2 students and all of T3/T4
 - **Waitlist position notifications:** all tiers notified of approximate position by **May 11**
 - **Appeals window:** 30 days from notice receipt. Per the Apr 28 PDF: appeals based on **TEA-side errors** (IEP not electronically located, school-district mismatches) are realistic; appeals to **correct/provide new info** are unlikely to succeed
@@ -58,7 +58,7 @@ All figures below are statutory (SB 2) or drawn from the Texas Comptroller's off
   - **Priority + Funding:** disability + ≤500% FPL + a current TEA-confirmed IEP from 2023-24, 2024-25, or 2025-26 → base + IEP supplement (capped at $30k private; homeschool/other still capped at $2,000).
   - **Prioritization Only:** disability + ≤500% FPL + documented disability but no TEA-electronic IEP match → T1 priority, **but only the $10,474 base** (or $2,000 homeschool). No SPED supplement until/unless an appeal locates the IEP.
 - **T4 statutory cap:** Funds for T4 (≥500% FPL) **may not exceed 20%** of the appropriation in any school year (Parent Application Guide page 4) — a hard $200M ceiling on T4 in Year 1. Not load-bearing for the Year 1 cascade because T4 receives $0 anyway, but constrains future years where T1/T2 demand is lower.
-- **Admin/reserve assumption (baked into baseline):** SB 2 §29.361(b)-(c) allows up to **3%** for Comptroller administration plus up to **5%** for certified educational assistance organizations = up to **$80M** in Year 1. The Apr 28 PDF item 5 confirms an appeals reserve (~$5M placeholder estimate; actual amount not publicly disclosed). The model assumes both come off the top — **$85M total** — before the T2 lottery. If actual admin/reserve usage is lower, T2 capacity grows accordingly (upside vector, not separately modeled).
+- **Admin/reserve assumption (baked into baseline):** SB 2 §29.362(b)-(c) allows up to **3%** for Comptroller administration plus up to **5%** for certified educational assistance organizations = up to **$80M** in Year 1. The Apr 28 PDF item 5 confirms an appeals reserve (~$5M placeholder estimate; actual amount not publicly disclosed). The model assumes both come off the top — **$85M total** — before the T2 lottery. If actual admin/reserve usage is lower, T2 capacity grows accordingly (upside vector, not separately modeled).
 
 ### 1.4 Year 1 capacity (Apr 28 PDF empirical T1-family + 77/23 T2 setting mix)
 
@@ -93,7 +93,7 @@ Sample is small and self-selected, but the bimodality is hard to fake — it dir
 
 **Step 2 — T2/T3 blended cost:** T2 (≤200% FPL) and T3 (200-500% FPL) carry no SPED supplement by tier definition. Per-student cost depends only on setting. Apply the 77/23 split: blended cost = 0.77 × $10,474 + 0.23 × $2,000 ≈ **$8,525/student**.
 
-**Step 3 — Admin/reserve assumption:** $80M statutory admin cap (SB 2 §29.361(b)-(c): 3% Comptroller + 5% CEAO) + $5M appeals reserve estimate = **$85M total** comes off the top before the T2 lottery. Baked into the baseline; if actual admin/reserve usage is lower, T2 capacity grows.
+**Step 3 — Admin/reserve assumption:** $80M statutory admin cap (SB 2 §29.362(b)-(c): 3% Comptroller + 5% CEAO) + $5M appeals reserve estimate = **$85M total** comes off the top before the T2 lottery. Baked into the baseline; if actual admin/reserve usage is lower, T2 capacity grows.
 
 **Step 4 — T2 lottery pool:** Remaining $1,000M − $415M − $85M = **$500M** funds the T2 lottery at the blended rate. Two sensitivity scenarios on T2 setting mix:
   - **Central** (77/23 mix): $500M ÷ $8,525 ≈ **~58,651 T2 slots**
@@ -122,7 +122,7 @@ T1 (incl. siblings) is 100% funded — AWARDED & NOTIFIED — in both scenarios.
 
 ### 1.6 Capacity sensitivity (legacy IEP-scalar models — DO NOT USE)
 
-*All legacy IEP-scalar derivations (~89,570, ~85,358, ~92,573, ~76,019, ~76,942), prior no-overhead figures (~111,264), and prior $55M-overhead figures (~104,812) predate the current model. The Apr 28 PDF's empirical $415M T1-family allocation is unchanged; what's new is that the model now uses the full SB 2 §29.361(b)-(c) 8% statutory admin cap plus an appeals reserve estimate. The remaining sensitivity is the T2 setting mix (central 77/23 vs. all-private floor) — see §1.4 and §1.5.*
+*All legacy IEP-scalar derivations (~89,570, ~85,358, ~92,573, ~76,019, ~76,942), prior no-overhead figures (~111,264), and prior $55M-overhead figures (~104,812) predate the current model. The Apr 28 PDF's empirical $415M T1-family allocation is unchanged; what's new is that the model now uses the full SB 2 §29.362(b)-(c) 8% statutory admin cap plus an appeals reserve estimate. The remaining sensitivity is the T2 setting mix (central 77/23 vs. all-private floor) — see §1.4 and §1.5.*
 
 ---
 
@@ -156,7 +156,7 @@ T1 (incl. siblings) is 100% funded — AWARDED & NOTIFIED — in both scenarios.
 
 **Waitlist-fatigue driver:** Private schools enforce Jun 1–30 enrollment-deposit deadlines. If award notifications arrive after those deadlines, winners face signing $13,000+ contracts without guaranteed state funding. Risk-averse T2 families default to free public school. Odyssey platform is backlogged, compounding delays.
 
-**Tranche cash-flow driver:** Per educationfreedom.texas.gov, funds disburse on a **25 / 50 / 25** schedule — only **25% by Jul 1** (~$2,618 of a $10,474 private award), 75% by Oct 1, balance by Apr 1, 2027. SB 2 §29.362(a) sets a default quarterly account-payment structure unless Comptroller rule determines otherwise; use the TEFA site schedule as the current operating schedule. T2 winners must commit to schools (signing tuition contracts that often demand a multi-thousand-dollar deposit by Jun 1 or Jul 15) against a $2,618 first tranche. The cash-flow mismatch is its own attrition driver, distinct from tuition-gap and waitlist-fatigue, and disproportionately hits low-income T2 families with no float.
+**Tranche cash-flow driver:** Per educationfreedom.texas.gov, funds disburse on a **25 / 50 / 25** schedule — only **25% by Jul 1** (~$2,618 of a $10,474 private award), 75% by Oct 1, balance by Apr 1, 2027. SB 2 §29.362(a) sets a three-tranche default (at least 25% by Jul 1, 50% cumulative by Oct 1, balance by Apr 1) unless Comptroller rule determines otherwise; the TEFA site schedule is the current operating schedule. T2 winners must commit to schools (signing tuition contracts that often demand a multi-thousand-dollar deposit by Jun 1 or Jul 15) against a $2,618 first tranche. The cash-flow mismatch is its own attrition driver, distinct from tuition-gap and waitlist-fatigue, and disproportionately hits low-income T2 families with no float.
 
 Keep 15% as the default. Don't stack worst-cases into doom scenarios.
 
@@ -278,7 +278,7 @@ Do not say "impossible" at central 15%, but do not overstate it either — quote
 - **v4** (Apr 28a, derived from 27,050 × $17,650 + 15,592 × $10,474 = $640.7M T1-family): capacity ~76,942 → T3 ~2.62% / ~7.7%.
 - **v5** (Apr 28b — empirical $415M T1-family from PDF item 1, T2 priced at 77/23 blended $8,525, NO admin overhead): capacity ~111,264 → T3 ~19.7% / ~48.2% at 15%.
 - **v6** (Apr 28c — v5 plus $55M program overhead baked in: $50M Odyssey admin fee at SB 2 5% cap + $5M appeals reserve): capacity **~104,812** → T3 **~10.0% / ~27.0%** at 15%. Superseded because SB 2 allows a separate 3% Comptroller admin deduction.
-- **v7** (Apr 28d, **current baseline** — v6 updated to SB 2 §29.361(b)-(c)'s full 8% statutory admin cap + $5M appeals reserve): capacity **~101,293** → T3 **~4.6% / ~13.2%** at 15%. This is more conservative and aligns with the full statutory admin ceiling.
+- **v7** (Apr 28d, **current baseline** — v6 updated to SB 2 §29.362(b)-(c)'s full 8% statutory admin cap + $5M appeals reserve): capacity **~101,293** → T3 **~4.6% / ~13.2%** at 15%. This is more conservative and aligns with the full statutory admin ceiling.
 
 ### 4.5 What's NOT modeled
 
@@ -319,7 +319,7 @@ Always run a **tuition-gap check**: does $10,474 + other committed aid cover thi
   - **July 1 funding track:** family opt-in + school selection by **Jun 1**; participating school confirms enrollment by **Jun 15**; first disbursement Jul 1.
   - **August funding track:** family opt-in + school selection by **Jul 15**; participating school confirms enrollment by **Jul 31**. The Jul 15 deadline doubles as the family-side hard deadline to confirm, switch to homeschool/other ($2,000), or opt out — opt-outs cascade funding down the waitlist (largest single attrition event of Year 1).
 - **Appeals reserve:** the program holds funds for successful appeals; once appeals are resolved, unused reserve cascades to the next available waitlisted students. Magnitude undisclosed — small upside vector, not baseline.
-- **Disbursement schedule (educationfreedom.texas.gov):** funds release in three tranches — **25% by Jul 1**, cumulative **75% by Oct 1**, **100% by Apr 1, 2027**. Per a $10,474 private award: ~$2,618 / $7,856 / $10,474 cumulative. SB 2 §29.362(a) sets a default quarterly account-payment structure unless Comptroller rule determines otherwise; treat the TEFA site's tranche schedule as the current operating schedule. **Unused funds carry forward** while the child remains eligible and participating (SB 2 §29.361(c)); when the account closes, remaining money returns to the program fund (SB 2 §29.362(f)).
+- **Disbursement schedule (educationfreedom.texas.gov):** funds release in three tranches — **25% by Jul 1**, cumulative **75% by Oct 1**, **100% by Apr 1, 2027**. Per a $10,474 private award: ~$2,618 / $7,856 / $10,474 cumulative. SB 2 §29.362(a) sets a three-tranche default (at least 25% by Jul 1, 50% cumulative by Oct 1, balance by Apr 1) unless Comptroller rule determines otherwise; treat the TEFA site's tranche schedule as the current operating schedule. **Unused funds carry forward** while the child remains eligible and participating (SB 2 §29.361(e)); when the account closes, remaining money returns to the program fund (SB 2 §29.362(f)).
 
 ### Federal lawsuit context
 Muslim schools v. Texas — Comptroller Kelly Hancock blocked several Islamic private schools (incl. Houston Quran Academy). Permanent injunction hearing Apr 24, 2026. No state funds have flowed yet.
@@ -363,7 +363,7 @@ As of April 2026, emails from **several Texas Catholic archdioceses and at least
 | # | Claim in the email | What's actually true | Source |
 |---|--------------------|----------------------|--------|
 | 1 | "42,000 have been approved — all Tier 1" | The **raw count was nearly right** (Apr 28 Lottery Update PDF confirms 42,642 first-round awards) — but the framing was wrong. 42,642 = **T1 proper (27,050 students) + T1 siblings (15,592) pulled in via the sibling rule**, NOT "all Tier 1." | Apr 28 Lottery Update PDF |
-| 2 | "Tier 1 = special ed **or** below poverty level" | T1 requires **disability (active IEP) AND ≤500% FPL** (both). "Below poverty level" maps to **Tier 2** (≤200% FPL), not Tier 1. | SB 2 §29.3521(d) |
+| 2 | "Tier 1 = special ed **or** below poverty level" | T1 requires **disability (active IEP) AND ≤500% FPL** (both). "Below poverty level" maps to **Tier 2** (≤200% FPL), not Tier 1. | SB 2 §29.356(b)(2)(A) |
 | 3 | "Tier 2 has 65,000 qualified but only 22,000 vouchers" | T2 qualified is **72,927** (Apr 28 PDF empirical). Under the current model ($415M T1-family + $85M admin/reserve → $500M T2 budget), T2 is funded at **~58,651 (~80%) central / ~47,737 (~65%) floor**. The 22,000 figure undercounts T2 funding by ~26,000–37,000 seats. The Apr 27 T2 lottery results will produce the authoritative number. | Apr 28 Lottery Update PDF + §1.5 cascade |
 | 4 | "Only ~30–40% of Tier 2 applicants will receive funding" | **Archdiocese substantially understated.** T2 funds at **~80% central / ~65% floor** under the current model (Apr 28 PDF empirical T1-family of $415M + $85M baked-in admin/reserve). Even the conservative all-private floor is ~25 points above the archdiocese figure — Year 1 T2 funding is strong, not partial. Earlier gem versions cited 47% / 75.8% / 94% / 85%; all predate the current full-admin-cap baseline. | Apr 28 Lottery Update PDF + §1.4 |
 | 5 | "All awarded families must select a school and have enrollment confirmed by July 15" | **Archdiocese was right — superseded correction.** Per the Apr 28 PDF, July 15 is the family-side hard deadline on the **August funding track** (confirm enrollment, select homeschool/other for $2,000, or opt out). Note: there is also a **July 1 funding track** with an earlier Jun 1 family deadline. Jul 31 is the August-track school-side confirmation (back-office, no family action). | Apr 28 Lottery Update PDF |
@@ -413,7 +413,7 @@ Prior-year public school enrollment? Y/N
 - Texas Comptroller press release (Apr 22, 2026) — first-round awards announcement, Apr 27 T2 lottery, 30-day appeals window, Jul 15 confirm/opt-out deadline
 - Travis Pillow (Comptroller spokesman) quotes to *The Texan*, Apr 2, 2026
 - Comptroller email response on Sec. 29.3521(d) (Apr 3, 2026)
-- Texas SB 2 — §29.3521(c-1), §29.3521(d), §29.361(a)(1), §29.361(b), §29.361(b-1), §29.361(b)-(c) admin caps
+- Texas SB 2 — §29.3521(c-1), §29.3521(d), §29.356(b)(2)(A), §29.361(a)(1), §29.361(b), §29.361(b-1), §29.361(e), §29.362(a), §29.362(b)-(c) admin caps, §29.362(f)
 - Federal court order, Judge Bennett (S.D. Texas) — deadline extension to Mar 31
 - Attrition precedent: ERIC ED472999 (Milwaukee), AEA (NYC), Hoover Institution (D.C.), VA Budget Bills, Kanoria (queueing theory)
 - FOX 4 News, Apr 3 2026 (use with caution — "up to 90,000" figure is not statutory)
