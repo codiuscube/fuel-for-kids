@@ -52,7 +52,7 @@ All figures below are statutory (SB 2) or drawn from the Texas Comptroller's off
 
 - **Biennium cap:** $1,000,000,000 for 2025–2027 (SB 2 §29.3521(c-1))
 - **Year 1 commitment:** Full $1B (Travis Pillow, Comptroller spokesman, to *The Texan*, Apr 2 2026: *"$1 billion committed in year one"*)
-- **Private-school base award:** **$10,474/student/year** (SB 2 §29.361(a)(1) — 85% of statewide average M&O per ADA ≈ 85% × $12,316)
+- **Private-school base award:** **$10,474/student/year** (SB 2 §29.361(a)(1) — 85% of statewide average state-and-local funding per ADA ≈ 85% × $12,316; per §29.361(c)(2) the calc includes Chapters 48/49 funding plus the state's TRS contribution under §825.404, Government Code)
 - **Homeschool/other cap:** $2,000/student/year (SB 2 §29.361(b-1)). The Parent Application Guide establishes that selected setting **"locks" at the end of the application period (Mar 31)**; post-lock changes can only reduce funding (private → homeschool $2,000), never increase.
 - **SPED (active IEP) cap:** up to $30,000/student/year (SB 2 §29.361(b)) — actual award = base + district-dependent IEP supplement, not the $30k ceiling. **Critical sub-classes (Parent Application Guide):**
   - **Priority + Funding:** disability + ≤500% FPL + a current TEA-confirmed IEP from 2023-24, 2024-25, or 2025-26 → base + IEP supplement (capped at $30k private; homeschool/other still capped at $2,000).

@@ -186,7 +186,7 @@ const IddingsPlanner = () => {
     const eligibleApps = ELIGIBLE_APPLICATIONS;
 
     // === PER-STUDENT ALLOCATION (statutory) ===
-    // SB 2 Sec. 29.361(a)(1): base = 85% × statewide avg M&O per ADA ≈ $10,474.
+    // SB 2 Sec. 29.361(a)(1): base = 85% × statewide avg state-and-local funding per ADA ≈ $10,474.
     // SB 2 Sec. 29.361(b):    SPED with active IEP = base + supplement, cap $30,000/year.
     // SB 2 Sec. 29.361(b-1):  Homeschool/other = $2,000/year.
     const perStudentBase = 10474;
@@ -1643,7 +1643,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         <ul className="list-disc pl-5 mb-4 space-y-1">
                             <li><strong>Statutory Budget Cap:</strong> $1 Billion for 2025–2027 biennium (SB 2, §29.3521(c-1))</li>
                             <li><strong>Year 1 Commitment:</strong> Full $1B (Comptroller administrative choice — Travis Pillow, Apr 2: "$1 billion committed in year one")</li>
-                            <li><strong>Per-Student Base:</strong> $10,474 (SB 2 §29.361(a)(1) — 85% × statewide avg M&amp;O per ADA)</li>
+                            <li><strong>Per-Student Base:</strong> $10,474 (SB 2 §29.361(a)(1) — 85% × statewide avg state-and-local funding per ADA)</li>
                             <li><strong>Homeschool/other:</strong> $2,000/yr (SB 2 §29.361(b-1)). Setting <em>locks</em> at application close (Mar 31); post-lock changes can only reduce funding, never increase.</li>
                             <li><strong>SPED supplement:</strong> Up to $30,000 with a TEA-confirmed current IEP (SB 2 §29.361(b)). Note: T1 priority does NOT automatically grant SPED supplement — the Parent Application Guide formalizes a "Prioritization Only" sub-class for disability-documented students without a TEA-electronic IEP match.</li>
                             <li><strong>T4 statutory cap:</strong> 20% of program funds (Parent Guide page 4) — $200M ceiling on T4 in Year 1; not load-bearing here since T4 gets $0 anyway.</li>
