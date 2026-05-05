@@ -33,7 +33,8 @@ const IddingsPlanner = () => {
   const setActiveTab = (t) => navigate(`/${t}`);
 
   // Scenario State - Empirical tier breakdown from the Apr 28, 2026 TEFA Lottery Update PDF,
-  // superseding the Apr 8 Year 1 PDF's percentage-based estimates. Lottery-week update gives
+  // with the May 4 Comptroller release supplying the official Tier 2 award batch. These
+  // supersede the Apr 8 Year 1 PDF's percentage-based estimates. Lottery-week update gives
   // hard counts: 25,400 ineligible / 27,050 T1 (awarded) / 15,592 T1 siblings (awarded) /
   // 72,927 T2 awaiting lottery / 66,119 T3 awaiting / 66,950 T4 awaiting (13,246 T4a + 53,704 T4b).
   // Sum: 274,038 total applications, 248,638 eligible. Replaces the prior 274,183 / 247,032 figures.
@@ -232,13 +233,17 @@ const IddingsPlanner = () => {
     const perStudentT2Blended = privateShare * perStudentBase
       + (1 - privateShare) * perStudentHomeschool; // ≈ $8,525
 
-    // T2 lottery slot count, central scenario (77/23 setting mix), with $85M
-    // admin/reserve assumption baked into the baseline budget.
-    // Floor sensitivity: if 100% of T2 winners select private, T2 rate drops further.
+    // May 4 Comptroller release: "more than 53,000 additional students" receive Tier 2 awards
+    // May 4-6. Use 53,000 as a conservative lower bound; actual 53,xxx only improves T3 odds.
+    const officialT2Awards = 53000;
+
+    // Pre-May-4 derived capacity retained only as diagnostic context. The official award batch
+    // implies either a larger reserve/holdback, a more private-heavy T2 setting mix, or both.
     const t2Budget = budget - t1FamilyCost - programOverhead;
-    const t2LotteryCapacity = Math.floor(t2Budget / perStudentT2Blended); // ≈ 58,651
+    const derivedT2LotteryCapacity = Math.floor(t2Budget / perStudentT2Blended); // ≈ 58,651
     const t2LotteryCapacityFloor = Math.floor(t2Budget / perStudentBase); // ≈ 47,737
-    const capacity = firstRoundAwards + t2LotteryCapacity; // ~101,293
+    const t2LotteryCapacity = officialT2Awards;
+    const capacity = firstRoundAwards + t2LotteryCapacity; // 95,642+
 
     // =====================================================
     // MODEL A: COMPTROLLER'S ACTUAL IMPLEMENTATION
@@ -256,7 +261,7 @@ const IddingsPlanner = () => {
     // T1 + T1-siblings committed first (Apr 22 press release — fundedT1 and siblingsFunded
     // computed above). T2 lottery funds the remaining budget. T3 and T4 receive 0 from the
     // initial lottery and compete only via waitlist cascade.
-    const fundedT2 = Math.min(demandT2, t2LotteryCapacity);
+    const fundedT2 = Math.min(demandT2, officialT2Awards);
     const fundedT3 = 0;
     const fundedT4a = 0;
     const fundedT4b = 0;
@@ -311,7 +316,7 @@ const IddingsPlanner = () => {
     return {
         capacity, eligibleApps,
         // Apr 28 PDF empirical calibration
-        firstRoundAwards, siblingsFunded, t2LotteryCapacity, t2LotteryCapacityFloor,
+        firstRoundAwards, siblingsFunded, officialT2Awards, t2LotteryCapacity, derivedT2LotteryCapacity, t2LotteryCapacityFloor,
         t1FamilyCost, t2Budget, perStudentT2Blended, programOverhead,
         // Model A: Comptroller's implementation (initial lottery)
         demandT1, demandT2, demandT3, demandT4a, demandT4b,
@@ -412,6 +417,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
     { date: 'Apr 22', day: 'Wed', isoDate: '2026-04-22', event: 'TEFA Tier 1 Notifications Begin — 42,642 Awards', type: 'tefa', desc: 'Per the Apr 22 press release and the Apr 28 Lottery Update PDF: 42,642 students receive award notices Apr 22–24 — 27,050 Tier 1 students (disability + ≤500% FPL) plus 15,592 of their siblings pulled in by the sibling rule. Approximately half previously attended a public school. 30-day appeal window opens from notice receipt — adjustments only on school-district or IEP documentation.', funding: 'Award or Waitlist Position' },
     { date: 'Apr 24', day: 'Fri', isoDate: '2026-04-24', event: 'Federal Injunction Hearing', type: 'tefa', desc: 'Key hearing in Muslim schools v. Texas. Court decides whether to maintain, modify, or dissolve the injunction blocking Comptroller Hancock from excluding Islamic schools. TEFA funding timeline depends on outcome.', funding: 'Court Date' },
     { date: 'Apr 27', day: 'Mon', isoDate: '2026-04-27', event: 'TEFA Tier 2 Lottery + Waitlist Assignment', type: 'tefa', desc: 'Per Apr 22 press release: "In consultation with an independent agency, the Comptroller\'s office will conduct a lottery during the week of April 27 to determine which students in the second priority tier — students in lower-income households — will receive award notifications." The SAME lottery assigns waitlist positions to the remaining T2 students AND everyone in T3/T4. Per the Apr 28 PDF, T2 award notifications begin this week; all tiers are notified of approximate waitlist position by May 11.', funding: 'Lottery + Ranked Waitlist' },
+    { date: 'May 04', day: 'Mon', isoDate: '2026-05-04', event: 'TEFA Tier 2 Awards Begin — 53,000+ Additional Awards', type: 'tefa', desc: 'May 4 Comptroller release: more than 53,000 additional students, all Tier 2, will receive awards May 4-6. Demand exceeded available funding, so remaining T2 students stay ahead of T3 on the ranked waitlist. Awarded families see funding amounts in the portal and must confirm private school enrollment, select homeschool/other ($2,000), or opt out by July 15.', funding: 'Tier 2 Award Batch' },
     { date: 'May 11', day: 'Mon', isoDate: '2026-05-11', event: 'TEFA Waitlist Notifications + Opt-In Portal Opens', type: 'tefa', desc: 'Per the Apr 28 Lottery Update PDF: by May 11, the program notifies students in all tiers of their approximate waitlist position. The Odyssey portal also flips on this date to allow parents of awarded students to "opt in" to accept the award and select their participating private school. Iddings family (T3) learns their ranked waitlist position by today — the sharpest available TEFA signal before NBCA scholarship awards are finalized by May 31.', funding: 'Waitlist Position + Scholarship Input' },
     { date: 'May 15', day: 'Fri', isoDate: '2026-05-15', event: 'NBCA Financial Aid / Scholarship Application Deadline', type: 'nbca', desc: 'Per Nanette Jones (Apr 28), Iddings financial aid and scholarship applications are in order, with all documents and recommendations uploaded. No further action needed unless the committee requests clarification.', funding: 'Application Window Closes' },
     { date: 'May 31', day: 'Sun', isoDate: '2026-05-31', event: 'NBCA Scholarship Awards Finalized (est.)', type: 'nbca', desc: 'Per NBCA (Nanette Jones / Michelle Leidy, Apr 28): financial aid and NBCA scholarship awards are expected by May 31. TEFA waitlist position from May 11 should be forwarded if useful before the committee finalizes scholarship decisions.', funding: 'Credited to Tuition' },
@@ -700,16 +706,16 @@ The contribution amount we listed represents the maximum we can sustainably budg
                 </div>
             </div>
 
-            {/* Funding Update Banner - Apr 28 Lottery Update */}
+            {/* Funding Update Banner - May 4 Tier 2 Awards */}
             <div className="bg-tefa-green/10 p-4 rounded-lg shadow-md border-2 border-tefa-green/40">
                 <h2 className="text-base font-bold flex items-center gap-2 text-tefa-green mb-2">
-                    <AlertCircle size={18} /> Funding Update — April 28, 2026 (TEFA Lottery Update PDF)
+                    <AlertCircle size={18} /> Funding Update — May 4, 2026 (Tier 2 Awards)
                 </h2>
                 <p className="text-sm text-tefa-body mb-2">
-                    The Comptroller's Apr 28 Lottery Update gives empirical tier counts: <strong>42,642 first-round awards</strong> (27,050 Tier 1 students + 15,592 T1 siblings via the sibling rule) committed <strong>~$415M</strong> of the $1B Year 1 budget (PDF item 1, verbatim). T2 demand is <strong>72,927</strong>; T3 demand is <strong>66,119</strong>; T4 totals <strong>66,950</strong> (13,246 T4a + 53,704 T4b). After ~$85M in admin/reserve assumptions (SB 2 §29.362(b)-(c) 8% statutory admin cap + appeals reserve), <strong>~${(analysis.t2Budget / 1e6).toFixed(0)}M</strong> funds the T2 lottery — at the central 77/23 setting mix, that's ~{analysis.t2LotteryCapacity.toLocaleString()} T2 slots (~{tier2FundingRate.toFixed(0)}%).
+                    The Comptroller's May 4 release confirms <strong>more than 53,000 additional Tier 2 awards</strong> will go out May 4-6, building on <strong>{analysis.firstRoundAwards.toLocaleString()} Tier 1-family awards</strong>. Demand from Tier 2 exceeded available funding, so the remaining <strong>~{analysis.unfundedT2.toLocaleString()}</strong> unfunded T2 students sit ahead of Tier 3 on the ranked waitlist. This lowers the planning case from the prior derived ~{analysis.derivedT2LotteryCapacity.toLocaleString()} T2 slots to an official <strong>{analysis.officialT2Awards.toLocaleString()}+</strong> award batch (~{tier2FundingRate.toFixed(1)}% of T2).
                 </p>
                 <ul className="text-xs text-tefa-body/80 space-y-1 list-disc pl-5">
-                    <li><strong>Week of Apr 27:</strong> T2 lottery runs; T2 award notifications begin.</li>
+                    <li><strong>May 4-6:</strong> T2 award notifications go out; awarded families see funding amounts in the portal.</li>
                     <li><strong>By May 11:</strong> all tiers (incl. Iddings/T3) notified of approximate waitlist position; Odyssey portal opens for awarded families to opt in and select a school.</li>
                     <li><strong>Jun 1 / Jun 15:</strong> family opt-in / school confirmation for the <em>July 1 funding</em> track.</li>
                     <li><strong>Jul 15 / Jul 31:</strong> family opt-in / school confirmation for the <em>August funding</em> track — Jul 15 opt-outs are the largest cascade event of Year 1.</li>
@@ -720,10 +726,10 @@ The contribution amount we listed represents the maximum we can sustainably budg
             {/* TEFA Program Status Card */}
             <div className="bg-tefa-light p-6 rounded-lg shadow-md border-2 border-tefa-navy">
                 <h2 className="text-xl font-bold flex items-center gap-2 text-tefa-navy mb-3">
-                    <Scale size={20} /> TEFA Program Status: Awaiting Notifications
+                    <Scale size={20} /> TEFA Program Status: Tier 3 Waitlisted
                 </h2>
                 <p className="text-sm text-tefa-body mb-4">
-                    <strong>{TOTAL_APPLICATIONS.toLocaleString()} students</strong> applied in Year 1 ({ELIGIBLE_APPLICATIONS.toLocaleString()} eligible per the Apr 28 Lottery Update PDF). <strong>{analysis.firstRoundAwards.toLocaleString()} first-round awards</strong> (T1 + siblings) committed <strong>~$415M</strong> of the $1B budget (Apr 28 PDF item 1). The remaining ~${(analysis.t2Budget / 1e6).toFixed(0)}M funds the <strong>T2 lottery (week of Apr 27)</strong> — at the central 77/23 setting mix that's ~{analysis.fundedT2.toLocaleString()} of {analysis.demandT2.toLocaleString()} T2 applicants (~{tier2FundingRate.toFixed(0)}%); a 100%-private floor scenario funds ~{analysis.t2LotteryCapacityFloor.toLocaleString()} (~{((analysis.t2LotteryCapacityFloor / analysis.demandT2) * 100).toFixed(0)}%). Tier 3 (Iddings) is <strong>waitlisted</strong> with a ranked position notified by May 11.
+                    <strong>{TOTAL_APPLICATIONS.toLocaleString()} students</strong> applied in Year 1 ({ELIGIBLE_APPLICATIONS.toLocaleString()} eligible per the Apr 28 Lottery Update PDF). <strong>{analysis.firstRoundAwards.toLocaleString()} first-round awards</strong> (T1 + siblings) were followed by <strong>{analysis.officialT2Awards.toLocaleString()}+ Tier 2 awards</strong> in the May 4 batch. Total awards to date are therefore <strong>{analysis.capacity.toLocaleString()}+</strong>. Tier 3 (Iddings) remains <strong>waitlisted</strong>; movement now depends on opt-outs, homeschool/other selections, missed confirmations, and appeals reserve releases.
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm mb-4">
                     <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
@@ -732,9 +738,9 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         <div className="text-[10px] text-tefa-body/40">Apr 28 Lottery Update PDF</div>
                     </div>
                     <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
-                        <div className="text-xs text-tefa-body/50 font-medium">Program Capacity</div>
-                        <div className="font-bold text-tefa-navy text-lg">~{analysis.capacity.toLocaleString()}</div>
-                        <div className="text-[10px] text-tefa-body/40">$415M T1-fam + $85M admin/reserve + $500M T2</div>
+                        <div className="text-xs text-tefa-body/50 font-medium">Awards To Date</div>
+                        <div className="font-bold text-tefa-navy text-lg">{analysis.capacity.toLocaleString()}+</div>
+                        <div className="text-[10px] text-tefa-body/40">42,642 T1-fam + 53,000+ T2</div>
                     </div>
                     <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
                         <div className="text-xs text-tefa-body/50 font-medium">Iddings Tier</div>
@@ -763,8 +769,8 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         <div className="text-tefa-green/70">Awarded (incl. sibs)</div>
                     </div>
                     <div className="bg-tefa-navy/10 rounded p-1.5 border border-tefa-navy/20">
-                        <div className="font-bold text-tefa-navy">T2: {analysis.demandT2.toLocaleString()}</div>
-                        <div className="text-tefa-navy/70">Lottery</div>
+                        <div className="font-bold text-tefa-navy">T2: {analysis.fundedT2.toLocaleString()}+</div>
+                        <div className="text-tefa-navy/70">Awarded ({analysis.demandT2.toLocaleString()} demand)</div>
                     </div>
                     <div className="bg-tefa-gold/20 rounded p-1.5 border-2 border-tefa-gold/60">
                         <div className="font-bold text-tefa-red">T3: {analysis.demandT3.toLocaleString()}</div>
@@ -801,7 +807,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         <div className="text-xs uppercase font-bold text-tefa-red mb-1">What's wrong (severely understated)</div>
                         <ul className="list-disc ml-5 text-tefa-body/80 space-y-1 text-xs">
                             <li><strong>T2 qualified is {analysis.demandT2.toLocaleString()}</strong> per the Apr 28 Lottery Update PDF, not 65,000.</li>
-                            <li><strong>Funded T2 count is ~{analysis.fundedT2.toLocaleString()} central / ~{analysis.t2LotteryCapacityFloor.toLocaleString()} floor (≈{tier2FundingRate.toFixed(0)}% central / ≈{((analysis.t2LotteryCapacityFloor / analysis.demandT2) * 100).toFixed(0)}% floor)</strong>. The 22,000 figure undercounts the T2 lottery pool by ~{Math.round(analysis.t2LotteryCapacityFloor - 22000).toLocaleString()}–{Math.round(analysis.fundedT2 - 22000).toLocaleString()} seats. The Apr 27 T2 lottery results will produce the authoritative number.</li>
+                            <li><strong>Funded T2 count is {analysis.fundedT2.toLocaleString()}+</strong> per the May 4 Comptroller release (~{tier2FundingRate.toFixed(1)}% of T2 demand). The 22,000 figure undercounts the official T2 award batch by at least {(analysis.fundedT2 - 22000).toLocaleString()} seats.</li>
                         </ul>
                     </div>
                     <div className="bg-white rounded-lg p-4 border border-amber-300">
@@ -809,8 +815,8 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         <p className="text-tefa-body/80 italic mb-2">"Only a portion of applicants (approximately 30–40%) will receive funding at [the T2 lottery] stage."</p>
                         <div className="text-xs uppercase font-bold text-tefa-red mb-1">What's wrong (severely understated)</div>
                         <ul className="list-disc ml-5 text-tefa-body/80 space-y-1 text-xs">
-                            <li>The Apr 28 PDF empirically pegs the T1-family block at <strong>~$415M</strong>; another ~$85M comes off for the SB 2 admin cap + appeals reserve, leaving <strong>~$500M</strong> for T2. At the central 77/23 setting mix, the T2 lottery funds at <strong>~{tier2FundingRate.toFixed(1)}%</strong> — well above the 30–40% range the archdiocese cited.</li>
-                            <li>Even the conservative all-private floor scenario funds T2 at ~{((analysis.t2LotteryCapacityFloor / analysis.demandT2) * 100).toFixed(0)}%. The archdiocese was directionally wrong: T2 in Year 1 is overwhelmingly funded, not the other way around. Earlier versions of this planner ($640.7M T1-family derivation → 47%) also understated.</li>
+                            <li>The May 4 Comptroller release confirms <strong>{analysis.fundedT2.toLocaleString()}+ Tier 2 awards</strong>, or ~{tier2FundingRate.toFixed(1)}% of the {analysis.demandT2.toLocaleString()} T2 pool — well above the 30–40% range the archdiocese cited.</li>
+                            <li>The official count is lower than this planner's prior derived ~{analysis.derivedT2LotteryCapacity.toLocaleString()} estimate, suggesting a larger reserve/holdback, a more private-heavy T2 mix, or both. Still, T2 is mostly funded, not only 30–40% funded.</li>
                         </ul>
                     </div>
                     <div className="bg-white rounded-lg p-4 border border-amber-300">
@@ -828,7 +834,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         <div className="text-xs uppercase font-bold text-tefa-red mb-1">What's wrong (T3 is possible; T4 is correct)</div>
                         <ul className="list-disc ml-5 text-tefa-body/80 space-y-1 text-xs">
                             <li>For T4 in Year 1: correct — effectively 0%.</li>
-                            <li>For T3: <strong>possible, but uncertain.</strong> Under the Apr 28 PDF empirical recalibration plus the full SB 2 admin-cap assumption, the T2 backlog ahead of T3 is ~{analysis.unfundedT2.toLocaleString()} students. Attrition must clear that backlog first: T3 sits at <strong>~{analysis.effectiveTier3Rate.toFixed(1)}% individual / ~{analysis.effectiveFamilyRate.toFixed(1)}% for a 3-child family at the central 15% attrition rate</strong>, rising to ~{scenarioOutlook.best.effectiveFamilyRate.toFixed(0)}% family at 25% attrition. "No shot" is too strong; "possible but uncertain" is more accurate.</li>
+                            <li>For T3: <strong>possible, but uncertain.</strong> With the official May 4 T2 award batch, the T2 backlog ahead of T3 is ~{analysis.unfundedT2.toLocaleString()} students. Attrition must clear that backlog first: T3 sits at <strong>~{analysis.effectiveTier3Rate.toFixed(1)}% individual / ~{analysis.effectiveFamilyRate.toFixed(1)}% for a 3-child family at the central 15% attrition rate</strong>, rising to ~{scenarioOutlook.best.effectiveFamilyRate.toFixed(0)}% family at 25% attrition. "No shot" is too strong; "possible but uncertain" is more accurate.</li>
                         </ul>
                     </div>
                 </div>
@@ -1563,7 +1569,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     Eligibility is fixed at 9.9% (per PDF — official). The variable here is <strong>attrition</strong>: the percentage of T1/T2 lottery winners who don't follow through on enrollment. Their freed spots cascade: T1/T2 dropouts → backfill unfunded T2 → overflow reaches T3.
                 </p>
                 <div className="bg-tefa-navy/5 rounded p-3 mb-4 text-xs text-tefa-body/70">
-                    <strong>Critical Threshold:</strong> only ~{scenarioOutlook.mostLikely.unfundedT2.toLocaleString()} unfunded T2 students sit ahead of T3 (central 77/23 setting mix) — a much smaller backlog than under prior capacity models. Even modest attrition cascades quickly past this threshold, which is why T3 odds jump non-trivially across all three scenarios. The cascade is still non-linear in attrition rate, but the inflection point now sits well below 8%.
+                    <strong>Critical Threshold:</strong> ~{scenarioOutlook.mostLikely.unfundedT2.toLocaleString()} unfunded T2 students sit ahead of T3 after the official May 4 T2 award batch. That is higher than the prior derived-capacity model, so central T3 odds are lower; attrition must first clear the remaining T2 backlog before any meaningful T3 movement.
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="p-4 rounded-lg bg-green-50 border border-green-200">
@@ -1612,7 +1618,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         {' '}— three independent draws from the Tier 3 waitlist pool. One win funds all three children automatically.
                     </div>
                     <div>
-                        <strong>Non-linear dynamics:</strong> Under the Apr 28 PDF empirical $415M T1-family allocation and the central 77/23 T2 setting mix, only ~{scenarioOutlook.mostLikely.unfundedT2.toLocaleString()} unfunded T2 students sit ahead of T3 — a much smaller backlog than the prior $640.7M-derivation model showed. Attrition cascades to T3 across all three scenarios; the previous "explosive non-linearity" framing is softened.
+                        <strong>Non-linear dynamics:</strong> Under the May 4 official T2 award count, ~{scenarioOutlook.mostLikely.unfundedT2.toLocaleString()} unfunded T2 students sit ahead of T3. The prior 77/23 derived model implied only ~{(analysis.demandT2 - analysis.derivedT2LotteryCapacity).toLocaleString()} T2 students ahead of T3; the official batch is more conservative and makes the cascade smaller.
                     </div>
                 </div>
             </div>
@@ -1648,34 +1654,34 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             <li><strong>SPED supplement:</strong> Up to $30,000 with a TEA-confirmed current IEP (SB 2 §29.361(b)). Note: T1 priority does NOT automatically grant SPED supplement — the Parent Application Guide formalizes a "Prioritization Only" sub-class for disability-documented students without a TEA-electronic IEP match.</li>
                             <li><strong>T4 statutory cap:</strong> 20% of program funds (Parent Guide page 4) — $200M ceiling on T4 in Year 1; not load-bearing here since T4 gets $0 anyway.</li>
                             <li><strong>First-Round Awards (Apr 28 PDF):</strong> <strong>{analysis.firstRoundAwards.toLocaleString()}</strong> (T1 family) — {analysis.fundedT1.toLocaleString()} T1 students + {analysis.siblingsFunded.toLocaleString()} T1 siblings via the sibling rule. T1-family allocation: <strong>~$415M</strong> (Apr 28 PDF item 1, verbatim).</li>
-                            <li><strong>Derived Capacity (central, Apr 28–calibrated):</strong> ~{analysis.capacity.toLocaleString()} students. Floor (all-private): ~{(analysis.firstRoundAwards + analysis.t2LotteryCapacityFloor).toLocaleString()}.</li>
+                            <li><strong>Awards to date (May 4 official):</strong> <strong>{analysis.capacity.toLocaleString()}+</strong> students — {analysis.firstRoundAwards.toLocaleString()} T1-family awards plus {analysis.officialT2Awards.toLocaleString()}+ Tier 2 awards.</li>
                             <li><strong>Eligible Applicants:</strong> {analysis.eligibleApps.toLocaleString()} of {TOTAL_APPLICATIONS.toLocaleString()} ({INELIGIBLE_APPLICATIONS.toLocaleString()} ineligible per Apr 28 PDF)</li>
                         </ul>
                         <div className="mb-4 p-3 bg-tefa-navy/5 border border-tefa-navy/20 rounded text-xs text-tefa-body/70">
-                            <div className="font-bold text-tefa-navy mb-1">Capacity Derivation (Apr 28 PDF empirical T1-family + 77/23 T2 setting mix):</div>
+                            <div className="font-bold text-tefa-navy mb-1">Capacity Calibration (Apr 28 T1-family + May 4 official T2 awards):</div>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li><strong>Step 1 — T1 family block (empirical):</strong> Apr 28 PDF item 1, verbatim: <em>"all eligible tier 1 applicants and siblings will qualify for funding of approximately $415 million."</em> {analysis.firstRoundAwards.toLocaleString()} students at an avg ~${Math.round(analysis.t1FamilyCost / analysis.firstRoundAwards).toLocaleString()}/student. Reliable because the Parent Application Guide establishes that educational setting (private $10,474 vs. homeschool $2,000) <em>locks</em> at application close (Mar 31) — the program knew the exact per-student cost at lottery time.</li>
                                 <li><strong>Step 2 — T2/T3 blended cost:</strong> T2 (≤200% FPL) and T3 (200-500% FPL) both have no SPED supplement by tier definition. Per-student cost depends only on setting. Apr 8 PDF reports the overall application setting split as 77% private / 23% homeschool. Blended cost = 0.77 × $10,474 + 0.23 × $2,000 ≈ <strong>${analysis.perStudentT2Blended.toLocaleString()}/student</strong>.</li>
                                 <li><strong>Step 3 — Admin/reserve:</strong> SB 2 §29.362(b)-(c) allows up to 3% for Comptroller administration plus up to 5% for certified educational assistance organizations ($80M total cap); the Apr 28 PDF item 5 confirms an appeals reserve (~$5M placeholder). Both come off the top: <strong>${(analysis.programOverhead / 1e6).toFixed(0)}M total</strong>.</li>
-                                <li><strong>Step 4 — T2 lottery pool:</strong> Remaining <strong>~${(analysis.t2Budget / 1e6).toFixed(0)}M</strong> ($1B − $415M − ${(analysis.programOverhead / 1e6).toFixed(0)}M) funds T2 at the blended rate → <strong>{analysis.fundedT2.toLocaleString()}</strong> T2 lottery slots (central). Floor sensitivity (100% private): {analysis.t2LotteryCapacityFloor.toLocaleString()} slots.</li>
-                                <li><strong>Total capacity:</strong> {analysis.firstRoundAwards.toLocaleString()} + {analysis.fundedT2.toLocaleString()} ≈ <strong>{analysis.capacity.toLocaleString()}</strong> students central / ~{(analysis.firstRoundAwards + analysis.t2LotteryCapacityFloor).toLocaleString()} floor.</li>
+                                <li><strong>Step 4 — T2 award batch:</strong> The pre-May-4 77/23 model would have derived ~{analysis.derivedT2LotteryCapacity.toLocaleString()} T2 slots from the remaining <strong>~${(analysis.t2Budget / 1e6).toFixed(0)}M</strong>. The May 4 release supersedes that estimate with <strong>{analysis.officialT2Awards.toLocaleString()}+ official Tier 2 awards</strong>. The gap points to a larger reserve/holdback, a more private-heavy T2 setting mix, or both.</li>
+                                <li><strong>Total awards to date:</strong> {analysis.firstRoundAwards.toLocaleString()} + {analysis.fundedT2.toLocaleString()}+ = <strong>{analysis.capacity.toLocaleString()}+</strong> students.</li>
                                 <li><strong>Why this supersedes the prior $640.7M derivation:</strong> The earlier model assumed all 27,050 T1 students received the $17,650 IEP-blended rate. Reality (per the Parent Guide's "Prioritization Only" sub-class + the Apr 8 PDF's 8,618 IEP-active count + 77/23 setting split) reconciles the $415M PDF figure within ~1%: most T1 students receive only the base rate, and ~23% homeschool dramatically lowers the per-student cost.</li>
-                                <li><strong>Appeals reserve:</strong> Per Apr 28 PDF item 5, the program holds a reserve for successful appeals. Unused reserve cascades to the waitlist — small upside vector, not baseline.</li>
-                                <li><strong>Cross-check:</strong> At ~{analysis.capacity.toLocaleString()} central capacity, T1-family fully funds, T2 ({analysis.demandT2.toLocaleString()}) funds at {tier2FundingRate.toFixed(1)}% (lottery), T3 and T4 receive 0 from the initial lottery. Even the floor scenario funds T2 at ~{((analysis.t2LotteryCapacityFloor / analysis.demandT2) * 100).toFixed(0)}% — both consistent with the Apr 2 "funding exhausted within T2" framing, but with a much smaller T2 backlog ahead of T3 than the prior model showed.</li>
+                                <li><strong>Appeals reserve:</strong> Per Apr 28 PDF item 5 and the May 4 release, the program holds a reserve for successful appeals. Unused reserve cascades to the waitlist — upside vector, not baseline.</li>
+                                <li><strong>Cross-check:</strong> T1-family fully funds, T2 ({analysis.demandT2.toLocaleString()}) funds at {tier2FundingRate.toFixed(1)}%+ (lottery), and T3/T4 receive 0 from the initial award batches. The remaining T2 backlog ahead of T3 is ~{analysis.unfundedT2.toLocaleString()} students.</li>
                             </ul>
                         </div>
 
                         <div className="mb-4 p-3 bg-white border border-tefa-navy/20 rounded text-xs">
-                            <div className="font-bold text-tefa-navy mb-2">Capacity Sensitivity — T2 Setting Mix</div>
+                            <div className="font-bold text-tefa-navy mb-2">Capacity Sensitivity — Official vs. Derived T2</div>
                             <div className="text-tefa-body/70 mb-2">
-                                The model now bakes <strong>$85M of admin/reserve assumptions</strong> into the baseline ($80M statutory admin cap per SB 2 §29.362(b)-(c) + $5M appeals reserve estimate per Apr 28 PDF item 5). With the T1-family block fixed at $415M and admin/reserve of $85M, the T2 lottery pool is <strong>${(analysis.t2Budget / 1e6).toFixed(0)}M</strong>. The remaining sensitivity is the educational-setting mix among T2 winners.
+                                The prior model derived T2 capacity from a $500M residual pool and a 77/23 setting mix. The May 4 release provides the authoritative public count: <strong>{analysis.officialT2Awards.toLocaleString()}+ Tier 2 awards</strong>. Keep the derived rows as diagnostics only.
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-xs">
                                     <thead className="bg-tefa-navy/5 text-tefa-navy">
                                         <tr>
                                             <th className="px-2 py-1.5 text-left">Scenario</th>
-                                            <th className="px-2 py-1.5 text-left">T2 setting mix</th>
+                                            <th className="px-2 py-1.5 text-left">Basis</th>
                                             <th className="px-2 py-1.5 text-right">Per-student cost</th>
                                             <th className="px-2 py-1.5 text-right">T2 slots</th>
                                             <th className="px-2 py-1.5 text-right">T2 rate</th>
@@ -1684,26 +1690,26 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                     </thead>
                                     <tbody className="divide-y divide-gray-100 text-tefa-body/80">
                                         <tr className="bg-tefa-gold/10 font-medium">
-                                            <td className="px-2 py-1.5">Central <strong>(baseline)</strong></td>
-                                            <td className="px-2 py-1.5">77% private / 23% homeschool</td>
-                                            <td className="px-2 py-1.5 text-right font-mono">${analysis.perStudentT2Blended.toLocaleString()}</td>
+                                            <td className="px-2 py-1.5">Official <strong>(baseline)</strong></td>
+                                            <td className="px-2 py-1.5">May 4 release</td>
+                                            <td className="px-2 py-1.5 text-right font-mono">Implied</td>
                                             <td className="px-2 py-1.5 text-right font-mono">{analysis.t2LotteryCapacity.toLocaleString()}</td>
                                             <td className="px-2 py-1.5 text-right font-mono">{tier2FundingRate.toFixed(1)}%</td>
                                             <td className="px-2 py-1.5 text-right font-mono">{analysis.capacity.toLocaleString()}</td>
                                         </tr>
                                         <tr>
-                                            <td className="px-2 py-1.5">Floor (all-private)</td>
-                                            <td className="px-2 py-1.5">100% private / 0% homeschool</td>
-                                            <td className="px-2 py-1.5 text-right font-mono">$10,474</td>
-                                            <td className="px-2 py-1.5 text-right font-mono">{analysis.t2LotteryCapacityFloor.toLocaleString()}</td>
-                                            <td className="px-2 py-1.5 text-right font-mono">{((analysis.t2LotteryCapacityFloor / analysis.demandT2) * 100).toFixed(1)}%</td>
-                                            <td className="px-2 py-1.5 text-right font-mono">{(analysis.firstRoundAwards + analysis.t2LotteryCapacityFloor).toLocaleString()}</td>
+                                            <td className="px-2 py-1.5">Prior derived estimate</td>
+                                            <td className="px-2 py-1.5">77% private / 23% homeschool</td>
+                                            <td className="px-2 py-1.5 text-right font-mono">${analysis.perStudentT2Blended.toLocaleString()}</td>
+                                            <td className="px-2 py-1.5 text-right font-mono">{analysis.derivedT2LotteryCapacity.toLocaleString()}</td>
+                                            <td className="px-2 py-1.5 text-right font-mono">{((analysis.derivedT2LotteryCapacity / analysis.demandT2) * 100).toFixed(1)}%</td>
+                                            <td className="px-2 py-1.5 text-right font-mono">{(analysis.firstRoundAwards + analysis.derivedT2LotteryCapacity).toLocaleString()}</td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
                             <div className="text-tefa-body/70 mt-2">
-                                T2 families specifically applied for tuition support, so the realistic T2 setting mix likely sits closer to the central 77/23 estimate than to the all-private floor. Both rows include the $85M admin/reserve assumption. If actual admin or reserve usage is lower than the statutory cap assumption, capacity grows accordingly — that's an upside vector, not modeled as a separate scenario.
+                                The official batch being lower than the 77/23 derived estimate is the new signal: either more money was held back for appeals/admin, T2 awards skew more private than the overall applicant pool, or both. The official count is now the baseline for waitlist math.
                             </div>
                             <div className="text-tefa-body/60 mt-2 text-[11px] italic">
                                 Earlier IEP-scalar sensitivity tables ($14k / $17,650 / $22,769) have been removed — the Apr 28 PDF's empirical $415M T1-family allocation supersedes any IEP-scalar derivation.
