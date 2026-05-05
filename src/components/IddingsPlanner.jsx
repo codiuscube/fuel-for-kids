@@ -283,26 +283,34 @@ const IddingsPlanner = () => {
     // if a T1 family opts out (by Jul 15 per Apr 22 press release), all their awards return
     // to the pool.
     // =====================================================
+    const totalInitialFunded = fundedT1 + fundedT2 + fundedT3 + fundedT4a + fundedT4b;
     const t1Attrition = Math.round(firstRoundAwards * attrRate);
     const t2Attrition = Math.round(fundedT2 * attrRate);
 
-    // Freed spots first fill unfunded T2 (lottery losers within T2)
-    let freedSpots = t1Attrition + t2Attrition;
+    // Freed spots first fill unfunded T2 (lottery losers within T2). Think of attrition
+    // recursively: replacements can also decline, and those replacement offers still go to
+    // the remaining T2 queue until that queue is exhausted.
+    const firstWaveFreedSpots = t1Attrition + t2Attrition;
     const unfundedT2 = demandT2 - fundedT2;
-    const additionalT2Funded = Math.min(freedSpots, unfundedT2);
-    freedSpots -= additionalT2Funded;
+    const recursiveT3Threshold = unfundedT2 / (totalInitialFunded + unfundedT2);
+    const totalWaitlistOffersFromAttrition = attrRate < 1
+      ? Math.round(firstWaveFreedSpots / (1 - attrRate))
+      : demandT2 + demandT3 + demandT4a + demandT4b;
 
-    // Second-round attrition from newly funded T2 students
+    const additionalT2Funded = Math.min(totalWaitlistOffersFromAttrition, unfundedT2);
+    const remainingT2AfterCascade = Math.max(0, unfundedT2 - additionalT2Funded);
+
+    // Only attrition offers beyond the full remaining T2 queue can reach T3.
+    const t3FromWaitlist = Math.min(
+      Math.max(0, totalWaitlistOffersFromAttrition - unfundedT2),
+      demandT3 - fundedT3
+    );
+
+    // T2 replacement attrition is included in totalWaitlistOffersFromAttrition; retained for display.
     const additionalT2Attrition = Math.round(additionalT2Funded * attrRate);
-    freedSpots += additionalT2Attrition;
 
-    // Remaining freed spots go to T3
-    const t3FromWaitlist = Math.min(freedSpots, demandT3 - fundedT3);
-    freedSpots -= t3FromWaitlist;
-
-    // T3 attrition from both initial and waitlist-funded T3
+    // T3 attrition from waitlist-funded T3
     const t3Attrition = Math.round((fundedT3 + t3FromWaitlist) * attrRate);
-    freedSpots += t3Attrition;
 
     const effectiveFundedT3 = fundedT3 + t3FromWaitlist;
     const effectiveTier3Rate = demandT3 > 0 ? Math.min(100, (effectiveFundedT3 / demandT3) * 100) : 100;
@@ -310,7 +318,6 @@ const IddingsPlanner = () => {
     const effectiveFamilyRate = (1 - Math.pow(effectiveSingleFail, 3)) * 100;
 
     // Total attrition summary
-    const totalInitialFunded = fundedT1 + fundedT2 + fundedT3 + fundedT4a + fundedT4b;
     const totalAttritionFreed = t1Attrition + t2Attrition + additionalT2Attrition + t3Attrition;
 
     return {
@@ -323,7 +330,9 @@ const IddingsPlanner = () => {
         fundedT1, fundedT2, fundedT3, fundedT4a, fundedT4b,
         tier3Rate, tier4Rate, familySuccessRate,
         // Attrition / waitlist cascade
-        t1Attrition, t2Attrition, additionalT2Funded, additionalT2Attrition,
+        t1Attrition, t2Attrition, firstWaveFreedSpots, totalWaitlistOffersFromAttrition,
+        recursiveT3Threshold,
+        additionalT2Funded, additionalT2Attrition, remainingT2AfterCascade,
         t3FromWaitlist, t3Attrition, unfundedT2,
         effectiveFundedT3, effectiveTier3Rate, effectiveFamilyRate,
         totalInitialFunded, totalAttritionFreed,
@@ -1544,17 +1553,17 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     </div>
                     {analysis.t3FromWaitlist > 0 && (
                         <div className="mt-3 text-xs text-tefa-body/60 bg-tefa-sky/10 rounded p-3">
-                            <strong>Cascade:</strong> {analysis.t1Attrition.toLocaleString()} T1 + {analysis.t2Attrition.toLocaleString()} T2 winners don't participate
-                            → {analysis.additionalT2Funded.toLocaleString()} unfunded T2 backfilled
-                            → {analysis.additionalT2Attrition.toLocaleString()} of those also drop
+                            <strong>Cascade:</strong> {analysis.t1Attrition.toLocaleString()} T1 + {analysis.t2Attrition.toLocaleString()} T2 winners don't participate in the first wave
+                            → recursive attrition creates {analysis.totalWaitlistOffersFromAttrition.toLocaleString()} waitlist offers
+                            → {analysis.unfundedT2.toLocaleString()} finish clearing T2
                             → <strong>{analysis.t3FromWaitlist.toLocaleString()}</strong> spots reach T3
                         </div>
                     )}
                     {analysis.t3FromWaitlist === 0 && analysis.unfundedT2 > 0 && (
                         <div className="mt-3 text-xs text-tefa-body/60 bg-red-50 rounded p-3">
-                            <strong>Cascade blocked:</strong> {(analysis.t1Attrition + analysis.t2Attrition).toLocaleString()} spots freed by T1/T2 attrition,
-                            but {analysis.unfundedT2.toLocaleString()} unfunded T2 students are ahead on the waitlist and absorb all freed spots.
-                            {analysis.additionalT2Attrition > 0 && ` (${analysis.additionalT2Attrition.toLocaleString()} second-round T2 attrition spots also absorbed.)`}
+                            <strong>Cascade blocked:</strong> {(analysis.t1Attrition + analysis.t2Attrition).toLocaleString()} first-wave spots are freed by T1/T2 attrition.
+                            With recursive replacement attrition, that creates {analysis.totalWaitlistOffersFromAttrition.toLocaleString()} total waitlist offers, all absorbed by T2.
+                            {analysis.remainingT2AfterCascade > 0 && ` About ${analysis.remainingT2AfterCascade.toLocaleString()} T2 students still remain ahead of T3.`}
                         </div>
                     )}
                 </div>
@@ -1569,7 +1578,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     Eligibility is fixed at 9.9% (per PDF — official). The variable here is <strong>attrition</strong>: the percentage of T1/T2 lottery winners who don't follow through on enrollment. Their freed spots cascade: T1/T2 dropouts → backfill unfunded T2 → overflow reaches T3.
                 </p>
                 <div className="bg-tefa-navy/5 rounded p-3 mb-4 text-xs text-tefa-body/70">
-                    <strong>Critical Threshold:</strong> ~{scenarioOutlook.mostLikely.unfundedT2.toLocaleString()} unfunded T2 students sit ahead of T3 after the official May 4 T2 award batch. That is higher than the prior derived-capacity model, so central T3 odds are lower; attrition must first clear the remaining T2 backlog before any meaningful T3 movement.
+                    <strong>Critical Threshold:</strong> ~{scenarioOutlook.mostLikely.unfundedT2.toLocaleString()} unfunded T2 students sit ahead of T3 after the official May 4 T2 award batch. Thinking in total recursive attrition, T3 begins only around {(scenarioOutlook.mostLikely.recursiveT3Threshold * 100).toFixed(1)}% attrition; at 15%, the remaining T2 backlog still absorbs the cascade.
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="p-4 rounded-lg bg-green-50 border border-green-200">

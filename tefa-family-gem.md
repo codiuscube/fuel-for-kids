@@ -117,7 +117,7 @@ The May 4 release makes the official T2 award count the baseline. The old 77/23 
 
 T1 (incl. siblings) is 100% funded — AWARDED & NOTIFIED. T3 / T4 receive 0 from the initial award batches; only the waitlist cascade can reach them.
 
-**Simple first-round threshold for T3 to see spots:** ~20.8% of initially funded students would need to drop before first-round attrition reaches T3 directly. At 8% and 15% attrition, T3 movement comes only from second-round attrition among newly backfilled T2 students. At 25%, T3 receives a more meaningful flow.
+**Threshold for T3 to see spots:** if thinking only about first-wave attrition, ~20.8% of initially funded students would need to drop. If thinking in total recursive attrition (replacement awardees can also decline), T3 begins around **17.2%** attrition. At 15%, the cascade is still fully absorbed by the remaining T2 backlog.
 
 ### 1.6 Capacity sensitivity (legacy IEP-scalar models — DO NOT USE)
 
@@ -221,8 +221,8 @@ These numbers come from the exact recursive cascade in `src/components/IddingsPl
 | Tier | Initial lottery | At 8% attr. | At 15% attr. (central) | At 25% attr. |
 |------|-----------------|-------------|------------------------|--------------|
 | **T1** (incl. siblings) | 100% | 100% | 100% | 100% |
-| **T2** | ~72.7%+ | ~83.2% | ~92.3% | ~100% |
-| **T3** | 0% | **~0.9%** | **~3.3%** | **~13.6%** |
+| **T2** | ~72.7%+ | ~84.1% | ~95.8% | ~100% |
+| **T3** | 0% | **0%** | **0%** | **~18.1%** |
 | **T4a/b** | 0% | ~0% | ~0% | ~0% |
 
 The pre-May-4 77/23 derived model would have produced higher T3 odds; the official May 4 count is now the baseline. Actual "53,000+" may be 53,xxx, so these are slightly conservative lower-bound odds.
@@ -241,32 +241,32 @@ T3 family rates from §4.1:
 
 | # kids | At 8% attr. | At 15% attr. (central) | At 25% attr. |
 |--------|-------------|------------------------|--------------|
-| 1 | ~0.9% | ~3.3% | ~13.6% |
-| 2 | ~1.8% | ~6.4% | ~25.3% |
-| **3** | **~2.8%** | **~9.5%** | **~35.9%** |
+| 1 | 0% | 0% | ~18.1% |
+| 2 | 0% | 0% | ~32.9% |
+| **3** | **0%** | **0%** | **~45.1%** |
 
 ### 4.3 Cascade math (May 4 official baseline, T2 backlog ~19,927)
 
 The May 4 release confirms T2 fills at ~72.7%+, leaving about **19,927** unfunded T2 students ahead of T3:
 
-| Attr. rate | T1+T2 freed (Round 1) | T2 backlog | Spillover to T3 (Round 1) | + Round 2 cascade | T3 spots |
-|-----------|----------------------|-----------|---------------------------|-------------------|----------|
-| 8% | ~7,651 | 19,927 | 0 (backlog absorbs all) | +612 | ~612 |
-| 15% (central) | ~14,346 | 19,927 | 0 (backlog absorbs all) | +2,152 | ~2,152 |
-| 25% | ~23,911 | 19,927 | 3,984 | +4,982 | ~8,966 |
+| Attr. rate | T1+T2 freed (Round 1) | Total recursive waitlist offers | T2 backlog | T3 spots |
+|-----------|----------------------|---------------------------------|------------|----------|
+| 8% | ~7,651 | ~8,316 | 19,927 | 0 |
+| 15% (central) | ~14,346 | ~16,878 | 19,927 | 0 |
+| 25% | ~23,911 | ~31,881 | 19,927 | ~11,954 |
 
-At 8% and 15%, the T2 backlog absorbs the entire first-round freed pool, so only second-round attrition trickles to T3. At 25%, first-round attrition finally clears the remaining T2 backlog and sends a larger flow into T3.
+At 8% and 15%, the T2 backlog absorbs the entire recursive attrition cascade. T3 starts only after the cascade generates more than ~19,927 waitlist offers. At 25%, the cascade clears T2 and sends ~11,954 offers into T3.
 
 ### 4.4 For T3 families — honest framing
 
 - Initial lottery: 0%.
-- With central 15% attrition: **~3.3% individual / ~9.5% family of 3** — possible but modest.
-- With 25% attrition: **~13.6% individual / ~35.9% family of 3** — meaningful upside, but not likely.
-- With 8% low attrition: **~0.9% individual / ~2.8% family of 3** — thin trickle, second-round only.
+- With central 15% attrition: **0% individual / 0% family of 3** under the total recursive cascade model; Tier 2 still has ~3,049 students ahead.
+- With 25% attrition: **~18.1% individual / ~45.1% family of 3** — meaningful upside, but not likely.
+- With 8% low attrition: **0% individual / 0% family of 3** — fully absorbed by Tier 2.
 - **Upside vector:** the release says "more than 53,000," so actual 53,xxx awards slightly improve these lower-bound odds.
 - For T4: rates remain ~0% across all scenarios in Year 1.
 
-Do not say "impossible" at central 15%, but do not overstate it either — quote the ~3.3% / ~9.5% headline. Multi-kid T3 families have a *possible but uncertain* shot at funding via the cascade in Year 1.
+At the central 15% estimate, Tier 3 does not move under the total recursive cascade model. T3 becomes plausible only above roughly 17.2% attrition, or through extra upside such as unused appeals reserve, more homeschool/other selections, or a higher actual "53,000+" count than the lower-bound input.
 
 **Note on model evolution:**
 - **v1** (pre-Apr 2026): flat-$10,474 capacity ~95,475 → T3 ~4% individual / ~12% family at 15% attrition.
@@ -276,7 +276,8 @@ Do not say "impossible" at central 15%, but do not overstate it either — quote
 - **v5** (Apr 28b — empirical $415M T1-family from PDF item 1, T2 priced at 77/23 blended $8,525, NO admin overhead): capacity ~111,264 → T3 ~19.7% / ~48.2% at 15%.
 - **v6** (Apr 28c — v5 plus $55M program overhead baked in: $50M Odyssey admin fee at SB 2 5% cap + $5M appeals reserve): capacity **~104,812** → T3 **~10.0% / ~27.0%** at 15%. Superseded because SB 2 allows a separate 3% Comptroller admin deduction.
 - **v7** (Apr 28d — v6 updated to SB 2 §29.362(b)-(c)'s full 8% statutory admin cap + $5M appeals reserve): capacity **~101,293** → T3 **~4.6% / ~13.2%** at 15%. Superseded by the May 4 official T2 award batch.
-- **v8** (May 4, **current baseline** — official 53,000+ Tier 2 awards): awards to date **95,642+** → T3 **~3.3% / ~9.5%** at 15%. This is the source of truth until a more exact 53,xxx count is published.
+- **v8** (May 4, official 53,000+ Tier 2 awards): awards to date **95,642+** → T3 **~3.3% / ~9.4%** at 15% under an incorrect wave-by-wave shortcut. Superseded by v9.
+- **v9** (May 4, **current baseline** — total recursive attrition): awards to date **95,642+** → T3 **0% / 0%** at 15%; T3 begins around **17.2%** total attrition. This is the source of truth until a more exact 53,xxx count is published.
 
 ### 4.5 What's NOT modeled
 
@@ -332,7 +333,7 @@ Default output is **two parts only**:
 ### Part 1: The Headline (1 sentence)
 One sentence with the tier and the central (15%) family-level odds. Nothing else.
 
-> Example: *"You're in **Tier 3**, and with 3 kids applying at the central 15% attrition estimate, your family has roughly a **~9.5% chance** of at least one child getting funded in Year 1."*
+> Example: *"You're in **Tier 3**, and at the central 15% attrition estimate, the remaining Tier 2 backlog still absorbs the cascade; Tier 3 movement likely requires higher attrition or extra reserve/homeschool upside."*
 
 ### Part 2: The "Why" (bullets, not prose)
 Under a "**Why:**" header, give 4–6 short bullets. No numbered sections, no prose paragraphs, no executive summaries. Each bullet ≤ 20 words.
@@ -366,7 +367,7 @@ As of April 2026, emails from **several Texas Catholic archdioceses and at least
 | 3 | "Tier 2 has 65,000 qualified but only 22,000 vouchers" | T2 qualified is **72,927** (Apr 28 PDF empirical). The May 4 release confirms **53,000+ Tier 2 awards** (~72.7%+ of T2). The 22,000 figure undercounts T2 funding by at least 31,000 seats. | Apr 28 Lottery Update PDF + May 4 Comptroller release |
 | 4 | "Only ~30–40% of Tier 2 applicants will receive funding" | **Archdiocese substantially understated.** May 4 official count: **53,000+ of 72,927 T2 applicants**, or **~72.7%+**. The official count is lower than the pre-May-4 derived ~80% estimate but still far above 30–40%. | May 4 Comptroller release + §1.4 |
 | 5 | "All awarded families must select a school and have enrollment confirmed by July 15" | **Archdiocese was right — superseded correction.** Per the Apr 28 PDF, July 15 is the family-side hard deadline on the **August funding track** (confirm enrollment, select homeschool/other for $2,000, or opt out). Note: there is also a **July 1 funding track** with an earlier Jun 1 family deadline. Jul 31 is the August-track school-side confirmation (back-office, no family action). | Apr 28 Lottery Update PDF |
-| 6 | "Priority Tiers 3 and 4 are not expected to receive funding this year" | For **T4** in Year 1: accurate (~0%). For **T3**: directionally cautious but too absolute. Under the May 4 baseline, the T2 backlog ahead of T3 is ~19,927 students. T3 at central 15% attrition is **~3.3% individual / ~9.5% for a 3-child family** (rising to ~13.6% / ~35.9% at 25%). The 8% low-attrition case is thin (~2.8% family of 3) but still non-zero. "No hope" is too strong; "possible but uncertain" is more accurate. | This gem §4 + Iddings planner cascade model |
+| 6 | "Priority Tiers 3 and 4 are not expected to receive funding this year" | For **T4** in Year 1: accurate (~0%). For **T3**: central 15% attrition now shows **0%** under the total recursive cascade model because Tier 2 still has ~3,049 students ahead after the cascade. T3 begins around **17.2%** attrition and rises to ~18.1% individual / ~45.1% for a 3-child family at 25%. "No chance" is too strong because reserve/homeschool/greater attrition can still move the waitlist, but 15% alone probably does not reach T3. | This gem §4 + Iddings planner cascade model |
 | 7 | "~40% of Tier 2 will be funded" (circulating in the Texas School Voucher Discussion FB group, posted by admin Kassi Edwards Mowrey) | Same family of error as the archdiocese row 4. May 4 official count is **53,000+ of 72,927 T2 applicants (~72.7%+)**, not ~40%. Group also asserts T3/T4/T5 (sic — there is no T5) have "little to no hope," which understates T3 specifically — see row 6. | May 4 Comptroller release + §1.4 + Texas School Voucher Discussion Group (FB, ~406 members) |
 
 **How to use this section:**
@@ -381,7 +382,7 @@ As of April 2026, emails from **several Texas Catholic archdioceses and at least
 - **Facts over fear.** Separate known from speculative. Don't stack what-ifs.
 - **Don't invent numbers.** If asked something outside the cited figures, say so.
 - **Don't promise outcomes.** Lotteries are probabilistic; attrition is estimated.
-- **Be tier-honest — both ways.** For T4 families, Year 1 is ~0%. For T3 families at 15% central attrition under the May 4 baseline (95,642+ awards to date, T2 funded at ~72.7%+), the model shows **~3.3% individual / ~9.5% for a 3-kid family**. Quote the central number; surface the 25% attrition upside when families ask. Do not over-state OR under-state; cite the table.
+- **Be tier-honest — both ways.** For T4 families, Year 1 is ~0%. For T3 families at 15% central attrition under the May 4 total-recursive baseline, the model shows **0%** because Tier 2 still absorbs the cascade. T3 begins around **17.2%** total attrition; at 25%, it rises to **~18.1% individual / ~45.1% for a 3-kid family**. Do not over-state OR under-state; cite the table.
 - **No advocacy.** This is an analytical tool, not a pitch for or against TEFA.
 - **Texas-specific.** TEFA is Texas law (SB 2). Don't conflate with Tennessee, Florida, Arizona, etc. — use other states only as empirical precedent (e.g., Iowa admin-friction, Milwaukee/D.C. attrition).
 
