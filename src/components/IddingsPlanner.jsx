@@ -174,15 +174,24 @@ const IddingsPlanner = () => {
     // "$1 billion committed in year one") — administrative choice, statutorily permitted.
     const budget = 1_000_000_000;
 
-    // === ADMINISTRATIVE OVERHEAD + APPEALS RESERVE (baked into baseline) ===
+    // === ADMINISTRATIVE OVERHEAD + APPEALS RESERVE (diagnostic / sensitivity) ===
     // SB 2 §29.362(b)-(c) allows up to 3% for Comptroller administration plus
     // up to 5% for certified educational assistance organizations = $80M on
     // the $1B Year 1 program. The Apr 28 Lottery Update PDF item 5 confirms an
     // appeals reserve exists (amount not published; $5M is a conservative placeholder).
-    // The model treats the full statutory admin cap plus reserve as baseline.
+    // Community Impact later reported, citing an agency spokesperson, that about $820M
+    // has been set aside for accepted students to date. That implies ~$180M gross remains,
+    // or at least ~$100M after the max $80M admin/vendor allowance. Treat that as an upside
+    // sensitivity, not guaranteed normal waitlist capacity.
     const STATUTORY_ADMIN_CAP = 80_000_000;
     const APPEALS_RESERVE = 5_000_000;
     const programOverhead = STATUTORY_ADMIN_CAP + APPEALS_RESERVE;
+    const reportedCommittedAwardsBudget = 820_000_000;
+    const reportedGrossUncommittedBudget = budget - reportedCommittedAwardsBudget;
+    const reportedMinimumAppealsWaitlistBudget = Math.max(
+      0,
+      reportedGrossUncommittedBudget - STATUTORY_ADMIN_CAP
+    );
 
     const attrRate = overrideAttrition !== undefined ? overrideAttrition : attritionRate;
     const eligibleApps = ELIGIBLE_APPLICATIONS;
@@ -318,6 +327,27 @@ const IddingsPlanner = () => {
     const effectiveSingleFail = 1 - (effectiveTier3Rate / 100);
     const effectiveFamilyRate = (1 - Math.pow(effectiveSingleFail, 3)) * 100;
 
+    // Community Impact reserve sensitivity: if the reported $100M+ minimum remaining
+    // after max admin/vendor costs later flows through the normal waitlist, estimate its
+    // T2/T3 effect at the same blended T2/T3 cost. Successful appeals and SPED awards can
+    // consume this first, so this is upside context rather than the baseline.
+    const reserveEquivalentWaitlistSeats = Math.floor(reportedMinimumAppealsWaitlistBudget / perStudentT2Blended);
+    const reserveT2Covered = Math.min(reserveEquivalentWaitlistSeats, unfundedT2);
+    const reserveRemainingT2 = Math.max(0, unfundedT2 - reserveT2Covered);
+    const reserveT3FromBudget = Math.min(
+      Math.max(0, reserveEquivalentWaitlistSeats - unfundedT2),
+      demandT3
+    );
+    const reserveT3FromAttritionAtCurrentRate = Math.min(
+      Math.max(0, totalWaitlistOffersFromAttrition - reserveRemainingT2),
+      demandT3 - reserveT3FromBudget
+    );
+    const reserveEffectiveFundedT3 = reserveT3FromBudget + reserveT3FromAttritionAtCurrentRate;
+    const reserveEffectiveTier3Rate = demandT3 > 0
+      ? Math.min(100, (reserveEffectiveFundedT3 / demandT3) * 100)
+      : 100;
+    const reserveEffectiveFamilyRate = (1 - Math.pow(1 - (reserveEffectiveTier3Rate / 100), 3)) * 100;
+
     // Total attrition summary
     const totalAttritionFreed = t1Attrition + t2Attrition + additionalT2Attrition + t3Attrition;
 
@@ -326,6 +356,8 @@ const IddingsPlanner = () => {
         // Apr 28 PDF empirical calibration
         firstRoundAwards, siblingsFunded, officialT2Awards, t2LotteryCapacity, derivedT2LotteryCapacity, t2LotteryCapacityFloor,
         t1FamilyCost, t2Budget, perStudentT2Blended, programOverhead,
+        reportedCommittedAwardsBudget, reportedGrossUncommittedBudget,
+        reportedMinimumAppealsWaitlistBudget,
         // Model A: Comptroller's implementation (initial lottery)
         demandT1, demandT2, demandT3, demandT4a, demandT4b,
         fundedT1, fundedT2, fundedT3, fundedT4a, fundedT4b,
@@ -336,6 +368,9 @@ const IddingsPlanner = () => {
         additionalT2Funded, additionalT2Attrition, remainingT2AfterCascade,
         t3FromWaitlist, t3Attrition, unfundedT2,
         effectiveFundedT3, effectiveTier3Rate, effectiveFamilyRate,
+        reserveEquivalentWaitlistSeats, reserveT2Covered, reserveRemainingT2,
+        reserveT3FromBudget, reserveT3FromAttritionAtCurrentRate,
+        reserveEffectiveFundedT3, reserveEffectiveTier3Rate, reserveEffectiveFamilyRate,
         totalInitialFunded, totalAttritionFreed,
     };
   };
@@ -1582,6 +1617,9 @@ The contribution amount we listed represents the maximum we can sustainably budg
                 <div className="bg-tefa-navy/5 rounded p-3 mb-4 text-xs text-tefa-body/70">
                     <strong>Critical Threshold:</strong> ~{scenarioOutlook.mostLikely.unfundedT2.toLocaleString()} unfunded T2 students sit ahead of T3 after the official May 4 T2 award batch. Thinking in total recursive attrition, T3 begins only around {(scenarioOutlook.mostLikely.recursiveT3Threshold * 100).toFixed(1)}% attrition; at 15%, the remaining T2 backlog still absorbs the cascade.
                 </div>
+                <div className="bg-green-50 border border-green-200 rounded p-3 mb-4 text-xs text-green-800">
+                    <strong>Community Impact reserve signal:</strong> Community Impact reported, citing an agency spokesperson, that about ${(analysis.reportedCommittedAwardsBudget / 1e6).toFixed(0)}M has been set aside for selected students, leaving about ${(analysis.reportedGrossUncommittedBudget / 1e6).toFixed(0)}M gross. After the max $80M admin/vendor allowance, that implies at least ${(analysis.reportedMinimumAppealsWaitlistBudget / 1e6).toFixed(0)}M potentially available for successful appeals and later waitlist movement. If that money ultimately flows through the regular T2/T3 waitlist at the blended cost, it is roughly {analysis.reserveEquivalentWaitlistSeats.toLocaleString()} T2/T3-equivalent seats; combined with 15% attrition, T3 sensitivity rises to ~{scenarioOutlook.mostLikely.reserveEffectiveTier3Rate.toFixed(1)}% per child / ~{scenarioOutlook.mostLikely.reserveEffectiveFamilyRate.toFixed(1)}% family. Treat this as upside, not the baseline, because appeals and SPED awards can consume it first.
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="p-4 rounded-lg bg-green-50 border border-green-200">
                         <div className="text-xs text-green-800 uppercase font-bold mb-1">Best Case (25% Attrition)</div>
@@ -1673,11 +1711,12 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             <ul className="list-disc pl-5 space-y-1">
                                 <li><strong>Step 1 — T1 family block (empirical):</strong> Apr 28 PDF item 1, verbatim: <em>"all eligible tier 1 applicants and siblings will qualify for funding of approximately $415 million."</em> {analysis.firstRoundAwards.toLocaleString()} students at an avg ~${Math.round(analysis.t1FamilyCost / analysis.firstRoundAwards).toLocaleString()}/student. Reliable because the Parent Application Guide establishes that educational setting (private $10,474 vs. homeschool $2,000) <em>locks</em> at application close (Mar 31) — the program knew the exact per-student cost at lottery time.</li>
                                 <li><strong>Step 2 — T2/T3 blended cost:</strong> T2 (≤200% FPL) and T3 (200-500% FPL) both have no SPED supplement by tier definition. Per-student cost depends only on setting. Apr 8 PDF reports the overall application setting split as 77% private / 23% homeschool. Blended cost = 0.77 × $10,474 + 0.23 × $2,000 ≈ <strong>${analysis.perStudentT2Blended.toLocaleString()}/student</strong>.</li>
-                                <li><strong>Step 3 — Admin/reserve:</strong> SB 2 §29.362(b)-(c) allows up to 3% for Comptroller administration plus up to 5% for certified educational assistance organizations ($80M total cap); the Apr 28 PDF item 5 confirms an appeals reserve (~$5M placeholder). Both come off the top: <strong>${(analysis.programOverhead / 1e6).toFixed(0)}M total</strong>.</li>
+                                <li><strong>Step 3 — Admin/reserve:</strong> SB 2 §29.362(b)-(c) allows up to 3% for Comptroller administration plus up to 5% for certified educational assistance organizations ($80M total cap); the Apr 28 PDF item 5 confirms an appeals reserve but does not publish the amount. Earlier baseline used a small ~$5M placeholder; the new Community Impact article makes that look too conservative as an upside sensitivity.</li>
                                 <li><strong>Step 4 — T2 award batch:</strong> The pre-May-4 77/23 model would have derived ~{analysis.derivedT2LotteryCapacity.toLocaleString()} T2 slots from the remaining <strong>~${(analysis.t2Budget / 1e6).toFixed(0)}M</strong>. The May 4 release supersedes that estimate with <strong>{analysis.officialT2Awards.toLocaleString()}+ official Tier 2 awards</strong>. The gap points to a larger reserve/holdback, a more private-heavy T2 setting mix, or both.</li>
                                 <li><strong>Total awards to date:</strong> {analysis.firstRoundAwards.toLocaleString()} + {analysis.fundedT2.toLocaleString()}+ = <strong>{analysis.capacity.toLocaleString()}+</strong> students.</li>
+                                <li><strong>Community Impact reserve signal:</strong> Community Impact reported, citing an agency spokesperson, that nearly 96,000 selected students have about <strong>${(analysis.reportedCommittedAwardsBudget / 1e6).toFixed(0)}M</strong> set aside so far. That leaves about <strong>${(analysis.reportedGrossUncommittedBudget / 1e6).toFixed(0)}M</strong> gross, or at least <strong>${(analysis.reportedMinimumAppealsWaitlistBudget / 1e6).toFixed(0)}M</strong> after the max $80M admin/vendor allowance. If it later flows through the regular waitlist, that is roughly <strong>{analysis.reserveEquivalentWaitlistSeats.toLocaleString()}</strong> T2/T3-equivalent seats at the blended cost.</li>
                                 <li><strong>Why this supersedes the prior $640.7M derivation:</strong> The earlier model assumed all 27,048 T1 students received the $17,650 IEP-blended rate. Reality (per the Parent Guide's "Prioritization Only" sub-class + the Apr 8 PDF's 8,618 IEP-active count + 77/23 setting split) reconciles the $415M PDF figure within ~1%: most T1 students receive only the base rate, and ~23% homeschool dramatically lowers the per-student cost.</li>
-                                <li><strong>Appeals reserve:</strong> Per Apr 28 PDF item 5 and the May 4 release, the program holds a reserve for successful appeals. Unused reserve cascades to the waitlist — upside vector, not baseline.</li>
+                                <li><strong>Appeals reserve:</strong> Per Apr 28 PDF item 5 and the May 4 release, the program holds a reserve for successful appeals. Community Impact's $100M+ figure is credible secondary reporting, but appeals and SPED awards may consume it before normal waitlist movement — upside vector, not baseline.</li>
                                 <li><strong>Cross-check:</strong> T1-family fully funds, T2 ({analysis.demandT2.toLocaleString()}) funds at {tier2FundingRate.toFixed(1)}%+ (lottery), and T3/T4 receive 0 from the initial award batches. The remaining T2 backlog ahead of T3 is ~{analysis.unfundedT2.toLocaleString()} students.</li>
                             </ul>
                         </div>
