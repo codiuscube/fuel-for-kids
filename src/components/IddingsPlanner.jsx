@@ -297,7 +297,7 @@ const IddingsPlanner = () => {
     // if a T1 family opts out (by Jul 15 per Apr 22 press release), all their awards return
     // to the pool.
     // =====================================================
-    const totalInitialFunded = fundedT1 + fundedT2 + fundedT3 + fundedT4a + fundedT4b;
+    const totalInitialFunded = firstRoundAwards + fundedT2 + fundedT3 + fundedT4a + fundedT4b;
     const t1Attrition = Math.round(firstRoundAwards * attrRate);
     const t2Attrition = Math.round(fundedT2 * attrRate);
 
@@ -339,6 +339,7 @@ const IddingsPlanner = () => {
     const reserveEquivalentWaitlistSeats = Math.floor(reserveWaitlistBudget / perStudentT2Blended);
     const reserveT2Covered = Math.min(reserveEquivalentWaitlistSeats, unfundedT2);
     const reserveRemainingT2 = Math.max(0, unfundedT2 - reserveT2Covered);
+    const reserveRecursiveT3Threshold = reserveRemainingT2 / (totalInitialFunded + reserveRemainingT2);
     const reserveT3FromBudget = Math.min(
       Math.max(0, reserveEquivalentWaitlistSeats - unfundedT2),
       demandT3
@@ -374,6 +375,7 @@ const IddingsPlanner = () => {
         t3FromWaitlist, t3Attrition, unfundedT2,
         effectiveFundedT3, effectiveTier3Rate, effectiveFamilyRate,
         reserveEquivalentWaitlistSeats, reserveT2Covered, reserveRemainingT2,
+        reserveRecursiveT3Threshold,
         reserveT3FromBudget, reserveT3FromAttritionAtCurrentRate,
         reserveEffectiveFundedT3, reserveEffectiveTier3Rate, reserveEffectiveFamilyRate,
         totalInitialFunded, totalAttritionFreed,
@@ -1599,43 +1601,46 @@ The contribution amount we listed represents the maximum we can sustainably budg
 
                 {/* Scenario Result — After Attrition / Waitlist */}
                 <div className="mt-6 pt-4 border-t border-gray-100">
-                    <div className="text-xs text-tefa-body/50 uppercase font-bold mb-3">Projected Outcome (incl. {Math.round(attritionRate * 100)}% Attrition &amp; Waitlist Cascade)</div>
+                    <div className="text-xs text-tefa-body/50 uppercase font-bold mb-3">
+                        Projected Outcome (incl. {Math.round(attritionRate * 100)}% Attrition + ${(analysis.reserveWaitlistBudget / 1e6).toFixed(0)}M Waitlist Pool)
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
                             <div className="text-xs text-tefa-body/50">Per-Child (Tier 3)</div>
-                            <div className={`text-2xl font-bold ${analysis.effectiveTier3Rate > 80 ? 'text-green-600' : analysis.effectiveTier3Rate > 50 ? 'text-amber-500' : analysis.effectiveTier3Rate > 0 ? 'text-amber-600' : 'text-red-500'}`}>
-                                {analysis.effectiveTier3Rate.toFixed(1)}%
+                            <div className={`text-2xl font-bold ${analysis.reserveEffectiveTier3Rate > 80 ? 'text-green-600' : analysis.reserveEffectiveTier3Rate > 50 ? 'text-amber-500' : analysis.reserveEffectiveTier3Rate > 0 ? 'text-amber-600' : 'text-red-500'}`}>
+                                {analysis.reserveEffectiveTier3Rate.toFixed(1)}%
                             </div>
+                            <div className="text-xs text-tefa-body/50 mt-1">Attrition-only: {analysis.effectiveTier3Rate.toFixed(1)}%</div>
                         </div>
                         <div>
                             <div className="text-xs text-tefa-body/50">Family (Sibling Rule)</div>
-                            <div className={`text-2xl font-bold ${analysis.effectiveFamilyRate > 80 ? 'text-green-600' : analysis.effectiveFamilyRate > 50 ? 'text-amber-500' : analysis.effectiveFamilyRate > 0 ? 'text-amber-600' : 'text-red-500'}`}>
-                                {analysis.effectiveFamilyRate.toFixed(1)}%
+                            <div className={`text-2xl font-bold ${analysis.reserveEffectiveFamilyRate > 80 ? 'text-green-600' : analysis.reserveEffectiveFamilyRate > 50 ? 'text-amber-500' : analysis.reserveEffectiveFamilyRate > 0 ? 'text-amber-600' : 'text-red-500'}`}>
+                                {analysis.reserveEffectiveFamilyRate.toFixed(1)}%
                             </div>
+                            <div className="text-xs text-tefa-body/50 mt-1">Attrition-only: {analysis.effectiveFamilyRate.toFixed(1)}%</div>
                         </div>
                         <div>
-                            <div className="text-xs text-tefa-body/50">Program Capacity</div>
+                            <div className="text-xs text-tefa-body/50">T3 Spots</div>
                             <div className="text-2xl font-bold text-tefa-navy">
-                                ~{analysis.capacity.toLocaleString()}
+                                {analysis.reserveEffectiveFundedT3.toLocaleString()}
                             </div>
                             <div className="text-xs text-tefa-body/60 mt-1">
-                                +{analysis.t3FromWaitlist.toLocaleString()} waitlist → T3
+                                {analysis.reserveT3FromBudget.toLocaleString()} pool + {analysis.reserveT3FromAttritionAtCurrentRate.toLocaleString()} attrition
                             </div>
                         </div>
                     </div>
-                    {analysis.t3FromWaitlist > 0 && (
+                    {analysis.reserveEffectiveFundedT3 > 0 && (
                         <div className="mt-3 text-xs text-tefa-body/60 bg-tefa-sky/10 rounded p-3">
-                            <strong>Cascade:</strong> {analysis.t1Attrition.toLocaleString()} T1 + {analysis.t2Attrition.toLocaleString()} T2 winners don't participate in the first wave
-                            → recursive attrition creates {analysis.totalWaitlistOffersFromAttrition.toLocaleString()} waitlist offers
-                            → {analysis.unfundedT2.toLocaleString()} finish clearing T2
-                            → <strong>{analysis.t3FromWaitlist.toLocaleString()}</strong> spots reach T3
+                            <strong>Combined cascade:</strong> ${(analysis.reserveWaitlistBudget / 1e6).toFixed(0)}M waitlist pool creates {analysis.reserveEquivalentWaitlistSeats.toLocaleString()} equivalent offers
+                            → {analysis.reserveT2Covered.toLocaleString()} applied to T2 first
+                            → recursive attrition creates {analysis.totalWaitlistOffersFromAttrition.toLocaleString()} additional waitlist offers
+                            → <strong>{analysis.reserveEffectiveFundedT3.toLocaleString()}</strong> total spots reach T3
                         </div>
                     )}
-                    {analysis.t3FromWaitlist === 0 && analysis.unfundedT2 > 0 && (
+                    {analysis.reserveEffectiveFundedT3 === 0 && analysis.reserveRemainingT2 > 0 && (
                         <div className="mt-3 text-xs text-tefa-body/60 bg-red-50 rounded p-3">
-                            <strong>Cascade blocked:</strong> {(analysis.t1Attrition + analysis.t2Attrition).toLocaleString()} first-wave spots are freed by T1/T2 attrition.
-                            With recursive replacement attrition, that creates {analysis.totalWaitlistOffersFromAttrition.toLocaleString()} total waitlist offers, all absorbed by T2.
-                            {analysis.remainingT2AfterCascade > 0 && ` About ${analysis.remainingT2AfterCascade.toLocaleString()} T2 students still remain ahead of T3.`}
+                            <strong>Cascade blocked:</strong> The ${(analysis.reserveWaitlistBudget / 1e6).toFixed(0)}M waitlist pool and {analysis.totalWaitlistOffersFromAttrition.toLocaleString()} recursive attrition offers are still absorbed by T2.
+                            {Math.max(0, analysis.reserveRemainingT2 - analysis.totalWaitlistOffersFromAttrition) > 0 && ` About ${Math.max(0, analysis.reserveRemainingT2 - analysis.totalWaitlistOffersFromAttrition).toLocaleString()} T2 students still remain ahead of T3.`}
                         </div>
                     )}
                 </div>
@@ -1647,10 +1652,10 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <TrendingUp size={18}/> Tier 3 Outlook — Iddings Family
                 </h3>
                 <p className="text-xs text-tefa-body/60 mb-2">
-                    Eligibility is fixed at 9.9% (per PDF — official). The variable here is <strong>attrition</strong>: the percentage of T1/T2 lottery winners who don't follow through on enrollment. Their freed spots cascade: T1/T2 dropouts → backfill unfunded T2 → overflow reaches T3.
+                    Eligibility is fixed at 9.9% (per PDF — official). The variables here are <strong>attrition</strong> and the share of the Community Impact-inferred remainder that reaches the normal T2/T3 waitlist pool.
                 </p>
                 <div className="bg-tefa-navy/5 rounded p-3 mb-4 text-xs text-tefa-body/70">
-                    <strong>Critical Threshold:</strong> ~{scenarioOutlook.mostLikely.unfundedT2.toLocaleString()} unfunded T2 students sit ahead of T3 after the official May 4 T2 award batch. Thinking in total recursive attrition, T3 begins only around {(scenarioOutlook.mostLikely.recursiveT3Threshold * 100).toFixed(1)}% attrition; at 15%, the remaining T2 backlog still absorbs the cascade.
+                    <strong>Critical Threshold:</strong> ~{scenarioOutlook.mostLikely.unfundedT2.toLocaleString()} unfunded T2 students sit ahead of T3 after the official May 4 T2 award batch. Attrition-only T3 movement begins around {(scenarioOutlook.mostLikely.recursiveT3Threshold * 100).toFixed(1)}%. With ${(scenarioOutlook.mostLikely.reserveWaitlistBudget / 1e6).toFixed(0)}M reaching the normal waitlist pool, T3 movement begins around {(scenarioOutlook.mostLikely.reserveRecursiveT3Threshold * 100).toFixed(1)}%, because the pool reduces the remaining T2 queue first.
                 </div>
                 <div className="bg-green-50 border border-green-200 rounded p-3 mb-4 text-xs text-green-800">
                     <strong>Community Impact waitlist-pool sensitivity:</strong> Community Impact reported, citing an agency spokesperson, that about ${(analysis.reportedCommittedAwardsBudget / 1e6).toFixed(0)}M has been set aside for selected students, leaving about ${(analysis.reportedGrossUncommittedBudget / 1e6).toFixed(0)}M gross. After the max $80M admin/vendor allowance, that implies at least ${(analysis.reportedMinimumAppealsWaitlistBudget / 1e6).toFixed(0)}M potentially available for successful appeals and later movement. This slider assumes ${(scenarioOutlook.mostLikely.reserveWaitlistBudget / 1e6).toFixed(0)}M reaches the regular T2/T3 waitlist, or roughly {scenarioOutlook.mostLikely.reserveEquivalentWaitlistSeats.toLocaleString()} T2/T3-equivalent seats. Combined with 15% attrition, T3 sensitivity is ~{scenarioOutlook.mostLikely.reserveEffectiveTier3Rate.toFixed(1)}% per child / ~{scenarioOutlook.mostLikely.reserveEffectiveFamilyRate.toFixed(1)}% family. Treat this as upside, not the baseline, because appeals and SPED awards can consume this pool first.

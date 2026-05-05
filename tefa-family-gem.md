@@ -123,6 +123,8 @@ T1 (incl. siblings) is 100% funded — AWARDED & NOTIFIED. T3 / T4 receive 0 fro
 
 **Waitlist-pool sensitivity:** If **$50M** of the Community Impact-reported **$100M+ minimum remaining after max admin/vendor costs** ultimately reaches the regular T2/T3 waitlist, it could cover roughly **5,865** T2/T3-equivalent seats. At 15% attrition, the combined effect would send roughly **2,800** spots into T3 (~4.3% individual / ~12.3% family of 3). If the full **$100M+** reaches the waitlist, the combined effect would send roughly **8,700** spots into T3 (~13.1% individual / ~34.5% family of 3). This is **not the baseline** because appeals and higher-cost SPED awards have first claim on some of that money.
 
+With the planner-default **$50M** waitlist pool, Tier 3 no longer waits for the attrition-only **17.2%** threshold. The $50M first reduces the remaining T2 queue, so T3 starts around **12.8%** total attrition. This is why the projected outcome can become positive before 15% when the waitlist-pool slider is above $0.
+
 ### 1.6 Capacity sensitivity (legacy IEP-scalar models — DO NOT USE)
 
 *All legacy IEP-scalar derivations (~89,570, ~85,358, ~92,573, ~76,019, ~76,942), prior no-overhead figures (~111,264), prior $55M-overhead figures (~104,812), and the pre-May-4 full-admin-cap derived figure (~101,293) predate the current model. The Apr 28 PDF's empirical $415M T1-family allocation is unchanged; what's new is that the May 4 release gives the official Tier 2 award batch. Use 53,000+ T2 awards as the baseline, not setting-mix derivations.*
@@ -288,6 +290,14 @@ At the blended T2/T3 cost (~$8,525), $50M equals roughly **5,865** waitlist seat
 | Conservative baseline, 15% attrition | $0M reaches waitlist | 0 | 0% | 0% |
 | Default sensitivity + 15% attrition | $50M reaches waitlist | ~2,800 | ~4.3% | ~12.3% |
 | Full upside sensitivity + 15% attrition | $100M+ reaches waitlist | ~8,700 | ~13.1% | ~34.5% |
+
+Thresholds also change:
+
+| Waitlist-pool assumption | Approx. attrition where T3 starts |
+|--------------------------|-----------------------------------|
+| $0M reaches waitlist | ~17.2% |
+| $50M reaches waitlist | ~12.8% |
+| $100M+ reaches waitlist | ~7.8% |
 
 Do **not** describe this as "$180M appeals reserve." Better wording: **Community Impact reported ~$820M set aside so far, implying ~$180M gross uncommitted and at least ~$100M after max admin/vendor costs. The planner default assumes $50M of that inferred remainder eventually reaches the normal waitlist pool.** Appeals, especially disability/SPED appeals, can consume some of this before normal waitlist movement.
 
