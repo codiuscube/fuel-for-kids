@@ -43,6 +43,7 @@ const IddingsPlanner = () => {
   const ELIGIBLE_APPLICATIONS = TOTAL_APPLICATIONS - INELIGIBLE_APPLICATIONS;
   const INELIGIBILITY_RATE = INELIGIBLE_APPLICATIONS / TOTAL_APPLICATIONS;
   const [attritionRate, setAttritionRate] = useState(0.15); // Est. 15% of lottery winners don't follow through
+  const [reserveWaitlistShare, setReserveWaitlistShare] = useState(0.5); // % of inferred $100M+ pool reaching normal waitlist
 
   // Student Data
   const students = [
@@ -167,7 +168,7 @@ const IddingsPlanner = () => {
   };
 
   // Scenario Logic — Dual Model: Comptroller's Implementation vs Strict SB 2 Reading
-  const getScenarioAnalysis = (totalApps, overrideAttrition) => {
+  const getScenarioAnalysis = (totalApps, overrideAttrition, overrideReserveWaitlistShare) => {
     // === BUDGET (statutory) ===
     // SB 2, Sec. 29.3521(c-1): $1 billion cap for the 2025-2027 biennium.
     // The Comptroller committed the full $1B to Year 1 (Travis Pillow to The Texan, Apr 2 2026:
@@ -194,6 +195,9 @@ const IddingsPlanner = () => {
     );
 
     const attrRate = overrideAttrition !== undefined ? overrideAttrition : attritionRate;
+    const reserveShare = overrideReserveWaitlistShare !== undefined
+      ? overrideReserveWaitlistShare
+      : reserveWaitlistShare;
     const eligibleApps = ELIGIBLE_APPLICATIONS;
 
     // === PER-STUDENT ALLOCATION (statutory) ===
@@ -327,11 +331,12 @@ const IddingsPlanner = () => {
     const effectiveSingleFail = 1 - (effectiveTier3Rate / 100);
     const effectiveFamilyRate = (1 - Math.pow(effectiveSingleFail, 3)) * 100;
 
-    // Community Impact reserve sensitivity: if the reported $100M+ minimum remaining
-    // after max admin/vendor costs later flows through the normal waitlist, estimate its
-    // T2/T3 effect at the same blended T2/T3 cost. Successful appeals and SPED awards can
-    // consume this first, so this is upside context rather than the baseline.
-    const reserveEquivalentWaitlistSeats = Math.floor(reportedMinimumAppealsWaitlistBudget / perStudentT2Blended);
+    // Community Impact waitlist-pool sensitivity: if some share of the reported $100M+
+    // minimum remaining after max admin/vendor costs later flows through the normal
+    // T2/T3 waitlist, estimate its effect at the same blended cost. Successful appeals
+    // and SPED awards can consume this first, so this is upside context rather than baseline.
+    const reserveWaitlistBudget = reportedMinimumAppealsWaitlistBudget * reserveShare;
+    const reserveEquivalentWaitlistSeats = Math.floor(reserveWaitlistBudget / perStudentT2Blended);
     const reserveT2Covered = Math.min(reserveEquivalentWaitlistSeats, unfundedT2);
     const reserveRemainingT2 = Math.max(0, unfundedT2 - reserveT2Covered);
     const reserveT3FromBudget = Math.min(
@@ -357,7 +362,7 @@ const IddingsPlanner = () => {
         firstRoundAwards, siblingsFunded, officialT2Awards, t2LotteryCapacity, derivedT2LotteryCapacity, t2LotteryCapacityFloor,
         t1FamilyCost, t2Budget, perStudentT2Blended, programOverhead,
         reportedCommittedAwardsBudget, reportedGrossUncommittedBudget,
-        reportedMinimumAppealsWaitlistBudget,
+        reportedMinimumAppealsWaitlistBudget, reserveShare, reserveWaitlistBudget,
         // Model A: Comptroller's implementation (initial lottery)
         demandT1, demandT2, demandT3, demandT4a, demandT4b,
         fundedT1, fundedT2, fundedT3, fundedT4a, fundedT4b,
@@ -1491,6 +1496,36 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         School choice programs typically see 10-30% non-participation. Reasons: can't afford tuition gap, no nearby school, life changes, applied "just in case." Spots freed go to waitlist in tier order.
                     </div>
 
+                    {/* Inferred Remainder Reaching Waitlist */}
+                    <div className="mt-4 pt-4 border-t border-gray-100">
+                        <div className="flex items-center justify-between mb-2">
+                            <label className="text-sm font-medium text-tefa-navy">Inferred Remainder Reaching Normal Waitlist</label>
+                            <span className="text-sm font-bold text-tefa-navy">
+                                ${(analysis.reserveWaitlistBudget / 1e6).toFixed(0)}M
+                            </span>
+                        </div>
+                        <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            step="5"
+                            value={Math.round(reserveWaitlistShare * 100)}
+                            onChange={(e) => setReserveWaitlistShare(parseInt(e.target.value) / 100)}
+                            className="w-full accent-tefa-green"
+                        />
+                        <div className="flex justify-between text-xs text-tefa-body/50 mt-1">
+                            <span>$0M</span>
+                            <span>$50M</span>
+                            <span>$100M+</span>
+                        </div>
+                        <div className="mt-2 text-sm text-tefa-body/70">
+                            Est. {Math.round(reserveWaitlistShare * 100)}% of the Community Impact-inferred ${(analysis.reportedMinimumAppealsWaitlistBudget / 1e6).toFixed(0)}M+ remainder reaches the regular T2/T3 waitlist after appeals/admin.
+                        </div>
+                        <div className="mt-1 text-xs text-tefa-body/50">
+                            This is separate from attrition. Appeals, especially higher-cost SPED corrections, may consume part of this pool before normal waitlist movement.
+                        </div>
+                    </div>
+
                     {/* Historical Attrition Benchmarks */}
                     <div className="mt-4 pt-4 border-t border-gray-100">
                         <div className="text-xs text-tefa-body/50 uppercase font-bold mb-2">Historical Benchmarks — Why 15% Is Conservative</div>
@@ -1618,7 +1653,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <strong>Critical Threshold:</strong> ~{scenarioOutlook.mostLikely.unfundedT2.toLocaleString()} unfunded T2 students sit ahead of T3 after the official May 4 T2 award batch. Thinking in total recursive attrition, T3 begins only around {(scenarioOutlook.mostLikely.recursiveT3Threshold * 100).toFixed(1)}% attrition; at 15%, the remaining T2 backlog still absorbs the cascade.
                 </div>
                 <div className="bg-green-50 border border-green-200 rounded p-3 mb-4 text-xs text-green-800">
-                    <strong>Community Impact reserve signal:</strong> Community Impact reported, citing an agency spokesperson, that about ${(analysis.reportedCommittedAwardsBudget / 1e6).toFixed(0)}M has been set aside for selected students, leaving about ${(analysis.reportedGrossUncommittedBudget / 1e6).toFixed(0)}M gross. After the max $80M admin/vendor allowance, that implies at least ${(analysis.reportedMinimumAppealsWaitlistBudget / 1e6).toFixed(0)}M potentially available for successful appeals and later waitlist movement. If that money ultimately flows through the regular T2/T3 waitlist at the blended cost, it is roughly {analysis.reserveEquivalentWaitlistSeats.toLocaleString()} T2/T3-equivalent seats; combined with 15% attrition, T3 sensitivity rises to ~{scenarioOutlook.mostLikely.reserveEffectiveTier3Rate.toFixed(1)}% per child / ~{scenarioOutlook.mostLikely.reserveEffectiveFamilyRate.toFixed(1)}% family. Treat this as upside, not the baseline, because appeals and SPED awards can consume it first.
+                    <strong>Community Impact waitlist-pool sensitivity:</strong> Community Impact reported, citing an agency spokesperson, that about ${(analysis.reportedCommittedAwardsBudget / 1e6).toFixed(0)}M has been set aside for selected students, leaving about ${(analysis.reportedGrossUncommittedBudget / 1e6).toFixed(0)}M gross. After the max $80M admin/vendor allowance, that implies at least ${(analysis.reportedMinimumAppealsWaitlistBudget / 1e6).toFixed(0)}M potentially available for successful appeals and later movement. This slider assumes ${(scenarioOutlook.mostLikely.reserveWaitlistBudget / 1e6).toFixed(0)}M reaches the regular T2/T3 waitlist, or roughly {scenarioOutlook.mostLikely.reserveEquivalentWaitlistSeats.toLocaleString()} T2/T3-equivalent seats. Combined with 15% attrition, T3 sensitivity is ~{scenarioOutlook.mostLikely.reserveEffectiveTier3Rate.toFixed(1)}% per child / ~{scenarioOutlook.mostLikely.reserveEffectiveFamilyRate.toFixed(1)}% family. Treat this as upside, not the baseline, because appeals and SPED awards can consume this pool first.
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="p-4 rounded-lg bg-green-50 border border-green-200">
@@ -1642,6 +1677,9 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         </div>
                         <div className="text-xs text-amber-600 mt-1">
                             Per-child: {scenarioOutlook.mostLikely.effectiveTier3Rate.toFixed(1)}% · +{scenarioOutlook.mostLikely.t3FromWaitlist.toLocaleString()} spots reach T3
+                        </div>
+                        <div className="text-xs text-amber-700 mt-1">
+                            With ${(scenarioOutlook.mostLikely.reserveWaitlistBudget / 1e6).toFixed(0)}M waitlist pool: {scenarioOutlook.mostLikely.reserveEffectiveFamilyRate.toFixed(1)}% family
                         </div>
                         <div className="text-xs text-amber-600">{scenarioOutlook.mostLikely.effectiveFundedT3.toLocaleString()} / {scenarioOutlook.mostLikely.demandT3.toLocaleString()} T3 funded</div>
                     </div>
@@ -1714,9 +1752,9 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                 <li><strong>Step 3 — Admin/reserve:</strong> SB 2 §29.362(b)-(c) allows up to 3% for Comptroller administration plus up to 5% for certified educational assistance organizations ($80M total cap); the Apr 28 PDF item 5 confirms an appeals reserve but does not publish the amount. Earlier baseline used a small ~$5M placeholder; the new Community Impact article makes that look too conservative as an upside sensitivity.</li>
                                 <li><strong>Step 4 — T2 award batch:</strong> The pre-May-4 77/23 model would have derived ~{analysis.derivedT2LotteryCapacity.toLocaleString()} T2 slots from the remaining <strong>~${(analysis.t2Budget / 1e6).toFixed(0)}M</strong>. The May 4 release supersedes that estimate with <strong>{analysis.officialT2Awards.toLocaleString()}+ official Tier 2 awards</strong>. The gap points to a larger reserve/holdback, a more private-heavy T2 setting mix, or both.</li>
                                 <li><strong>Total awards to date:</strong> {analysis.firstRoundAwards.toLocaleString()} + {analysis.fundedT2.toLocaleString()}+ = <strong>{analysis.capacity.toLocaleString()}+</strong> students.</li>
-                                <li><strong>Community Impact reserve signal:</strong> Community Impact reported, citing an agency spokesperson, that nearly 96,000 selected students have about <strong>${(analysis.reportedCommittedAwardsBudget / 1e6).toFixed(0)}M</strong> set aside so far. That leaves about <strong>${(analysis.reportedGrossUncommittedBudget / 1e6).toFixed(0)}M</strong> gross, or at least <strong>${(analysis.reportedMinimumAppealsWaitlistBudget / 1e6).toFixed(0)}M</strong> after the max $80M admin/vendor allowance. If it later flows through the regular waitlist, that is roughly <strong>{analysis.reserveEquivalentWaitlistSeats.toLocaleString()}</strong> T2/T3-equivalent seats at the blended cost.</li>
+                                <li><strong>Community Impact waitlist-pool signal:</strong> Community Impact reported, citing an agency spokesperson, that nearly 96,000 selected students have about <strong>${(analysis.reportedCommittedAwardsBudget / 1e6).toFixed(0)}M</strong> set aside so far. That leaves about <strong>${(analysis.reportedGrossUncommittedBudget / 1e6).toFixed(0)}M</strong> gross, or at least <strong>${(analysis.reportedMinimumAppealsWaitlistBudget / 1e6).toFixed(0)}M</strong> after the max $80M admin/vendor allowance. The current slider assumes <strong>${(analysis.reserveWaitlistBudget / 1e6).toFixed(0)}M</strong> reaches the regular waitlist, or roughly <strong>{analysis.reserveEquivalentWaitlistSeats.toLocaleString()}</strong> T2/T3-equivalent seats at the blended cost.</li>
                                 <li><strong>Why this supersedes the prior $640.7M derivation:</strong> The earlier model assumed all 27,048 T1 students received the $17,650 IEP-blended rate. Reality (per the Parent Guide's "Prioritization Only" sub-class + the Apr 8 PDF's 8,618 IEP-active count + 77/23 setting split) reconciles the $415M PDF figure within ~1%: most T1 students receive only the base rate, and ~23% homeschool dramatically lowers the per-student cost.</li>
-                                <li><strong>Appeals reserve:</strong> Per Apr 28 PDF item 5 and the May 4 release, the program holds a reserve for successful appeals. Community Impact's $100M+ figure is credible secondary reporting, but appeals and SPED awards may consume it before normal waitlist movement — upside vector, not baseline.</li>
+                                <li><strong>Appeals / waitlist pool:</strong> Per Apr 28 PDF item 5 and the May 4 release, the program holds a reserve for successful appeals. Community Impact's $100M+ figure is credible secondary reporting, but the planner only counts the slider-selected share as reaching the normal waitlist because appeals and SPED awards may consume the rest first.</li>
                                 <li><strong>Cross-check:</strong> T1-family fully funds, T2 ({analysis.demandT2.toLocaleString()}) funds at {tier2FundingRate.toFixed(1)}%+ (lottery), and T3/T4 receive 0 from the initial award batches. The remaining T2 backlog ahead of T3 is ~{analysis.unfundedT2.toLocaleString()} students.</li>
                             </ul>
                         </div>
@@ -2014,7 +2052,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
 
                         <h3 className="font-bold text-tefa-navy text-lg mb-2">9. Conclusion</h3>
                         <p className="mb-3">
-                            Under the Comptroller's confirmed implementation, accounting for {Math.round(attritionRate * 100)}% attrition and waitlist cascade, your family has a
+                            Under the Comptroller's confirmed implementation, accounting for {Math.round(attritionRate * 100)}% attrition only, your family has a
                             <strong> {analysis.effectiveFamilyRate.toFixed(1)}%</strong> probability of all 3 children receiving TEFA funding
                             (at the official 9.9% ineligibility rate).
                             {analysis.effectiveFamilyRate > 90
@@ -2026,7 +2064,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                 : " The Comptroller projects funding exhausts within Tier 2. Tier 3 (Iddings) is waitlisted; whether attrition spots reach T3 depends on the size of the unfunded T2 waitlist sitting ahead of you."}
                         </p>
                         <div className="text-xs text-tefa-body/70 bg-tefa-sky/10 border border-tefa-sky/30 rounded p-3 mb-3">
-                            <strong>Attrition is the sole mechanism by which Tier 3 receives funding.</strong> A 15% rate is not speculative — it represents the conservative floor supported by decades of school choice research (D.C. at 14.3%, Virginia at 20-34%, Milwaukee at 30%). TEFA's novel platform (Odyssey), unprecedented scale, tuition gaps, and active federal injunction create conditions that historically produce non-participation rates well above this baseline.
+                            <strong>Two mechanisms can reach Tier 3:</strong> attrition from awarded T1/T2 families, plus any uncommitted/appeals money that ultimately reaches the normal T2/T3 waitlist pool. At the current waitlist-pool setting (${(analysis.reserveWaitlistBudget / 1e6).toFixed(0)}M), the sensitivity case is <strong>{analysis.reserveEffectiveFamilyRate.toFixed(1)}%</strong> for the family after the T2 queue is cleared. This remains separate from the conservative attrition-only baseline because appeals and SPED awards can consume part of the pool first.
                         </div>
                         <p className="text-xs text-tefa-red/80 bg-tefa-gold/10 border border-tefa-gold/30 rounded p-3">
                             <strong>Timing caveat (updated Apr 28):</strong> Per the Apr 28 Lottery Update PDF, the locked-in timeline is: T1 awards Apr 22–24 ({analysis.firstRoundAwards.toLocaleString()} students), <strong>T2 lottery week of Apr 27</strong>, ranked waitlist position notified by <strong>May 11</strong> (portal opens for opt-in same day), then a two-track funding cascade: <strong>July funding</strong> (Jun 1 family opt-in, Jun 15 school confirmation, Jul 1 first disbursement) and <strong>August funding</strong> (Jul 15 family opt-in/opt-out, Jul 31 school confirmation).
