@@ -467,7 +467,8 @@ const IddingsPlanner = () => {
     };
   })();
 
-  // Tier 3 waitlist rank (optional): lower number = better position. Drives personalized % vs pool averages.
+  // Optional global waitlist rank (T2 band → T3 band → T4 band). Lower = better. Parsed rank is converted
+  // to a Tier-3-only ordinal for comparison to personalDefault funded / offer-depth cutoffs.
   const parsedT3WaitlistRank = (() => {
     const n = parseInt(String(t3WaitlistRankInput).replace(/,/g, ''), 10);
     if (!Number.isFinite(n) || n < 1) return null;
@@ -476,20 +477,64 @@ const IddingsPlanner = () => {
 
   const t3RankPersonalized = (() => {
     if (parsedT3WaitlistRank == null) return null;
-    const r = parsedT3WaitlistRank;
-    if (r > analysis.demandT3) {
+    const g = parsedT3WaitlistRank;
+    const t2w = analysis.unfundedT2;
+    const t3d = analysis.demandT3;
+    const t4a = analysis.demandT4a;
+    const t4b = analysis.demandT4b;
+    const globalT3Start = t2w + 1;
+    const globalT3End = t2w + t3d;
+    const globalMax = t2w + t3d + t4a + t4b;
+
+    if (g > globalMax) {
       return {
         invalid: true,
-        r,
-        message: `That rank (${r.toLocaleString()}) is above the ${analysis.demandT3.toLocaleString()}-student Tier 3 waitlist (May 6 PDF). Double-check the number.`,
+        reason: 'range',
+        g,
+        message: `That rank (${g.toLocaleString()}) is above the modeled ${globalMax.toLocaleString()}-student global waitlist (T2+T3+T4a+T4b per May 6 PDF). Double-check the number.`,
       };
     }
-    const { t3Awards, t3QueueDepth, t3AcceptedRate, t3QueueDepthRate, t3AcceptedFamilyRate, t3QueueDepthFamilyRate } = personalDefault;
-    const inFunded = r <= t3Awards;
-    const inOffer = r <= t3QueueDepth;
+
+    if (g <= t2w) {
+      return {
+        invalid: true,
+        reason: 'tier2',
+        g,
+        message: `Global rank ${g.toLocaleString()} falls in the Tier 2 waitlist band (1–${t2w.toLocaleString()}). Enter a Tier 3 global rank (${globalT3Start.toLocaleString()}–${globalT3End.toLocaleString()}) to use this card.`,
+      };
+    }
+
+    if (g > globalT3End) {
+      return {
+        invalid: true,
+        reason: 'tier4',
+        g,
+        message: `Global rank ${g.toLocaleString()} is past the Tier 3 band. Tier 3 is global ${globalT3Start.toLocaleString()}–${globalT3End.toLocaleString()} here; higher ranks are Tier 4a/b in this single-line model.`,
+      };
+    }
+
+    const t3Local = g - t2w;
+    const {
+      t3Awards,
+      t3QueueDepth,
+      t3AcceptedRate,
+      t3QueueDepthRate,
+      t3AcceptedFamilyRate,
+      t3QueueDepthFamilyRate,
+    } = personalDefault;
+    const inFunded = t3Local <= t3Awards;
+    const inOffer = t3Local <= t3QueueDepth;
+    const globalFundedCutoff = t2w + t3Awards;
+    const globalOfferCutoff = t2w + t3QueueDepth;
+
     return {
       invalid: false,
-      r,
+      g,
+      t3Local,
+      globalT3Start,
+      globalT3End,
+      globalFundedCutoff,
+      globalOfferCutoff,
       inFunded,
       inOffer,
       perChildFundedPct: inFunded ? 100 : 0,
@@ -896,7 +941,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                 </p>
                 <div className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-tefa-gold/40 bg-tefa-gold/10 px-3 py-2.5 text-xs text-tefa-navy">
                   <span className="font-bold">Waitlist rank (when you have it):</span>
-                  <span>Open the <button type="button" onClick={() => navigate('/analysis')} className="font-bold underline decoration-tefa-navy/60 hover:text-tefa-green">Analysis</button> tab — first gold card: enter your <strong className="whitespace-nowrap">Tier 3 waitlist rank</strong> (lowest number = best); the <strong>% chances</strong> below it update for your rank.</span>
+                  <span>Open the <button type="button" onClick={() => navigate('/analysis')} className="font-bold underline decoration-tefa-navy/60 hover:text-tefa-green">Analysis</button> tab — first gold card: enter your <strong className="whitespace-nowrap">global waitlist rank</strong> (T3 is ≈ {(analysis.unfundedT2 + 1).toLocaleString()}–{(analysis.unfundedT2 + analysis.demandT3).toLocaleString()} in this model); the <strong>% chances</strong> below use that rank.</span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm mb-4">
                     <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
@@ -1599,25 +1644,28 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     </div>
                 </div>
                 <div className="mb-5 rounded-lg border border-tefa-gold/40 bg-tefa-gold/5 px-4 py-3" id="t3-waitlist-rank-section">
-                    <label className="text-sm font-medium text-tefa-navy" htmlFor="t3-waitlist-rank">Your Tier 3 waitlist rank</label>
-                    <p className="text-[11px] text-tefa-body/55 mt-0.5 mb-1.5">Use the <strong>best (lowest)</strong> number if you have one rank per child — lower is a better position. Enter your rank to replace pool averages with <strong>your</strong> modeled odds.</p>
+                    <label className="text-sm font-medium text-tefa-navy" htmlFor="t3-waitlist-rank">Your global waitlist rank</label>
+                    <p className="text-[11px] text-tefa-body/55 mt-0.5 mb-1.5">
+                      One combined line: Tier 2 waitlist first (ranks <strong>1–{analysis.unfundedT2.toLocaleString()}</strong>), then Tier 3 (<strong>{(analysis.unfundedT2 + 1).toLocaleString()}–{(analysis.unfundedT2 + analysis.demandT3).toLocaleString()}</strong>), then Tier 4. <strong>Lower is better.</strong> We map your global rank to a Tier 3 position to apply the personal default.
+                    </p>
                     <input
                         id="t3-waitlist-rank"
                         type="text"
                         inputMode="numeric"
-                        placeholder="e.g. 8,420 — when notified"
+                        placeholder={`e.g. ${(analysis.unfundedT2 + 12000).toLocaleString()} — Tier 3 band`}
                         value={t3WaitlistRankInput}
                         onChange={(e) => setT3WaitlistRankInput(e.target.value.replace(/[^\d,]/g, ''))}
                         className="mt-1 w-full max-w-sm rounded-lg border border-tefa-gold/50 bg-white px-3 py-2 text-sm text-tefa-navy placeholder:text-tefa-body/40 focus:border-tefa-navy focus:outline-none focus:ring-1 focus:ring-tefa-navy"
                         autoComplete="off"
                     />
                     <p className="mt-2 text-sm text-tefa-body/80">
-                        <span className="font-semibold text-tefa-navy">≤{personalDefault.t3QueueDepth.toLocaleString()}</span>
-                        {' '}rank needed for better modeled <strong>offer-depth</strong> chances
-                        <span className="text-tefa-body/50"> (willing to accept)</span>.
+                        <span className="font-semibold text-tefa-navy">≤{(analysis.unfundedT2 + personalDefault.t3QueueDepth).toLocaleString()}</span>
+                        {' '}global rank for better modeled <strong>offer-depth</strong> chances
+                        <span className="text-tefa-body/50"> (Tier 3 position ≤{personalDefault.t3QueueDepth.toLocaleString()})</span>.
                     </p>
                     <p className="mt-1 text-xs text-tefa-body/55">
-                        For a <strong>funded</strong> seat in this default, about <strong>≤{personalDefault.t3Awards.toLocaleString()}</strong> rank. Cutoffs are estimates, not guarantees.
+                      For a modeled <strong>funded</strong> seat: global <strong>≤{(analysis.unfundedT2 + personalDefault.t3Awards).toLocaleString()}</strong>
+                      {' '}(Tier 3 ≤{personalDefault.t3Awards.toLocaleString()}). Estimates only.
                     </p>
                     {t3RankPersonalized?.invalid && (
                         <div className="mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-900">{t3RankPersonalized.message}</div>
@@ -1678,7 +1726,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                 </div>
                 {t3RankPersonalized && !t3RankPersonalized.invalid && (
                     <div className="mt-3 rounded-lg border border-tefa-green/30 bg-green-50/80 px-3 py-2 text-xs text-tefa-navy">
-                      <strong>Rank {t3RankPersonalized.r.toLocaleString()}:</strong>{' '}
+                      <strong>Global {t3RankPersonalized.g.toLocaleString()}</strong> → Tier 3 position <strong>{t3RankPersonalized.t3Local.toLocaleString()}</strong> / {analysis.demandT3.toLocaleString()}.{' '}
                       {t3RankPersonalized.inFunded && t3RankPersonalized.inOffer && 'At or before both modeled funded-seat and offer-depth cutoffs — strongest case in this default.'}
                       {!t3RankPersonalized.inFunded && t3RankPersonalized.inOffer && 'Inside offer-depth but past the modeled funded-seat count — offer possible, funding less likely in this default.'}
                       {!t3RankPersonalized.inOffer && 'Past both modeled cutoffs for this scenario — pool averages no longer describe your position well unless attrition/reserve improve.'}
