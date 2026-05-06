@@ -858,6 +858,10 @@ The contribution amount we listed represents the maximum we can sustainably budg
                 <p className="text-sm text-tefa-body mb-4">
                     <strong>{TOTAL_APPLICATIONS.toLocaleString()} students</strong> applied in Year 1 ({ELIGIBLE_APPLICATIONS.toLocaleString()} eligible per the Apr 28 Lottery Update PDF). <strong>{analysis.firstRoundAwards.toLocaleString()} first-round awards</strong> (T1 + siblings) were followed by <strong>{analysis.officialT2Awards.toLocaleString()}+ Tier 2 awards</strong> in the May 4 batch. Total awards to date are therefore <strong>{analysis.capacity.toLocaleString()}+</strong>. Tier 3 (Iddings) remains <strong>waitlisted</strong>; movement now depends on opt-outs, homeschool/other selections, missed confirmations, and appeals reserve releases.
                 </p>
+                <div className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-tefa-gold/40 bg-tefa-gold/10 px-3 py-2.5 text-xs text-tefa-navy">
+                  <span className="font-bold">Waitlist rank (when you have it):</span>
+                  <span>Open the <button type="button" onClick={() => navigate('/analysis')} className="font-bold underline decoration-tefa-navy/60 hover:text-tefa-green">Analysis</button> tab — first gold card at the top, section <strong className="whitespace-nowrap">Your Tier 3 waitlist rank</strong>.</span>
+                </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm mb-4">
                     <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
                         <div className="text-xs text-tefa-body/50 font-medium">Total Apps</div>
@@ -1575,7 +1579,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         <div className="text-xs text-tefa-body/50 mt-1">Queue-depth if willing to accept {personalDefault.t3QueueDepthFamilyRate.toFixed(1)}%</div>
                     </div>
                 </div>
-                <div className="mt-5 pt-4 border-t border-tefa-gold/30">
+                <div className="mt-5 pt-4 border-t border-tefa-gold/30" id="t3-waitlist-rank-section">
                     <label className="text-sm font-medium text-tefa-navy" htmlFor="t3-waitlist-rank">Your Tier 3 waitlist rank</label>
                     <input
                         id="t3-waitlist-rank"
