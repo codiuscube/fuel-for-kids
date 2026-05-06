@@ -43,7 +43,7 @@ const IddingsPlanner = () => {
   const ELIGIBLE_APPLICATIONS = TOTAL_APPLICATIONS - INELIGIBLE_APPLICATIONS;
   const INELIGIBILITY_RATE = INELIGIBLE_APPLICATIONS / TOTAL_APPLICATIONS;
   const [attritionRate, setAttritionRate] = useState(0.15); // Est. 15% of lottery winners don't follow through
-  const [reserveWaitlistShare, setReserveWaitlistShare] = useState(0.5); // % of inferred $100M+ pool reaching normal waitlist
+  const [reserveWaitlistShare, setReserveWaitlistShare] = useState(0.25); // % of inferred $100M+ pool reaching normal waitlist
 
   // Student Data
   const students = [
@@ -392,6 +392,79 @@ const IddingsPlanner = () => {
     mostLikely: getScenarioAnalysis(TOTAL_APPLICATIONS, 0.15),
     worst: getScenarioAnalysis(TOTAL_APPLICATIONS, 0.08),      // low attrition
   };
+
+  // Personal planning default — separate from the public-safe single-slider model.
+  // This follows the more nuanced researcher framing: T1 and T2 first-wave declines differ,
+  // late replacement offers decline at a higher rate, and only $25M of the inferred reserve
+  // is assumed to reach the regular waitlist after appeals/SPED/admin.
+  const personalDefault = (() => {
+    const t1DeclineRate = 0.15;
+    const t2DeclineRate = 0.18;
+    const replacementDeclineRate = 0.35;
+    const reserveNetToWaitlist = 25_000_000;
+    const t2AwardedUnitCost = Math.max(
+      0,
+      (analysis.reportedCommittedAwardsBudget - analysis.t1FamilyCost) / analysis.officialT2Awards
+    ); // Reconciles $820M committed less ~$415M T1-family cost.
+    const t2WaitlistUnitCost = 7_500;
+    const t3UnitCost = 8_500;
+    const acceptedShare = 1 - replacementDeclineRate;
+
+    const initialAttritionDollars =
+      (analysis.t1FamilyCost * t1DeclineRate)
+      + (analysis.officialT2Awards * t2AwardedUnitCost * t2DeclineRate);
+
+    const t2QueueDepthFromAttrition = Math.min(
+      analysis.unfundedT2,
+      Math.floor(initialAttritionDollars / (t2WaitlistUnitCost * acceptedShare))
+    );
+    const t2AcceptedFromAttrition = Math.round(t2QueueDepthFromAttrition * acceptedShare);
+    const t2DeclinedWhenReached = t2QueueDepthFromAttrition - t2AcceptedFromAttrition;
+    const attritionDollarsAfterT2 = t2QueueDepthFromAttrition >= analysis.unfundedT2
+      ? Math.max(0, initialAttritionDollars - (t2AcceptedFromAttrition * t2WaitlistUnitCost))
+      : 0;
+
+    const remainingT2QueueAfterAttrition = Math.max(0, analysis.unfundedT2 - t2QueueDepthFromAttrition);
+    const reserveT2QueueDepth = Math.min(
+      remainingT2QueueAfterAttrition,
+      Math.floor(reserveNetToWaitlist / (t2WaitlistUnitCost * acceptedShare))
+    );
+    const reserveT2Accepted = Math.round(reserveT2QueueDepth * acceptedShare);
+    const reserveAfterT2 = (t2QueueDepthFromAttrition + reserveT2QueueDepth) >= analysis.unfundedT2
+      ? Math.max(0, reserveNetToWaitlist - (reserveT2Accepted * t2WaitlistUnitCost))
+      : 0;
+
+    const t3Dollars = attritionDollarsAfterT2 + reserveAfterT2;
+    const t3Awards = Math.min(analysis.demandT3, Math.floor(t3Dollars / t3UnitCost));
+    const t3QueueDepth = Math.min(
+      analysis.demandT3,
+      Math.floor(t3Awards / acceptedShare)
+    );
+    const t3AcceptedRate = analysis.demandT3 > 0 ? (t3Awards / analysis.demandT3) * 100 : 0;
+    const t3QueueDepthRate = analysis.demandT3 > 0 ? (t3QueueDepth / analysis.demandT3) * 100 : 0;
+    const t3AcceptedFamilyRate = (1 - Math.pow(1 - (t3AcceptedRate / 100), 3)) * 100;
+    const t3QueueDepthFamilyRate = (1 - Math.pow(1 - (t3QueueDepthRate / 100), 3)) * 100;
+
+    return {
+      t1DeclineRate,
+      t2DeclineRate,
+      replacementDeclineRate,
+      reserveNetToWaitlist,
+      t2AwardedUnitCost,
+      t2WaitlistUnitCost,
+      t3UnitCost,
+      initialAttritionDollars,
+      t2QueueDepthFromAttrition,
+      t2AcceptedFromAttrition,
+      t2DeclinedWhenReached,
+      t3Awards,
+      t3QueueDepth,
+      t3AcceptedRate,
+      t3QueueDepthRate,
+      t3AcceptedFamilyRate,
+      t3QueueDepthFamilyRate,
+    };
+  })();
 
   // Tier 2 funding rate for display
   const tier2FundingRate = analysis.demandT2 > 0 ? Math.min(100, (analysis.fundedT2 / analysis.demandT2) * 100) : 100;
@@ -1524,7 +1597,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             Est. {Math.round(reserveWaitlistShare * 100)}% of the Community Impact-inferred ${(analysis.reportedMinimumAppealsWaitlistBudget / 1e6).toFixed(0)}M+ remainder reaches the regular T2/T3 waitlist after appeals/admin.
                         </div>
                         <div className="mt-1 text-xs text-tefa-body/50">
-                            This is separate from attrition. Appeals, especially higher-cost SPED corrections, may consume part of this pool before normal waitlist movement.
+                            Personal-planning default is $25M. This is separate from attrition; appeals and higher-cost SPED corrections may consume part of the inferred pool before normal waitlist movement.
                         </div>
                     </div>
 
@@ -1643,6 +1716,53 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             {Math.max(0, analysis.reserveRemainingT2 - analysis.totalWaitlistOffersFromAttrition) > 0 && ` About ${Math.max(0, analysis.reserveRemainingT2 - analysis.totalWaitlistOffersFromAttrition).toLocaleString()} T2 students still remain ahead of T3.`}
                         </div>
                     )}
+                </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm border border-tefa-gold/40 p-6">
+                <h3 className="font-bold text-tefa-navy mb-2 flex items-center gap-2">
+                    <TrendingUp size={18}/> Personal Research Default
+                </h3>
+                <p className="text-xs text-tefa-body/60 mb-4">
+                    This is the private-planning estimate, not the public-safe conservative headline. It uses separate decline rates for T1-family awards, first-wave T2 awards, and late replacement offers.
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                    <div className="bg-tefa-navy/5 rounded p-3">
+                        <div className="text-xs text-tefa-body/50">T1 Decline</div>
+                        <div className="font-bold text-tefa-navy text-lg">{Math.round(personalDefault.t1DeclineRate * 100)}%</div>
+                    </div>
+                    <div className="bg-tefa-navy/5 rounded p-3">
+                        <div className="text-xs text-tefa-body/50">T2 First-Wave Decline</div>
+                        <div className="font-bold text-tefa-navy text-lg">{Math.round(personalDefault.t2DeclineRate * 100)}%</div>
+                    </div>
+                    <div className="bg-tefa-navy/5 rounded p-3">
+                        <div className="text-xs text-tefa-body/50">Replacement Decline</div>
+                        <div className="font-bold text-tefa-navy text-lg">{Math.round(personalDefault.replacementDeclineRate * 100)}%</div>
+                    </div>
+                    <div className="bg-tefa-navy/5 rounded p-3">
+                        <div className="text-xs text-tefa-body/50">Net Reserve to Waitlist</div>
+                        <div className="font-bold text-tefa-navy text-lg">${(personalDefault.reserveNetToWaitlist / 1e6).toFixed(0)}M</div>
+                    </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <div className="text-xs text-tefa-body/50">T3 Awards Accepted</div>
+                        <div className="text-2xl font-bold text-tefa-navy">{personalDefault.t3Awards.toLocaleString()}</div>
+                        <div className="text-xs text-tefa-body/50 mt-1">{personalDefault.t3AcceptedRate.toFixed(1)}% of T3</div>
+                    </div>
+                    <div>
+                        <div className="text-xs text-tefa-body/50">T3 Queue Depth Offered</div>
+                        <div className="text-2xl font-bold text-tefa-navy">{personalDefault.t3QueueDepth.toLocaleString()}</div>
+                        <div className="text-xs text-tefa-body/50 mt-1">{personalDefault.t3QueueDepthRate.toFixed(1)}% of T3 queue</div>
+                    </div>
+                    <div>
+                        <div className="text-xs text-tefa-body/50">Family-of-3 Odds</div>
+                        <div className="text-2xl font-bold text-amber-600">{personalDefault.t3AcceptedFamilyRate.toFixed(1)}%</div>
+                        <div className="text-xs text-tefa-body/50 mt-1">Accepted-award view · queue-depth view {personalDefault.t3QueueDepthFamilyRate.toFixed(1)}%</div>
+                    </div>
+                </div>
+                <div className="mt-3 text-xs text-tefa-body/60 bg-tefa-gold/10 rounded p-3">
+                    <strong>Interpretation:</strong> if late replacement offers see high decline, the queue can be offered deeper than the final number of accepted awards. For a family that would accept if reached, queue depth is the more relevant signal; for total funded-headcount, accepted awards is the right signal.
                 </div>
             </div>
 

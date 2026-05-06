@@ -277,18 +277,20 @@ $1B appropriation
 
 The planner treats this as a **separate waitlist-pool slider**, not part of the attrition slider. The question is: how much of the inferred remainder reaches the regular T2/T3 waitlist after successful appeals, SPED corrections, and admin/vendor costs?
 
-Default planner setting: **$50M** reaches the normal waitlist. This is half of the inferred $100M+ minimum and is intentionally middle-of-the-road:
+Personal-planning default: **$25M** reaches the normal waitlist. This is intentionally more sober than the old $50M middle sensitivity because appeals, IEP/T1 reclassifications, SPED funding increases, and admin/vendor costs all get first claim on the inferred remainder:
 
 - $0M reaches waitlist: conservative baseline.
-- $50M reaches waitlist: middle sensitivity.
+- $25M reaches waitlist: personal-planning default.
+- $50M reaches waitlist: middle/upside sensitivity.
 - $100M+ reaches waitlist: optimistic sensitivity.
 
-At the blended T2/T3 cost (~$8,525), $50M equals roughly **5,865** waitlist seats and $100M equals roughly **11,700** waitlist seats. At the central 15% attrition assumption, the combined effect would produce roughly:
+At the blended T2/T3 cost (~$8,525), $25M equals roughly **2,930** waitlist seats, $50M equals roughly **5,865** waitlist seats, and $100M equals roughly **11,700** waitlist seats. Under the simple single-attrition model at 15%, the combined effect would produce roughly:
 
 | Scenario | Waitlist-pool assumption | T3 spots | T3 individual | T3 family of 3 |
 |----------|--------------------------|----------|---------------|----------------|
 | Conservative baseline, 15% attrition | $0M reaches waitlist | 0 | 0% | 0% |
-| Default sensitivity + 15% attrition | $50M reaches waitlist | ~2,400 | ~3.7% | ~10.7% |
+| Personal default pool + 15% attrition | $25M reaches waitlist | 0 | 0% | 0% |
+| Middle sensitivity + 15% attrition | $50M reaches waitlist | ~2,400 | ~3.7% | ~10.7% |
 | Full upside sensitivity + 15% attrition | $100M+ reaches waitlist | ~8,300 | ~12.7% | ~33.4% |
 
 Thresholds also change:
@@ -296,15 +298,43 @@ Thresholds also change:
 | Waitlist-pool assumption | Approx. attrition where T3 starts |
 |--------------------------|-----------------------------------|
 | $0M reaches waitlist | ~17.5% |
+| $25M reaches waitlist | ~15.3% |
 | $50M reaches waitlist | ~13.1% |
 | $100M+ reaches waitlist | ~8.3% |
 
-Do **not** describe this as "$180M appeals reserve." Better wording: **Community Impact reported ~$820M set aside so far, implying ~$180M gross uncommitted and at least ~$100M after max admin/vendor costs. The planner default assumes $50M of that inferred remainder eventually reaches the normal waitlist pool.** Appeals, especially disability/SPED appeals, can consume some of this before normal waitlist movement.
+Do **not** describe this as "$180M appeals reserve." Better wording: **Community Impact reported ~$820M set aside so far, implying ~$180M gross uncommitted and at least ~$100M after max admin/vendor costs. The planner default assumes $25M of that inferred remainder eventually reaches the normal waitlist pool.** Appeals, especially disability/SPED appeals, can consume some of this before normal waitlist movement.
+
+### 4.3b Personal research default (nuanced offer-depth model)
+
+For private planning, use a more nuanced default than the public-safe single-attrition slider:
+
+| Variable | Personal default |
+|----------|------------------|
+| T1-family first-wave decline | **15%** |
+| T2 first-wave decline | **18%** |
+| Late replacement-offer decline | **35%** |
+| Net reserve reaching normal waitlist | **$25M** |
+
+This model uses dollars and queue depth instead of treating every T2 waitlist position as a funded seat. A T2 waitlisted family that declines consumes queue depth but not award dollars, so high late-offer decline can move the queue deeper even if final accepted awards are lower.
+
+Approximate personal-default result:
+
+| Metric | Estimate |
+|--------|----------|
+| T3 accepted awards | **~7,150** |
+| T3 queue depth offered | **~11,000** |
+| T3 accepted-award rate | **~10.9%** |
+| Family-of-3 accepted-award odds | **~29.4%** |
+| T3 queue-depth reached | **~16.8%** |
+| Family-of-3 queue-depth odds if willing to accept | **~42.5%** |
+
+Use the **accepted-award odds** for final funded-headcount expectations. Use the **queue-depth odds** for the practical question, "Would my family be reached if we are willing to accept?" Keep both numbers visible because they answer different questions.
 
 ### 4.4 For T3 families — honest framing
 
 - Initial lottery: 0%.
-- With central 15% attrition: **0% individual / 0% family of 3** under the total recursive cascade model; Tier 2 still has ~3,454 students ahead.
+- With public-safe central 15% attrition and no nuanced replacement-offer model: **0% individual / 0% family of 3** under the total recursive cascade model; Tier 2 still has ~3,454 students ahead.
+- With personal research default (15% T1 / 18% T2 / 35% replacement decline / $25M net reserve): **~7,150 accepted T3 awards**, **~11,000 T3 queue depth reached**, and **~29.4% family-of-3 accepted-award odds** (~42.5% queue-depth odds if willing to accept).
 - With 25% attrition: **~17.7% individual / ~44.3% family of 3** — meaningful upside, but not likely.
 - With 8% low attrition: **0% individual / 0% family of 3** — fully absorbed by Tier 2.
 - **Upside vectors:** Community Impact reports a much larger uncommitted-funds signal than the old $5M placeholder reserve. If you mention that signal, say it is modeled as dollars reaching the **normal waitlist pool** after appeals/admin.
@@ -322,7 +352,8 @@ At the central 15% estimate, Tier 3 does not move under the conservative attriti
 - **v7** (Apr 28d — v6 updated to SB 2 §29.362(b)-(c)'s full 8% statutory admin cap + $5M appeals reserve): capacity **~101,293** → T3 **~4.6% / ~13.2%** at 15%. Superseded by the May 4 official T2 award batch.
 - **v8** (May 4 lower-bound — official 53,000+ additional awards + total recursive attrition): awards to date **95,640+** → T3 **0% / 0%** at 15%; T3 began around **17.2%** total attrition.
 - **v9** (May 5, Community Impact waitlist-pool sensitivity): Community Impact reports **~$820M** set aside for selected students, implying **~$180M gross uncommitted** and **at least ~$100M after max admin/vendor costs**. Superseded numerically by v10 but remains conceptually correct.
-- **v10** (May 6, **current conservative baseline** — revised PDF exact counts): awards to date **95,934** = 44,753 T1-family + 51,181 T2; T2 waitlist **20,383**; T3 **65,368**. Attrition-only T3 odds remain **0% / 0%** at 15%; T3 begins around **17.5%** attrition. Planner default assumes **$50M** reaches the regular waitlist pool, producing ~3.7% individual / ~10.7% family-of-3 T3 odds at 15% attrition. If the full $100M+ reaches the waitlist, 15% attrition could produce ~12.7% / ~33.4%. Sensitivity only until an official reserve table is published.
+- **v10** (May 6, **current conservative baseline** — revised PDF exact counts): awards to date **95,934** = 44,753 T1-family + 51,181 T2; T2 waitlist **20,383**; T3 **65,368**. Attrition-only T3 odds remain **0% / 0%** at 15%; T3 begins around **17.5%** attrition.
+- **v11** (May 6, personal research default): use separate decline rates — 15% T1-family, 18% T2 first-wave, 35% late replacement-offer decline — plus **$25M** net reserve reaching the regular waitlist. This produces roughly **7,150 accepted T3 awards**, **11,000 T3 queue depth offered**, **10.9% accepted-award rate**, and **29.4% family-of-3 accepted-award odds**. Queue-depth odds for a willing-to-accept family of 3 are higher (~42.5%) because declined late offers consume queue depth but not award dollars. Sensitivity only until an official reserve table and actual opt-in/decline data are published.
 
 ### 4.5 What's NOT modeled
 
@@ -363,7 +394,7 @@ Always run a **tuition-gap check**: does $10,474 + other committed aid cover thi
 - **Two-track funding deadlines** (Apr 28 PDF):
   - **July 1 funding track:** family opt-in + school selection by **Jun 1**; participating school confirms enrollment by **Jun 15**; first disbursement Jul 1.
   - **August funding track:** family opt-in + school selection by **Jul 15**; participating school confirms enrollment by **Jul 31**. The Jul 15 deadline doubles as the family-side hard deadline to confirm, switch to homeschool/other ($2,000), or opt out — opt-outs cascade funding down the waitlist (largest single attrition event of Year 1).
-- **Appeals / uncommitted-funds reserve:** the program holds funds for successful appeals; once appeals are resolved, unused funds can cascade to the next available waitlisted students. Community Impact reports ~$820M set aside for accepted students so far, implying ~$180M gross uncommitted and at least ~$100M after max admin/vendor costs. The planner default assumes **$50M** of that inferred remainder reaches the normal T2/T3 waitlist pool; the rest may be consumed by appeals/SPED/admin timing. Major upside vector, not baseline.
+- **Appeals / uncommitted-funds reserve:** the program holds funds for successful appeals; once appeals are resolved, unused funds can cascade to the next available waitlisted students. Community Impact reports ~$820M set aside for accepted students so far, implying ~$180M gross uncommitted and at least ~$100M after max admin/vendor costs. The personal-planning default assumes **$25M** of that inferred remainder reaches the normal T2/T3 waitlist pool; the rest may be consumed by appeals/SPED/admin timing. Major upside vector, not guaranteed waitlist money.
 - **Disbursement schedule (educationfreedom.texas.gov):** funds release in three tranches — **25% by Jul 1**, cumulative **75% by Oct 1**, **100% by Apr 1, 2027**. Per a $10,474 private award: ~$2,618 / $7,856 / $10,474 cumulative. SB 2 §29.362(a) sets a three-tranche default (at least 25% by Jul 1, 50% cumulative by Oct 1, balance by Apr 1) unless Comptroller rule determines otherwise; treat the TEFA site's tranche schedule as the current operating schedule. **Unused funds carry forward** while the child remains eligible and participating (SB 2 §29.361(e)); when the account closes, remaining money returns to the program fund (SB 2 §29.362(f)).
 
 ### Federal lawsuit context
@@ -412,7 +443,7 @@ As of April 2026, emails from **several Texas Catholic archdioceses and at least
 | 3 | "Tier 2 has 65,000 qualified but only 22,000 vouchers" | T2 demand is **71,564**. The revised May 6 PDF confirms **51,181 Tier 2 awards** (~71.5% of T2). The 22,000 figure undercounts T2 funding by about 29,000 seats. | Revised May 6 Lottery Update PDF |
 | 4 | "Only ~30–40% of Tier 2 applicants will receive funding" | **Archdiocese substantially understated.** Revised May 6 official count: **51,181 of 71,564 T2 applicants**, or **~71.5%**. The official count is lower than the pre-May-4 derived ~80% estimate but still far above 30–40%. | Revised May 6 Lottery Update PDF + §1.4 |
 | 5 | "All awarded families must select a school and have enrollment confirmed by July 15" | **Archdiocese was right — superseded correction.** Per the Apr 28 PDF, July 15 is the family-side hard deadline on the **August funding track** (confirm enrollment, select homeschool/other for $2,000, or opt out). Note: there is also a **July 1 funding track** with an earlier Jun 1 family deadline. Jul 31 is the August-track school-side confirmation (back-office, no family action). | Apr 28 Lottery Update PDF |
-| 6 | "Priority Tiers 3 and 4 are not expected to receive funding this year" | For **T4** in Year 1: accurate (~0%). For **T3**: central 15% attrition shows **0%** under the conservative total recursive baseline because Tier 2 still has ~3,454 students ahead after the cascade. But Community Impact's $100M+ uncommitted-funds signal makes "no chance" too strong; if the planner-default $50M reaches the regular waitlist pool, 15% attrition could produce ~3.7% individual / ~10.7% family-of-3 T3 odds. Full $100M+ waitlist flow could produce ~12.7% / ~33.4%. | This gem §4 + Iddings planner cascade model + Community Impact |
+| 6 | "Priority Tiers 3 and 4 are not expected to receive funding this year" | For **T4** in Year 1: accurate (~0%). For **T3**: public-safe central 15% attrition shows **0%** under the conservative total recursive baseline because Tier 2 still has ~3,454 students ahead after the cascade. But Community Impact's $100M+ uncommitted-funds signal and high late-offer decline make "no chance" too strong. The personal research default produces ~7,150 accepted T3 awards, ~11,000 T3 queue depth offered, ~29.4% family-of-3 accepted-award odds, and ~42.5% queue-depth odds if willing to accept. | This gem §4 + Iddings planner cascade model + Community Impact |
 | 7 | "~40% of Tier 2 will be funded" (circulating in the Texas School Voucher Discussion FB group, posted by admin Kassi Edwards Mowrey) | Same family of error as the archdiocese row 4. Revised May 6 official count is **51,181 of 71,564 T2 applicants (~71.5%)**, not ~40%. Group also asserts T3/T4/T5 (sic — there is no T5) have "little to no hope," which understates T3 specifically — see row 6. | Revised May 6 Lottery Update PDF + §1.4 + Texas School Voucher Discussion Group (FB, ~406 members) |
 
 **How to use this section:**
@@ -427,7 +458,7 @@ As of April 2026, emails from **several Texas Catholic archdioceses and at least
 - **Facts over fear.** Separate known from speculative. Don't stack what-ifs.
 - **Don't invent numbers.** If asked something outside the cited figures, say so.
 - **Don't promise outcomes.** Lotteries are probabilistic; attrition is estimated.
-- **Be tier-honest — both ways.** For T4 families, Year 1 is ~0%. For T3 families at 15% central attrition under the May 6 total-recursive conservative baseline, the model shows **0%** because Tier 2 still absorbs the cascade. T3 begins around **17.5%** total attrition; at 25%, it rises to **~17.7% individual / ~44.3% for a 3-kid family**. Also mention the Community Impact waitlist-pool sensitivity when relevant: planner default is $50M reaching the regular waitlist (~3.7% individual / ~10.7% family at 15% attrition); full $100M+ waitlist flow is ~12.7% / ~33.4%. Do not over-state OR under-state; cite the table and sensitivity.
+- **Be tier-honest — both ways.** For T4 families, Year 1 is ~0%. For public-safe T3 framing at 15% central attrition under the May 6 total-recursive conservative baseline, the model shows **0%** because Tier 2 still absorbs the cascade. For private Iddings planning, use the v11 personal research default: ~7,150 accepted T3 awards, ~11,000 T3 queue depth offered, ~29.4% family-of-3 accepted-award odds, and ~42.5% queue-depth odds if willing to accept. Do not over-state OR under-state; distinguish accepted awards from queue depth.
 - **No advocacy.** This is an analytical tool, not a pitch for or against TEFA.
 - **Texas-specific.** TEFA is Texas law (SB 2). Don't conflate with Tennessee, Florida, Arizona, etc. — use other states only as empirical precedent (e.g., Iowa admin-friction, Milwaukee/D.C. attrition).
 
