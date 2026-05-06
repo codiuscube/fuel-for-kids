@@ -44,6 +44,7 @@ const IddingsPlanner = () => {
   const INELIGIBILITY_RATE = INELIGIBLE_APPLICATIONS / TOTAL_APPLICATIONS;
   const [attritionRate, setAttritionRate] = useState(0.15); // Est. 15% of lottery winners don't follow through
   const [reserveWaitlistShare, setReserveWaitlistShare] = useState(0.25); // % of inferred $100M+ pool reaching normal waitlist
+  const [t3WaitlistRankInput, setT3WaitlistRankInput] = useState(''); // Tier 3 rank when notified (optional)
 
   // Student Data
   const students = [
@@ -1573,6 +1574,48 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         <div className="text-2xl font-bold text-amber-600">{personalDefault.t3AcceptedFamilyRate.toFixed(1)}%</div>
                         <div className="text-xs text-tefa-body/50 mt-1">Queue-depth if willing to accept {personalDefault.t3QueueDepthFamilyRate.toFixed(1)}%</div>
                     </div>
+                </div>
+                <div className="mt-5 pt-4 border-t border-tefa-gold/30">
+                    <label className="text-sm font-medium text-tefa-navy" htmlFor="t3-waitlist-rank">Your Tier 3 waitlist rank</label>
+                    <input
+                        id="t3-waitlist-rank"
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="Placeholder — add your rank when notified (e.g. 8,420)"
+                        value={t3WaitlistRankInput}
+                        onChange={(e) => setT3WaitlistRankInput(e.target.value.replace(/[^\d,]/g, ''))}
+                        className="mt-1.5 w-full max-w-sm rounded-lg border border-tefa-gold/40 bg-white px-3 py-2 text-sm text-tefa-navy placeholder:text-tefa-body/40 focus:border-tefa-navy focus:outline-none focus:ring-1 focus:ring-tefa-navy"
+                        autoComplete="off"
+                    />
+                    <p className="mt-2 text-sm text-tefa-body/80">
+                        <span className="font-semibold text-tefa-navy">&lt;{personalDefault.t3QueueDepth.toLocaleString()}</span>
+                        {' '}is needed for better modeled chances
+                        <span className="text-tefa-body/50"> (queue-depth reach · willing to accept)</span>.
+                    </p>
+                    <p className="mt-1 text-xs text-tefa-body/55">
+                        For a <strong>funded seat</strong> specifically in this default, about <strong>≤{personalDefault.t3Awards.toLocaleString()}</strong> rank lines up with accepted awards. Lower rank numbers are better.
+                    </p>
+                    {(() => {
+                      const n = parseInt(String(t3WaitlistRankInput).replace(/,/g, ''), 10);
+                      const parsed = Number.isFinite(n) && n > 0 ? n : null;
+                      if (parsed == null) return null;
+                      const inOfferZone = parsed <= personalDefault.t3QueueDepth;
+                      const inFundedZone = parsed <= personalDefault.t3Awards;
+                      return (
+                        <div className={`mt-2 rounded-lg px-3 py-2 text-xs ${inOfferZone ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-amber-50 text-amber-900 border border-amber-200'}`}>
+                          Rank <strong>{parsed.toLocaleString()}</strong>:{' '}
+                          {inOfferZone ? (
+                            inFundedZone ? (
+                              <>Within the personal-default <strong>offer-depth</strong> and <strong>funded-seat</strong> bands.</>
+                            ) : (
+                              <>Within the personal-default <strong>offer-depth</strong> band — still past the modeled funded-seat cutoff (~{personalDefault.t3Awards.toLocaleString()}).</>
+                            )
+                          ) : (
+                            <>Past the modeled offer-depth band — odds drop sharply unless the scenario improves.</>
+                          )}
+                        </div>
+                      );
+                    })()}
                 </div>
                 <div className="mt-3 text-xs text-tefa-body/60 bg-tefa-gold/10 rounded p-3">
                     <strong>Why two sections?</strong> The sliders use <em>one</em> attrition percentage for every tier and every replacement wave. That is simple to stress-test, but at 15% + $25M it often leaves hundreds of Tier 2 students still ahead of Tier 3 — so Tier 3 can read <strong>0%</strong> there even though this nuanced default still projects non-zero Tier 3 movement.
