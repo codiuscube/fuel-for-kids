@@ -467,6 +467,42 @@ const IddingsPlanner = () => {
     };
   })();
 
+  // Tier 3 waitlist rank (optional): lower number = better position. Drives personalized % vs pool averages.
+  const parsedT3WaitlistRank = (() => {
+    const n = parseInt(String(t3WaitlistRankInput).replace(/,/g, ''), 10);
+    if (!Number.isFinite(n) || n < 1) return null;
+    return Math.floor(n);
+  })();
+
+  const t3RankPersonalized = (() => {
+    if (parsedT3WaitlistRank == null) return null;
+    const r = parsedT3WaitlistRank;
+    if (r > analysis.demandT3) {
+      return {
+        invalid: true,
+        r,
+        message: `That rank (${r.toLocaleString()}) is above the ${analysis.demandT3.toLocaleString()}-student Tier 3 waitlist (May 6 PDF). Double-check the number.`,
+      };
+    }
+    const { t3Awards, t3QueueDepth, t3AcceptedRate, t3QueueDepthRate, t3AcceptedFamilyRate, t3QueueDepthFamilyRate } = personalDefault;
+    const inFunded = r <= t3Awards;
+    const inOffer = r <= t3QueueDepth;
+    return {
+      invalid: false,
+      r,
+      inFunded,
+      inOffer,
+      perChildFundedPct: inFunded ? 100 : 0,
+      perChildOfferPct: inOffer ? 100 : 0,
+      familyFundedPct: inFunded ? 100 : 0,
+      familyOfferPct: inOffer ? 100 : 0,
+      poolAcceptedRate: t3AcceptedRate,
+      poolQueueDepthRate: t3QueueDepthRate,
+      poolFamilyAccepted: t3AcceptedFamilyRate,
+      poolFamilyQueue: t3QueueDepthFamilyRate,
+    };
+  })();
+
   // Tier 2 funding rate for display
   const tier2FundingRate = analysis.demandT2 > 0 ? Math.min(100, (analysis.fundedT2 / analysis.demandT2) * 100) : 100;
 
@@ -860,7 +896,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                 </p>
                 <div className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-tefa-gold/40 bg-tefa-gold/10 px-3 py-2.5 text-xs text-tefa-navy">
                   <span className="font-bold">Waitlist rank (when you have it):</span>
-                  <span>Open the <button type="button" onClick={() => navigate('/analysis')} className="font-bold underline decoration-tefa-navy/60 hover:text-tefa-green">Analysis</button> tab — first gold card at the top, section <strong className="whitespace-nowrap">Your Tier 3 waitlist rank</strong>.</span>
+                  <span>Open the <button type="button" onClick={() => navigate('/analysis')} className="font-bold underline decoration-tefa-navy/60 hover:text-tefa-green">Analysis</button> tab — first gold card: enter your <strong className="whitespace-nowrap">Tier 3 waitlist rank</strong> (lowest number = best); the <strong>% chances</strong> below it update for your rank.</span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm mb-4">
                     <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
@@ -1562,65 +1598,92 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         <div className="font-bold text-tefa-navy text-lg">${(personalDefault.reserveNetToWaitlist / 1e6).toFixed(0)}M</div>
                     </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <div className="text-xs text-tefa-body/50">Per-Child Accepted Award (T3)</div>
-                        <div className={`text-2xl font-bold ${personalDefault.t3AcceptedRate > 0 ? 'text-tefa-navy' : 'text-red-500'}`}>{personalDefault.t3AcceptedRate.toFixed(1)}%</div>
-                        <div className="text-xs text-tefa-body/50 mt-1">{personalDefault.t3Awards.toLocaleString()} funded seats</div>
-                    </div>
-                    <div>
-                        <div className="text-xs text-tefa-body/50">T3 Queue Depth Offered</div>
-                        <div className="text-2xl font-bold text-tefa-navy">{personalDefault.t3QueueDepth.toLocaleString()}</div>
-                        <div className="text-xs text-tefa-body/50 mt-1">{personalDefault.t3QueueDepthRate.toFixed(1)}% of T3 queue</div>
-                    </div>
-                    <div>
-                        <div className="text-xs text-tefa-body/50">Family-of-3 (accepted awards)</div>
-                        <div className="text-2xl font-bold text-amber-600">{personalDefault.t3AcceptedFamilyRate.toFixed(1)}%</div>
-                        <div className="text-xs text-tefa-body/50 mt-1">Queue-depth if willing to accept {personalDefault.t3QueueDepthFamilyRate.toFixed(1)}%</div>
-                    </div>
-                </div>
-                <div className="mt-5 pt-4 border-t border-tefa-gold/30" id="t3-waitlist-rank-section">
+                <div className="mb-5 rounded-lg border border-tefa-gold/40 bg-tefa-gold/5 px-4 py-3" id="t3-waitlist-rank-section">
                     <label className="text-sm font-medium text-tefa-navy" htmlFor="t3-waitlist-rank">Your Tier 3 waitlist rank</label>
+                    <p className="text-[11px] text-tefa-body/55 mt-0.5 mb-1.5">Use the <strong>best (lowest)</strong> number if you have one rank per child — lower is a better position. Enter your rank to replace pool averages with <strong>your</strong> modeled odds.</p>
                     <input
                         id="t3-waitlist-rank"
                         type="text"
                         inputMode="numeric"
-                        placeholder="Placeholder — add your rank when notified (e.g. 8,420)"
+                        placeholder="e.g. 8,420 — when notified"
                         value={t3WaitlistRankInput}
                         onChange={(e) => setT3WaitlistRankInput(e.target.value.replace(/[^\d,]/g, ''))}
-                        className="mt-1.5 w-full max-w-sm rounded-lg border border-tefa-gold/40 bg-white px-3 py-2 text-sm text-tefa-navy placeholder:text-tefa-body/40 focus:border-tefa-navy focus:outline-none focus:ring-1 focus:ring-tefa-navy"
+                        className="mt-1 w-full max-w-sm rounded-lg border border-tefa-gold/50 bg-white px-3 py-2 text-sm text-tefa-navy placeholder:text-tefa-body/40 focus:border-tefa-navy focus:outline-none focus:ring-1 focus:ring-tefa-navy"
                         autoComplete="off"
                     />
                     <p className="mt-2 text-sm text-tefa-body/80">
-                        <span className="font-semibold text-tefa-navy">&lt;{personalDefault.t3QueueDepth.toLocaleString()}</span>
-                        {' '}is needed for better modeled chances
-                        <span className="text-tefa-body/50"> (queue-depth reach · willing to accept)</span>.
+                        <span className="font-semibold text-tefa-navy">≤{personalDefault.t3QueueDepth.toLocaleString()}</span>
+                        {' '}rank needed for better modeled <strong>offer-depth</strong> chances
+                        <span className="text-tefa-body/50"> (willing to accept)</span>.
                     </p>
                     <p className="mt-1 text-xs text-tefa-body/55">
-                        For a <strong>funded seat</strong> specifically in this default, about <strong>≤{personalDefault.t3Awards.toLocaleString()}</strong> rank lines up with accepted awards. Lower rank numbers are better.
+                        For a <strong>funded</strong> seat in this default, about <strong>≤{personalDefault.t3Awards.toLocaleString()}</strong> rank. Cutoffs are estimates, not guarantees.
                     </p>
-                    {(() => {
-                      const n = parseInt(String(t3WaitlistRankInput).replace(/,/g, ''), 10);
-                      const parsed = Number.isFinite(n) && n > 0 ? n : null;
-                      if (parsed == null) return null;
-                      const inOfferZone = parsed <= personalDefault.t3QueueDepth;
-                      const inFundedZone = parsed <= personalDefault.t3Awards;
-                      return (
-                        <div className={`mt-2 rounded-lg px-3 py-2 text-xs ${inOfferZone ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-amber-50 text-amber-900 border border-amber-200'}`}>
-                          Rank <strong>{parsed.toLocaleString()}</strong>:{' '}
-                          {inOfferZone ? (
-                            inFundedZone ? (
-                              <>Within the personal-default <strong>offer-depth</strong> and <strong>funded-seat</strong> bands.</>
-                            ) : (
-                              <>Within the personal-default <strong>offer-depth</strong> band — still past the modeled funded-seat cutoff (~{personalDefault.t3Awards.toLocaleString()}).</>
-                            )
+                    {t3RankPersonalized?.invalid && (
+                        <div className="mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-900">{t3RankPersonalized.message}</div>
+                    )}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <div className="text-xs text-tefa-body/50">
+                          {t3RankPersonalized && !t3RankPersonalized.invalid ? 'Funded seat — your rank (vs pool)' : 'Per-Child Accepted Award (T3 · pool)'}
+                        </div>
+                        <div className={`text-2xl font-bold ${t3RankPersonalized && !t3RankPersonalized.invalid ? (t3RankPersonalized.perChildFundedPct > 0 ? 'text-tefa-green' : 'text-red-500') : (personalDefault.t3AcceptedRate > 0 ? 'text-tefa-navy' : 'text-red-500')}`}>
+                          {t3RankPersonalized && !t3RankPersonalized.invalid
+                            ? `${t3RankPersonalized.perChildFundedPct.toFixed(0)}%`
+                            : `${personalDefault.t3AcceptedRate.toFixed(1)}%`}
+                        </div>
+                        <div className="text-xs text-tefa-body/50 mt-1">
+                          {t3RankPersonalized && !t3RankPersonalized.invalid ? (
+                            <>Pool average (unknown rank): {t3RankPersonalized.poolAcceptedRate.toFixed(1)}% · modeled funded seats {personalDefault.t3Awards.toLocaleString()}</>
                           ) : (
-                            <>Past the modeled offer-depth band — odds drop sharply unless the scenario improves.</>
+                            <>{personalDefault.t3Awards.toLocaleString()} funded seats (modeled)</>
                           )}
                         </div>
-                      );
-                    })()}
+                    </div>
+                    <div>
+                        <div className="text-xs text-tefa-body/50">
+                          {t3RankPersonalized && !t3RankPersonalized.invalid ? 'Offer reaches you — your rank' : 'T3 queue depth (modeled · pool)'}
+                        </div>
+                        <div className={`text-2xl font-bold ${t3RankPersonalized && !t3RankPersonalized.invalid ? (t3RankPersonalized.perChildOfferPct > 0 ? 'text-tefa-green' : 'text-red-500') : 'text-tefa-navy'}`}>
+                          {t3RankPersonalized && !t3RankPersonalized.invalid
+                            ? `${t3RankPersonalized.perChildOfferPct.toFixed(0)}%`
+                            : personalDefault.t3QueueDepth.toLocaleString()}
+                        </div>
+                        <div className="text-xs text-tefa-body/50 mt-1">
+                          {t3RankPersonalized && !t3RankPersonalized.invalid ? (
+                            <>Pool {t3RankPersonalized.poolQueueDepthRate.toFixed(1)}% would get an offer (avg) · depth {personalDefault.t3QueueDepth.toLocaleString()} students</>
+                          ) : (
+                            <>{personalDefault.t3QueueDepthRate.toFixed(1)}% of T3 queue</>
+                          )}
+                        </div>
+                    </div>
+                    <div>
+                        <div className="text-xs text-tefa-body/50">
+                          {t3RankPersonalized && !t3RankPersonalized.invalid ? 'Family-of-3 — funded (sibling rule)' : 'Family-of-3 (accepted · pool)'}
+                        </div>
+                        <div className={`text-2xl font-bold ${t3RankPersonalized && !t3RankPersonalized.invalid ? (t3RankPersonalized.familyFundedPct > 0 ? 'text-tefa-green' : 'text-red-500') : 'text-amber-600'}`}>
+                          {t3RankPersonalized && !t3RankPersonalized.invalid
+                            ? `${t3RankPersonalized.familyFundedPct.toFixed(0)}%`
+                            : `${personalDefault.t3AcceptedFamilyRate.toFixed(1)}%`}
+                        </div>
+                        <div className="text-xs text-tefa-body/50 mt-1">
+                          {t3RankPersonalized && !t3RankPersonalized.invalid ? (
+                            <>Pool avg: {t3RankPersonalized.poolFamilyAccepted.toFixed(1)}% · offer-depth view {t3RankPersonalized.familyOfferPct.toFixed(0)}%</>
+                          ) : (
+                            <>Queue-depth if willing to accept {personalDefault.t3QueueDepthFamilyRate.toFixed(1)}%</>
+                          )}
+                        </div>
+                    </div>
                 </div>
+                {t3RankPersonalized && !t3RankPersonalized.invalid && (
+                    <div className="mt-3 rounded-lg border border-tefa-green/30 bg-green-50/80 px-3 py-2 text-xs text-tefa-navy">
+                      <strong>Rank {t3RankPersonalized.r.toLocaleString()}:</strong>{' '}
+                      {t3RankPersonalized.inFunded && t3RankPersonalized.inOffer && 'At or before both modeled funded-seat and offer-depth cutoffs — strongest case in this default.'}
+                      {!t3RankPersonalized.inFunded && t3RankPersonalized.inOffer && 'Inside offer-depth but past the modeled funded-seat count — offer possible, funding less likely in this default.'}
+                      {!t3RankPersonalized.inOffer && 'Past both modeled cutoffs for this scenario — pool averages no longer describe your position well unless attrition/reserve improve.'}
+                    </div>
+                )}
                 <div className="mt-3 text-xs text-tefa-body/60 bg-tefa-gold/10 rounded p-3">
                     <strong>Why two sections?</strong> The sliders use <em>one</em> attrition percentage for every tier and every replacement wave. That is simple to stress-test, but at 15% + $25M it often leaves hundreds of Tier 2 students still ahead of Tier 3 — so Tier 3 can read <strong>0%</strong> there even though this nuanced default still projects non-zero Tier 3 movement.
                 </div>
