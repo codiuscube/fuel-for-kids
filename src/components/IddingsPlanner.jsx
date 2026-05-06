@@ -522,10 +522,39 @@ const IddingsPlanner = () => {
       t3AcceptedFamilyRate,
       t3QueueDepthFamilyRate,
     } = personalDefault;
+    const poolF = t3AcceptedRate / 100;
+    const poolQ = t3QueueDepthRate / 100;
     const inFunded = t3Local <= t3Awards;
     const inOffer = t3Local <= t3QueueDepth;
     const globalFundedCutoff = t2w + t3Awards;
     const globalOfferCutoff = t2w + t3QueueDepth;
+
+    // Smooth % (no hard 100→0 cliff): past each cutoff, decay exponentially toward the pool-average rate.
+    const decayFundedPerRank = 0.014;
+    const decayOfferPerRank = 0.012;
+    const clampPct = (x) => Math.min(100, Math.max(0, x));
+
+    let perChildFundedPct;
+    if (t3Local <= t3Awards) {
+      perChildFundedPct = 100;
+    } else {
+      perChildFundedPct = clampPct(
+        poolF * 100 + (100 - poolF * 100) * Math.exp(-decayFundedPerRank * (t3Local - t3Awards))
+      );
+    }
+
+    let perChildOfferPct;
+    if (t3Local <= t3QueueDepth) {
+      perChildOfferPct = 100;
+    } else {
+      perChildOfferPct = clampPct(
+        poolQ * 100 + (100 - poolQ * 100) * Math.exp(-decayOfferPerRank * (t3Local - t3QueueDepth))
+      );
+    }
+
+    // Sibling rule with a single household rank: same as per-child (all-or-nothing).
+    const familyFundedPct = perChildFundedPct;
+    const familyOfferPct = perChildOfferPct;
 
     return {
       invalid: false,
@@ -537,10 +566,10 @@ const IddingsPlanner = () => {
       globalOfferCutoff,
       inFunded,
       inOffer,
-      perChildFundedPct: inFunded ? 100 : 0,
-      perChildOfferPct: inOffer ? 100 : 0,
-      familyFundedPct: inFunded ? 100 : 0,
-      familyOfferPct: inOffer ? 100 : 0,
+      perChildFundedPct,
+      perChildOfferPct,
+      familyFundedPct,
+      familyOfferPct,
       poolAcceptedRate: t3AcceptedRate,
       poolQueueDepthRate: t3QueueDepthRate,
       poolFamilyAccepted: t3AcceptedFamilyRate,
@@ -1667,6 +1696,9 @@ The contribution amount we listed represents the maximum we can sustainably budg
                       For a modeled <strong>funded</strong> seat: global <strong>≤{(analysis.unfundedT2 + personalDefault.t3Awards).toLocaleString()}</strong>
                       {' '}(Tier 3 ≤{personalDefault.t3Awards.toLocaleString()}). Estimates only.
                     </p>
+                    <p className="mt-2 text-[11px] text-tefa-body/50">
+                      Past each cutoff, personalized % <strong>rolls down</strong> toward the pool average (not a jump to 0% in one rank) — reflects uncertain real cutlines.
+                    </p>
                     {t3RankPersonalized?.invalid && (
                         <div className="mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-900">{t3RankPersonalized.message}</div>
                     )}
@@ -1676,9 +1708,9 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         <div className="text-xs text-tefa-body/50">
                           {t3RankPersonalized && !t3RankPersonalized.invalid ? 'Funded seat — your rank (vs pool)' : 'Per-Child Accepted Award (T3 · pool)'}
                         </div>
-                        <div className={`text-2xl font-bold ${t3RankPersonalized && !t3RankPersonalized.invalid ? (t3RankPersonalized.perChildFundedPct > 0 ? 'text-tefa-green' : 'text-red-500') : (personalDefault.t3AcceptedRate > 0 ? 'text-tefa-navy' : 'text-red-500')}`}>
+                        <div className={`text-2xl font-bold ${t3RankPersonalized && !t3RankPersonalized.invalid ? (t3RankPersonalized.perChildFundedPct >= 50 ? 'text-tefa-green' : t3RankPersonalized.perChildFundedPct >= 15 ? 'text-amber-600' : 'text-red-500') : (personalDefault.t3AcceptedRate > 0 ? 'text-tefa-navy' : 'text-red-500')}`}>
                           {t3RankPersonalized && !t3RankPersonalized.invalid
-                            ? `${t3RankPersonalized.perChildFundedPct.toFixed(0)}%`
+                            ? `${t3RankPersonalized.perChildFundedPct.toFixed(1)}%`
                             : `${personalDefault.t3AcceptedRate.toFixed(1)}%`}
                         </div>
                         <div className="text-xs text-tefa-body/50 mt-1">
@@ -1693,9 +1725,9 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         <div className="text-xs text-tefa-body/50">
                           {t3RankPersonalized && !t3RankPersonalized.invalid ? 'Offer reaches you — your rank' : 'T3 queue depth (modeled · pool)'}
                         </div>
-                        <div className={`text-2xl font-bold ${t3RankPersonalized && !t3RankPersonalized.invalid ? (t3RankPersonalized.perChildOfferPct > 0 ? 'text-tefa-green' : 'text-red-500') : 'text-tefa-navy'}`}>
+                        <div className={`text-2xl font-bold ${t3RankPersonalized && !t3RankPersonalized.invalid ? (t3RankPersonalized.perChildOfferPct >= 50 ? 'text-tefa-green' : t3RankPersonalized.perChildOfferPct >= 15 ? 'text-amber-600' : 'text-red-500') : 'text-tefa-navy'}`}>
                           {t3RankPersonalized && !t3RankPersonalized.invalid
-                            ? `${t3RankPersonalized.perChildOfferPct.toFixed(0)}%`
+                            ? `${t3RankPersonalized.perChildOfferPct.toFixed(1)}%`
                             : personalDefault.t3QueueDepth.toLocaleString()}
                         </div>
                         <div className="text-xs text-tefa-body/50 mt-1">
@@ -1710,14 +1742,14 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         <div className="text-xs text-tefa-body/50">
                           {t3RankPersonalized && !t3RankPersonalized.invalid ? 'Family-of-3 — funded (sibling rule)' : 'Family-of-3 (accepted · pool)'}
                         </div>
-                        <div className={`text-2xl font-bold ${t3RankPersonalized && !t3RankPersonalized.invalid ? (t3RankPersonalized.familyFundedPct > 0 ? 'text-tefa-green' : 'text-red-500') : 'text-amber-600'}`}>
+                        <div className={`text-2xl font-bold ${t3RankPersonalized && !t3RankPersonalized.invalid ? (t3RankPersonalized.familyFundedPct >= 50 ? 'text-tefa-green' : t3RankPersonalized.familyFundedPct >= 15 ? 'text-amber-600' : 'text-red-500') : 'text-amber-600'}`}>
                           {t3RankPersonalized && !t3RankPersonalized.invalid
-                            ? `${t3RankPersonalized.familyFundedPct.toFixed(0)}%`
+                            ? `${t3RankPersonalized.familyFundedPct.toFixed(1)}%`
                             : `${personalDefault.t3AcceptedFamilyRate.toFixed(1)}%`}
                         </div>
                         <div className="text-xs text-tefa-body/50 mt-1">
                           {t3RankPersonalized && !t3RankPersonalized.invalid ? (
-                            <>Pool avg: {t3RankPersonalized.poolFamilyAccepted.toFixed(1)}% · offer-depth view {t3RankPersonalized.familyOfferPct.toFixed(0)}%</>
+                            <>Pool avg: {t3RankPersonalized.poolFamilyAccepted.toFixed(1)}% · offer view {t3RankPersonalized.familyOfferPct.toFixed(1)}%</>
                           ) : (
                             <>Queue-depth if willing to accept {personalDefault.t3QueueDepthFamilyRate.toFixed(1)}%</>
                           )}
@@ -1725,11 +1757,15 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     </div>
                 </div>
                 {t3RankPersonalized && !t3RankPersonalized.invalid && (
-                    <div className="mt-3 rounded-lg border border-tefa-green/30 bg-green-50/80 px-3 py-2 text-xs text-tefa-navy">
+                    <div className={`mt-3 rounded-lg border px-3 py-2 text-xs text-tefa-navy ${
+                      t3RankPersonalized.inFunded ? 'border-tefa-green/30 bg-green-50/80' :
+                      t3RankPersonalized.inOffer ? 'border-amber-200 bg-amber-50/90' :
+                      'border-tefa-gold/40 bg-tefa-gold/10'
+                    }`}>
                       <strong>Global {t3RankPersonalized.g.toLocaleString()}</strong> → Tier 3 position <strong>{t3RankPersonalized.t3Local.toLocaleString()}</strong> / {analysis.demandT3.toLocaleString()}.{' '}
-                      {t3RankPersonalized.inFunded && t3RankPersonalized.inOffer && 'At or before both modeled funded-seat and offer-depth cutoffs — strongest case in this default.'}
-                      {!t3RankPersonalized.inFunded && t3RankPersonalized.inOffer && 'Inside offer-depth but past the modeled funded-seat count — offer possible, funding less likely in this default.'}
-                      {!t3RankPersonalized.inOffer && 'Past both modeled cutoffs for this scenario — pool averages no longer describe your position well unless attrition/reserve improve.'}
+                      {t3RankPersonalized.inFunded && t3RankPersonalized.inOffer && 'At or before both modeled cutoffs — strongest band in this default.'}
+                      {!t3RankPersonalized.inFunded && t3RankPersonalized.inOffer && 'Past the modeled funded seat count: funded % tapers toward the pool average; you may still be in offer-depth for a replacement offer.'}
+                      {!t3RankPersonalized.inOffer && 'Past modeled offer-depth: both curves keep sliding toward pool averages as rank worsens — not a hard 0% at one rank.'}
                     </div>
                 )}
                 <div className="mt-3 text-xs text-tefa-body/60 bg-tefa-gold/10 rounded p-3">
