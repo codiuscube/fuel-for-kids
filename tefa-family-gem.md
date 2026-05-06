@@ -306,6 +306,8 @@ Do **not** describe this as "$180M appeals reserve." Better wording: **Community
 
 ### 4.3b Personal research default (nuanced offer-depth model)
 
+On the planner **Analysis** tab, **Primary planning default (personal research)** at the top matches this section. Lower on the page, the **sliders** drive a separate **uniform-attrition stress test** (one percentage applied to every tier and every replacement wave). At the default **15% uniform** attrition plus **$25M** net to the waitlist, that stress test often still shows **0%** Tier 3 because ~20,383 unfunded Tier 2 students can absorb the cascade first. That is mathematically consistent with the uniform model and **not** a contradiction with the personal default below (~10.9% accepted-award rate), which uses tier-split declines and dollar-based queue depth.
+
 For private planning, use a more nuanced default than the public-safe single-attrition slider:
 
 | Variable | Personal default |

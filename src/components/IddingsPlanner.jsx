@@ -1531,13 +1531,61 @@ The contribution amount we listed represents the maximum we can sustainably budg
               <BarChart2 /> Strategic Financial Analysis Report
             </h2>
 
+            {/* Grounded default first — avoids confusion with the uniform-attrition slider (which can show 0% T3 at 15%). */}
+            <div className="bg-white rounded-xl shadow-sm border border-tefa-gold/40 p-6">
+                <h3 className="font-bold text-tefa-navy mb-2 flex items-center gap-2">
+                    <TrendingUp size={18}/> Primary planning default (personal research)
+                </h3>
+                <p className="text-xs text-tefa-body/60 mb-4">
+                    Use this block for your grounded default. It uses <strong>separate</strong> decline rates for T1-family awards, first-wave T2, and late replacement offers, plus <strong>${(personalDefault.reserveNetToWaitlist / 1e6).toFixed(0)}M</strong> net reserve reaching the regular waitlist — not the single slider below.
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                    <div className="bg-tefa-navy/5 rounded p-3">
+                        <div className="text-xs text-tefa-body/50">T1 Decline</div>
+                        <div className="font-bold text-tefa-navy text-lg">{Math.round(personalDefault.t1DeclineRate * 100)}%</div>
+                    </div>
+                    <div className="bg-tefa-navy/5 rounded p-3">
+                        <div className="text-xs text-tefa-body/50">T2 First-Wave Decline</div>
+                        <div className="font-bold text-tefa-navy text-lg">{Math.round(personalDefault.t2DeclineRate * 100)}%</div>
+                    </div>
+                    <div className="bg-tefa-navy/5 rounded p-3">
+                        <div className="text-xs text-tefa-body/50">Replacement Decline</div>
+                        <div className="font-bold text-tefa-navy text-lg">{Math.round(personalDefault.replacementDeclineRate * 100)}%</div>
+                    </div>
+                    <div className="bg-tefa-navy/5 rounded p-3">
+                        <div className="text-xs text-tefa-body/50">Net Reserve to Waitlist</div>
+                        <div className="font-bold text-tefa-navy text-lg">${(personalDefault.reserveNetToWaitlist / 1e6).toFixed(0)}M</div>
+                    </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <div className="text-xs text-tefa-body/50">Per-Child Accepted Award (T3)</div>
+                        <div className={`text-2xl font-bold ${personalDefault.t3AcceptedRate > 0 ? 'text-tefa-navy' : 'text-red-500'}`}>{personalDefault.t3AcceptedRate.toFixed(1)}%</div>
+                        <div className="text-xs text-tefa-body/50 mt-1">{personalDefault.t3Awards.toLocaleString()} funded seats</div>
+                    </div>
+                    <div>
+                        <div className="text-xs text-tefa-body/50">T3 Queue Depth Offered</div>
+                        <div className="text-2xl font-bold text-tefa-navy">{personalDefault.t3QueueDepth.toLocaleString()}</div>
+                        <div className="text-xs text-tefa-body/50 mt-1">{personalDefault.t3QueueDepthRate.toFixed(1)}% of T3 queue</div>
+                    </div>
+                    <div>
+                        <div className="text-xs text-tefa-body/50">Family-of-3 (accepted awards)</div>
+                        <div className="text-2xl font-bold text-amber-600">{personalDefault.t3AcceptedFamilyRate.toFixed(1)}%</div>
+                        <div className="text-xs text-tefa-body/50 mt-1">Queue-depth if willing to accept {personalDefault.t3QueueDepthFamilyRate.toFixed(1)}%</div>
+                    </div>
+                </div>
+                <div className="mt-3 text-xs text-tefa-body/60 bg-tefa-gold/10 rounded p-3">
+                    <strong>Why two sections?</strong> The sliders use <em>one</em> attrition percentage for every tier and every replacement wave. That is simple to stress-test, but at 15% + $25M it often leaves hundreds of Tier 2 students still ahead of Tier 3 — so Tier 3 can read <strong>0%</strong> there even though this nuanced default still projects non-zero Tier 3 movement.
+                </div>
+            </div>
+
             {/* Official Applicant Figures */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
                 <h3 className="font-bold text-tefa-navy mb-3 flex items-center gap-2">
                     <Layers size={18}/> Official Applicant Pool (Year 1 PDF)
                 </h3>
                 <div className="text-sm text-tefa-body/70">
-                    <strong>{TOTAL_APPLICATIONS.toLocaleString()}</strong> total applications · <strong>{ELIGIBLE_APPLICATIONS.toLocaleString()}</strong> eligible ({(INELIGIBILITY_RATE * 100).toFixed(1)}% ineligible) — per the Apr 28, 2026 TEFA Lottery Update PDF (empirical tier breakdown).
+                    <strong>{TOTAL_APPLICATIONS.toLocaleString()}</strong> total applications · <strong>{ELIGIBLE_APPLICATIONS.toLocaleString()}</strong> eligible ({(INELIGIBILITY_RATE * 100).toFixed(1)}% ineligible) — per the revised May 6, 2026 TEFA Lottery Update PDF (empirical tier breakdown).
                 </div>
                 <div className="mt-1 text-xs text-tefa-body/50">
                     Pre-K accounts for most ineligibility (18,677 of 36,666 per the Apr 8 Year 1 PDF); K-12 ineligibility is much lower.
@@ -1547,7 +1595,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                 {/* Attrition / Non-Participation Rate */}
                 <div className="mt-5 pt-4 border-t border-gray-100">
                     <div className="flex items-center justify-between mb-2">
-                        <label className="text-sm font-medium text-tefa-navy">Estimated Non-Participation Rate (Attrition)</label>
+                        <label className="text-sm font-medium text-tefa-navy">Uniform attrition (same % on every tier)</label>
                         <span className="text-sm font-bold text-tefa-navy">{Math.round(attritionRate * 100)}%</span>
                     </div>
                     <input
@@ -1672,11 +1720,14 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     </div>
                 </div>
 
-                {/* Scenario Result — After Attrition / Waitlist */}
+                {/* Scenario Result — uniform slider only (can differ sharply from personalDefault) */}
                 <div className="mt-6 pt-4 border-t border-gray-100">
-                    <div className="text-xs text-tefa-body/50 uppercase font-bold mb-3">
-                        Projected Outcome (incl. {Math.round(attritionRate * 100)}% Attrition + ${(analysis.reserveWaitlistBudget / 1e6).toFixed(0)}M Waitlist Pool)
+                    <div className="text-xs text-tefa-body/50 uppercase font-bold mb-1">
+                        Slider stress test — not the primary default
                     </div>
+                    <p className="text-xs text-tefa-body/60 mb-3">
+                        Uniform {Math.round(attritionRate * 100)}% attrition + ${(analysis.reserveWaitlistBudget / 1e6).toFixed(0)}M waitlist pool. This is a simplified cascade; <strong>0% Tier 3 here does not contradict</strong> the primary planning default above.
+                    </p>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
                             <div className="text-xs text-tefa-body/50">Per-Child (Tier 3)</div>
@@ -1712,57 +1763,10 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     )}
                     {analysis.reserveEffectiveFundedT3 === 0 && analysis.reserveRemainingT2 > 0 && (
                         <div className="mt-3 text-xs text-tefa-body/60 bg-red-50 rounded p-3">
-                            <strong>Cascade blocked:</strong> The ${(analysis.reserveWaitlistBudget / 1e6).toFixed(0)}M waitlist pool and {analysis.totalWaitlistOffersFromAttrition.toLocaleString()} recursive attrition offers are still absorbed by T2.
-                            {Math.max(0, analysis.reserveRemainingT2 - analysis.totalWaitlistOffersFromAttrition) > 0 && ` About ${Math.max(0, analysis.reserveRemainingT2 - analysis.totalWaitlistOffersFromAttrition).toLocaleString()} T2 students still remain ahead of T3.`}
+                            <strong>Cascade blocked (slider model):</strong> The ${(analysis.reserveWaitlistBudget / 1e6).toFixed(0)}M waitlist pool and {analysis.totalWaitlistOffersFromAttrition.toLocaleString()} recursive attrition offers are still absorbed by T2 under this <em>uniform</em> attrition assumption.
+                            {Math.max(0, analysis.reserveRemainingT2 - analysis.totalWaitlistOffersFromAttrition) > 0 && ` About ${Math.max(0, analysis.reserveRemainingT2 - analysis.totalWaitlistOffersFromAttrition).toLocaleString()} T2 students still remain ahead of T3.`} See <strong>Primary planning default</strong> at the top for tier-specific rates — that is why the numbers differ.
                         </div>
                     )}
-                </div>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-sm border border-tefa-gold/40 p-6">
-                <h3 className="font-bold text-tefa-navy mb-2 flex items-center gap-2">
-                    <TrendingUp size={18}/> Personal Research Default
-                </h3>
-                <p className="text-xs text-tefa-body/60 mb-4">
-                    This is the private-planning estimate, not the public-safe conservative headline. It uses separate decline rates for T1-family awards, first-wave T2 awards, and late replacement offers.
-                </p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                    <div className="bg-tefa-navy/5 rounded p-3">
-                        <div className="text-xs text-tefa-body/50">T1 Decline</div>
-                        <div className="font-bold text-tefa-navy text-lg">{Math.round(personalDefault.t1DeclineRate * 100)}%</div>
-                    </div>
-                    <div className="bg-tefa-navy/5 rounded p-3">
-                        <div className="text-xs text-tefa-body/50">T2 First-Wave Decline</div>
-                        <div className="font-bold text-tefa-navy text-lg">{Math.round(personalDefault.t2DeclineRate * 100)}%</div>
-                    </div>
-                    <div className="bg-tefa-navy/5 rounded p-3">
-                        <div className="text-xs text-tefa-body/50">Replacement Decline</div>
-                        <div className="font-bold text-tefa-navy text-lg">{Math.round(personalDefault.replacementDeclineRate * 100)}%</div>
-                    </div>
-                    <div className="bg-tefa-navy/5 rounded p-3">
-                        <div className="text-xs text-tefa-body/50">Net Reserve to Waitlist</div>
-                        <div className="font-bold text-tefa-navy text-lg">${(personalDefault.reserveNetToWaitlist / 1e6).toFixed(0)}M</div>
-                    </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <div className="text-xs text-tefa-body/50">T3 Awards Accepted</div>
-                        <div className="text-2xl font-bold text-tefa-navy">{personalDefault.t3Awards.toLocaleString()}</div>
-                        <div className="text-xs text-tefa-body/50 mt-1">{personalDefault.t3AcceptedRate.toFixed(1)}% of T3</div>
-                    </div>
-                    <div>
-                        <div className="text-xs text-tefa-body/50">T3 Queue Depth Offered</div>
-                        <div className="text-2xl font-bold text-tefa-navy">{personalDefault.t3QueueDepth.toLocaleString()}</div>
-                        <div className="text-xs text-tefa-body/50 mt-1">{personalDefault.t3QueueDepthRate.toFixed(1)}% of T3 queue</div>
-                    </div>
-                    <div>
-                        <div className="text-xs text-tefa-body/50">Family-of-3 Odds</div>
-                        <div className="text-2xl font-bold text-amber-600">{personalDefault.t3AcceptedFamilyRate.toFixed(1)}%</div>
-                        <div className="text-xs text-tefa-body/50 mt-1">Accepted-award view · queue-depth view {personalDefault.t3QueueDepthFamilyRate.toFixed(1)}%</div>
-                    </div>
-                </div>
-                <div className="mt-3 text-xs text-tefa-body/60 bg-tefa-gold/10 rounded p-3">
-                    <strong>Interpretation:</strong> if late replacement offers see high decline, the queue can be offered deeper than the final number of accepted awards. For a family that would accept if reached, queue depth is the more relevant signal; for total funded-headcount, accepted awards is the right signal.
                 </div>
             </div>
 
@@ -1778,7 +1782,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <strong>Critical Threshold:</strong> {scenarioOutlook.mostLikely.unfundedT2.toLocaleString()} unfunded T2 students sit ahead of T3 after the revised May 6 T2 award count. Attrition-only T3 movement begins around {(scenarioOutlook.mostLikely.recursiveT3Threshold * 100).toFixed(1)}%. With ${(scenarioOutlook.mostLikely.reserveWaitlistBudget / 1e6).toFixed(0)}M reaching the normal waitlist pool, T3 movement begins around {(scenarioOutlook.mostLikely.reserveRecursiveT3Threshold * 100).toFixed(1)}%, because the pool reduces the remaining T2 queue first.
                 </div>
                 <div className="bg-green-50 border border-green-200 rounded p-3 mb-4 text-xs text-green-800">
-                    <strong>Community Impact waitlist-pool sensitivity:</strong> Community Impact reported, citing an agency spokesperson, that about ${(analysis.reportedCommittedAwardsBudget / 1e6).toFixed(0)}M has been set aside for selected students, leaving about ${(analysis.reportedGrossUncommittedBudget / 1e6).toFixed(0)}M gross. After the max $80M admin/vendor allowance, that implies at least ${(analysis.reportedMinimumAppealsWaitlistBudget / 1e6).toFixed(0)}M potentially available for successful appeals and later movement. This slider assumes ${(scenarioOutlook.mostLikely.reserveWaitlistBudget / 1e6).toFixed(0)}M reaches the regular T2/T3 waitlist, or roughly {scenarioOutlook.mostLikely.reserveEquivalentWaitlistSeats.toLocaleString()} T2/T3-equivalent seats. Combined with 15% attrition, T3 sensitivity is ~{scenarioOutlook.mostLikely.reserveEffectiveTier3Rate.toFixed(1)}% per child / ~{scenarioOutlook.mostLikely.reserveEffectiveFamilyRate.toFixed(1)}% family. Treat this as upside, not the baseline, because appeals and SPED awards can consume this pool first.
+                    <strong>Community Impact waitlist-pool sensitivity:</strong> Community Impact reported, citing an agency spokesperson, that about ${(analysis.reportedCommittedAwardsBudget / 1e6).toFixed(0)}M has been set aside for selected students, leaving about ${(analysis.reportedGrossUncommittedBudget / 1e6).toFixed(0)}M gross. After the max $80M admin/vendor allowance, that implies at least ${(analysis.reportedMinimumAppealsWaitlistBudget / 1e6).toFixed(0)}M potentially available for successful appeals and later movement. The waitlist-pool slider assumes ${(scenarioOutlook.mostLikely.reserveWaitlistBudget / 1e6).toFixed(0)}M reaches the regular T2/T3 waitlist, or roughly {scenarioOutlook.mostLikely.reserveEquivalentWaitlistSeats.toLocaleString()} T2/T3-equivalent seats. Under the <strong>uniform</strong> 15% attrition slider (same % on every tier), combined Tier 3 odds are ~{scenarioOutlook.mostLikely.reserveEffectiveTier3Rate.toFixed(1)}% per child — which can be <strong>0%</strong> while Tier 2 still has backlog. For your grounded default, use <strong>Primary planning default</strong> above (~{personalDefault.t3AcceptedRate.toFixed(1)}% per-child accepted awards). Treat Community Impact figures as upside sensitivity; appeals and SPED can consume the pool first.
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="p-4 rounded-lg bg-green-50 border border-green-200">
@@ -1794,8 +1798,8 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         <div className="text-xs text-green-600">{scenarioOutlook.best.effectiveFundedT3.toLocaleString()} / {scenarioOutlook.best.demandT3.toLocaleString()} T3 funded</div>
                     </div>
                     <div className="p-4 rounded-lg bg-amber-50 border-2 border-amber-300">
-                        <div className="text-xs text-amber-800 uppercase font-bold mb-1">Most Likely (15% Attrition)</div>
-                        <div className="text-xs text-amber-700 mb-2">Conservative baseline — D.C. Opportunity Scholarship saw 14.3%, and TEFA has greater friction (new platform, tuition gaps, CAIR delay)</div>
+                        <div className="text-xs text-amber-800 uppercase font-bold mb-1">Most Likely (15% uniform attrition)</div>
+                        <div className="text-xs text-amber-700 mb-2">Slider model — same 15% on every tier (not the tier-split personal default). D.C. Opportunity Scholarship saw 14.3%; TEFA adds friction (new platform, tuition gaps, CAIR delay).</div>
                         <div className="flex items-baseline gap-2">
                             <div className="text-2xl font-bold text-amber-700">{scenarioOutlook.mostLikely.effectiveFamilyRate.toFixed(1)}%</div>
                             <div className="text-xs text-amber-600">family rate</div>
