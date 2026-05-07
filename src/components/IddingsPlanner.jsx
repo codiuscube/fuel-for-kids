@@ -32,7 +32,7 @@ const IddingsPlanner = () => {
   const activeTab = VALID_TABS.includes(tab) ? tab : 'dashboard';
   const setActiveTab = (t) => navigate(`/${t}`);
 
-  // Scenario State - Empirical tier breakdown from the revised May 6, 2026 TEFA Lottery Update PDF,
+  // Scenario State - Empirical tier breakdown from the revised May 7, 2026 TEFA Lottery Update PDF,
   // superseding the Apr 8 Year 1 PDF's percentage-based estimates and the earlier Apr 28/MAY 4
   // lower-bound counts. Revised lottery update gives hard counts: 25,400 ineligible /
   // 28,233 T1 (awarded) / 16,520 T1 siblings (awarded) / 51,181 T2 awarded /
@@ -100,7 +100,7 @@ const IddingsPlanner = () => {
     { item: "NBCA Financial Aid", status: "Granted ($16,200)", date: "March 31", type: "success", funding: "Tuition Credit" },
     { item: "NBCA Scholarship", status: "Pending (applications complete)", date: "By May 31", type: "pending", funding: "Tuition Credit" },
     { item: "ACE Scholarships", status: "Processed; awaiting decision", date: "Reviewed Mar 7; decision by end of June", type: "pending", funding: "Optional Tuition Scholarship" },
-    { item: "TEFA Grant (ESA)", status: "Waitlisted (Tier 3)", date: "T1 awards Apr 22–24; T3 ranked waitlist position notified by May 11", type: "pending", funding: "Odyssey ESA Account" },
+    { item: "TEFA Grant (ESA)", status: "Waitlisted (Tier 3)", date: "T1 awards Apr 22–24; T3 ranked waitlist position notified the week of May 11", type: "pending", funding: "Odyssey ESA Account" },
   ];
 
   // Checklist Data
@@ -208,12 +208,12 @@ const IddingsPlanner = () => {
     const perStudentBase = 10474;
     const perStudentHomeschool = 2000;
 
-    // === T1-FAMILY AWARDS (May 6, 2026 revised Lottery Update PDF — empirical) ===
+    // === T1-FAMILY AWARDS (May 7, 2026 revised Lottery Update PDF — empirical) ===
     // Revised PDF gives hard counts: 28,233 T1 students + 16,520 T1 siblings
     // = 44,753 T1-family awards. This reconciles the May 4 "53,000+ additional"
     // release: 51,181 true Tier 2 awards plus ~2,100 additional T1-family/disability awards.
-    const fundedT1 = 28233;             // T1 proper (May 6 revised PDF — AWARDED & NOTIFIED)
-    const siblingsFunded = 16520;       // Non-T1 siblings pulled in by sibling rule (May 6 revised PDF)
+    const fundedT1 = 28233;             // T1 proper (May 7 revised PDF — AWARDED & NOTIFIED)
+    const siblingsFunded = 16520;       // Non-T1 siblings pulled in by sibling rule (May 7 revised PDF)
     const firstRoundAwards = fundedT1 + siblingsFunded; // 44,753
 
     // === CAPACITY (Apr 28 PDF empirical T1-family cost) ===
@@ -248,7 +248,7 @@ const IddingsPlanner = () => {
     const perStudentT2Blended = privateShare * perStudentBase
       + (1 - privateShare) * perStudentHomeschool; // ≈ $8,525
 
-    // May 6 revised Lottery Update PDF: 51,181 true Tier 2 students were awarded and
+    // May 7 revised Lottery Update PDF: 51,181 true Tier 2 students were awarded and
     // 20,383 Tier 2 students remain on the waitlist.
     const officialT2Awards = 51181;
 
@@ -267,11 +267,11 @@ const IddingsPlanner = () => {
     // =====================================================
     // T1 demand = T1 awarded (28,233) + T1 siblings (16,520) = full T1 family block.
     // Siblings are funded alongside T1 by the sibling rule, so they count as T1-family demand.
-    const demandT1 = fundedT1 + siblingsFunded; // 44,753 — AWARDED & NOTIFIED per May 6 PDF
+    const demandT1 = fundedT1 + siblingsFunded; // 44,753 — AWARDED & NOTIFIED per May 7 PDF
     const demandT2 = officialT2Awards + 20383; // 71,564 total Tier 2 (51,181 awarded + 20,383 waitlisted)
-    const demandT3 = 65368;  // T3 waitlisted (May 6 revised PDF)
-    const demandT4a = 13245; // T4a: prior public school 2024-25 (May 6 revised PDF)
-    const demandT4b = 53706; // T4b: not enrolled in public school 2024-25 (May 6 revised PDF)
+    const demandT3 = 65368;  // T3 waitlisted (May 7 revised PDF)
+    const demandT4a = 13245; // T4a: prior public school 2024-25 (May 7 revised PDF)
+    const demandT4b = 53706; // T4b: not enrolled in public school 2024-25 (May 7 revised PDF)
 
     // T1 + T1-siblings committed first (Apr 22 press release — fundedT1 and siblingsFunded
     // computed above). T2 lottery funds the remaining budget. T3 and T4 receive 0 from the
@@ -491,7 +491,7 @@ const IddingsPlanner = () => {
         invalid: true,
         reason: 'range',
         g,
-        message: `That rank (${g.toLocaleString()}) is above the modeled ${globalMax.toLocaleString()}-student global waitlist (T2+T3+T4a+T4b per May 6 PDF). Double-check the number.`,
+        message: `That rank (${g.toLocaleString()}) is above the modeled ${globalMax.toLocaleString()}-student global waitlist (T2+T3+T4a+T4b per May 7 PDF). Double-check the number.`,
       };
     }
 
@@ -651,11 +651,11 @@ The contribution amount we listed represents the maximum we can sustainably budg
     { date: 'Apr 02', day: 'Thu', isoDate: '2026-04-02', event: 'NBCA Enrollment Fee Paid', type: 'nbca', desc: 'Enrolled all 3 children. Paid ($175 + $55) x 3 = $690.', funding: '$690 Paid' },
     { date: 'Apr 08', day: 'Wed', isoDate: '2026-04-08', event: 'Comptroller Publishes TEFA Application Insights: Year 1', type: 'tefa', desc: 'Official Year 1 PDF released — 274,183 applications, tier breakdown, demographics, ISD-level data.', funding: 'N/A', link: { href: '/TEFA-Application-Insights-Year-1.pdf', label: 'View PDF' } },
     { date: 'Apr 15', day: 'Wed', isoDate: '2026-04-15', event: 'ACE Scholarship Deadline', type: 'ace', desc: 'Closes 11:59 PM (Tax Day).', funding: 'Deadline' },
-    { date: 'Apr 22', day: 'Wed', isoDate: '2026-04-22', event: 'TEFA Tier 1 Notifications Begin — 44,753 Awards', type: 'tefa', desc: 'Per the Apr 22 press release and revised May 6 Lottery Update PDF: 44,753 T1-family students are awarded — 28,233 Tier 1 students (disability + ≤500% FPL) plus 16,520 of their siblings pulled in by the sibling rule. Approximately half previously attended a public school. 30-day appeal window opens from notice receipt — adjustments only on school-district or IEP documentation.', funding: 'Award or Waitlist Position' },
+    { date: 'Apr 22', day: 'Wed', isoDate: '2026-04-22', event: 'TEFA Tier 1 Notifications Begin — 44,753 Awards', type: 'tefa', desc: 'Per the Apr 22 press release and revised May 7 Lottery Update PDF: 44,753 T1-family students are awarded — 28,233 Tier 1 students (disability + ≤500% FPL) plus 16,520 of their siblings pulled in by the sibling rule. Approximately half previously attended a public school. 30-day appeal window opens from notice receipt — adjustments only on school-district or IEP documentation.', funding: 'Award or Waitlist Position' },
     { date: 'Apr 24', day: 'Fri', isoDate: '2026-04-24', event: 'Federal Injunction Hearing', type: 'tefa', desc: 'Key hearing in Muslim schools v. Texas. Court decides whether to maintain, modify, or dissolve the injunction blocking Comptroller Hancock from excluding Islamic schools. TEFA funding timeline depends on outcome.', funding: 'Court Date' },
-    { date: 'Apr 27', day: 'Mon', isoDate: '2026-04-27', event: 'TEFA Tier 2 Lottery + Waitlist Assignment', type: 'tefa', desc: 'Per Apr 22 press release: "In consultation with an independent agency, the Comptroller\'s office will conduct a lottery during the week of April 27 to determine which students in the second priority tier — students in lower-income households — will receive award notifications." The SAME lottery assigns waitlist positions to the remaining T2 students AND everyone in T3/T4. Per the Apr 28 PDF, T2 award notifications begin this week; all tiers are notified of approximate waitlist position by May 11.', funding: 'Lottery + Ranked Waitlist' },
-    { date: 'May 04', day: 'Mon', isoDate: '2026-05-04', event: 'TEFA Tier 2 Awards Begin — 51,181 Tier 2 Awards', type: 'tefa', desc: 'May 6 revised Lottery Update PDF gives the exact Tier 2 result: 51,181 Tier 2 students awarded and 20,383 Tier 2 students waitlisted. Award notifications began the week of May 4. Awarded families see funding amounts in the portal and must confirm private school enrollment, select homeschool/other ($2,000), or opt out by July 15.', funding: 'Tier 2 Award Batch' },
-    { date: 'May 11', day: 'Mon', isoDate: '2026-05-11', event: 'TEFA Waitlist Notifications + Opt-In Portal Opens', type: 'tefa', desc: 'Per the Apr 28 Lottery Update PDF: by May 11, the program notifies students in all tiers of their approximate waitlist position. The Odyssey portal also flips on this date to allow parents of awarded students to "opt in" to accept the award and select their participating private school. Iddings family (T3) learns their ranked waitlist position by today — the sharpest available TEFA signal before NBCA scholarship awards are finalized by May 31.', funding: 'Waitlist Position + Scholarship Input' },
+    { date: 'Apr 27', day: 'Mon', isoDate: '2026-04-27', event: 'TEFA Tier 2 Lottery + Waitlist Assignment', type: 'tefa', desc: 'Per Apr 22 press release: "In consultation with an independent agency, the Comptroller\'s office will conduct a lottery during the week of April 27 to determine which students in the second priority tier — students in lower-income households — will receive award notifications." The SAME lottery assigns waitlist positions to the remaining T2 students AND everyone in T3/T4. Per the revised May 7 PDF, T2 award notifications begin this week; all tiers are notified of approximate waitlist position the week of May 11.', funding: 'Lottery + Ranked Waitlist' },
+    { date: 'May 04', day: 'Mon', isoDate: '2026-05-04', event: 'TEFA Tier 2 Awards Begin — 51,181 Tier 2 Awards', type: 'tefa', desc: 'May 7 revised Lottery Update PDF gives the exact Tier 2 result: 51,181 Tier 2 students awarded and 20,383 Tier 2 students waitlisted. Award notifications began the week of May 4. Awarded families see funding amounts in the portal and must confirm private school enrollment, select homeschool/other ($2,000), or opt out by July 15.', funding: 'Tier 2 Award Batch' },
+    { date: 'May 11', day: 'Mon', isoDate: '2026-05-11', event: 'TEFA Waitlist Notifications + Opt-In Portal Opens', type: 'tefa', desc: 'Per the revised May 7 Lottery Update PDF: the week of May 11, the program notifies students in all tiers of their approximate waitlist position. The Odyssey portal also flips this week to allow parents of awarded students to "opt in" to accept the award and select their participating private school. Iddings family (T3) learns their ranked waitlist position during this window — the sharpest available TEFA signal before NBCA scholarship awards are finalized by May 31.', funding: 'Waitlist Position + Scholarship Input' },
     { date: 'May 15', day: 'Fri', isoDate: '2026-05-15', event: 'NBCA Financial Aid / Scholarship Application Deadline', type: 'nbca', desc: 'Per Nanette Jones (Apr 28), Iddings financial aid and scholarship applications are in order, with all documents and recommendations uploaded. No further action needed unless the committee requests clarification.', funding: 'Application Window Closes' },
     { date: 'May 22', day: 'Fri', isoDate: '2026-05-22', event: 'T1 Appeals Window Closes (est.)', type: 'tefa', desc: '30 days after the first Apr 22 notifications. Per the Apr 22 press release: "Parents may appeal funding determinations within 30 days of receiving their notice; however, adjustments will be made only based on school district and Individualized Education Program documentation." Narrow relevance to Iddings — would only matter if a child obtained a qualifying IEP (moving from T3 to T1).', funding: 'Appeal Deadline' },
     { date: 'May 31', day: 'Sun', isoDate: '2026-05-31', event: 'NBCA Scholarship Awards Finalized (est.)', type: 'nbca', desc: 'Per NBCA (Nanette Jones / Michelle Leidy, Apr 28): financial aid and NBCA scholarship awards are expected by May 31. TEFA waitlist position from May 11 should be forwarded if useful before the committee finalizes scholarship decisions.', funding: 'Credited to Tuition' },
@@ -949,11 +949,11 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <AlertCircle size={18} /> Funding Update — May 4, 2026 (Tier 2 Awards)
                 </h2>
                 <p className="text-sm text-tefa-body mb-2">
-                    The revised May 6 Lottery Update PDF gives exact counts: <strong>{analysis.firstRoundAwards.toLocaleString()} T1-family awards</strong>, <strong>{analysis.officialT2Awards.toLocaleString()} Tier 2 awards</strong>, and <strong>{analysis.unfundedT2.toLocaleString()} Tier 2 students waitlisted</strong> ahead of Tier 3. Total awards to date are <strong>{analysis.capacity.toLocaleString()}</strong>, matching the "nearly 96,000" public reporting. Tier 2 is ~{tier2FundingRate.toFixed(1)}% funded initially.
+                    The revised May 7 Lottery Update PDF gives exact counts: <strong>{analysis.firstRoundAwards.toLocaleString()} T1-family awards</strong>, <strong>{analysis.officialT2Awards.toLocaleString()} Tier 2 awards</strong>, and <strong>{analysis.unfundedT2.toLocaleString()} Tier 2 students waitlisted</strong> ahead of Tier 3. Total awards to date are <strong>{analysis.capacity.toLocaleString()}</strong>, matching the "nearly 96,000" public reporting. Tier 2 is ~{tier2FundingRate.toFixed(1)}% funded initially.
                 </p>
                 <ul className="text-xs text-tefa-body/80 space-y-1 list-disc pl-5">
                     <li><strong>May 4-6:</strong> T2 award notifications go out; awarded families see funding amounts in the portal.</li>
-                    <li><strong>By May 11:</strong> all tiers (incl. Iddings/T3) notified of approximate waitlist position; Odyssey portal opens for awarded families to opt in and select a school.</li>
+                    <li><strong>Week of May 11:</strong> all tiers (incl. Iddings/T3) notified of approximate waitlist position; Odyssey portal opens for awarded families to opt in and select a school.</li>
                     <li><strong>Jun 1 / Jun 15:</strong> family opt-in / school confirmation for the <em>July 1 funding</em> track.</li>
                     <li><strong>Jul 15 / Jul 31:</strong> family opt-in / school confirmation for the <em>August funding</em> track — Jul 15 opt-outs are the largest cascade event of Year 1.</li>
                     <li><strong>Reserve budget:</strong> the program holds funds for successful appeals; unused reserve cascades to the next available waitlisted students.</li>
@@ -1080,7 +1080,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     </div>
                 </div>
                 <div className="mt-4 p-3 bg-amber-100 rounded-lg text-xs text-amber-900 border border-amber-300">
-                    <strong>Sources:</strong> Texas Comptroller, <em>TEFA Application Insights: Year 1</em> (Apr 2026), pages 5 &amp; 8 · Comptroller Apr 2 press release · Comptroller Apr 22 press release · <strong>TEFA Lottery Update PDF (revised May 6, 2026)</strong> with exact counts (28,233 T1 / 16,520 siblings / 51,181 T2 awarded / 20,383 T2 waitlisted / 65,368 T3 / 13,245 T4a / 53,706 T4b), May 11 waitlist-position date, and two-track Jun 1/Jul 15 family deadlines · SB 2 §29.3521(c-1), §29.3521(d), §29.361(a)(1).
+                    <strong>Sources:</strong> Texas Comptroller, <em>TEFA Application Insights: Year 1</em> (Apr 2026), pages 5 &amp; 8 · Comptroller Apr 2 press release · Comptroller Apr 22 press release · <strong>TEFA Lottery Update PDF (revised May 7, 2026)</strong> with exact counts (28,233 T1 / 16,520 siblings / 51,181 T2 awarded / 20,383 T2 waitlisted / 65,368 T3 / 13,245 T4a / 53,706 T4b), week-of-May-11 waitlist-position notifications, and two-track Jun 1/Jul 15 family deadlines · SB 2 §29.3521(c-1), §29.3521(d), §29.361(a)(1).
                 </div>
             </div>
 
@@ -1102,8 +1102,8 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     </div>
                     <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-navy/10">
                         <span className="text-tefa-body/60 font-medium">TEFA Notification</span>
-                        <span className="font-bold text-tefa-navy text-lg">Waitlist Position: by May 11</span>
-                        <span className="text-xs text-tefa-body/40 hidden sm:block">Iddings (T3) ranked position notified by May 11 (Apr 28 PDF)</span>
+                        <span className="font-bold text-tefa-navy text-lg">Waitlist Position: Week of May 11</span>
+                        <span className="text-xs text-tefa-body/40 hidden sm:block">Iddings (T3) ranked position notified the week of May 11 (May 7 PDF)</span>
                     </div>
                     <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-navy/10">
                         <span className="text-tefa-body/60 font-medium">NBCA Scholarship</span>
@@ -1122,7 +1122,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     </div>
                 </div>
                 <div className="mt-4 p-3 bg-tefa-navy/5 rounded-lg text-xs text-tefa-body/70">
-                    <strong>Sunk cost:</strong> $690 enrollment fee (non-refundable). Current working assumption: all other costs can be avoided by withdrawing before June 30, but if not withdrawn, the first FACTS draft is due July 6 ($3,030.65 via checking/savings ACH; card payments add a $92.43 usage fee). Per the Apr 28 Lottery Update PDF, the <strong>Jul 15 opt-in deadline</strong> for the August-funding track is the largest single attrition event of Year 1 — but it falls ~2 weeks AFTER the Jun 30 NBCA withdrawal deadline. The Iddings family knows their ranked waitlist position by May 11 (Apr 28 PDF), which is the sharpest available signal before Jun 30.
+                    <strong>Sunk cost:</strong> $690 enrollment fee (non-refundable). Current working assumption: all other costs can be avoided by withdrawing before June 30, but if not withdrawn, the first FACTS draft is due July 6 ($3,030.65 via checking/savings ACH; card payments add a $92.43 usage fee). Per the Apr 28 Lottery Update PDF, the <strong>Jul 15 opt-in deadline</strong> for the August-funding track is the largest single attrition event of Year 1 — but it falls ~2 weeks AFTER the Jun 30 NBCA withdrawal deadline. The Iddings family learns their ranked waitlist position the week of May 11 (May 7 PDF), which is the sharpest available signal before Jun 30.
                 </div>
             </div>
 
@@ -1779,7 +1779,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <Layers size={18}/> Official Applicant Pool (Year 1 PDF)
                 </h3>
                 <div className="text-sm text-tefa-body/70">
-                    <strong>{TOTAL_APPLICATIONS.toLocaleString()}</strong> total applications · <strong>{ELIGIBLE_APPLICATIONS.toLocaleString()}</strong> eligible ({(INELIGIBILITY_RATE * 100).toFixed(1)}% ineligible) — per the revised May 6, 2026 TEFA Lottery Update PDF (empirical tier breakdown).
+                    <strong>{TOTAL_APPLICATIONS.toLocaleString()}</strong> total applications · <strong>{ELIGIBLE_APPLICATIONS.toLocaleString()}</strong> eligible ({(INELIGIBILITY_RATE * 100).toFixed(1)}% ineligible) — per the revised May 7, 2026 TEFA Lottery Update PDF (empirical tier breakdown).
                 </div>
                 <div className="mt-1 text-xs text-tefa-body/50">
                     Pre-K accounts for most ineligibility (18,677 of 36,666 per the Apr 8 Year 1 PDF); K-12 ineligibility is much lower.
@@ -1970,10 +1970,10 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <TrendingUp size={18}/> Tier 3 Outlook — Iddings Family
                 </h3>
                 <p className="text-xs text-tefa-body/60 mb-2">
-                    Eligibility is fixed at {(INELIGIBILITY_RATE * 100).toFixed(1)}% ineligible (per the revised May 6 PDF). The variables here are <strong>attrition</strong> and the share of the Community Impact-inferred remainder that reaches the normal T2/T3 waitlist pool.
+                    Eligibility is fixed at {(INELIGIBILITY_RATE * 100).toFixed(1)}% ineligible (per the revised May 7 PDF). The variables here are <strong>attrition</strong> and the share of the Community Impact-inferred remainder that reaches the normal T2/T3 waitlist pool.
                 </p>
                 <div className="bg-tefa-navy/5 rounded p-3 mb-4 text-xs text-tefa-body/70">
-                    <strong>Critical Threshold:</strong> {scenarioOutlook.mostLikely.unfundedT2.toLocaleString()} unfunded T2 students sit ahead of T3 after the revised May 6 T2 award count. Attrition-only T3 movement begins around {(scenarioOutlook.mostLikely.recursiveT3Threshold * 100).toFixed(1)}%. With ${(scenarioOutlook.mostLikely.reserveWaitlistBudget / 1e6).toFixed(0)}M reaching the normal waitlist pool, T3 movement begins around {(scenarioOutlook.mostLikely.reserveRecursiveT3Threshold * 100).toFixed(1)}%, because the pool reduces the remaining T2 queue first.
+                    <strong>Critical Threshold:</strong> {scenarioOutlook.mostLikely.unfundedT2.toLocaleString()} unfunded T2 students sit ahead of T3 after the revised May 7 T2 award count. Attrition-only T3 movement begins around {(scenarioOutlook.mostLikely.recursiveT3Threshold * 100).toFixed(1)}%. With ${(scenarioOutlook.mostLikely.reserveWaitlistBudget / 1e6).toFixed(0)}M reaching the normal waitlist pool, T3 movement begins around {(scenarioOutlook.mostLikely.reserveRecursiveT3Threshold * 100).toFixed(1)}%, because the pool reduces the remaining T2 queue first.
                 </div>
                 <div className="bg-green-50 border border-green-200 rounded p-3 mb-4 text-xs text-green-800">
                     <strong>Community Impact waitlist-pool sensitivity:</strong> Community Impact reported, citing an agency spokesperson, that about ${(analysis.reportedCommittedAwardsBudget / 1e6).toFixed(0)}M has been set aside for selected students, leaving about ${(analysis.reportedGrossUncommittedBudget / 1e6).toFixed(0)}M gross. After the max $80M admin/vendor allowance, that implies at least ${(analysis.reportedMinimumAppealsWaitlistBudget / 1e6).toFixed(0)}M potentially available for successful appeals and later movement. The waitlist-pool slider assumes ${(scenarioOutlook.mostLikely.reserveWaitlistBudget / 1e6).toFixed(0)}M reaches the regular T2/T3 waitlist, or roughly {scenarioOutlook.mostLikely.reserveEquivalentWaitlistSeats.toLocaleString()} T2/T3-equivalent seats. Under the <strong>uniform</strong> 15% attrition slider (same % on every tier), combined Tier 3 odds are ~{scenarioOutlook.mostLikely.reserveEffectiveTier3Rate.toFixed(1)}% per child — which can be <strong>0%</strong> while Tier 2 still has backlog. For your grounded default, use <strong>Primary planning default</strong> above (~{personalDefault.t3AcceptedRate.toFixed(1)}% per-child accepted awards). Treat Community Impact figures as upside sensitivity; appeals and SPED can consume the pool first.
@@ -2028,7 +2028,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         {' '}— three independent draws from the Tier 3 waitlist pool. One win funds all three children automatically.
                     </div>
                     <div>
-                        <strong>Non-linear dynamics:</strong> Under the revised May 6 official T2 award count, {scenarioOutlook.mostLikely.unfundedT2.toLocaleString()} unfunded T2 students sit ahead of T3. The prior 77/23 derived model implied only ~{(analysis.demandT2 - analysis.derivedT2LotteryCapacity).toLocaleString()} T2 students ahead of T3; the official batch is more conservative and makes the cascade smaller.
+                        <strong>Non-linear dynamics:</strong> Under the revised May 7 official T2 award count, {scenarioOutlook.mostLikely.unfundedT2.toLocaleString()} unfunded T2 students sit ahead of T3. The prior 77/23 derived model implied only ~{(analysis.demandT2 - analysis.derivedT2LotteryCapacity).toLocaleString()} T2 students ahead of T3; the official batch is more conservative and makes the cascade smaller.
                     </div>
                 </div>
             </div>
@@ -2073,11 +2073,11 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                 <li><strong>Step 1 — T1 family block (empirical):</strong> Apr 28 PDF item 1, verbatim: <em>"all eligible tier 1 applicants and siblings will qualify for funding of approximately $415 million."</em> {analysis.firstRoundAwards.toLocaleString()} students at an avg ~${Math.round(analysis.t1FamilyCost / analysis.firstRoundAwards).toLocaleString()}/student. Reliable because the Parent Application Guide establishes that educational setting (private $10,474 vs. homeschool $2,000) <em>locks</em> at application close (Mar 31) — the program knew the exact per-student cost at lottery time.</li>
                                 <li><strong>Step 2 — T2/T3 blended cost:</strong> T2 (≤200% FPL) and T3 (200-500% FPL) both have no SPED supplement by tier definition. Per-student cost depends only on setting. Apr 8 PDF reports the overall application setting split as 77% private / 23% homeschool. Blended cost = 0.77 × $10,474 + 0.23 × $2,000 ≈ <strong>${analysis.perStudentT2Blended.toLocaleString()}/student</strong>.</li>
                                 <li><strong>Step 3 — Admin/reserve:</strong> SB 2 §29.362(b)-(c) allows up to 3% for Comptroller administration plus up to 5% for certified educational assistance organizations ($80M total cap); the Apr 28 PDF item 5 confirms an appeals reserve but does not publish the amount. Earlier baseline used a small ~$5M placeholder; the new Community Impact article makes that look too conservative as an upside sensitivity.</li>
-                                <li><strong>Step 4 — T2 award batch:</strong> The pre-May-4 77/23 model would have derived ~{analysis.derivedT2LotteryCapacity.toLocaleString()} T2 slots from the remaining <strong>~${(analysis.t2Budget / 1e6).toFixed(0)}M</strong>. The revised May 6 PDF supersedes that estimate with <strong>{analysis.officialT2Awards.toLocaleString()} official Tier 2 awards</strong> and <strong>{analysis.unfundedT2.toLocaleString()} Tier 2 students waitlisted</strong>. The gap points to a larger reserve/holdback, a more private-heavy T2 setting mix, or both.</li>
+                                <li><strong>Step 4 — T2 award batch:</strong> The pre-May-4 77/23 model would have derived ~{analysis.derivedT2LotteryCapacity.toLocaleString()} T2 slots from the remaining <strong>~${(analysis.t2Budget / 1e6).toFixed(0)}M</strong>. The revised May 7 PDF supersedes that estimate with <strong>{analysis.officialT2Awards.toLocaleString()} official Tier 2 awards</strong> and <strong>{analysis.unfundedT2.toLocaleString()} Tier 2 students waitlisted</strong>. The gap points to a larger reserve/holdback, a more private-heavy T2 setting mix, or both.</li>
                                 <li><strong>Total awards to date:</strong> {analysis.firstRoundAwards.toLocaleString()} + {analysis.fundedT2.toLocaleString()} = <strong>{analysis.capacity.toLocaleString()}</strong> students.</li>
                                 <li><strong>Community Impact waitlist-pool signal:</strong> Community Impact reported, citing an agency spokesperson, that nearly 96,000 selected students have about <strong>${(analysis.reportedCommittedAwardsBudget / 1e6).toFixed(0)}M</strong> set aside so far. That leaves about <strong>${(analysis.reportedGrossUncommittedBudget / 1e6).toFixed(0)}M</strong> gross, or at least <strong>${(analysis.reportedMinimumAppealsWaitlistBudget / 1e6).toFixed(0)}M</strong> after the max $80M admin/vendor allowance. The current slider assumes <strong>${(analysis.reserveWaitlistBudget / 1e6).toFixed(0)}M</strong> reaches the regular waitlist, or roughly <strong>{analysis.reserveEquivalentWaitlistSeats.toLocaleString()}</strong> T2/T3-equivalent seats at the blended cost.</li>
                                 <li><strong>Why this supersedes the prior $640.7M derivation:</strong> The earlier model assumed every T1 student received the $17,650 IEP-blended rate. Reality (per the Parent Guide's "Prioritization Only" sub-class + the Apr 8 PDF's 8,618 IEP-active count + 77/23 setting split) keeps the T1-family block in the low-$400Ms: most T1 students receive only the base rate, and ~23% homeschool dramatically lowers the per-student cost.</li>
-                                <li><strong>Appeals / waitlist pool:</strong> Per the revised May 6 PDF and the May 4 release, the program holds a reserve for successful appeals. Community Impact's $100M+ figure is credible secondary reporting, but the planner only counts the slider-selected share as reaching the normal waitlist because appeals and SPED awards may consume the rest first.</li>
+                                <li><strong>Appeals / waitlist pool:</strong> Per the revised May 7 PDF and the May 4 release, the program holds a reserve for successful appeals. Community Impact's $100M+ figure is credible secondary reporting, but the planner only counts the slider-selected share as reaching the normal waitlist because appeals and SPED awards may consume the rest first.</li>
                                 <li><strong>Cross-check:</strong> T1-family fully funds, T2 ({analysis.demandT2.toLocaleString()}) funds at {tier2FundingRate.toFixed(1)}% (lottery), and T3/T4 receive 0 from the initial award batches. The remaining T2 backlog ahead of T3 is {analysis.unfundedT2.toLocaleString()} students.</li>
                             </ul>
                         </div>
@@ -2391,7 +2391,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         </div>
                         <p className="text-xs text-tefa-red/80 bg-tefa-gold/10 border border-tefa-gold/30 rounded p-3">
                             <strong>Timing caveat (updated Apr 28):</strong> Per the Apr 28 Lottery Update PDF, the locked-in timeline is: T1 awards Apr 22–24 ({analysis.firstRoundAwards.toLocaleString()} students), <strong>T2 lottery week of Apr 27</strong>, ranked waitlist position notified by <strong>May 11</strong> (portal opens for opt-in same day), then a two-track funding cascade: <strong>July funding</strong> (Jun 1 family opt-in, Jun 15 school confirmation, Jul 1 first disbursement) and <strong>August funding</strong> (Jul 15 family opt-in/opt-out, Jul 31 school confirmation).
-                            The critical tension for Tier 3 families: the Iddings know their ranked waitlist position by May 11 — a sharper signal than the probabilistic model. But the biggest waitlist-cascade event is the Jul 15 opt-out deadline, which falls AFTER the Jun 30 NBCA withdrawal deadline. Withdrawing on Jun 30 means exiting before the main cascade plays out; staying past Jun 30 binds the family to ~$40,950 in tuition contracts for uncertain funding.
+                            The critical tension for Tier 3 families: the Iddings learn their ranked waitlist position the week of May 11 — a sharper signal than the probabilistic model. But the biggest waitlist-cascade event is the Jul 15 opt-out deadline, which falls AFTER the Jun 30 NBCA withdrawal deadline. Withdrawing on Jun 30 means exiting before the main cascade plays out; staying past Jun 30 binds the family to ~$40,950 in tuition contracts for uncertain funding.
                         </p>
                     </div>
                 </div>

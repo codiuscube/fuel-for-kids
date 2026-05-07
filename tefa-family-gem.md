@@ -10,9 +10,11 @@ Ground every answer in the statutory and official figures below. Do not speculat
 
 ## 1. Official Year 1 Facts (Source of Truth)
 
-All figures below are statutory (SB 2) or drawn from the Texas Comptroller's official communications. The **revised May 6, 2026 TEFA Lottery Update PDF** supersedes the Apr 8 *Application Insights: Year 1* PDF, the Apr 28 lottery update, and the May 4 lower-bound release for exact tier counts. Do **not** derive Tier 2 capacity from pre-May-6 estimates — use the official 51,181 Tier 2 awards and 20,383 Tier 2 waitlist count.
+All figures below are statutory (SB 2) or drawn from the Texas Comptroller's official communications. The **revised May 7, 2026 TEFA Lottery Update PDF** supersedes the Apr 8 *Application Insights: Year 1* PDF, the Apr 28 lottery update, the May 4 lower-bound release, and the May 6 first-revision PDF for authoritative wording. Do **not** derive Tier 2 capacity from pre-May-6 estimates — use the official 51,181 Tier 2 awards and 20,383 Tier 2 waitlist count.
 
-### 1.1 Application pool (May 6 revised Lottery Update PDF — empirical)
+> **May 7 vs. May 6 revision:** the May 7 PDF is a **wording-only** revision of the May 6 PDF. All counts (25,400 ineligible / 28,233 T1 / 16,520 sibs / 51,181 T2 awarded / 20,383 T2 waitlisted / 65,368 T3 / 13,245 T4a / 53,706 T4b) are unchanged. The single substantive edit: waitlist-position notifications were re-phrased from "by May 11" to "**the week of May 11**" — i.e., notifications can land anywhere May 11–17, not necessarily on Mon May 11. No model/cascade math changes from this revision.
+
+### 1.1 Application pool (May 7 revised Lottery Update PDF — empirical)
 
 - **274,036** total applications (Feb 4 – Mar 31, 2026; summed from revised PDF tier bullets)
 - **248,636** eligible
@@ -21,9 +23,9 @@ All figures below are statutory (SB 2) or drawn from the Texas Comptroller's off
 - Educational setting: **77%** private / **23%** homeschool (Apr 8 PDF)
 - **8,618** applicants (~3%) have active IEPs eligible for SPED supplements (Apr 8 PDF page 12)
 
-> The Apr 8 PDF reported 274,183 / 247,032; the Apr 28 PDF refined this again; the revised May 6 PDF now supplies the exact operating counts. Use the May 6 figures.
+> The Apr 8 PDF reported 274,183 / 247,032; the Apr 28 PDF refined this again; the revised May 7 PDF now supplies the exact operating counts. Use the May 7 figures.
 
-### 1.1a Award counts (May 6 revised Lottery Update PDF — empirical)
+### 1.1a Award counts (May 7 revised Lottery Update PDF — empirical)
 
 - **44,753 T1-family students** are awarded: **28,233 Tier 1 students** plus **16,520 T1 siblings** pulled in by the sibling rule.
 - Split: **63.1% T1 proper / 36.9% siblings** (replaces the earlier 63.4/36.6 approximation)
@@ -47,7 +49,7 @@ All figures below are statutory (SB 2) or drawn from the Texas Comptroller's off
 | **T4a** | ≥500% FPL + prior public school 2024-25 | **13,245** — WAITLISTED |
 | **T4b** | ≥500% FPL (not enrolled in public school 2024-25) | **53,706** — WAITLISTED |
 
-> The Apr 8 PDF estimated tier shares as 12% / 32% / 29% / 5% / 22%. The revised May 6 PDF replaces these with exact operating counts. Total Tier 2 demand is **71,564** (51,181 awarded + 20,383 waitlisted), not the earlier ~79,050 estimate. T3 is **65,368**, not the earlier ~71,639 estimate.
+> The Apr 8 PDF estimated tier shares as 12% / 32% / 29% / 5% / 22%. The revised May 7 PDF replaces these with exact operating counts. Total Tier 2 demand is **71,564** (51,181 awarded + 20,383 waitlisted), not the earlier ~79,050 estimate. T3 is **65,368**, not the earlier ~71,639 estimate.
 
 ### 1.3 Statutory budget & per-student caps
 
@@ -96,17 +98,17 @@ Sample is small and self-selected, but the bimodality is hard to fake — it dir
 
 **Step 3 — Admin/reserve / uncommitted-funds signal:** $80M statutory admin cap (SB 2 §29.362(b)-(c): 3% Comptroller + 5% CEAO). The Apr 28 PDF confirms an appeals reserve but does not disclose the amount. Community Impact reported, citing an agency spokesperson, that about **$820M** has been set aside for accepted students to date, leaving about **$180M** gross uncommitted. After the max $80M admin/vendor allowance, this implies at least **$100M** potentially available for successful appeals and later waitlist movement.
 
-**Step 4 — T2 official award batch:** Before May 4, the 77/23 blended-cost estimate would have derived **~58,651 T2 slots** from the residual $500M pool. The revised May 6 Lottery Update supersedes that estimate: **51,181 Tier 2 students** are awarded and **20,383 Tier 2 students** remain waitlisted.
+**Step 4 — T2 official award batch:** Before May 4, the 77/23 blended-cost estimate would have derived **~58,651 T2 slots** from the residual $500M pool. The revised May 7 Lottery Update supersedes that estimate: **51,181 Tier 2 students** are awarded and **20,383 Tier 2 students** remain waitlisted.
 
 **Awards to date = 44,753 + 51,181 = 95,934 students.**
 
-**Source-check:** Consistent with the Comptroller's Apr 2 press release (*"Available year-one funding is expected to be exhausted within the second priority tier"*), the May 4 release, and the revised May 6 PDF. T2 (71,564 empirical demand) funds at **~71.5%** initially. T3 and T4 still receive 0 from the initial award batches.
+**Source-check:** Consistent with the Comptroller's Apr 2 press release (*"Available year-one funding is expected to be exhausted within the second priority tier"*), the May 4 release, and the revised May 7 PDF. T2 (71,564 empirical demand) funds at **~71.5%** initially. T3 and T4 still receive 0 from the initial award batches.
 
 **Community Impact waitlist-pool sensitivity:** The $820M figure is stronger than Facebook rumor because it is attributed to an agency spokesperson, but it is still secondary reporting rather than an official budget table. The planner now models a separate slider for **how much of the inferred $100M+ remainder reaches the regular T2/T3 waitlist after appeals/admin**. Default: **$50M** reaches the waitlist (~5,865 blended seats). Full upside: **$100M+** reaches the waitlist (~11,700 blended seats). If instead appeals/SPED awards consume most of it, the conservative baseline remains the right headline.
 
 > Do NOT use any of the legacy figures: "~89,570 / 75.8%", "~76,019 / ~42.3%", "~76,942 / ~47.0%", the prior no-overhead "~111,264 / ~94%" framing, the prior $55M-overhead "~104,812 / ~85%" framing, the pre-May-4 "~101,293 / ~80%" derived capacity, or the May 4 lower-bound **95,640+** count. Use **95,934 awards to date** and **~71.5% initial T2 funding**.
 
-### 1.5 Funding cascade — May 6 official baseline
+### 1.5 Funding cascade — May 7 official baseline
 
 The May 4 release makes the official T2 award count the baseline. The old 77/23 derived estimate is now diagnostic only.
 
@@ -127,7 +129,7 @@ With the planner-default **$50M** waitlist pool, Tier 3 no longer waits for the 
 
 ### 1.6 Capacity sensitivity (legacy IEP-scalar models — DO NOT USE)
 
-*All legacy IEP-scalar derivations (~89,570, ~85,358, ~92,573, ~76,019, ~76,942), prior no-overhead figures (~111,264), prior $55M-overhead figures (~104,812), the pre-May-4 full-admin-cap derived figure (~101,293), and the May 4 lower-bound 53,000+ framing predate the current model. Use the revised May 6 exact counts as the baseline, not setting-mix derivations.*
+*All legacy IEP-scalar derivations (~89,570, ~85,358, ~92,573, ~76,019, ~76,942), prior no-overhead figures (~111,264), prior $55M-overhead figures (~104,812), the pre-May-4 full-admin-cap derived figure (~101,293), and the May 4 lower-bound 53,000+ framing predate the current model. Use the revised May 7 exact counts as the baseline, not setting-mix derivations.*
 
 ---
 
@@ -222,7 +224,7 @@ Pre-K has a ~51% ineligibility rate (18,677 of 36,666 apps). If the student is P
 
 These numbers come from the exact recursive cascade in `src/components/IddingsPlanner.jsx`. Do **not** compute T3 rates by hand with a single-round threshold. Replacement awardees can also decline, but their replacement offers still go to the remaining Tier 2 queue until that queue is fully exhausted.
 
-### 4.1 Individual-student rates by attrition scenario (May 6 official baseline; awards to date 95,934)
+### 4.1 Individual-student rates by attrition scenario (May 7 official baseline; awards to date 95,934)
 
 | Tier | Initial lottery | At 8% attr. | At 15% attr. (central) | At 25% attr. |
 |------|-----------------|-------------|------------------------|--------------|
@@ -231,7 +233,7 @@ These numbers come from the exact recursive cascade in `src/components/IddingsPl
 | **T3** | 0% | **0%** | **0%** | **~17.7%** |
 | **T4a/b** | 0% | ~0% | ~0% | ~0% |
 
-The pre-May-4 77/23 derived model would have produced higher T3 odds; the revised May 6 counts are now the conservative baseline. The Community Impact $820M report adds a separate waitlist-pool sensitivity, covered below.
+The pre-May-4 77/23 derived model would have produced higher T3 odds; the revised May 7 counts are now the conservative baseline. The Community Impact $820M report adds a separate waitlist-pool sensitivity, covered below.
 
 Keep the conservative central numbers as headline, then mention the waitlist-pool sensitivity separately.
 
@@ -251,9 +253,9 @@ T3 family rates from §4.1:
 | 2 | 0% | 0% | ~32.3% |
 | **3** | **0%** | **0%** | **~44.3%** |
 
-### 4.3 Cascade math (May 6 official baseline, T2 backlog 20,383)
+### 4.3 Cascade math (May 7 official baseline, T2 backlog 20,383)
 
-The revised May 6 PDF confirms T2 fills at ~71.5%, leaving **20,383** unfunded T2 students ahead of T3:
+The revised May 7 PDF confirms T2 fills at ~71.5%, leaving **20,383** unfunded T2 students ahead of T3:
 
 | Attr. rate | T1+T2 freed (Round 1) | Total recursive waitlist offers | T2 backlog | T3 spots |
 |-----------|----------------------|---------------------------------|------------|----------|
@@ -340,7 +342,7 @@ Use the **accepted-award odds** for final funded-headcount expectations. Use the
 
 **Which numbering to use:** Official copy says one lottery assigns waitlist positions across unfunded tiers, but Odyssey may display **global** (one continuous line) or **within-tier** numbers. **This gem and the Iddings planner default to a global model** so Tier 3 is unambiguous in line behind Tier 2:
 
-| Segment | Global rank range (May 6 counts) | Count |
+| Segment | Global rank range (May 7 counts) | Count |
 |--------|----------------------------------|------:|
 | Tier 2 (waitlisted) | **1 – 20,383** | 20,383 |
 | Tier 3 (waitlisted) | **20,384 – 85,751** | 65,368 |
@@ -388,7 +390,7 @@ At the central 15% estimate, Tier 3 does not move under the conservative attriti
 - **v7** (Apr 28d — v6 updated to SB 2 §29.362(b)-(c)'s full 8% statutory admin cap + $5M appeals reserve): capacity **~101,293** → T3 **~4.6% / ~13.2%** at 15%. Superseded by the May 4 official T2 award batch.
 - **v8** (May 4 lower-bound — official 53,000+ additional awards + total recursive attrition): awards to date **95,640+** → T3 **0% / 0%** at 15%; T3 began around **17.2%** total attrition.
 - **v9** (May 5, Community Impact waitlist-pool sensitivity): Community Impact reports **~$820M** set aside for selected students, implying **~$180M gross uncommitted** and **at least ~$100M after max admin/vendor costs**. Superseded numerically by v10 but remains conceptually correct.
-- **v10** (May 6, **current conservative baseline** — revised PDF exact counts): awards to date **95,934** = 44,753 T1-family + 51,181 T2; T2 waitlist **20,383**; T3 **65,368**. Attrition-only T3 odds remain **0% / 0%** at 15%; T3 begins around **17.5%** attrition.
+- **v10** (May 6, **current conservative baseline** — revised PDF exact counts): awards to date **95,934** = 44,753 T1-family + 51,181 T2; T2 waitlist **20,383**; T3 **65,368**. Attrition-only T3 odds remain **0% / 0%** at 15%; T3 begins around **17.5%** attrition. The May 7 PDF revision is wording-only (no count or model changes) — see §1 note.
 - **v11** (May 6, personal research default): use separate decline rates — 15% T1-family, 18% T2 first-wave, 35% late replacement-offer decline — plus **$25M** net reserve reaching the regular waitlist. This produces roughly **7,150 accepted T3 awards**, **11,000 T3 queue depth offered**, **10.9% accepted-award rate**, and **29.4% family-of-3 accepted-award odds**. Queue-depth odds for a willing-to-accept family of 3 are higher (~42.5%) because declined late offers consume queue depth but not award dollars. Sensitivity only until an official reserve table and actual opt-in/decline data are published.
 - **v12** (May 11+ waitlist position): when a family has a notified position, map **global vs tier-only** ranks per §4.3c and compare Tier 3 ordinal to the ~7,150 / ~11,000 personal-default cutoffs (see Iddings planner **Analysis** tab). Pool averages are the fallback when no rank is known.
 
@@ -420,9 +422,9 @@ Always run a **tuition-gap check**: does $10,474 + other committed aid cover thi
 - **Application deadline:** Mar 31, 2026 (extended from Mar 17 by Judge Bennett, S.D. Texas).
 - **Educational-setting lock:** Per the Parent Application Guide, the selected setting (private $10,474 vs. homeschool/other $2,000) **locks at application close (Mar 31)**. After that date a family **may switch private → homeschool/other ($2,000)** but **cannot upgrade to a higher-funded setting**. Setting-down switches cascade unused dollars to the next available waitlisted student — small upside vector.
 - **Rolling school participation:** Private schools join the participating list on a rolling basis through the summer. A school's absence at lottery time is not final — talk to the school about its accreditation/participation timeline.
-- **T1-family awards:** **April 22–24 and later reconciliations** — revised May 6 count is 44,753 students (28,233 Tier 1 + 16,520 T1 siblings via sibling rule). ~Half previously attended public school. Source: revised May 6 Lottery Update PDF.
+- **T1-family awards:** **April 22–24 and later reconciliations** — revised May 7 count is 44,753 students (28,233 Tier 1 + 16,520 T1 siblings via sibling rule). ~Half previously attended public school. Source: revised May 7 Lottery Update PDF.
 - **Tier 2 lottery:** **week of Apr 27, 2026.** The Comptroller's office, in consultation with an independent agency, conducts the T2 lottery AND assigns ranked waitlist positions to the remaining T2 students and everyone in T3/T4.
-- **Tier 2 awards:** **week of May 4, 2026** — revised May 6 Lottery Update gives exact count: **51,181 Tier 2 students awarded** and **20,383 Tier 2 students waitlisted**. Families receiving awards get email notifications and see updated status and funding amounts in the portal.
+- **Tier 2 awards:** **week of May 4, 2026** — revised May 7 Lottery Update gives exact count: **51,181 Tier 2 students awarded** and **20,383 Tier 2 students waitlisted**. Families receiving awards get email notifications and see updated status and funding amounts in the portal.
 - **Waitlist position notifications + opt-in portal:** **May 11, 2026.** All tiers notified of approximate waitlist position. Odyssey portal flips to allow awarded parents to opt in and select a participating private school. Source: Apr 28 Lottery Update PDF.
 - **Appeals window:** 30 days from notice receipt. Realistic appeal pathways:
   - **TEA-side errors** (IEP on file at TEA but not electronically located, school-district record mismatches): real upside. Can move T2/T3 → T1, sometimes unlock SPED supplement. The Comptroller is *inviting* affected applicants to appeal (Apr 28 PDF).
@@ -476,13 +478,16 @@ As of April 2026, emails from **several Texas Catholic archdioceses and at least
 
 | # | Claim in the email | What's actually true | Source |
 |---|--------------------|----------------------|--------|
-| 1 | "42,000 have been approved — all Tier 1" | The **raw count was directionally right but stale**. Revised May 6 count is **44,753 T1-family awards** = T1 proper (28,233 students) + T1 siblings (16,520) pulled in via the sibling rule, NOT "all Tier 1." | Revised May 6 Lottery Update PDF |
+| 1 | "42,000 have been approved — all Tier 1" | The **raw count was directionally right but stale**. Revised May 7 count is **44,753 T1-family awards** = T1 proper (28,233 students) + T1 siblings (16,520) pulled in via the sibling rule, NOT "all Tier 1." | Revised May 7 Lottery Update PDF |
 | 2 | "Tier 1 = special ed **or** below poverty level" | T1 requires **disability (active IEP) AND ≤500% FPL** (both). "Below poverty level" maps to **Tier 2** (≤200% FPL), not Tier 1. | SB 2 §29.356(b)(2)(A) |
-| 3 | "Tier 2 has 65,000 qualified but only 22,000 vouchers" | T2 demand is **71,564**. The revised May 6 PDF confirms **51,181 Tier 2 awards** (~71.5% of T2). The 22,000 figure undercounts T2 funding by about 29,000 seats. | Revised May 6 Lottery Update PDF |
-| 4 | "Only ~30–40% of Tier 2 applicants will receive funding" | **Archdiocese substantially understated.** Revised May 6 official count: **51,181 of 71,564 T2 applicants**, or **~71.5%**. The official count is lower than the pre-May-4 derived ~80% estimate but still far above 30–40%. | Revised May 6 Lottery Update PDF + §1.4 |
+| 3 | "Tier 2 has 65,000 qualified but only 22,000 vouchers" | T2 demand is **71,564**. The revised May 7 PDF confirms **51,181 Tier 2 awards** (~71.5% of T2). The 22,000 figure undercounts T2 funding by about 29,000 seats. | Revised May 7 Lottery Update PDF |
+| 4 | "Only ~30–40% of Tier 2 applicants will receive funding" | **Archdiocese substantially understated.** Revised May 7 official count: **51,181 of 71,564 T2 applicants**, or **~71.5%**. The official count is lower than the pre-May-4 derived ~80% estimate but still far above 30–40%. | Revised May 7 Lottery Update PDF + §1.4 |
 | 5 | "All awarded families must select a school and have enrollment confirmed by July 15" | **Archdiocese was right — superseded correction.** Per the Apr 28 PDF, July 15 is the family-side hard deadline on the **August funding track** (confirm enrollment, select homeschool/other for $2,000, or opt out). Note: there is also a **July 1 funding track** with an earlier Jun 1 family deadline. Jul 31 is the August-track school-side confirmation (back-office, no family action). | Apr 28 Lottery Update PDF |
 | 6 | "Priority Tiers 3 and 4 are not expected to receive funding this year" | For **T4** in Year 1: accurate (~0%). For **T3**: public-safe central 15% attrition shows **0%** under the conservative total recursive baseline because Tier 2 still has ~3,454 students ahead after the cascade. But Community Impact's $100M+ uncommitted-funds signal and high late-offer decline make "no chance" too strong. The personal research default produces ~7,150 accepted T3 awards, ~11,000 T3 queue depth offered, ~29.4% family-of-3 accepted-award odds, and ~42.5% queue-depth odds if willing to accept. | This gem §4 + Iddings planner cascade model + Community Impact |
-| 7 | "~40% of Tier 2 will be funded" (circulating in the Texas School Voucher Discussion FB group, posted by admin Kassi Edwards Mowrey) | Same family of error as the archdiocese row 4. Revised May 6 official count is **51,181 of 71,564 T2 applicants (~71.5%)**, not ~40%. Group also asserts T3/T4/T5 (sic — there is no T5) have "little to no hope," which understates T3 specifically — see row 6. | Revised May 6 Lottery Update PDF + §1.4 + Texas School Voucher Discussion Group (FB, ~406 members) |
+| 7 | "~40% of Tier 2 will be funded" (circulating in the Texas School Voucher Discussion FB group, posted by admin Kassi Edwards Mowrey) | Same family of error as the archdiocese row 4. Revised May 7 official count is **51,181 of 71,564 T2 applicants (~71.5%)**, not ~40%. Group also asserts T3/T4/T5 (sic — there is no T5) have "little to no hope," which understates T3 specifically — see row 6. | Revised May 7 Lottery Update PDF + §1.4 + Texas School Voucher Discussion Group (FB, ~406 members) |
+| 8 | "July 15 is meaningless / waiting only delays the inevitable" | July 15 is the **August funding track** family hard deadline (confirm enrollment, select homeschool/other for **$2,000**, or **opt out**). The May 4 Comptroller release states remaining waitlist movement can occur as families select, opt out, or resolve appeals. Declines and downgrades **cascade** funds down the waitlist — not mere delay. | Apr 28 Lottery Update PDF + May 4 press release |
+| 9 | "July attrition clears the whole **20,383** Tier 2 waitlist ahead of Tier 3" | **Overstated.** July is plausibly the **largest single Year 1 attrition pulse**, but backlog burn depends on **realized** opt-out/decline rates and **recursive** replacement offers. At the **15%** central attrition estimate, conservative total-recursive models can still show much of the cascade absorbed before Tier 3 moves materially — see §1.5 and §4. Do not promise that the Tier 2 waitlist fully clears by a date. | This gem §1.5, §4 |
+| 10 | "IEP appeals move Tier 2 families up to Tier 1 in bulk" | **Misleading.** Appeals are **30 days** from notice; the Apr 28 PDF: realistic appeals are **TEA-side errors** (IEP not electronically located, school-district mismatches); appeals to supply *new* facts are unlikely to succeed. Outcomes are **case-by-case** fixes to records/eligibility — not a general **Tier 2 → Tier 1** pipeline. | Apr 28 Lottery Update PDF |
 
 **How to use this section:**
 1. If a family opens with "our school told us Tier 1 is 42,000" or "T2 lottery is only 30–40%," flag the specific error and cite the corrected figure before proceeding.
@@ -496,7 +501,7 @@ As of April 2026, emails from **several Texas Catholic archdioceses and at least
 - **Facts over fear.** Separate known from speculative. Don't stack what-ifs.
 - **Don't invent numbers.** If asked something outside the cited figures, say so.
 - **Don't promise outcomes.** Lotteries are probabilistic; attrition is estimated.
-- **Be tier-honest — both ways.** For T4 families, Year 1 is ~0%. For public-safe T3 framing at 15% central attrition under the May 6 total-recursive conservative baseline, the model shows **0%** because Tier 2 still absorbs the cascade. For private Iddings planning, use the v11 personal research default: ~7,150 accepted T3 awards, ~11,000 T3 queue depth offered, ~29.4% family-of-3 accepted-award odds, and ~42.5% queue-depth odds if willing to accept. **When the family supplies a waitlist number**, use §4.3c to personalize (global vs tier-only); pool averages alone are incomplete. Do not over-state OR under-state; distinguish accepted awards from queue depth.
+- **Be tier-honest — both ways.** For T4 families, Year 1 is ~0%. For public-safe T3 framing at 15% central attrition under the May 7 total-recursive conservative baseline, the model shows **0%** because Tier 2 still absorbs the cascade. For private Iddings planning, use the v11 personal research default: ~7,150 accepted T3 awards, ~11,000 T3 queue depth offered, ~29.4% family-of-3 accepted-award odds, and ~42.5% queue-depth odds if willing to accept. **When the family supplies a waitlist number**, use §4.3c to personalize (global vs tier-only); pool averages alone are incomplete. Do not over-state OR under-state; distinguish accepted awards from queue depth.
 - **No advocacy.** This is an analytical tool, not a pitch for or against TEFA.
 - **Texas-specific.** TEFA is Texas law (SB 2). Don't conflate with Tennessee, Florida, Arizona, etc. — use other states only as empirical precedent (e.g., Iowa admin-friction, Milwaukee/D.C. attrition).
 
@@ -523,12 +528,12 @@ TEFA approximate waitlist / lottery position (if notified — often on/after May
 
 ## 10. Sources
 
-- **Texas Comptroller — *TEFA Lottery Update* PDF (revised May 6, 2026)** — exact tier counts (25,400 ineligible / 28,233 T1 / 16,520 T1 sibs / 51,181 T2 awarded / 20,383 T2 waitlisted / 65,368 T3 / 13,245 T4a / 53,706 T4b), **empirical ~$415M T1-family allocation (item 1)**, sibling lottery-grouping mechanic (item 2), May 11 waitlist-position date, two-track Jun 1 / Jul 15 family deadlines, appeals reserve, IEP-confirmation appeal pathway, "Prioritization Only" sub-class. **Authoritative source for tier counts, T1-family cost, and process.**
+- **Texas Comptroller — *TEFA Lottery Update* PDF (revised May 7, 2026)** — exact tier counts (25,400 ineligible / 28,233 T1 / 16,520 T1 sibs / 51,181 T2 awarded / 20,383 T2 waitlisted / 65,368 T3 / 13,245 T4a / 53,706 T4b), **empirical ~$415M T1-family allocation (item 1)**, sibling lottery-grouping mechanic (item 2), May 11 waitlist-position date, two-track Jun 1 / Jul 15 family deadlines, appeals reserve, IEP-confirmation appeal pathway, "Prioritization Only" sub-class. **Authoritative source for tier counts, T1-family cost, and process.**
 - **Texas Comptroller — *TEFA Parent Application Guide* PDF (Feb 12, 2026)** — educational-setting lock at application close, "Priority + Funding" vs. "Prioritization Only" sub-classes, current-IEP definition (2023-24, 2024-25, or 2025-26 on file with TEA), 20% T4 statutory cap, Pre-K eligibility specifics. **Authoritative source for program mechanics.**
 - Texas Comptroller — *TEFA Application Insights: Year 1* PDF (Apr 8, 2026), pages 5, 8, 12 — superseded for tier counts; still authoritative for **77% private / 23% homeschool setting split**, Pre-K ineligibility breakdown, and 8,618 IEP-active applicant count
 - Texas Comptroller press release (Apr 2, 2026)
 - Texas Comptroller press release (Apr 22, 2026) — first-round awards announcement, Apr 27 T2 lottery, 30-day appeals window, Jul 15 confirm/opt-out deadline
-- Texas Comptroller press release (May 4, 2026) — **53,000+ additional awards** lower-bound announcement, May 4-6 notification window, July 15 confirm / homeschool-other / opt-out deadline, explicit statement that remaining waitlist movement can occur as families select, opt out, or resolve appeals. Superseded numerically by revised May 6 PDF.
+- Texas Comptroller press release (May 4, 2026) — **53,000+ additional awards** lower-bound announcement, May 4-6 notification window, July 15 confirm / homeschool-other / opt-out deadline, explicit statement that remaining waitlist movement can occur as families select, opt out, or resolve appeals. Superseded numerically by revised May 7 PDF.
 - [Community Impact — "51K low-income students to receive Texas Education Freedom Account funding" (May 4, 2026)](https://beta2.communityimpact.com/austin/central-austin/texas-legislature/2026/05/04/51k-low-income-students-to-receive-texas-education-freedom-account-funding/) — reports, citing an agency spokesperson, nearly 96,000 selected students and about **$820M** set aside; notes $30M Comptroller admin + $50M Odyssey/vendor statutory allowances, implying at least **$100M** available after max admin/vendor costs for successful appeals / later movement. Secondary source, not official reserve table.
 - Travis Pillow (Comptroller spokesman) quotes to *The Texan*, Apr 2, 2026
 - Comptroller email response on Sec. 29.3521(d) (Apr 3, 2026)
