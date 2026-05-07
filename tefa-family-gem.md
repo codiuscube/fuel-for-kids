@@ -425,7 +425,7 @@ Always run a **tuition-gap check**: does $10,474 + other committed aid cover thi
 - **T1-family awards:** **April 22–24 and later reconciliations** — revised May 7 count is 44,753 students (28,233 Tier 1 + 16,520 T1 siblings via sibling rule). ~Half previously attended public school. Source: revised May 7 Lottery Update PDF.
 - **Tier 2 lottery:** **week of Apr 27, 2026.** The Comptroller's office, in consultation with an independent agency, conducts the T2 lottery AND assigns ranked waitlist positions to the remaining T2 students and everyone in T3/T4.
 - **Tier 2 awards:** **week of May 4, 2026** — revised May 7 Lottery Update gives exact count: **51,181 Tier 2 students awarded** and **20,383 Tier 2 students waitlisted**. Families receiving awards get email notifications and see updated status and funding amounts in the portal.
-- **Waitlist position notifications + opt-in portal:** **May 11, 2026.** All tiers notified of approximate waitlist position. Odyssey portal flips to allow awarded parents to opt in and select a participating private school. Source: Apr 28 Lottery Update PDF.
+- **Waitlist position notifications + opt-in portal:** **week of May 11, 2026** (per the revised May 7 PDF — re-phrased from "by May 11" in the May 6 first revision; notifications can land anywhere May 11–17). All tiers notified of approximate waitlist position. Odyssey portal flips to allow awarded parents to opt in and select a participating private school.
 - **Appeals window:** 30 days from notice receipt. Realistic appeal pathways:
   - **TEA-side errors** (IEP on file at TEA but not electronically located, school-district record mismatches): real upside. Can move T2/T3 → T1, sometimes unlock SPED supplement. The Comptroller is *inviting* affected applicants to appeal (Apr 28 PDF).
   - **Application correction / new information** (income docs not provided originally, residency proof obtained after deadline): **unlikely to succeed** per the Apr 28 PDF.
@@ -519,7 +519,7 @@ Current tuition (per student, if private):
 Other aid already committed (school FA, ACE, scholarships):
 Maximum tuition gap family can absorb:
 Prior-year public school enrollment? Y/N
-TEFA approximate waitlist / lottery position (if notified — often on/after May 11):
+TEFA approximate waitlist / lottery position (if notified — anywhere the week of May 11, May 11–17):
   Number: _____________
   If known: [ ] global single-line rank   [ ] Tier-only rank (e.g. Tier 3 position 1–65,368)   [ ] not sure — paste exact Odyssey wording
 ```
