@@ -34,7 +34,7 @@ All figures below are statutory (SB 2) or drawn from the Texas Comptroller's off
 - **Tier 2 lottery:** held during the week of Apr 27, 2026; the same lottery assigns ranked waitlist positions to the remaining T2 students and all of T3/T4
 - **Tier 2 awards:** **51,181 Tier 2 students** — AWARDED & NOTIFIED
 - **Tier 2 waitlist:** **20,383 Tier 2 students** remain ahead of Tier 3
-- **Waitlist position notifications:** all tiers notified of approximate position by **May 11**
+- **Waitlist position notifications:** all tiers notified of approximate position **the week of May 11** (per the May 7 PDF; was "by May 11" in the May 6 PDF — notifications can land anywhere May 11–17)
 - **Appeals window:** 30 days from notice receipt. Per the Apr 28 PDF: appeals based on **TEA-side errors** (IEP not electronically located, school-district mismatches) are realistic; appeals to **correct/provide new info** are unlikely to succeed
 - **Reserve budget:** the program holds funds for successful appeals; unused reserve cascades to the next available waitlisted students (Apr 28 PDF item 5)
 
@@ -336,7 +336,7 @@ Use the **accepted-award odds** for final funded-headcount expectations. Use the
 
 ### 4.3c Waitlist position — ask for it if they have it
 
-**When advising a Tier 3 family, ask:** *Do you have an approximate waitlist / lottery position from Odyssey yet?* (Notifications begin **May 11**; not everyone will have a number at first contact.)
+**When advising a Tier 3 family, ask:** *Do you have an approximate waitlist / lottery position from Odyssey yet?* (Notifications go out **the week of May 11** per the revised May 7 PDF — anywhere May 11–17; not everyone will have a number at first contact.)
 
 **Why it matters:** Pool-wide rates (§4.3b) describe **random** position in the Tier 3 queue. A **known** rank converts abstract odds into a simple **in-band / out-of-band** read against the personal-default cutoffs (~**7,150** modeled funded seats into Tier 3, ~**11,000** modeled offer-depth into Tier 3), *after* mapping the portal number into a **Tier 3-only ordinal**.
 
@@ -528,7 +528,7 @@ TEFA approximate waitlist / lottery position (if notified — often on/after May
 
 ## 10. Sources
 
-- **Texas Comptroller — *TEFA Lottery Update* PDF (revised May 7, 2026)** — exact tier counts (25,400 ineligible / 28,233 T1 / 16,520 T1 sibs / 51,181 T2 awarded / 20,383 T2 waitlisted / 65,368 T3 / 13,245 T4a / 53,706 T4b), **empirical ~$415M T1-family allocation (item 1)**, sibling lottery-grouping mechanic (item 2), May 11 waitlist-position date, two-track Jun 1 / Jul 15 family deadlines, appeals reserve, IEP-confirmation appeal pathway, "Prioritization Only" sub-class. **Authoritative source for tier counts, T1-family cost, and process.**
+- **Texas Comptroller — *TEFA Lottery Update* PDF (revised May 7, 2026)** — exact tier counts (25,400 ineligible / 28,233 T1 / 16,520 T1 sibs / 51,181 T2 awarded / 20,383 T2 waitlisted / 65,368 T3 / 13,245 T4a / 53,706 T4b), **empirical ~$415M T1-family allocation (item 1)**, sibling lottery-grouping mechanic (item 2), **week-of-May-11** waitlist-position notifications (re-phrased from "by May 11" in the May 6 first revision), two-track Jun 1 / Jul 15 family deadlines, appeals reserve, IEP-confirmation appeal pathway, "Prioritization Only" sub-class. **Authoritative source for tier counts, T1-family cost, and process.**
 - **Texas Comptroller — *TEFA Parent Application Guide* PDF (Feb 12, 2026)** — educational-setting lock at application close, "Priority + Funding" vs. "Prioritization Only" sub-classes, current-IEP definition (2023-24, 2024-25, or 2025-26 on file with TEA), 20% T4 statutory cap, Pre-K eligibility specifics. **Authoritative source for program mechanics.**
 - Texas Comptroller — *TEFA Application Insights: Year 1* PDF (Apr 8, 2026), pages 5, 8, 12 — superseded for tier counts; still authoritative for **77% private / 23% homeschool setting split**, Pre-K ineligibility breakdown, and 8,618 IEP-active applicant count
 - Texas Comptroller press release (Apr 2, 2026)
