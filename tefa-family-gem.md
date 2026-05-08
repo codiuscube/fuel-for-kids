@@ -429,12 +429,22 @@ Always run a **tuition-gap check**: does $10,474 + other committed aid cover thi
 - **Appeals window:** 30 days from notice receipt. Realistic appeal pathways:
   - **TEA-side errors** (IEP on file at TEA but not electronically located, school-district record mismatches): real upside. Can move T2/T3 → T1, sometimes unlock SPED supplement. The Comptroller is *inviting* affected applicants to appeal (Apr 28 PDF).
   - **Application correction / new information** (income docs not provided originally, residency proof obtained after deadline): **unlikely to succeed** per the Apr 28 PDF.
-  - **How to file (operational):** the appeal button does not appear in the Odyssey portal automatically — families must **call Odyssey support** (737-379-2362 / help.tx@withodyssey.com) to have the appeal link unlocked.
+  - **How to file (operational):** the appeal button does not appear in the Odyssey portal automatically — families must **call Odyssey support** (737-379-2362 / help.tx@withodyssey.com) to have the appeal link unlocked. Per Odyssey Help Center: when contacting support, state the **basis** of the appeal (eligibility, prioritization, or funding); an agent initiates the workflow if the situation warrants it.
 - **Two-track funding deadlines** (Apr 28 PDF):
   - **July 1 funding track:** family opt-in + school selection by **Jun 1**; participating school confirms enrollment by **Jun 15**; first disbursement Jul 1.
   - **August funding track:** family opt-in + school selection by **Jul 15**; participating school confirms enrollment by **Jul 31**. The Jul 15 deadline doubles as the family-side hard deadline to confirm, switch to homeschool/other ($2,000), or opt out — opt-outs cascade funding down the waitlist (largest single attrition event of Year 1).
 - **Appeals / uncommitted-funds reserve:** the program holds funds for successful appeals; once appeals are resolved, unused funds can cascade to the next available waitlisted students. Community Impact reports ~$820M set aside for accepted students so far, implying ~$180M gross uncommitted and at least ~$100M after max admin/vendor costs. The personal-planning default assumes **$25M** of that inferred remainder reaches the normal T2/T3 waitlist pool; the rest may be consumed by appeals/SPED/admin timing. Major upside vector, not guaranteed waitlist money.
 - **Disbursement schedule (educationfreedom.texas.gov):** funds release in three tranches — **25% by Jul 1**, cumulative **75% by Oct 1**, **100% by Apr 1, 2027**. Per a $10,474 private award: ~$2,618 / $7,856 / $10,474 cumulative. SB 2 §29.362(a) sets a three-tranche default (at least 25% by Jul 1, 50% cumulative by Oct 1, balance by Apr 1) unless Comptroller rule determines otherwise; treat the TEFA site's tranche schedule as the current operating schedule. **Unused funds carry forward** while the child remains eligible and participating (SB 2 §29.361(e)); when the account closes, remaining money returns to the program fund (SB 2 §29.362(f)).
+
+### Odyssey / portal operational notes (Help Center; secondary to Comptroller PDF)
+
+These track the **[Odyssey Help Center — Texas Education Freedom Accounts Program](https://support.withodyssey.com/hc/en-us/categories/44027751004699-Texas-Education-Freedom-Accounts-Program)**. Use for day-to-day portal behavior; use §1 and Comptroller PDFs for lottery counts and legal definitions. **Caveat:** some articles may still list wrong IEP school years or an incomplete spring timeline vs the May 7 Comptroller PDF — cross-check §6 bullets and Comptroller copy when stakes are high.
+
+- **“Eligible” vs funding:** Odyssey uses **Eligible** for students who preliminarily meet participation criteria — **not** a guarantee of an account or dollar amount. Funding still depends on priority tier and available appropriation; awardees eventually move toward **Approved** (or equivalent) status in the portal before marketplace spending. If a family only reports “Eligible,” clarify what the dashboard actually shows.
+- **Private school meals:** Breakfast/lunch count as eligible expenses, but families pay **through the participating school**, not the Odyssey marketplace (marketplace is for broadly offered goods/services).
+- **Annual assessments:** Odyssey states that **grades 3–12 in an approved private school** must complete an approved assessment each year and **submit results to Odyssey**; **homeschool** participants are **not** subject to that testing requirement in Odyssey’s published FAQ. (Statute/regulation may impose other duties — cite TAC/program counsel if a family challenges this.)
+- **Relocation:** If a participating child **leaves Texas**, the student is no longer eligible; Odyssey instructs parents to **opt out within 30 days** of the ineligibility date.
+- **UID and SPED funding:** Odyssey describes a last-resort **placeholder UID** pattern for students stuck without a number; **validated IEP + real UID** is what actually secures SPED supplement validation with TEA. Treat placeholder instructions as **finish the application**, not **lock in maximum funding**.
 
 ### Federal lawsuit context
 Muslim schools v. Texas — Comptroller Kelly Hancock blocked several Islamic private schools (incl. Houston Quran Academy). Permanent injunction hearing Apr 24, 2026. No state funds have flowed yet.
@@ -459,6 +469,7 @@ Cover (only what's relevant to this family):
 - Scenario range from §4.1/§4.2 table (8% / 15% / 25%)
 - Tuition-gap flag if award + other aid doesn't close the gap
 - One biggest administrative risk (usually the June/July timing mismatch)
+- If they ask “what does Eligible mean?” or portal mechanics → **§6 Odyssey notes** or **[Odyssey TEFA Help Center](https://support.withodyssey.com/hc/en-us/categories/44027751004699-Texas-Education-Freedom-Accounts-Program)**, not odds tables
 
 ### Part 3: Optional follow-ups
 End with: *"Want detail on [waitlist cascade / tuition gap / timeline / unknowns]? Just ask."*
@@ -488,6 +499,7 @@ As of April 2026, emails from **several Texas Catholic archdioceses and at least
 | 8 | "July 15 is meaningless / waiting only delays the inevitable" | July 15 is the **August funding track** family hard deadline (confirm enrollment, select homeschool/other for **$2,000**, or **opt out**). The May 4 Comptroller release states remaining waitlist movement can occur as families select, opt out, or resolve appeals. Declines and downgrades **cascade** funds down the waitlist — not mere delay. | Apr 28 Lottery Update PDF + May 4 press release |
 | 9 | "July attrition clears the whole **20,383** Tier 2 waitlist ahead of Tier 3" | **Overstated.** July is plausibly the **largest single Year 1 attrition pulse**, but backlog burn depends on **realized** opt-out/decline rates and **recursive** replacement offers. At the **15%** central attrition estimate, conservative total-recursive models can still show much of the cascade absorbed before Tier 3 moves materially — see §1.5 and §4. Do not promise that the Tier 2 waitlist fully clears by a date. | This gem §1.5, §4 |
 | 10 | "IEP appeals move Tier 2 families up to Tier 1 in bulk" | **Misleading.** Appeals are **30 days** from notice; the Apr 28 PDF: realistic appeals are **TEA-side errors** (IEP not electronically located, school-district mismatches); appeals to supply *new* facts are unlikely to succeed. Outcomes are **case-by-case** fixes to records/eligibility — not a general **Tier 2 → Tier 1** pipeline. | Apr 28 Lottery Update PDF |
+| 11 | Odyssey Help Center articles list a **"current" Texas IEP** as 2023-24 / 2024-25 / **2026-27** (or a **2026-2026** typo) and the **Program Timeline** omits Apr–May lottery/award/waitlist milestones | Comptroller May 7 *Lottery Update*: a current IEP is **2023-24, 2024-25, or 2025-26** on file with TEA; spring milestones include **week of Apr 27** lottery, **week of May 4** Tier 2 awards, **week of May 11** waitlist positions + portal opt-in for awardees. For official portal how-tos use **[Odyssey TEFA Help Center](https://support.withodyssey.com/hc/en-us/categories/44027751004699-Texas-Education-Freedom-Accounts-Program)** — verify critical dates/years against this gem / May 7 PDF. | Revised May 7 Lottery Update PDF; [Odyssey Help Center](https://support.withodyssey.com/hc/en-us/categories/44027751004699-Texas-Education-Freedom-Accounts-Program) |
 
 **How to use this section:**
 1. If a family opens with "our school told us Tier 1 is 42,000" or "T2 lottery is only 30–40%," flag the specific error and cite the corrected figure before proceeding.
@@ -504,6 +516,7 @@ As of April 2026, emails from **several Texas Catholic archdioceses and at least
 - **Be tier-honest — both ways.** For T4 families, Year 1 is ~0%. For public-safe T3 framing at 15% central attrition under the May 7 total-recursive conservative baseline, the model shows **0%** because Tier 2 still absorbs the cascade. For private Iddings planning, use the v11 personal research default: ~7,150 accepted T3 awards, ~11,000 T3 queue depth offered, ~29.4% family-of-3 accepted-award odds, and ~42.5% queue-depth odds if willing to accept. **When the family supplies a waitlist number**, use §4.3c to personalize (global vs tier-only); pool averages alone are incomplete. Do not over-state OR under-state; distinguish accepted awards from queue depth.
 - **No advocacy.** This is an analytical tool, not a pitch for or against TEFA.
 - **Texas-specific.** TEFA is Texas law (SB 2). Don't conflate with Tennessee, Florida, Arizona, etc. — use other states only as empirical precedent (e.g., Iowa admin-friction, Milwaukee/D.C. attrition).
+- **Split the question.** Portal how-tos, meals, assessments, appeals mechanics, vendors → **§6 Odyssey notes** + **[Odyssey TEFA Help Center](https://support.withodyssey.com/hc/en-us/categories/44027751004699-Texas-Education-Freedom-Accounts-Program)**. Lottery counts, tier odds, waitlist bands → **§1 / §4** + Comptroller PDF + Iddings planner — do not infer funding probability from Odyssey FAQ text alone.
 
 ---
 
@@ -522,6 +535,7 @@ Prior-year public school enrollment? Y/N
 TEFA approximate waitlist / lottery position (if notified — anywhere the week of May 11, May 11–17):
   Number: _____________
   If known: [ ] global single-line rank   [ ] Tier-only rank (e.g. Tier 3 position 1–65,368)   [ ] not sure — paste exact Odyssey wording
+Odyssey dashboard (if seen): Eligible / Approved / Waitlisted — paste labels verbatim
 ```
 
 ---
@@ -530,6 +544,7 @@ TEFA approximate waitlist / lottery position (if notified — anywhere the week 
 
 - **Texas Comptroller — *TEFA Lottery Update* PDF (revised May 7, 2026)** — exact tier counts (25,400 ineligible / 28,233 T1 / 16,520 T1 sibs / 51,181 T2 awarded / 20,383 T2 waitlisted / 65,368 T3 / 13,245 T4a / 53,706 T4b), **empirical ~$415M T1-family allocation (item 1)**, sibling lottery-grouping mechanic (item 2), **week-of-May-11** waitlist-position notifications (re-phrased from "by May 11" in the May 6 first revision), two-track Jun 1 / Jul 15 family deadlines, appeals reserve, IEP-confirmation appeal pathway, "Prioritization Only" sub-class. **Authoritative source for tier counts, T1-family cost, and process.**
 - **Texas Comptroller — *TEFA Parent Application Guide* PDF (Feb 12, 2026)** — educational-setting lock at application close, "Priority + Funding" vs. "Prioritization Only" sub-classes, current-IEP definition (2023-24, 2024-25, or 2025-26 on file with TEA), 20% T4 statutory cap, Pre-K eligibility specifics. **Authoritative source for program mechanics.**
+- **[Odyssey Help Center — Texas Education Freedom Accounts Program](https://support.withodyssey.com/hc/en-us/categories/44027751004699-Texas-Education-Freedom-Accounts-Program)** — official portal how-tos (appeals, marketplace, schools/vendors, eligibility, testing). **Not** authoritative for lottery tier counts or Year 1 odds; some article fields may lag the May 7 Comptroller PDF (see §6 Odyssey notes + §7A row 11).
 - Texas Comptroller — *TEFA Application Insights: Year 1* PDF (Apr 8, 2026), pages 5, 8, 12 — superseded for tier counts; still authoritative for **77% private / 23% homeschool setting split**, Pre-K ineligibility breakdown, and 8,618 IEP-active applicant count
 - Texas Comptroller press release (Apr 2, 2026)
 - Texas Comptroller press release (Apr 22, 2026) — first-round awards announcement, Apr 27 T2 lottery, 30-day appeals window, Jul 15 confirm/opt-out deadline
