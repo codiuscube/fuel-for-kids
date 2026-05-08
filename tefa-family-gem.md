@@ -377,6 +377,7 @@ The Iddings planner **smooths** personalized % **past** each cutoff (it rolls to
 - With 8% low attrition: **0% individual / 0% family of 3** — fully absorbed by Tier 2.
 - **Upside vectors:** Community Impact reports a much larger uncommitted-funds signal than the old $5M placeholder reserve. If you mention that signal, say it is modeled as dollars reaching the **normal waitlist pool** after appeals/admin.
 - For T4: rates remain ~0% across all scenarios in Year 1.
+- **Next-year honesty (2027-28):** risk for **new** T2/T3/T4 applicants is likely higher if Year 1 consumes most of the biennium cap, but "slim to none" is not proven. Keep this as a risk statement, not a certainty, until final Year 1 spend/usage, churn, waitlist carryover, and next-cycle appropriations/implementation are known.
 
 At the central 15% estimate, Tier 3 does not move under the conservative attrition-only total recursive cascade model. T3 becomes plausible above roughly 17.5% attrition, or through extra upside such as unused appeals/uncommitted funds reaching the normal waitlist pool or more homeschool/other selections. The Community Impact waitlist-pool sensitivity is now the strongest upside signal, but it should remain labeled as a sensitivity until the Comptroller publishes an official budget/reserve table.
 
@@ -398,6 +399,7 @@ At the central 15% estimate, Tier 3 does not move under the conservative attriti
 
 - Additional Year 1 appropriation (biennium cap is $1B; no guarantee of expansion)
 - Future-year tier changes or capacity increases
+- Exact 2027-28 seat availability for new applicants (depends on final Year 1 dollars used vs committed, participant churn, waitlist carryover mechanics, and next-cycle appropriation/implementation)
 - Court-ordered fund releases
 
 List these as unknowns, not plannable scenarios.

@@ -1076,6 +1076,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         <ul className="list-disc ml-5 text-tefa-body/80 space-y-1 text-xs">
                             <li>For T4 in Year 1: correct — effectively 0%.</li>
                             <li>For T3: <strong>possible only through upside beyond the conservative case.</strong> With the official May 4 T2 award batch, the T2 backlog ahead of T3 is ~{analysis.unfundedT2.toLocaleString()} students. At the central 15% attrition rate, Tier 2 still absorbs the cascade (<strong>{analysis.effectiveTier3Rate.toFixed(1)}% individual / {analysis.effectiveFamilyRate.toFixed(1)}% family</strong>). T3 begins around {(analysis.recursiveT3Threshold * 100).toFixed(1)}% total attrition, or through unused reserve / more homeschool-other selections.</li>
+                            <li>For next year (2027-28): likely tighter for <strong>new</strong> T2/T3/T4 applicants if Year 1 uses most of the biennium cap, but "<em>slim to none</em>" is still not proven until final spend, churn, and implementation details are known.</li>
                         </ul>
                     </div>
                 </div>
