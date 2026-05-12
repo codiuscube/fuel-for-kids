@@ -321,6 +321,20 @@ For private planning, use a more nuanced default than the public-safe single-att
 | Late replacement-offer decline | **35%** |
 | Net reserve reaching normal waitlist | **$25M** |
 
+**What each rate is applied to.** The three decline rates apply to different stages of the cascade — they are **not** layered or stacked on the same pool:
+
+- **15% / 18%** is the decline rate on the **originally awarded families** (~44,753 T1-family + 51,181 T2) deciding by July 15 whether to opt in at all.
+- **35%** is the decline rate on **each subsequent replacement offer** made from the waitlist after an originally awarded family declines. Per replacement offer: ~65% accept (cascade stops there), ~35% decline (the dollars roll to the next waitlisted family and 35% applies again to that offer).
+
+This is what produces queue depth without consuming dollars: each declined replacement offer returns its dollars to the pool to be re-offered deeper into the queue, while still consuming a queue position.
+
+**Why 35% specifically.** Two anchors:
+
+1. **Historical band.** 35% sits inside the empirical late-decline range for comparable voucher/ESA programs: Milwaukee Parental Choice 30% (ERIC ED472999), Virginia Pre-K Initiative 20–34%, NYC Voucher Yr 3 38%. See §2.1.
+2. **TEFA-specific calendar friction.** Those historical programs did not measure the specific stack TEFA imposes: July 15 family-side decision, July 31 school-side enrollment confirmation, August school start, already-paid July private-school deposits, and locked public-school seats for families who didn't initially expect a TEFA award. Each subsequent replacement offer lands deeper into that calendar, so 35% as a **flat per-replacement-offer estimate** likely understates the true rising rate — May/June replacement offers probably decline at lower rates, late-July/August offers at higher rates. We don't have the granularity to model per-offer decline rates separately, so 35% is used as a defensible flat anchor across all replacement offers.
+
+**What 35% is not.** It is not a global decline rate layered on top of the 15/18% first-wave declines. It is not a forecast of the realized rate, which depends on Odyssey's still-unpublished acceptance window length, recycle speed, and the share of total attrition that occurs after July 15. The number is a **planning anchor** based on historical precedent + TEFA-specific calendar friction, not a precise prediction.
+
 This model uses dollars and queue depth instead of treating every T2 waitlist position as a funded seat. A T2 waitlisted family that declines consumes queue depth but not award dollars, so high late-offer decline can move the queue deeper even if final accepted awards are lower.
 
 Approximate personal-default result:
