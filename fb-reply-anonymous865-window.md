@@ -12,6 +12,8 @@ So if Odyssey runs a 24–72 hour window, I'd expect decline rates **above 35%**
 
 The honest answer is we won't know until they publish the window. But the calendar pressure cuts toward higher attrition on late offers, not lower — which if anything makes the 35% assumption conservative rather than aggressive.
 
+Two-part summary on where 35% comes from: it sits inside the historical band (Milwaukee 30%, Virginia Pre-K 20–34%, NYC Voucher Yr 3 38%), and TEFA's specific calendar — July 15 family decision, July 31 school verification, August school start — adds friction those programs didn't measure. That's the case for 35%, and the case for why a tighter Odyssey window would likely push it higher.
+
 ---
 
 ## Notes
@@ -30,3 +32,35 @@ The honest answer is we won't know until they publish the window. But the calend
 - ⚠️ **Virginia Pre-K 20–34%** — internal docs use 20–34%; original FB post used 25–34%. Reply uses the 20–34% canonical range.
 - ✅ **D.C. Opportunity Scholarship 14.3%** — Hoover Institution, confirmed.
 - ⚠️ **ISD August start dates** — softened from "first week of August" to "early-to-mid August" since most Texas ISDs start Aug 10–20; some start earlier. Avoids overclaim.
+
+---
+
+## Round 2: response to Anonymous 865's follow-up (what subset does 35% apply to?)
+
+**Their challenge:** "I still do not understand what exact base figure the '35% late replacement decline' is being applied to... if 15–18% attrition is already being modeled globally, what specific subset of seats is then assumed to experience the additional 35% late-offer decline?"
+
+### Draft reply
+
+Yeah fair question, I should've been clearer. The 35% isn't stacked on top of the 15-18% — they apply to different things.
+
+The 15% / 18% is the decline rate on the originally awarded families (~42,642 T1, ~51,181 T2) — the ones deciding by July 15 whether to opt in at all. When some decline, their dollars roll to the next family on the waitlist. That replacement offer is where 35% applies, and the same rate applies to each subsequent replacement offer — ~65% accept and stop, ~35% pass it down the line.
+
+You're right that 35% as a single number papers over what's almost certainly a rising rate over time — May/June replacement offers are probably easier to accept than late July/August ones because families haven't committed yet. I don't have the granularity to model that more precisely, so I use it as a flat estimate.
+
+Why 35% specifically? It sits inside the historical band (Milwaukee 30%, Virginia Pre-K 20–34%, NYC Voucher Yr 3 38%), and TEFA's specific calendar — July 15 family decision, July 31 school verification, August school start — adds friction those programs didn't measure. That's also why I'd argue a tighter Odyssey window pushes it higher, not lower.
+
+On the no-reset point — you're right, Odyssey doesn't procedurally reset anything. The friction isn't structural, it's the families themselves. Each later replacement offer has fewer families able to say yes because they've already locked in elsewhere.
+
+So I believe 35% to be a defensible anchor for replacement-offer decline, not a forecast. Window length, recycle speed, late-share of attrition — all genuinely unknown.
+
+The post and estimates give direction to parents in tough spots trying to make tough decisions, not to be taken as a forecast or guarantee.
+
+### Notes
+
+- ~290 words.
+- Core concession: 35% is an anchor, not a precise forecast. Engages the commenter's sharper challenge honestly.
+- Core clarification: 15–18% applies to originally awarded families, 35% applies to replacement offers from the waitlist. Per `tefa-family-gem.md:317–324` personal-default model.
+- Two-part "why 35% specifically" paragraph: historical band (Milwaukee/VA/NYC) + TEFA-specific calendar friction. Weaves back to the Round 1 window argument.
+- Concedes "no reset" framing: Odyssey doesn't procedurally reset; the friction is the families themselves locking in elsewhere.
+- Avoids "wave" jargon — uses natural language ("originally awarded families" vs "replacement offers").
+- Conversational tone matched to Cody's voice rather than AI-house-style.
