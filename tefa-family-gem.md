@@ -149,6 +149,8 @@ With the planner-default **$50M** waitlist pool, Tier 3 no longer waits for the 
 
 *Sources: ERIC ED472999 (Milwaukee), AEA (NYC), Hoover Institution (D.C.), VA Budget Bills, Kanoria (queueing theory).*
 
+**Utah "Fits All" (UFA) signal — directional, not a transferable rate.** Utah Y1 (2024–25): ~$82.5M flat-$8k → 10,000 awarded vs. 27,270 demand (17,270 waitlist). Utah Y2 (2025–26): ~$100M tiered → ~14,635 active vs. ~12,000 persistent waitlist tail. Net seat vacancy reported as near-zero because the program manager (Odyssey) backfills immediately from waitlist as administrative forfeitures occur (failed re-enrollment audits, 5-day cross-enroll disenroll window, missed 30-day opt-in). This *corroborates* TEFA's 15% central case as a "capacity-exhaustion-with-immediate-backfill" rate rather than a voluntary-decline rate — but the underlying retention-from-Y1 figure isn't disclosed, so Utah does not supply a rate that can replace the D.C./Milwaukee anchors.
+
 ### 2.2 Scenario range used in the planner
 
 | Scenario | Rate | Rationale |
