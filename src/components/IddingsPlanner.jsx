@@ -26,6 +26,16 @@ import {
 
 const VALID_TABS = ['dashboard', 'payments', 'timeline', 'analysis'];
 
+// Comptroller bucket notification we received. Single source of truth — every
+// piece of copy below reads from this. Update here if details change.
+const IDDINGS_BUCKET = {
+  notifiedOn: '2026-05-13',
+  lo: 30001,
+  hi: 50000,
+  label: '30,001 – 50,000',
+  sourceLabel: 'Comptroller approximate-range notification',
+};
+
 const IddingsPlanner = () => {
   const { tab } = useParams();
   const navigate = useNavigate();
@@ -44,7 +54,8 @@ const IddingsPlanner = () => {
   const INELIGIBILITY_RATE = INELIGIBLE_APPLICATIONS / TOTAL_APPLICATIONS;
   const [attritionRate, setAttritionRate] = useState(0.15); // Est. 15% of lottery winners don't follow through
   const [reserveWaitlistShare, setReserveWaitlistShare] = useState(0.25); // % of inferred $100M+ pool reaching normal waitlist
-  const [t3WaitlistRankInput, setT3WaitlistRankInput] = useState(''); // Tier 3 rank when notified (optional)
+  const [t3WaitlistRankInput, setT3WaitlistRankInput] = useState(String(IDDINGS_BUCKET.lo)); // Seeded at the band's lower bound (worst-case anchor)
+  const [bandRank, setBandRank] = useState(IDDINGS_BUCKET.lo); // Band slider value (drives the input)
 
   // Student Data
   const students = [
@@ -100,7 +111,7 @@ const IddingsPlanner = () => {
     { item: "NBCA Financial Aid", status: "Granted ($16,200)", date: "March 31", type: "success", funding: "Tuition Credit" },
     { item: "NBCA Scholarship", status: "Pending (applications complete)", date: "By May 31", type: "pending", funding: "Tuition Credit" },
     { item: "ACE Scholarships", status: "Processed; awaiting decision", date: "Reviewed Mar 7; decision by end of June", type: "pending", funding: "Optional Tuition Scholarship" },
-    { item: "TEFA Grant (ESA)", status: "Waitlisted (Tier 3) — Odyssey: Eligible (3/3)", date: "Position notification expected by end of this week (May 15); week-of-May-11 target slipped per Comptroller cadence", type: "pending", funding: "Odyssey ESA Account" },
+    { item: "TEFA Grant (ESA)", status: `Waitlisted (Tier 3) — band ${IDDINGS_BUCKET.label}`, date: `Comptroller notified us ${IDDINGS_BUCKET.notifiedOn}: bucket ${IDDINGS_BUCKET.label} (Tier 3 portion ≈9,618–29,617). Past both modeled cutoffs — Year 1 funded seat unlikely barring large cascades.`, type: "pending", funding: "Odyssey ESA Account" },
   ];
 
   // Checklist Data
@@ -475,6 +486,26 @@ const IddingsPlanner = () => {
     return Math.floor(n);
   })();
 
+  // Pure: returns funded% / offer% for a valid T3 global rank using the shared
+  // exponential decay past each modeled cutoff. Same decay constants as before.
+  const computeT3PctForRank = (g, a, pd) => {
+    const t2w = a.unfundedT2;
+    const t3Local = g - t2w;
+    const { t3Awards, t3QueueDepth, t3AcceptedRate, t3QueueDepthRate } = pd;
+    const poolF = t3AcceptedRate / 100;
+    const poolQ = t3QueueDepthRate / 100;
+    const decayFundedPerRank = 0.014;
+    const decayOfferPerRank = 0.012;
+    const clampPct = (x) => Math.min(100, Math.max(0, x));
+    const fundedPct = t3Local <= t3Awards
+      ? 100
+      : clampPct(poolF * 100 + (100 - poolF * 100) * Math.exp(-decayFundedPerRank * (t3Local - t3Awards)));
+    const offerPct = t3Local <= t3QueueDepth
+      ? 100
+      : clampPct(poolQ * 100 + (100 - poolQ * 100) * Math.exp(-decayOfferPerRank * (t3Local - t3QueueDepth)));
+    return { t3Local, fundedPct, offerPct };
+  };
+
   const t3RankPersonalized = (() => {
     if (parsedT3WaitlistRank == null) return null;
     const g = parsedT3WaitlistRank;
@@ -513,44 +544,13 @@ const IddingsPlanner = () => {
       };
     }
 
-    const t3Local = g - t2w;
-    const {
-      t3Awards,
-      t3QueueDepth,
-      t3AcceptedRate,
-      t3QueueDepthRate,
-      t3AcceptedFamilyRate,
-      t3QueueDepthFamilyRate,
-    } = personalDefault;
-    const poolF = t3AcceptedRate / 100;
-    const poolQ = t3QueueDepthRate / 100;
+    const { t3Local, fundedPct: perChildFundedPct, offerPct: perChildOfferPct } =
+      computeT3PctForRank(g, analysis, personalDefault);
+    const { t3Awards, t3QueueDepth, t3AcceptedRate, t3QueueDepthRate, t3AcceptedFamilyRate, t3QueueDepthFamilyRate } = personalDefault;
     const inFunded = t3Local <= t3Awards;
     const inOffer = t3Local <= t3QueueDepth;
     const globalFundedCutoff = t2w + t3Awards;
     const globalOfferCutoff = t2w + t3QueueDepth;
-
-    // Smooth % (no hard 100→0 cliff): past each cutoff, decay exponentially toward the pool-average rate.
-    const decayFundedPerRank = 0.014;
-    const decayOfferPerRank = 0.012;
-    const clampPct = (x) => Math.min(100, Math.max(0, x));
-
-    let perChildFundedPct;
-    if (t3Local <= t3Awards) {
-      perChildFundedPct = 100;
-    } else {
-      perChildFundedPct = clampPct(
-        poolF * 100 + (100 - poolF * 100) * Math.exp(-decayFundedPerRank * (t3Local - t3Awards))
-      );
-    }
-
-    let perChildOfferPct;
-    if (t3Local <= t3QueueDepth) {
-      perChildOfferPct = 100;
-    } else {
-      perChildOfferPct = clampPct(
-        poolQ * 100 + (100 - poolQ * 100) * Math.exp(-decayOfferPerRank * (t3Local - t3QueueDepth))
-      );
-    }
 
     // Sibling rule with a single household rank: same as per-child (all-or-nothing).
     const familyFundedPct = perChildFundedPct;
@@ -575,6 +575,14 @@ const IddingsPlanner = () => {
       poolFamilyAccepted: t3AcceptedFamilyRate,
       poolFamilyQueue: t3QueueDepthFamilyRate,
     };
+  })();
+
+  // Snapshot of the Iddings band endpoints. Used by the band slider to show
+  // the plausibility spread across the 30,001–50,000 range.
+  const bandSnapshot = (() => {
+    const { fundedPct: fundedLo, offerPct: offerLo } = computeT3PctForRank(IDDINGS_BUCKET.hi, analysis, personalDefault); // worst case in band
+    const { fundedPct: fundedHi, offerPct: offerHi } = computeT3PctForRank(IDDINGS_BUCKET.lo, analysis, personalDefault); // best case in band
+    return { fundedLo, fundedHi, offerLo, offerHi };
   })();
 
   // Tier 2 funding rate for display
@@ -653,15 +661,15 @@ The contribution amount we listed represents the maximum we can sustainably budg
     { date: 'Apr 15', day: 'Wed', isoDate: '2026-04-15', event: 'ACE Scholarship Deadline', type: 'ace', desc: 'Closes 11:59 PM (Tax Day).', funding: 'Deadline' },
     { date: 'Apr 22', day: 'Wed', isoDate: '2026-04-22', event: 'TEFA Tier 1 Notifications Begin — 44,753 Awards', type: 'tefa', desc: 'Per the Apr 22 press release and revised May 7 Lottery Update PDF: 44,753 T1-family students are awarded — 28,233 Tier 1 students (disability + ≤500% FPL) plus 16,520 of their siblings pulled in by the sibling rule. Approximately half previously attended a public school. 30-day appeal window opens from notice receipt — adjustments only on school-district or IEP documentation.', funding: 'Award or Waitlist Position' },
     { date: 'Apr 24', day: 'Fri', isoDate: '2026-04-24', event: 'Federal Injunction Hearing', type: 'tefa', desc: 'Key hearing in Muslim schools v. Texas. Court decides whether to maintain, modify, or dissolve the injunction blocking Comptroller Hancock from excluding Islamic schools. TEFA funding timeline depends on outcome.', funding: 'Court Date' },
-    { date: 'Apr 27', day: 'Mon', isoDate: '2026-04-27', event: 'TEFA Tier 2 Lottery + Waitlist Assignment', type: 'tefa', desc: 'Per Apr 22 press release: the Comptroller conducts a lottery during the week of April 27 for Tier 2 award **order** and assigns **sequential waitlist positions** to unfunded Tier 2 and to all of Tiers 3–4 in the same draw. **Tier 2 award emails / portal updates begin the week of May 4** (next timeline row). **Approximate waitlist position for all tiers** was originally targeted for the **week of May 11** — as of May 12 that has slipped; now expected by **end of this week (May 15)**.', funding: 'Lottery + Ranked Waitlist' },
+    { date: 'Apr 27', day: 'Mon', isoDate: '2026-04-27', event: 'TEFA Tier 2 Lottery + Waitlist Assignment', type: 'tefa', desc: `Per Apr 22 press release: the Comptroller conducts a lottery during the week of April 27 for Tier 2 award **order** and assigns **sequential waitlist positions** to unfunded Tier 2 and to all of Tiers 3–4 in the same draw. **Tier 2 award emails / portal updates begin the week of May 4** (next timeline row). **Approximate waitlist position for all tiers** was originally targeted for the **week of May 11**; it slipped to mid-May and arrived ${IDDINGS_BUCKET.notifiedOn} as a bucket range, not a precise rank.`, funding: 'Lottery + Ranked Waitlist' },
     { date: 'May 04', day: 'Mon', isoDate: '2026-05-04', event: 'TEFA Tier 2 Awards Begin — 51,181 Tier 2 Awards', type: 'tefa', desc: 'May 7 revised Lottery Update PDF gives the exact Tier 2 result: 51,181 Tier 2 students awarded and 20,383 Tier 2 students waitlisted. Award notifications began the week of May 4. Awarded families see funding amounts in the portal and must confirm private school enrollment, select homeschool/other ($2,000), or opt out by July 15.', funding: 'Tier 2 Award Batch' },
-    { date: 'May 11', day: 'Mon', isoDate: '2026-05-11', event: 'TEFA Waitlist Notifications + Opt-In Portal Opens', type: 'tefa', desc: 'Per the revised May 7 Lottery Update PDF: the week of May 11, the program notifies students in all tiers of their approximate waitlist position. The Odyssey portal also flips this week to allow parents of awarded students to "opt in" to accept the award and select their participating private school. **Update May 12, 2026:** the May 11 notification slipped. Odyssey continues to show all 3 Iddings students as "Eligible" with the standard waitlist message; approximate position now expected by end of this week (May 15). Per the May 12 Waitlist Information PDF, positions arrive as **bucket ranges** (1–1,000 / 1,001–2,000 / … / 100,001+), with precise numbers only for higher-list families. This will still be the sharpest available TEFA signal before NBCA scholarship awards are finalized by May 31.', funding: 'Waitlist Position + Scholarship Input' },
+    { date: 'May 11', day: 'Mon', isoDate: '2026-05-11', event: 'TEFA Waitlist Notifications + Opt-In Portal Opens', type: 'tefa', desc: `Per the revised May 7 Lottery Update PDF: the week of May 11, the program notifies students in all tiers of their approximate waitlist position. **Update ${IDDINGS_BUCKET.notifiedOn}:** bucket received — **${IDDINGS_BUCKET.label}**. Odyssey continues to show all 3 Iddings students as "Eligible" with the standard waitlist message; precise rank within the band is not provided. Per the May 12 Waitlist Information PDF, positions arrive as **bucket ranges** (1–1,000 / 1,001–2,000 / … / 100,001+), with precise numbers only for higher-list families. This is the sharpest TEFA signal we will have before NBCA scholarship awards finalize by May 31 and before the Jun 30 NBCA withdrawal deadline.`, funding: 'Waitlist Position + Scholarship Input' },
     { date: 'May 15', day: 'Fri', isoDate: '2026-05-15', event: 'NBCA Financial Aid / Scholarship Application Deadline', type: 'nbca', desc: 'Per Nanette Jones (Apr 28), Iddings financial aid and scholarship applications are in order, with all documents and recommendations uploaded. No further action needed unless the committee requests clarification.', funding: 'Application Window Closes' },
     { date: 'May 22', day: 'Fri', isoDate: '2026-05-22', event: 'T1 Appeals Window Closes (est.)', type: 'tefa', desc: '30 days after the first Apr 22 notifications. Per the Apr 22 press release: "Parents may appeal funding determinations within 30 days of receiving their notice; however, adjustments will be made only based on school district and Individualized Education Program documentation." Narrow relevance to Iddings — would only matter if a child obtained a qualifying IEP (moving from T3 to T1).', funding: 'Appeal Deadline' },
-    { date: 'May 31', day: 'Sun', isoDate: '2026-05-31', event: 'NBCA Scholarship Awards Finalized (est.)', type: 'nbca', desc: 'Per NBCA (Nanette Jones / Michelle Leidy, Apr 28): financial aid and NBCA scholarship awards are expected by May 31. TEFA waitlist position (expected by May 15; May 11 target slipped) should be forwarded if useful before the committee finalizes scholarship decisions.', funding: 'Credited to Tuition' },
+    { date: 'May 31', day: 'Sun', isoDate: '2026-05-31', event: 'NBCA Scholarship Awards Finalized (est.)', type: 'nbca', desc: `Per NBCA (Nanette Jones / Michelle Leidy, Apr 28): financial aid and NBCA scholarship awards are expected by May 31. TEFA waitlist bucket (${IDDINGS_BUCKET.label}, received ${IDDINGS_BUCKET.notifiedOn}) can be forwarded to the committee — band sits past the modeled funded/offer-depth cutoffs, so NBCA need should be planned assuming zero TEFA in Year 1.`, funding: 'Credited to Tuition' },
     { date: 'Jun 01', day: 'Mon', isoDate: '2026-06-01', event: 'TEFA July-Funding Track: Family Opt-In Deadline', type: 'tefa', desc: 'Per the Apr 28 Lottery Update PDF: parents on the July 1 funding track must opt in and select their participating private school by this date. Awarded families who miss this deadline shift to the August-funding track (Jul 15 family deadline). Non-confirmations begin trickling waitlist movement — but the bulk arrives later.', funding: 'July Track Family Deadline' },
-    { date: 'Jun 15', day: 'Mon', isoDate: '2026-06-15', event: 'TEFA July-Funding Track: School Confirms Enrollment', type: 'tefa', desc: 'Per the Apr 28 Lottery Update PDF: participating private schools must confirm enrollment through the program portal by this date for July 1 funding. Key trigger for waitlist cascade — the state now formally knows which Jun 1 selections were completed vs. which fell through. Waitlisted families should know their approximate position by May 15 (May 11 target slipped); this is when actual movement picks up.', funding: 'July Track School Lock-In' },
-    { date: 'Jun 16', day: 'TBD', isoDate: '2026-06-16', event: 'TEFA Waitlist Movement Accelerates (est.)', type: 'tefa', desc: 'After Jun 15 school confirmations on the July-funding track, unfilled spots cascade down the waitlist (T2 backfill first, then T3). Waitlisted families should know their approximate position by May 15 (May 11 target slipped). Biggest cascade event will be post-Jul 15 opt-outs on the August-funding track.', funding: 'Waitlist Movement' },
+    { date: 'Jun 15', day: 'Mon', isoDate: '2026-06-15', event: 'TEFA July-Funding Track: School Confirms Enrollment', type: 'tefa', desc: `Per the Apr 28 Lottery Update PDF: participating private schools must confirm enrollment through the program portal by this date for July 1 funding. Key trigger for waitlist cascade — the state now formally knows which Jun 1 selections were completed vs. which fell through. Our ${IDDINGS_BUCKET.label} band sits past the modeled cutoffs, so meaningful movement for us depends on a much larger cascade than this date typically produces.`, funding: 'July Track School Lock-In' },
+    { date: 'Jun 16', day: 'TBD', isoDate: '2026-06-16', event: 'TEFA Waitlist Movement Accelerates (est.)', type: 'tefa', desc: `After Jun 15 school confirmations on the July-funding track, unfilled spots cascade down the waitlist (T2 backfill first, then T3). For our ${IDDINGS_BUCKET.label} band the biggest realistic upside event is the post-Jul 15 opt-outs on the August-funding track — and that falls **after** the Jun 30 NBCA withdrawal deadline.`, funding: 'Waitlist Movement' },
     { date: 'Jun 30', day: 'Tue', isoDate: '2026-06-30', event: 'ACE Award Decisions Expected', type: 'ace', desc: 'Per ACE email on Mar 7: scholarship award decisions will be made and notified by the end of June 2026.', funding: 'Paid directly to School if awarded' },
     { date: 'Jun 30', day: 'Tue', isoDate: '2026-06-30', event: 'NBCA Withdrawal Deadline', type: 'nbca', desc: 'Can withdraw penalty-free before this date per Michelle Leidy. Assume July tuition obligation begins if not withdrawn by June 30 unless NBCA clarifies otherwise. Critical tension: June 30 falls ~2 weeks before the Jul 15 TEFA opt-out/confirmation deadline — meaning the NBCA withdrawal decision is made BEFORE the main waitlist-cascade event.', funding: 'N/A' },
     { date: 'Jul 06', day: 'Mon', isoDate: '2026-07-06', event: 'First FACTS Tuition Payment', type: 'nbca', desc: 'Current FACTS schedule shows $3,030.65 due. Nanette confirmed the $92.43 monthly transaction fee applies only to debit/credit cards; checking/savings automatic payments avoid the card usage fee.', funding: 'Tuition Draft' },
@@ -964,7 +972,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     ))}
                 </div>
                 <p className="text-xs text-tefa-body/70 bg-white rounded p-3 border border-amber-200">
-                    <strong>Why no number yet?</strong> Per the May 12 TEFA Waitlist Information PDF: <em>"If a student is on the waitlist, their status will continue to appear as 'eligible' in the program platform. No funding amount will be visible."</em> The week-of-May-11 ranked-position notification slipped — approximate positions are now expected by end of this week (May 15).
+                    <strong>We have a bucket, not a number.</strong> Per the May 12 TEFA Waitlist Information PDF, only ranks ≤ 25,000 receive precise positions; we received <strong>{IDDINGS_BUCKET.label}</strong> on {IDDINGS_BUCKET.notifiedOn}. Odyssey continues to show all 3 Iddings students as <em>"Eligible"</em> with the standard waitlist message — no funding amount is visible.
                 </p>
             </div>
 
@@ -978,7 +986,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                 </p>
                 <ul className="text-xs text-tefa-body/80 space-y-1 list-disc pl-5">
                     <li><strong>May 4-6:</strong> T2 award notifications go out; awarded families see funding amounts in the portal.</li>
-                    <li><strong>Week of May 11 (slipped → by May 15):</strong> all tiers (incl. Iddings/T3) were <em>supposed</em> to be notified of approximate waitlist position. As of May 12 no position has been issued; Comptroller now expected to send approximate-range notifications by end of this week. Odyssey portal already opens for awarded families to opt in.</li>
+                    <li><strong>Week of May 11 → May 15:</strong> notification received {IDDINGS_BUCKET.notifiedOn} as <strong>{IDDINGS_BUCKET.label}</strong> (Tier 3 portion ≈9,618–29,617). All three Iddings students share this band under the household-rank rule. Odyssey portal continues to open for awarded families to opt in.</li>
                     <li><strong>Jun 1 / Jun 15:</strong> family opt-in / school confirmation for the <em>July 1 funding</em> track (a specific date).</li>
                     <li><strong>Jul 15 / Jul 31:</strong> family opt-in / school confirmation for the <em>August funding</em> track <span className="bg-amber-200 text-amber-900 px-1.5 rounded font-semibold">(PDF gives no specific date — just "in August")</span> — Jul 15 opt-outs are the largest cascade event of Year 1.</li>
                     <li><strong>Reserve budget:</strong> the program holds funds for successful appeals; unused reserve cascades to the next available waitlisted students.</li>
@@ -988,14 +996,14 @@ The contribution amount we listed represents the maximum we can sustainably budg
             {/* TEFA Program Status Card */}
             <div className="bg-tefa-light p-6 rounded-lg shadow-md border-2 border-tefa-navy">
                 <h2 className="text-xl font-bold flex items-center gap-2 text-tefa-navy mb-3">
-                    <Scale size={20} /> TEFA Program Status: Tier 3 Waitlisted
+                    <Scale size={20} /> TEFA Program Status: Tier 3 Waitlisted · band {IDDINGS_BUCKET.label}
                 </h2>
                 <p className="text-sm text-tefa-body mb-4">
                     <strong>{TOTAL_APPLICATIONS.toLocaleString()} students</strong> applied in Year 1 ({ELIGIBLE_APPLICATIONS.toLocaleString()} eligible per the Apr 28 Lottery Update PDF). <strong>{analysis.firstRoundAwards.toLocaleString()} first-round awards</strong> (T1 + siblings) were followed by <strong>{analysis.officialT2Awards.toLocaleString()}+ Tier 2 awards</strong> in the May 4 batch. Total awards to date are therefore <strong>{analysis.capacity.toLocaleString()}+</strong>. Tier 3 (Iddings) remains <strong>waitlisted</strong>; movement now depends on opt-outs, homeschool/other selections, missed confirmations, and appeals reserve releases.
                 </p>
                 <div className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-tefa-gold/40 bg-tefa-gold/10 px-3 py-2.5 text-xs text-tefa-navy">
-                  <span className="font-bold">Waitlist rank (when you have it):</span>
-                  <span>Open the <button type="button" onClick={() => navigate('/analysis')} className="font-bold underline decoration-tefa-navy/60 hover:text-tefa-green">Analysis</button> tab — first gold card: enter your <strong className="whitespace-nowrap">global waitlist rank</strong> (T3 is ≈ {(analysis.unfundedT2 + 1).toLocaleString()}–{(analysis.unfundedT2 + analysis.demandT3).toLocaleString()} in this model); the <strong>% chances</strong> below use that rank. <em>The Comptroller may issue only an approximate bucket (e.g. 25,001–30,000) — if so, enter the lower bound as a worst-case anchor.</em></span>
+                  <span className="font-bold">Waitlist rank received:</span>
+                  <span>Bucket <strong>{IDDINGS_BUCKET.label}</strong> ({IDDINGS_BUCKET.notifiedOn}) — Tier 3 portion ≈ {(IDDINGS_BUCKET.lo - analysis.unfundedT2).toLocaleString()}–{(IDDINGS_BUCKET.hi - analysis.unfundedT2).toLocaleString()}. Open the <button type="button" onClick={() => navigate('/analysis')} className="font-bold underline decoration-tefa-navy/60 hover:text-tefa-green">Analysis</button> tab — the band slider on the first gold card shows the plausibility spread across this range.</span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm mb-4">
                     <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
@@ -1011,7 +1019,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
                         <div className="text-xs text-tefa-body/50 font-medium">Iddings Tier</div>
                         <div className="font-bold text-tefa-gold text-lg">Tier 3</div>
-                        <div className="text-[10px] text-tefa-body/40">200-500% FPL (waitlisted)</div>
+                        <div className="text-[10px] text-tefa-body/40">200-500% FPL · band {IDDINGS_BUCKET.label}</div>
                     </div>
                     <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
                         <div className="text-xs text-tefa-body/50 font-medium">Initial Lottery</div>
@@ -1079,7 +1087,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         ))}
                     </div>
                     <p className="text-xs text-tefa-body/70">
-                        If you receive only a bucket, open the <button type="button" onClick={() => navigate('/analysis')} className="font-bold underline decoration-tefa-navy/60 hover:text-tefa-green">Analysis</button> tab — first gold card — and enter the <strong>lower bound</strong> as a worst-case anchor for the % chances.
+                        We received bucket <strong>{IDDINGS_BUCKET.label}</strong> on {IDDINGS_BUCKET.notifiedOn}. Open the <button type="button" onClick={() => navigate('/analysis')} className="font-bold underline decoration-tefa-navy/60 hover:text-tefa-green">Analysis</button> tab — the band slider on the first gold card walks through the worst-case (50,000) and best-case (30,001) plausibility.
                     </p>
                 </div>
 
@@ -1215,13 +1223,13 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     </div>
                     <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-amber-300">
                         <span className="text-tefa-body/60 font-medium">TEFA Notification</span>
-                        <span className="font-bold text-amber-700 text-lg">Waitlist Position: Pending (by May 15)</span>
-                        <span className="text-xs text-tefa-body/40 hidden sm:block">May 11 target slipped; Comptroller now expected to issue approximate positions by end of this week. Odyssey shows all 3 kids as "Eligible — waitlisted."</span>
+                        <span className="font-bold text-amber-700 text-lg">Waitlist Position: {IDDINGS_BUCKET.label}</span>
+                        <span className="text-xs text-tefa-body/40 hidden sm:block">Bucket received {IDDINGS_BUCKET.notifiedOn}; precise rank within the band is not provided. Odyssey shows all 3 kids as "Eligible — waitlisted."</span>
                     </div>
                     <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-navy/10">
                         <span className="text-tefa-body/60 font-medium">NBCA Scholarship</span>
                         <span className="font-bold text-tefa-navy text-lg">By May 31</span>
-                        <span className="text-xs text-tefa-body/40 hidden sm:block">TEFA waitlist update (expected by May 15) feeds review</span>
+                        <span className="text-xs text-tefa-body/40 hidden sm:block">TEFA bucket ({IDDINGS_BUCKET.label}) already known — review proceeds on zero-TEFA assumption</span>
                     </div>
                     <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-navy/10">
                         <span className="text-tefa-body/60 font-medium">Withdraw penalty-free by</span>
@@ -1281,7 +1289,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                     <Briefcase size={10}/> Paid to Digital Wallet
                                 </div>
                                 <div className="text-[10px] text-tefa-red mt-1 flex items-center gap-1">
-                                    <AlertCircle size={10}/> Tier 3 waitlisted — Apr 28 PDF lifts T3 odds materially
+                                    <AlertCircle size={10}/> T3 band {IDDINGS_BUCKET.label} — past modeled cutoffs; Year 1 TEFA unlikely; Jul 15 cascade = upside
                                 </div>
                             </div>
                             <label className="relative inline-flex items-center cursor-pointer mt-1">
@@ -1360,7 +1368,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                 Credited to Tuition
                           </div>
                           <div className="text-[10px] text-amber-600 mt-1 font-medium">
-                                NBCA expects awards by May 31; TEFA waitlist position (expected by May 15; May 11 target slipped) informs need
+                                NBCA expects awards by May 31; TEFA bucket {IDDINGS_BUCKET.label} (received {IDDINGS_BUCKET.notifiedOn}) → plan need on a zero-TEFA Year 1 basis
                           </div>
                         </div>
 
@@ -1606,7 +1614,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                   ))}
                 </div>
                 <div className="p-4 text-xs text-amber-900 bg-amber-50 border-t border-amber-200">
-                  T3 initial lottery is 0%. Any TEFA funding would likely come from waitlist cascade; for this family, August track or later is more realistic than July 1 funding.
+                  T3 initial lottery is 0% and our band ({IDDINGS_BUCKET.label}, received {IDDINGS_BUCKET.notifiedOn}) sits past the modeled funded and offer-depth cutoffs. <strong>Plan for full out-of-pocket tuition</strong>; do not budget on TEFA arriving in Year 1. If a Jul 15 cascade reaches our band, treat it as upside, not baseline.
                 </div>
               </div>
             </div>
@@ -1815,6 +1823,42 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     {t3RankPersonalized?.invalid && (
                         <div className="mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-900">{t3RankPersonalized.message}</div>
                     )}
+
+                    {/* Iddings-family band slider — drives the rank input across our notified bucket */}
+                    <div className="mt-4 border-t border-tefa-gold/30 pt-3">
+                        <div className="flex items-center justify-between mb-1">
+                            <label className="text-xs font-medium text-tefa-navy" htmlFor="iddings-band-slider">
+                                Our band ({IDDINGS_BUCKET.label}) — explore plausibility
+                            </label>
+                            <span className="text-xs font-bold text-tefa-navy">rank {bandRank.toLocaleString()}</span>
+                        </div>
+                        <input
+                            id="iddings-band-slider"
+                            type="range"
+                            min={IDDINGS_BUCKET.lo}
+                            max={IDDINGS_BUCKET.hi}
+                            step={100}
+                            value={bandRank}
+                            onChange={(e) => {
+                                const v = parseInt(e.target.value, 10);
+                                setBandRank(v);
+                                setT3WaitlistRankInput(String(v));
+                            }}
+                            className="w-full accent-tefa-navy"
+                        />
+                        <div className="flex justify-between text-[11px] text-tefa-body/55 mt-1">
+                            <span>{IDDINGS_BUCKET.lo.toLocaleString()} (best in band)</span>
+                            <span>{Math.round((IDDINGS_BUCKET.lo + IDDINGS_BUCKET.hi) / 2).toLocaleString()}</span>
+                            <span>{IDDINGS_BUCKET.hi.toLocaleString()} (worst)</span>
+                        </div>
+                        <p className="mt-2 text-[11px] text-tefa-body/65">
+                            Plausibility across this band: funded %{' '}
+                            <strong>{bandSnapshot.fundedHi.toFixed(1)}%</strong> at {IDDINGS_BUCKET.lo.toLocaleString()} →{' '}
+                            <strong>{bandSnapshot.fundedLo.toFixed(1)}%</strong> at {IDDINGS_BUCKET.hi.toLocaleString()};
+                            offer-reaches-you {bandSnapshot.offerHi.toFixed(1)}% → {bandSnapshot.offerLo.toFixed(1)}%.
+                            Whole band sits past the modeled funded ({personalDefault.t3Awards.toLocaleString()}) and offer-depth ({personalDefault.t3QueueDepth.toLocaleString()}) cutoffs.
+                        </p>
+                    </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
@@ -2456,6 +2500,9 @@ The contribution amount we listed represents the maximum we can sustainably budg
                         </div>
 
                         <h3 className="font-bold text-tefa-navy text-lg mb-2">8. Strategic Risk Management — June 30 Decision Point</h3>
+                        <p className="text-xs text-tefa-body/70 mb-3">
+                            We now have the sharpest TEFA signal we'll get before Jun 30: bucket <strong>{IDDINGS_BUCKET.label}</strong> (received {IDDINGS_BUCKET.notifiedOn}). Tier 3 portion ≈ {(IDDINGS_BUCKET.lo - analysis.unfundedT2).toLocaleString()}–{(IDDINGS_BUCKET.hi - analysis.unfundedT2).toLocaleString()} — past both modeled cutoffs ({personalDefault.t3Awards.toLocaleString()} funded · {personalDefault.t3QueueDepth.toLocaleString()} offer-depth). The columns below frame the decision against that signal.
+                        </p>
                         <div className="bg-tefa-gold/10 border border-tefa-gold/30 rounded-lg p-4 mb-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-3">
                                 <div className="bg-white rounded p-3 border border-green-200">
@@ -2464,7 +2511,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                         <li>Exit with only $690 enrollment fee lost</li>
                                         <li>No tuition liability</li>
                                         <li>Nullifies any subsequent TEFA waitlist offer</li>
-                                        <li>Approximate waitlist position (expected by May 15; May 11 target slipped) is the sharpest signal available before this date</li>
+                                        <li>With band {IDDINGS_BUCKET.label}, baseline modeling shows no funded seat in Year 1 — withdrawing caps exposure and preserves NBCA scholarship runway</li>
                                     </ul>
                                 </div>
                                 <div className="bg-white rounded p-3 border border-red-200">
@@ -2472,6 +2519,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                     <ul className="text-red-700 space-y-1 text-xs">
                                         <li>Full tuition contracts bind — ~$40,950 for 3 children</li>
                                         <li>Preserves eligibility for the Jul 15 opt-out cascade (largest Year 1 attrition event, per Apr 22 press release)</li>
+                                        <li>The bet: a large July/August cascade reaches the {IDDINGS_BUCKET.label} band. Per the May 7 + May 12 PDFs and the model, plausible but unlikely</li>
                                         <li>Maximum financial exposure without guaranteed funding</li>
                                     </ul>
                                 </div>
@@ -2480,7 +2528,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
                                 <div className="text-xs text-tefa-body/50 uppercase font-bold mb-1">Dual-Track Mitigation Strategy</div>
                                 <ul className="text-tefa-body/70 space-y-1 text-xs">
                                     <li><strong>TEFA + NBCA FACTS Aid ($16,200 granted):</strong> If TEFA is awarded ($10,474 x 3 = $31,422) plus granted aid ($16,200), total coverage exceeds tuition — fully subsidized</li>
-                                    <li><strong>NBCA Scholarship (pending):</strong> NBCA expects awards by May 31; the TEFA waitlist position (expected by May 15; May 11 target slipped) should help clarify remaining need. Up to 35% of tuition (~$4,777/child max)</li>
+                                    <li><strong>NBCA Scholarship (pending):</strong> NBCA expects awards by May 31; with band {IDDINGS_BUCKET.label} now known, plan NBCA need on the assumption of zero TEFA in Year 1. Up to 35% of tuition (~$4,777/child max)</li>
                                     <li><strong>Without TEFA:</strong> NBCA Aid ($16,200) + potential scholarship reduces out-of-pocket, but significant gap remains. June 30 withdrawal is the safety valve.</li>
                                 </ul>
                             </div>
@@ -2503,8 +2551,8 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             <strong>Two mechanisms can reach Tier 3:</strong> attrition from awarded T1/T2 families, plus any uncommitted/appeals money that ultimately reaches the normal T2/T3 waitlist pool. At the current waitlist-pool setting (${(analysis.reserveWaitlistBudget / 1e6).toFixed(0)}M), the sensitivity case is <strong>{analysis.reserveEffectiveFamilyRate.toFixed(1)}%</strong> for the family after the T2 queue is cleared. This remains separate from the conservative attrition-only baseline because appeals and SPED awards can consume part of the pool first.
                         </div>
                         <p className="text-xs text-tefa-red/80 bg-tefa-gold/10 border border-tefa-gold/30 rounded p-3">
-                            <strong>Timing caveat (updated May 12):</strong> Per the Apr 28 Lottery Update PDF, the originally locked-in timeline was: T1 awards Apr 22–24 ({analysis.firstRoundAwards.toLocaleString()} students), <strong>T2 lottery week of Apr 27</strong>, ranked waitlist position notified by <strong>May 11</strong> (portal opens for opt-in same day) — <em>this May 11 target slipped; approximate positions now expected by end of this week (May 15) per the May 12 Waitlist Information PDF, communicated as bucket ranges (1–1,000 / 1,001–2,000 / … / 100,001+)</em>. Then a two-track funding cascade: <strong>July funding</strong> (Jun 1 family opt-in, Jun 15 school confirmation, Jul 1 first disbursement — a specific date) and <strong>"August funding"</strong> <span className="bg-amber-200 text-amber-900 px-1.5 rounded font-semibold">(Jul 15 family opt-in/opt-out, Jul 31 school confirmation — Comptroller has not committed to a specific August date, only "in August")</span>.
-                            The critical tension for Tier 3 families: the Iddings should learn their approximate waitlist position by May 15 — a sharper signal than the probabilistic model. But the biggest waitlist-cascade event is the Jul 15 opt-out deadline, which falls AFTER the Jun 30 NBCA withdrawal deadline. Withdrawing on Jun 30 means exiting before the main cascade plays out; staying past Jun 30 binds the family to ~$40,950 in tuition contracts for uncertain funding.
+                            <strong>Timing caveat (updated {IDDINGS_BUCKET.notifiedOn}):</strong> Per the Apr 28 Lottery Update PDF, the originally locked-in timeline was: T1 awards Apr 22–24 ({analysis.firstRoundAwards.toLocaleString()} students), <strong>T2 lottery week of Apr 27</strong>, ranked waitlist position notified by <strong>May 11</strong> (portal opens for opt-in same day). That May 11 target slipped; per the May 12 Waitlist Information PDF positions arrive as bucket ranges, and we received <strong>{IDDINGS_BUCKET.label}</strong> on {IDDINGS_BUCKET.notifiedOn}. Then a two-track funding cascade: <strong>July funding</strong> (Jun 1 family opt-in, Jun 15 school confirmation, Jul 1 first disbursement — a specific date) and <strong>"August funding"</strong> <span className="bg-amber-200 text-amber-900 px-1.5 rounded font-semibold">(Jul 15 family opt-in/opt-out, Jul 31 school confirmation — Comptroller has not committed to a specific August date, only "in August")</span>.
+                            <strong> Bottom line under current modeling:</strong> band {IDDINGS_BUCKET.label} sits past the modeled funded ({personalDefault.t3Awards.toLocaleString()}) and offer-depth ({personalDefault.t3QueueDepth.toLocaleString()}) cutoffs. The Jul 15 opt-out cascade falls <strong>after</strong> the Jun 30 NBCA withdrawal deadline — the biggest upside event happens after the most expensive decision. Withdrawing on Jun 30 exits before the main cascade plays out; staying past Jun 30 binds the family to ~$40,950 in tuition contracts on the bet that a large cascade reaches our band.
                         </p>
                     </div>
                 </div>
