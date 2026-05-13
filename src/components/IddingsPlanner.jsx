@@ -409,17 +409,24 @@ const IddingsPlanner = () => {
   // This follows the more nuanced researcher framing: T1 and T2 first-wave declines differ,
   // late replacement offers decline at a higher rate, and only $25M of the inferred reserve
   // is assumed to reach the regular waitlist after appeals/SPED/admin.
-  const personalDefault = (() => {
-    const t1DeclineRate = 0.15;
-    const t2DeclineRate = 0.18;
-    const replacementDeclineRate = 0.35;
-    const reserveNetToWaitlist = 25_000_000;
-    const t2AwardedUnitCost = Math.max(
-      0,
-      (analysis.reportedCommittedAwardsBudget - analysis.t1FamilyCost) / analysis.officialT2Awards
-    ); // Reconciles $820M committed less ~$415M T1-family cost.
-    const t2WaitlistUnitCost = 7_500;
-    const t3UnitCost = 8_500;
+  // Parameterized so the band-rank reverse-solve below can probe alternate scenarios.
+  const PERSONAL_DEFAULT_BASELINE = {
+    t1DeclineRate: 0.15,
+    t2DeclineRate: 0.18,
+    replacementDeclineRate: 0.35,
+    reserveNetToWaitlist: 25_000_000,
+  };
+  const T2_AWARDED_UNIT_COST = Math.max(
+    0,
+    (analysis.reportedCommittedAwardsBudget - analysis.t1FamilyCost) / analysis.officialT2Awards
+  ); // Reconciles $820M committed less ~$415M T1-family cost.
+  const T2_WAITLIST_UNIT_COST = 7_500;
+  const T3_UNIT_COST = 8_500;
+
+  const runPersonalDefault = ({ t1DeclineRate, t2DeclineRate, replacementDeclineRate, reserveNetToWaitlist }) => {
+    const t2AwardedUnitCost = T2_AWARDED_UNIT_COST;
+    const t2WaitlistUnitCost = T2_WAITLIST_UNIT_COST;
+    const t3UnitCost = T3_UNIT_COST;
     const acceptedShare = 1 - replacementDeclineRate;
 
     const initialAttritionDollars =
@@ -469,6 +476,9 @@ const IddingsPlanner = () => {
       t2QueueDepthFromAttrition,
       t2AcceptedFromAttrition,
       t2DeclinedWhenReached,
+      attritionDollarsAfterT2,
+      reserveAfterT2,
+      t3Dollars,
       t3Awards,
       t3QueueDepth,
       t3AcceptedRate,
@@ -476,7 +486,9 @@ const IddingsPlanner = () => {
       t3AcceptedFamilyRate,
       t3QueueDepthFamilyRate,
     };
-  })();
+  };
+
+  const personalDefault = runPersonalDefault(PERSONAL_DEFAULT_BASELINE);
 
   // Optional global waitlist rank (T2 band → T3 band → T4 band). Lower = better. Parsed rank is converted
   // to a Tier-3-only ordinal for comparison to personalDefault funded / offer-depth cutoffs.
@@ -583,6 +595,137 @@ const IddingsPlanner = () => {
     const { fundedPct: fundedLo, offerPct: offerLo } = computeT3PctForRank(IDDINGS_BUCKET.hi, analysis, personalDefault); // worst case in band
     const { fundedPct: fundedHi, offerPct: offerHi } = computeT3PctForRank(IDDINGS_BUCKET.lo, analysis, personalDefault); // best case in band
     return { fundedLo, fundedHi, offerLo, offerHi };
+  })();
+
+  // Reverse-solve: "what mix of attrition + reserve would the model need
+  // to put offer-depth / a funded seat at THIS exact band rank?"
+  // Replaces the previous stuck "16.8% pool average" KPI for ranks past the
+  // modeled offer-depth cutoff (where the exponential decay saturated almost
+  // immediately, so every rank in the band read the same value).
+  const bandReverseSolve = (() => {
+    const targetT3Local = Math.max(0, bandRank - analysis.unfundedT2);
+    const acceptedShareBase = 1 - PERSONAL_DEFAULT_BASELINE.replacementDeclineRate;
+    // To get an offer to land at this rank, t3QueueDepth ≥ targetT3Local.
+    // t3QueueDepth = floor(t3Awards / acceptedShare); t3Awards = floor(t3Dollars / 8500).
+    // So t3Awards must be ≥ ceil(targetT3Local * acceptedShare), and t3Dollars must
+    // cover that × $8,500. Funded-seat ladder is the same shape without the acceptedShare step.
+    const awardsForOffer = Math.ceil(targetT3Local * acceptedShareBase);
+    const awardsForFunded = targetT3Local;
+    const dollarsForOffer = awardsForOffer * T3_UNIT_COST;
+    const dollarsForFunded = awardsForFunded * T3_UNIT_COST;
+
+    const currentT3Dollars = personalDefault.t3Dollars;
+    const offerGap = Math.max(0, dollarsForOffer - currentT3Dollars);
+    const fundedGap = Math.max(0, dollarsForFunded - currentT3Dollars);
+    const inOfferAlready = personalDefault.t3QueueDepth >= targetT3Local;
+    const inFundedAlready = personalDefault.t3Awards >= targetT3Local;
+
+    // Lever A: hold reserve at $25M, find smallest uniform multiplier m on
+    // (t1Decline, t2Decline, replacementDecline) such that t3QueueDepth ≥ targetT3Local.
+    // Bounded by the structural cap where each rate ≤ 0.95.
+    const solveDeclineMultiplier = (target, mode) => {
+      if (target <= 0) return { ok: true, multiplier: 1, scenario: null };
+      const baseT1 = PERSONAL_DEFAULT_BASELINE.t1DeclineRate;
+      const baseT2 = PERSONAL_DEFAULT_BASELINE.t2DeclineRate;
+      const baseR = PERSONAL_DEFAULT_BASELINE.replacementDeclineRate;
+      const maxMultiplier = Math.min(0.95 / baseT1, 0.95 / baseT2, 0.95 / baseR);
+      const evalAt = (m) => {
+        const scen = runPersonalDefault({
+          t1DeclineRate: Math.min(0.95, baseT1 * m),
+          t2DeclineRate: Math.min(0.95, baseT2 * m),
+          replacementDeclineRate: Math.min(0.95, baseR * m),
+          reserveNetToWaitlist: PERSONAL_DEFAULT_BASELINE.reserveNetToWaitlist,
+        });
+        const v = mode === 'funded' ? scen.t3Awards : scen.t3QueueDepth;
+        return { v, scen };
+      };
+      // If even the max multiplier can't reach the target, fail out.
+      const maxEval = evalAt(maxMultiplier);
+      if (maxEval.v < target) return { ok: false, multiplier: null, scenario: maxEval.scen };
+      // Binary search.
+      let lo = 1, hi = maxMultiplier;
+      for (let i = 0; i < 40; i += 1) {
+        const mid = (lo + hi) / 2;
+        const { v } = evalAt(mid);
+        if (v >= target) hi = mid; else lo = mid;
+      }
+      const finalEval = evalAt(hi);
+      return { ok: true, multiplier: hi, scenario: finalEval.scen };
+    };
+
+    // Lever B: hold declines at baseline, solve extra reserve $ needed.
+    const solveReserveDollars = (target, mode) => {
+      if (target <= 0) return { ok: true, reserve: PERSONAL_DEFAULT_BASELINE.reserveNetToWaitlist, scenario: null };
+      // Try a high ceiling — full Community Impact-inferred pool plus headroom: $200M.
+      const ceiling = 200_000_000;
+      const evalAt = (r) => {
+        const scen = runPersonalDefault({
+          ...PERSONAL_DEFAULT_BASELINE,
+          reserveNetToWaitlist: r,
+        });
+        const v = mode === 'funded' ? scen.t3Awards : scen.t3QueueDepth;
+        return { v, scen };
+      };
+      const ceilEval = evalAt(ceiling);
+      if (ceilEval.v < target) return { ok: false, reserve: null, scenario: ceilEval.scen };
+      let lo = PERSONAL_DEFAULT_BASELINE.reserveNetToWaitlist, hi = ceiling;
+      for (let i = 0; i < 40; i += 1) {
+        const mid = (lo + hi) / 2;
+        const { v } = evalAt(mid);
+        if (v >= target) hi = mid; else lo = mid;
+      }
+      return { ok: true, reserve: hi, scenario: evalAt(hi).scen };
+    };
+
+    const declineLeverOffer = inOfferAlready ? null : solveDeclineMultiplier(targetT3Local, 'offer');
+    const reserveLeverOffer = inOfferAlready ? null : solveReserveDollars(targetT3Local, 'offer');
+    const declineLeverFunded = inFundedAlready ? null : solveDeclineMultiplier(targetT3Local, 'funded');
+    const reserveLeverFunded = inFundedAlready ? null : solveReserveDollars(targetT3Local, 'funded');
+
+    const formatDeclineLever = (lever) => {
+      if (!lever) return null;
+      if (!lever.ok) return { feasible: false };
+      const m = lever.multiplier;
+      return {
+        feasible: true,
+        multiplier: m,
+        t1Pct: Math.min(95, PERSONAL_DEFAULT_BASELINE.t1DeclineRate * m * 100),
+        t2Pct: Math.min(95, PERSONAL_DEFAULT_BASELINE.t2DeclineRate * m * 100),
+        replacementPct: Math.min(95, PERSONAL_DEFAULT_BASELINE.replacementDeclineRate * m * 100),
+        avgPct: ((PERSONAL_DEFAULT_BASELINE.t1DeclineRate + PERSONAL_DEFAULT_BASELINE.t2DeclineRate + PERSONAL_DEFAULT_BASELINE.replacementDeclineRate) / 3 * m * 100),
+      };
+    };
+    const formatReserveLever = (lever) => {
+      if (!lever) return null;
+      if (!lever.ok) return { feasible: false };
+      return {
+        feasible: true,
+        reserve: lever.reserve,
+        extraOverBaseline: Math.max(0, lever.reserve - PERSONAL_DEFAULT_BASELINE.reserveNetToWaitlist),
+      };
+    };
+
+    return {
+      targetT3Local,
+      bandRank,
+      currentT3Dollars,
+      currentT3Awards: personalDefault.t3Awards,
+      currentT3QueueDepth: personalDefault.t3QueueDepth,
+      dollarsForOffer,
+      dollarsForFunded,
+      offerGap,
+      fundedGap,
+      inOfferAlready,
+      inFundedAlready,
+      offer: {
+        decline: formatDeclineLever(declineLeverOffer),
+        reserve: formatReserveLever(reserveLeverOffer),
+      },
+      funded: {
+        decline: formatDeclineLever(declineLeverFunded),
+        reserve: formatReserveLever(reserveLeverFunded),
+      },
+    };
   })();
 
   // Tier 2 funding rate for display
@@ -974,6 +1117,13 @@ The contribution amount we listed represents the maximum we can sustainably budg
                 <p className="text-xs text-tefa-body/70 bg-white rounded p-3 border border-amber-200">
                     <strong>We have a bucket, not a number.</strong> Per the May 12 TEFA Waitlist Information PDF, only ranks ≤ 25,000 receive precise positions; we received <strong>{IDDINGS_BUCKET.label}</strong> on {IDDINGS_BUCKET.notifiedOn}. Odyssey continues to show all 3 Iddings students as <em>"Eligible"</em> with the standard waitlist message — no funding amount is visible.
                 </p>
+                <div className="mt-3 text-xs text-tefa-body/70 bg-white rounded p-3 border border-amber-200">
+                    <div className="text-[11px] uppercase font-bold text-amber-800 mb-1.5">Comptroller SMS notification ({IDDINGS_BUCKET.notifiedOn}) — verbatim</div>
+                    <blockquote className="italic text-tefa-body/80 whitespace-pre-line">
+{`Odyssey - Texas: Texas Education Freedom Accounts Update. Your student(s) have been placed on the waitlist for the upcoming school year. Their approximate position is 30,001-50,000. Your household priority is tier 3. If your student(s) move off of the waitlist, you will be notified and the update will be reflected on your Odyssey portal (https://withodyssey.com).
+Text STOP to opt-out`}
+                    </blockquote>
+                </div>
             </div>
 
             {/* Funding Update Banner - May 4 Tier 2 Awards */}
@@ -1857,7 +2007,91 @@ The contribution amount we listed represents the maximum we can sustainably budg
                             <strong>{bandSnapshot.fundedLo.toFixed(1)}%</strong> at {IDDINGS_BUCKET.hi.toLocaleString()};
                             offer-reaches-you {bandSnapshot.offerHi.toFixed(1)}% → {bandSnapshot.offerLo.toFixed(1)}%.
                             Whole band sits past the modeled funded ({personalDefault.t3Awards.toLocaleString()}) and offer-depth ({personalDefault.t3QueueDepth.toLocaleString()}) cutoffs.
+                            <span className="block mt-1 text-tefa-body/55">
+                              Why the offer-% looked stuck at the pool average ({personalDefault.t3QueueDepthRate.toFixed(1)}%) across this whole band: every rank here is far past the modeled 11k-deep offer cutoff, so the curve has already decayed to the pool floor. The "what needs to go right" panel below replaces that flat readout with the concrete dollar gap and the two levers that can close it.
+                            </span>
                         </p>
+
+                        {/* Reverse-solve: what mix of attrition + reserve would need to occur for an
+                            offer / funded seat to reach the slider's exact rank. */}
+                        <div className="mt-4 rounded-lg border border-tefa-navy/20 bg-white p-3">
+                            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                                <div className="text-xs font-bold text-tefa-navy uppercase tracking-wide">What needs to go right at rank {bandReverseSolve.bandRank.toLocaleString()}</div>
+                                <div className="text-[11px] text-tefa-body/55">Tier 3 position {bandReverseSolve.targetT3Local.toLocaleString()} · personalDefault assumptions</div>
+                            </div>
+                            <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                                <div className="rounded-md bg-tefa-navy/5 p-2">
+                                    <div className="text-tefa-body/50">Modeled T3 $ today</div>
+                                    <div className="font-bold text-tefa-navy text-base">${(bandReverseSolve.currentT3Dollars / 1e6).toFixed(1)}M</div>
+                                    <div className="text-[10px] text-tefa-body/45">{bandReverseSolve.currentT3Awards.toLocaleString()} funded · {bandReverseSolve.currentT3QueueDepth.toLocaleString()} offers-deep</div>
+                                </div>
+                                <div className={`rounded-md p-2 ${bandReverseSolve.inOfferAlready ? 'bg-tefa-green/10' : 'bg-amber-50'}`}>
+                                    <div className="text-tefa-body/50">T3 $ needed for an offer to reach you</div>
+                                    <div className={`font-bold text-base ${bandReverseSolve.inOfferAlready ? 'text-tefa-green' : 'text-amber-700'}`}>${(bandReverseSolve.dollarsForOffer / 1e6).toFixed(1)}M</div>
+                                    <div className="text-[10px] text-tefa-body/45">
+                                      {bandReverseSolve.inOfferAlready
+                                        ? 'Already covered by the modeled default.'
+                                        : <>Gap <strong>${(bandReverseSolve.offerGap / 1e6).toFixed(1)}M</strong> · funded seat would need ${(bandReverseSolve.dollarsForFunded / 1e6).toFixed(1)}M (gap ${(bandReverseSolve.fundedGap / 1e6).toFixed(1)}M)</>}
+                                    </div>
+                                </div>
+                            </div>
+                            {!bandReverseSolve.inOfferAlready && (
+                                <div className="mt-3 space-y-2 text-xs">
+                                    <div className="text-[11px] uppercase font-bold text-tefa-body/50">To get an offer to your rank, the model needs ONE of:</div>
+                                    {bandReverseSolve.offer.decline?.feasible ? (
+                                        <div className="rounded-md border border-tefa-navy/15 px-2.5 py-2">
+                                            <div className="font-semibold text-tefa-navy">Lever A · Higher attrition (reserve held at ${(PERSONAL_DEFAULT_BASELINE.reserveNetToWaitlist / 1e6).toFixed(0)}M)</div>
+                                            <div className="text-tefa-body/70 mt-0.5">
+                                              All three decline rates scaled <strong>×{bandReverseSolve.offer.decline.multiplier.toFixed(2)}</strong>:
+                                              T1 {bandReverseSolve.offer.decline.t1Pct.toFixed(0)}% ·
+                                              T2 first-wave {bandReverseSolve.offer.decline.t2Pct.toFixed(0)}% ·
+                                              replacement {bandReverseSolve.offer.decline.replacementPct.toFixed(0)}%
+                                              <span className="text-tefa-body/50"> (avg {bandReverseSolve.offer.decline.avgPct.toFixed(0)}%)</span>.
+                                            </div>
+                                            <div className="text-[10px] text-tefa-body/50 mt-0.5">Reference: baseline avg ≈ {((PERSONAL_DEFAULT_BASELINE.t1DeclineRate + PERSONAL_DEFAULT_BASELINE.t2DeclineRate + PERSONAL_DEFAULT_BASELINE.replacementDeclineRate) / 3 * 100).toFixed(0)}%; Milwaukee/NYC historicals ran 30–38%.</div>
+                                        </div>
+                                    ) : (
+                                        <div className="rounded-md border border-red-200 bg-red-50/70 px-2.5 py-2 text-red-900">
+                                            <div className="font-semibold">Lever A · Attrition alone can't close the gap.</div>
+                                            <div className="mt-0.5">Even pushing every decline rate near 95% leaves T3 dollars short of ${(bandReverseSolve.dollarsForOffer / 1e6).toFixed(1)}M.</div>
+                                        </div>
+                                    )}
+                                    {bandReverseSolve.offer.reserve?.feasible ? (
+                                        <div className="rounded-md border border-tefa-navy/15 px-2.5 py-2">
+                                            <div className="font-semibold text-tefa-navy">Lever B · More reserve reaches the regular waitlist (declines held at baseline)</div>
+                                            <div className="text-tefa-body/70 mt-0.5">
+                                              Net reserve to T2/T3 waitlist would need to rise to <strong>${(bandReverseSolve.offer.reserve.reserve / 1e6).toFixed(0)}M</strong>
+                                              <span className="text-tefa-body/50"> (+${(bandReverseSolve.offer.reserve.extraOverBaseline / 1e6).toFixed(0)}M over the ${(PERSONAL_DEFAULT_BASELINE.reserveNetToWaitlist / 1e6).toFixed(0)}M baseline)</span>.
+                                            </div>
+                                            <div className="text-[10px] text-tefa-body/50 mt-0.5">Ceiling: the Community Impact-inferred ${(analysis.reportedMinimumAppealsWaitlistBudget / 1e6).toFixed(0)}M+ pool — assumes a larger share survives appeals/SPED/admin than the $25M default.</div>
+                                        </div>
+                                    ) : (
+                                        <div className="rounded-md border border-red-200 bg-red-50/70 px-2.5 py-2 text-red-900">
+                                            <div className="font-semibold">Lever B · Reserve alone can't close the gap.</div>
+                                            <div className="mt-0.5">Even routing $200M of reserve dollars to the waitlist leaves T3 below this rank under default decline rates.</div>
+                                        </div>
+                                    )}
+                                    {!bandReverseSolve.inFundedAlready && (bandReverseSolve.funded.decline?.feasible || bandReverseSolve.funded.reserve?.feasible) && (
+                                        <div className="rounded-md border border-tefa-gold/40 bg-tefa-gold/5 px-2.5 py-2">
+                                            <div className="font-semibold text-tefa-navy">For a <em>funded seat</em> (not just an offer) at this rank:</div>
+                                            <div className="text-tefa-body/70 mt-0.5">
+                                              {bandReverseSolve.funded.decline?.feasible && <>declines scaled ×{bandReverseSolve.funded.decline.multiplier.toFixed(2)} (avg {bandReverseSolve.funded.decline.avgPct.toFixed(0)}%)</>}
+                                              {bandReverseSolve.funded.decline?.feasible && bandReverseSolve.funded.reserve?.feasible && <> · or </>}
+                                              {bandReverseSolve.funded.reserve?.feasible && <>reserve ${(bandReverseSolve.funded.reserve.reserve / 1e6).toFixed(0)}M (+${(bandReverseSolve.funded.reserve.extraOverBaseline / 1e6).toFixed(0)}M)</>}.
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className="text-[10px] text-tefa-body/50">
+                                      Levers are "either/or" — in reality a combination is more plausible, since high decline rates and a larger surviving reserve usually appear together.
+                                    </div>
+                                </div>
+                            )}
+                            {bandReverseSolve.inOfferAlready && (
+                                <div className="mt-3 rounded-md bg-tefa-green/10 px-2.5 py-2 text-xs text-tefa-green">
+                                  Rank {bandReverseSolve.bandRank.toLocaleString()} already sits inside the modeled offer-depth under the default ({(PERSONAL_DEFAULT_BASELINE.t1DeclineRate * 100).toFixed(0)}/{(PERSONAL_DEFAULT_BASELINE.t2DeclineRate * 100).toFixed(0)}/{(PERSONAL_DEFAULT_BASELINE.replacementDeclineRate * 100).toFixed(0)}% declines · ${(PERSONAL_DEFAULT_BASELINE.reserveNetToWaitlist / 1e6).toFixed(0)}M reserve). Slide higher to stress-test.
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1880,16 +2114,26 @@ The contribution amount we listed represents the maximum we can sustainably budg
                     </div>
                     <div>
                         <div className="text-xs text-tefa-body/50">
-                          {t3RankPersonalized && !t3RankPersonalized.invalid ? 'Offer reaches you — your rank' : 'T3 queue depth (modeled · pool)'}
-                        </div>
-                        <div className={`text-2xl font-bold ${t3RankPersonalized && !t3RankPersonalized.invalid ? (t3RankPersonalized.perChildOfferPct >= 50 ? 'text-tefa-green' : t3RankPersonalized.perChildOfferPct >= 15 ? 'text-amber-600' : 'text-red-500') : 'text-tefa-navy'}`}>
                           {t3RankPersonalized && !t3RankPersonalized.invalid
-                            ? `${t3RankPersonalized.perChildOfferPct.toFixed(1)}%`
+                            ? (bandReverseSolve.inOfferAlready ? 'Offer reaches you (modeled default)' : 'T3 $ gap to reach you with an offer')
+                            : 'T3 queue depth (modeled · pool)'}
+                        </div>
+                        <div className={`text-2xl font-bold ${
+                          t3RankPersonalized && !t3RankPersonalized.invalid
+                            ? (bandReverseSolve.inOfferAlready ? 'text-tefa-green' : (bandReverseSolve.offerGap < 25e6 ? 'text-amber-600' : 'text-red-500'))
+                            : 'text-tefa-navy'
+                        }`}>
+                          {t3RankPersonalized && !t3RankPersonalized.invalid
+                            ? (bandReverseSolve.inOfferAlready
+                                ? 'Yes'
+                                : `+$${(bandReverseSolve.offerGap / 1e6).toFixed(1)}M`)
                             : personalDefault.t3QueueDepth.toLocaleString()}
                         </div>
                         <div className="text-xs text-tefa-body/50 mt-1">
                           {t3RankPersonalized && !t3RankPersonalized.invalid ? (
-                            <>Pool {t3RankPersonalized.poolQueueDepthRate.toFixed(1)}% would get an offer (avg) · depth {personalDefault.t3QueueDepth.toLocaleString()} students</>
+                            bandReverseSolve.inOfferAlready
+                              ? <>Modeled offer-depth ({personalDefault.t3QueueDepth.toLocaleString()}) already covers this rank.</>
+                              : <>Modeled today ${(bandReverseSolve.currentT3Dollars / 1e6).toFixed(1)}M → need ${(bandReverseSolve.dollarsForOffer / 1e6).toFixed(1)}M. See levers below.</>
                           ) : (
                             <>{personalDefault.t3QueueDepthRate.toFixed(1)}% of T3 queue</>
                           )}
