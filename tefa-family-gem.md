@@ -29,8 +29,8 @@ All figures below are statutory (SB 2) or drawn from the Texas Comptroller's off
 
 - **44,753 T1-family students** are awarded: **28,233 Tier 1 students** plus **16,520 T1 siblings** pulled in by the sibling rule.
 - Split: **63.1% T1 proper / 36.9% siblings** (replaces the earlier 63.4/36.6 approximation)
-- **Approximately half previously attended a public school** (Apr 22 press release)
-- T1-family block consumed **~$415M** of the $1B budget (Apr 28 PDF item 1, verbatim); after **~$85M in admin/reserve assumptions** (SB 2 §29.362(b)-(c)'s 8% statutory admin cap + appeals reserve), **~$500M** remains for the Tier 2 lottery
+- **Prior public school enrollment among awardees** — press-release figures bear nuance: the Apr 22 release says "approximately half" previously attended public school; The Texan (citing Comptroller data) reports 43% for awardees. **Both figures appear to cover only 2nd grade and above**, excluding Pre-K/K cohorts that couldn't have had prior public enrollment. A fuller estimate across the entire awardee pool is closer to a ~1/3 split (~1/3 prior public, ~1/3 prior private/homeschool, ~1/3 no prior schooling — the Pre-K/K cohort). Treat press-release rates as upper bounds, not the population rate.
+- T1-family block consumed **~$415M** of the $1B budget (Apr 28 PDF item 1, verbatim). The full $1B Year 1 appropriation breakdown is detailed in §1.4 / §4.3a (the operating model now uses $80M admin/vendor max per SB 2 §29.362(b)-(c), $820M reported set aside for accepted students per Community Impact, and a variable $0–$100M+ "reserve reaching the regular waitlist" sensitivity — superseding the earlier ~$85M legacy assumption).
 - **Tier 2 lottery:** held during the week of Apr 27, 2026; the same lottery assigns ranked waitlist positions to the remaining T2 students and all of T3/T4
 - **Tier 2 awards:** **51,181 Tier 2 students** — AWARDED & NOTIFIED
 - **Tier 2 waitlist:** **20,383 Tier 2 students** remain ahead of Tier 3
@@ -54,7 +54,8 @@ All figures below are statutory (SB 2) or drawn from the Texas Comptroller's off
 ### 1.3 Statutory budget & per-student caps
 
 - **Biennium cap:** $1,000,000,000 for 2025–2027 (SB 2 §29.3521(c-1))
-- **Year 1 commitment:** Full $1B (Travis Pillow, Comptroller spokesman, to *The Texan*, Apr 2 2026: *"$1 billion committed in year one"*)
+- **Year 1 commitment:** Full $1B (Travis Pillow, **TEFA spokesperson**, to *The Texan*: *"$1 billion committed in year one — that is the largest year one commitment to a school choice program that any state has ever made in the nation's history,"* adding the amount is *"not enough to meet all the demand that is out there"*; he further noted the significant waitlist will be reported to the Legislature *"to help them think about funding in year two and beyond."*)
+- **Acting Comptroller:** Kelly Hancock — per the May 2026 Comptroller statement reported by The Texan: *"Texas families have waited a long time for school choice, and the response to TEFA shows just how much this opportunity means to parents across our state."*
 - **Private-school base award:** **$10,474/student/year** (SB 2 §29.361(a)(1) — 85% of statewide average state-and-local funding per ADA ≈ 85% × $12,316; per §29.361(c)(2) the calc includes Chapters 48/49 funding plus the state's TRS contribution under §825.404, Government Code)
 - **Homeschool/other cap:** $2,000/student/year (SB 2 §29.361(b-1)). The Parent Application Guide establishes that selected setting **"locks" at the end of the application period (Mar 31)**; post-lock changes can only reduce funding (private → homeschool $2,000), never increase.
 - **SPED (active IEP) cap:** up to $30,000/student/year (SB 2 §29.361(b)) — actual award = base + district-dependent IEP supplement, not the $30k ceiling. **Critical sub-classes (Parent Application Guide):**
@@ -433,7 +434,7 @@ If real-world non-participation lands materially below 15/18/35, the upper T2 bu
 - With 8% low attrition: **0% individual / 0% family of 3** — fully absorbed by Tier 2.
 - **Upside vectors:** Community Impact reports a much larger uncommitted-funds signal than the old $5M placeholder reserve. If you mention that signal, say it is modeled as dollars reaching the **normal waitlist pool** after appeals/admin.
 - For T4: rates remain ~0% across all scenarios in Year 1.
-- **Next-year honesty (2027-28):** risk for **new** T2/T3/T4 applicants is likely higher if Year 1 consumes most of the biennium cap, but "slim to none" is not proven. Keep this as a risk statement, not a certainty, until final Year 1 spend/usage, churn, waitlist carryover, and next-cycle appropriations/implementation are known.
+- **Next-year honesty (2027-28):** TEFA spokesperson Pillow has stated the full $1B is committed to Year 1 (§1.3) and that the waitlist will be reported to the Legislature *"to help them think about funding in year two and beyond"* — i.e., Year 2 funding depends on a **new appropriation**, not biennium leftovers. Risk for **new** T2/T3/T4 applicants in Year 2 is therefore meaningful, though "slim to none" is still not proven until final Year 1 spend/usage, churn, waitlist carryover, and the 2027 legislative cycle play out. Frame Year 2 as a real risk to monitor, not money waiting in the wings.
 
 At the central 15% estimate, Tier 3 does not move under the conservative attrition-only total recursive cascade model. T3 becomes plausible above roughly 17.5% attrition, or through extra upside such as unused appeals/uncommitted funds reaching the normal waitlist pool or more homeschool/other selections. The Community Impact waitlist-pool sensitivity is now the strongest upside signal, but it should remain labeled as a sensitivity until the Comptroller publishes an official budget/reserve table.
 
@@ -626,7 +627,7 @@ Odyssey dashboard (if seen): Eligible / Approved / Waitlisted — paste labels v
 - Texas Comptroller press release (Apr 22, 2026) — first-round awards announcement, Apr 27 T2 lottery, 30-day appeals window, Jul 15 confirm/opt-out deadline
 - Texas Comptroller press release (May 4, 2026) — **53,000+ additional awards** lower-bound announcement, May 4-6 notification window, July 15 confirm / homeschool-other / opt-out deadline, explicit statement that remaining waitlist movement can occur as families select, opt out, or resolve appeals. Superseded numerically by revised May 7 PDF.
 - [Community Impact — "51K low-income students to receive Texas Education Freedom Account funding" (May 4, 2026)](https://beta2.communityimpact.com/austin/central-austin/texas-legislature/2026/05/04/51k-low-income-students-to-receive-texas-education-freedom-account-funding/) — reports, citing an agency spokesperson, nearly 96,000 selected students and about **$820M** set aside; notes $30M Comptroller admin + $50M Odyssey/vendor statutory allowances, implying at least **$100M** available after max admin/vendor costs for successful appeals / later movement. Secondary source, not official reserve table.
-- Travis Pillow (Comptroller spokesman) quotes to *The Texan*, Apr 2, 2026
+- Travis Pillow (**TEFA spokesperson**) quotes to *The Texan*, "Almost 100,000 Students Set to Receive Texas Education Freedom Account Funds in Next School Year" by Meridith Dyer (May 2026) — verifies the $1B Year 1 commitment, Pillow's "year two and beyond" framing, and Acting Comptroller Kelly Hancock's statement. Original quote first reported in *The Texan*'s Apr 2026 coverage.
 - Comptroller email response on Sec. 29.3521(d) (Apr 3, 2026)
 - Texas SB 2 — §29.3521(c-1), §29.3521(d), §29.356(b)(2)(A), §29.361(a)(1), §29.361(b), §29.361(b-1), §29.361(e), §29.362(a), §29.362(b)-(c) admin caps, §29.362(f)
 - Federal court order, Judge Bennett (S.D. Texas) — deadline extension to Mar 31
