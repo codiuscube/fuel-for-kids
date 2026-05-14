@@ -383,6 +383,46 @@ These cutoffs are **scenario estimates**, not guarantees. Inside / outside those
 
 The Iddings planner **smooths** personalized % **past** each cutoff (it rolls toward the §4.3b pool average instead of jumping 100% → 0% in a single rank), because real cutlines are uncertain.
 
+### 4.3d Band-by-band reverse-solve (Comptroller bucket scheme)
+
+Per the **May 12, 2026 TEFA Waitlist Information PDF**, precise waitlist positions are only communicated to families ranked **≤ 25,000**; everyone else receives an **approximate bucket**:
+
+> 1–1,000 · 1,001–2,000 · 2,001–3,000 · 3,001–4,000 · 4,001–5,000 · 5,001–10,000 · 10,001–15,000 · 15,001–20,000 · 20,001–25,000 · 25,001–30,000 · 30,001–50,000 · 50,001–100,000 · 100,001+
+
+For a family that only has a bucket, the right question is: **what does this bucket need *in addition to* the §4.3b personal-default baseline (15/18/35 declines + $25M net reserve)?**
+
+**Appeals reserve mechanism (definition for plain-language explanations).** The appeals reserve is funding the Comptroller holds back to pay out successful tier and eligibility appeals — families who challenge their placement (out-of-state IEP, TEA-side IEP-match failure, mis-coded FPL, school-district mismatches) and win. As those appeals resolve over May–July, **unused** reserve dollars cascade back to the regular waitlist queue. Community Impact's $820M-set-aside figure implies at least $100M after max admin/vendor costs (§4.3a). The §4.3b personal default assumes **$25M** of that inferred remainder survives appeals/SPED/admin and reaches the regular waitlist — enough on its own to reach roughly the first **5,000** Tier 2 waitlist positions ($25M ÷ ($7,500 × 0.65 accepted share) ≈ 5,128 queue depth).
+
+**Tier 2 buckets.** Baseline 15/18/35 generates ~$135M of initial attrition dollars (T1 $415M × 15% + T2 ~$405M × 18%), enough to fully clear the 20,383 unfunded T2 students (cost ~$99M at $7,500 × 0.65). **All five Tier 2 buckets are therefore expected to receive offers at baseline.** Differences are timing only:
+
+| Tier 2 bucket | Expected window at baseline |
+|---------------|------------------------------|
+| 1 – 1,000 | This month — appeals reserve + earliest T1/T2 attrition signals |
+| 1,001 – 5,000 | May/June |
+| 5,001 – 10,000 | June |
+| 10,001 – 15,000 | June/July (35% replacement-decline cascade compounds) |
+| 15,001 – 20,000 | July, especially after the Jul 15 opt-in deadline |
+
+If real-world non-participation lands materially below 15/18/35, the upper T2 buckets are where the math gets tight.
+
+**Tier 3 buckets.** Baseline produces **~7,150 funded T3 seats** (global cutoff ~27,533) and **~11,000 offer-depth** (global cutoff ~31,383). Bucket-level requirements above baseline:
+
+| T3 bucket (global) | Status at baseline | Additional lever required |
+|--------------------|---------------------|---------------------------|
+| 20,001 – 25,000 | Inside funded-seat depth | **None.** Expected July, conditional on Tier 2 clearing on schedule |
+| 25,001 – 30,000 | Top half past funded depth but inside offer-depth | An offer is expected at baseline. A **funded seat** across the full band needs **+$20M reserve** ($45M total) or a small attrition bump |
+| 30,001 – 50,000 | Past offer-depth | Bottom half (~30,001–40,000): **+$20–50M reserve** ($45–75M total) or declines scaled ~**1.1–1.2x** baseline (T1 ~16–18% / T2 ~20–22% / replacement ~38–42%). Top end (rank 50,000): **+$100M reserve** ($125M total — approaches the inferred ceiling) or declines scaled ~**1.7x** (T1 ~26% / T2 ~31% / replacement ~60%, historical-high). **Not expected for most of this band in Year 1** |
+| 50,001 – 100,000 | Far past offer-depth | Even at structural caps (95% declines + the full inferred $100M+ reserve) the model can't reach the back half of Tier 3 in Year 1. **Not expected** |
+
+**Tier 4 buckets** — not expected in Year 1. Tier 4 only opens after Tier 3 fully clears, and the model can't get there under any plausible lever combination.
+
+**Operational rules for advising bucket-only families:**
+
+1. If the family has a **precise rank** (≤ 25,000), use §4.3c directly — bands are coarser than the rank.
+2. If the family has **only a bucket**, locate them in the table above and report the lever(s) needed *above* the §4.3b baseline. State both levers (reserve $ and attrition scaling) — they are "either/or" in the model but in practice usually co-occur.
+3. Be precise about what's expected vs. what requires upside. The 20,001 – 25,000 and 25,001 – 30,000 T3 buckets are **plausible at baseline**; 30,001 – 50,000 is **upside, not baseline**; 50,001+ is **not modeled to clear in Year 1**.
+4. Never re-state this as "X% chance of funding." The bucket table is a *requirements-to-reach* readout, not a probability distribution.
+
 ### 4.4 For T3 families — honest framing
 
 - Initial lottery: 0%.
