@@ -36,6 +36,27 @@ const IDDINGS_BUCKET = {
   sourceLabel: 'Comptroller approximate-range notification',
 };
 
+// May 29, 2026 Comptroller News & Updates post ("Additional Awards Issued to
+// Waitlisted Students") — the first OBSERVED waitlist cascade since the May 4 Tier 2
+// batch. This is a dated snapshot / progress tracker; it does NOT change the model's
+// lottery-time baseline counts or attrition assumptions below. The 3,317 are the first
+// realization of the cascade getScenarioAnalysis() already projects from the 20,383
+// T2 backlog — so they are tracked here, not subtracted from the engine (avoids
+// double-counting). Reconciliation: 95,934 (awards to date) + 3,317 + 294 + 183 =
+// 99,728 gross ("slightly fewer than 100,000"); 99,728 − ~1,400 opt-outs ≈ 98,328
+// active ("just over 98,000"). Remaining T2 backlog ahead of T3 ≈ 20,383 − 3,317 = 17,066.
+const MAY29_CASCADE = {
+  asOf: '2026-05-29',
+  t2Cascaded: 3317,        // Tier 2 waitlisted students newly awarded (priority tier 2, ≤200% FPL)
+  spedAwards: 294,         // Awards from confirmed special-education info on file with TEA (appeals reserve)
+  spedSiblings: 183,       // Siblings of the 294 SPED awardees, pulled in by the sibling rule
+  optOuts: 1400,           // Approx. opt-outs to date (pre-Jul-15 deadline → expected to rise)
+  grossAwardedApprox: 99728,        // 95,934 + 3,317 + 294 + 183
+  activeApproxAfterOptOuts: 98328,  // grossAwardedApprox − ~1,400 opt-outs
+  prevAwarded: 95934,      // "nearly 96,000 previously awarded" = our prior capacity figure
+  get t2RemainingAfterCascade() { return 20383 - this.t2Cascaded; }, // ≈ 17,066 T2 still ahead of T3
+};
+
 const IddingsPlanner = () => {
   const { tab } = useParams();
   const navigate = useNavigate();
@@ -111,7 +132,7 @@ const IddingsPlanner = () => {
     { item: "NBCA Financial Aid", status: "Granted ($16,200)", date: "March 31", type: "success", funding: "Tuition Credit" },
     { item: "NBCA Scholarship", status: "Pending (applications complete)", date: "By May 31", type: "pending", funding: "Tuition Credit" },
     { item: "ACE Scholarships", status: "Processed; awaiting decision", date: "Reviewed Mar 7; decision by end of June", type: "pending", funding: "Optional Tuition Scholarship" },
-    { item: "TEFA Grant (ESA)", status: `Waitlisted (Tier 3) — band ${IDDINGS_BUCKET.label}`, date: `Comptroller notified us ${IDDINGS_BUCKET.notifiedOn}: bucket ${IDDINGS_BUCKET.label} (Tier 3 portion ≈9,618–29,617). Past both modeled cutoffs — Year 1 funded seat unlikely barring large cascades.`, type: "pending", funding: "Odyssey ESA Account" },
+    { item: "TEFA Grant (ESA)", status: `Waitlisted (Tier 3) — band ${IDDINGS_BUCKET.label}`, date: `Comptroller notified us ${IDDINGS_BUCKET.notifiedOn}: bucket ${IDDINGS_BUCKET.label} (Tier 3 portion ≈9,618–29,617). Past both modeled cutoffs — Year 1 funded seat unlikely barring large cascades. May 29: cascade began — ${MAY29_CASCADE.t2Cascaded.toLocaleString()} more Tier 2 awarded, ~${MAY29_CASCADE.t2RemainingAfterCascade.toLocaleString()} Tier 2 still ahead of T3.`, type: "pending", funding: "Odyssey ESA Account" },
   ];
 
   // Checklist Data
@@ -809,6 +830,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
     { date: 'May 11', day: 'Mon', isoDate: '2026-05-11', event: 'TEFA Waitlist Notifications + Opt-In Portal Opens', type: 'tefa', desc: `Per the revised May 7 Lottery Update PDF: the week of May 11, the program notifies students in all tiers of their approximate waitlist position. **Update ${IDDINGS_BUCKET.notifiedOn}:** bucket received — **${IDDINGS_BUCKET.label}**. Odyssey continues to show all 3 Iddings students as "Eligible" with the standard waitlist message; precise rank within the band is not provided. Per the May 12 Waitlist Information PDF, positions arrive as **bucket ranges** (1–1,000 / 1,001–2,000 / … / 100,001+), with precise numbers only for higher-list families. This is the sharpest TEFA signal we will have before NBCA scholarship awards finalize by May 31 and before the Jun 30 NBCA withdrawal deadline.`, funding: 'Waitlist Position + Scholarship Input' },
     { date: 'May 15', day: 'Fri', isoDate: '2026-05-15', event: 'NBCA Financial Aid / Scholarship Application Deadline', type: 'nbca', desc: 'Per Nanette Jones (Apr 28), Iddings financial aid and scholarship applications are in order, with all documents and recommendations uploaded. No further action needed unless the committee requests clarification.', funding: 'Application Window Closes' },
     { date: 'May 22', day: 'Fri', isoDate: '2026-05-22', event: 'T1 Appeals Window Closes (est.)', type: 'tefa', desc: '30 days after the first Apr 22 notifications. Per the Apr 22 press release: "Parents may appeal funding determinations within 30 days of receiving their notice; however, adjustments will be made only based on school district and Individualized Education Program documentation." Narrow relevance to Iddings — would only matter if a child obtained a qualifying IEP (moving from T3 to T1).', funding: 'Appeal Deadline' },
+    { date: 'May 29', day: 'Fri', isoDate: '2026-05-29', event: `TEFA Cascade Begins — ${MAY29_CASCADE.t2Cascaded.toLocaleString()} More Tier 2 Awarded`, type: 'tefa', desc: `Per the Comptroller's May 29 News & Updates post: ${MAY29_CASCADE.t2Cascaded.toLocaleString()} waitlisted Tier 2 students awarded using funds freed by opt-outs and homeschool/other downgrades ($2,000), plus ${MAY29_CASCADE.spedAwards.toLocaleString()} special-education awards and ${MAY29_CASCADE.spedSiblings.toLocaleString()} of their siblings (from the appeals reserve). Gross awards now ≈ ${MAY29_CASCADE.grossAwardedApprox.toLocaleString()}; after ~${MAY29_CASCADE.optOuts.toLocaleString()} opt-outs, ≈ ${MAY29_CASCADE.activeApproxAfterOptOuts.toLocaleString()} active. Every new award went to Tier 2 — confirming strict tier order — leaving ≈ ${MAY29_CASCADE.t2RemainingAfterCascade.toLocaleString()} Tier 2 still ahead of Tier 3. The ~1.4% opt-out rate is a pre-deadline trickle; the real attrition wave is June and especially the Jul 15 opt-in/opt-out deadline. Nothing has reached our ${IDDINGS_BUCKET.label} band yet.`, funding: 'Observed Cascade (T2)' },
     { date: 'May 31', day: 'Sun', isoDate: '2026-05-31', event: 'NBCA Scholarship Awards Finalized (est.)', type: 'nbca', desc: `Per NBCA (Nanette Jones / Michelle Leidy, Apr 28): financial aid and NBCA scholarship awards are expected by May 31. TEFA waitlist bucket (${IDDINGS_BUCKET.label}, received ${IDDINGS_BUCKET.notifiedOn}) can be forwarded to the committee — band sits past the modeled funded/offer-depth cutoffs, so NBCA need should be planned assuming zero TEFA in Year 1.`, funding: 'Credited to Tuition' },
     { date: 'Jun 01', day: 'Mon', isoDate: '2026-06-01', event: 'TEFA July-Funding Track: Family Opt-In Deadline', type: 'tefa', desc: 'Per the Apr 28 Lottery Update PDF: parents on the July 1 funding track must opt in and select their participating private school by this date. Awarded families who miss this deadline shift to the August-funding track (Jul 15 family deadline). Non-confirmations begin trickling waitlist movement — but the bulk arrives later.', funding: 'July Track Family Deadline' },
     { date: 'Jun 15', day: 'Mon', isoDate: '2026-06-15', event: 'TEFA July-Funding Track: School Confirms Enrollment', type: 'tefa', desc: `Per the Apr 28 Lottery Update PDF: participating private schools must confirm enrollment through the program portal by this date for July 1 funding. Key trigger for waitlist cascade — the state now formally knows which Jun 1 selections were completed vs. which fell through. Our ${IDDINGS_BUCKET.label} band sits past the modeled cutoffs, so meaningful movement for us depends on a much larger cascade than this date typically produces.`, funding: 'July Track School Lock-In' },
@@ -1134,6 +1156,9 @@ Text STOP to opt-out`}
                 <p className="text-sm text-tefa-body mb-2">
                     The revised May 7 Lottery Update PDF gives exact counts: <strong>{analysis.firstRoundAwards.toLocaleString()} T1-family awards</strong>, <strong>{analysis.officialT2Awards.toLocaleString()} Tier 2 awards</strong>, and <strong>{analysis.unfundedT2.toLocaleString()} Tier 2 students waitlisted</strong> ahead of Tier 3. Total awards to date are <strong>{analysis.capacity.toLocaleString()}</strong>, matching the "nearly 96,000" public reporting. Tier 2 is ~{tier2FundingRate.toFixed(1)}% funded initially.
                 </p>
+                <p className="text-sm text-tefa-body mb-2 bg-tefa-green/5 border border-tefa-green/20 rounded-lg p-2.5">
+                    <strong>May 29 update — the cascade has begun (and it's flowing exactly as modeled).</strong> The Comptroller awarded <strong>{MAY29_CASCADE.t2Cascaded.toLocaleString()}</strong> more <strong>Tier 2</strong> waitlisted students (funded by opt-outs + homeschool/other downgrades to $2,000), plus <strong>{(MAY29_CASCADE.spedAwards + MAY29_CASCADE.spedSiblings).toLocaleString()}</strong> special-education awards ({MAY29_CASCADE.spedAwards.toLocaleString()} students + {MAY29_CASCADE.spedSiblings.toLocaleString()} siblings, from the appeals reserve). Gross awards ≈ <strong>{MAY29_CASCADE.grossAwardedApprox.toLocaleString()}</strong>; after ~{MAY29_CASCADE.optOuts.toLocaleString()} opt-outs, ≈ <strong>{MAY29_CASCADE.activeApproxAfterOptOuts.toLocaleString()} active</strong>. Every new award went to Tier 2 (strict tier order), leaving ≈ <strong>{MAY29_CASCADE.t2RemainingAfterCascade.toLocaleString()} Tier 2 still ahead of Tier 3</strong> — nothing has reached our band yet, but the queue ahead is shrinking on schedule.
+                </p>
                 <ul className="text-xs text-tefa-body/80 space-y-1 list-disc pl-5">
                     <li><strong>May 4-6:</strong> T2 award notifications go out; awarded families see funding amounts in the portal.</li>
                     <li><strong>Week of May 11 → May 15:</strong> notification received {IDDINGS_BUCKET.notifiedOn} as <strong>{IDDINGS_BUCKET.label}</strong> (Tier 3 portion ≈9,618–29,617). All three Iddings students share this band under the household-rank rule. Odyssey portal continues to open for awarded families to opt in.</li>
@@ -1154,6 +1179,10 @@ Text STOP to opt-out`}
                 <div className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-tefa-gold/40 bg-tefa-gold/10 px-3 py-2.5 text-xs text-tefa-navy">
                   <span className="font-bold">Waitlist rank received:</span>
                   <span>Bucket <strong>{IDDINGS_BUCKET.label}</strong> ({IDDINGS_BUCKET.notifiedOn}) — Tier 3 portion ≈ {(IDDINGS_BUCKET.lo - analysis.unfundedT2).toLocaleString()}–{(IDDINGS_BUCKET.hi - analysis.unfundedT2).toLocaleString()}. Open the <button type="button" onClick={() => navigate('/analysis')} className="font-bold underline decoration-tefa-navy/60 hover:text-tefa-green">Analysis</button> tab — the band slider on the first gold card shows the plausibility spread across this range.</span>
+                </div>
+                <div className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-tefa-green/30 bg-tefa-green/5 px-3 py-2.5 text-xs text-tefa-navy">
+                  <span className="font-bold">May 29 cascade:</span>
+                  <span>{MAY29_CASCADE.t2Cascaded.toLocaleString()} more Tier 2 awarded from the waitlist → ≈ {MAY29_CASCADE.t2RemainingAfterCascade.toLocaleString()} Tier 2 still ahead of us; ~{MAY29_CASCADE.activeApproxAfterOptOuts.toLocaleString()} active awards (after ~{MAY29_CASCADE.optOuts.toLocaleString()} opt-outs). Cascade moved in strict tier order — nothing has reached Tier 3 yet.</span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm mb-4">
                     <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
@@ -1337,12 +1366,14 @@ Text STOP to opt-out`}
                         <ul className="list-disc ml-5 text-tefa-body/80 space-y-1 text-xs">
                             <li>For T4 in Year 1: correct — effectively 0%.</li>
                             <li>For T3: <strong>possible only through upside beyond the conservative case.</strong> With the official May 4 T2 award batch, the T2 backlog ahead of T3 is ~{analysis.unfundedT2.toLocaleString()} students. At the central 15% attrition rate, Tier 2 still absorbs the cascade (<strong>{analysis.effectiveTier3Rate.toFixed(1)}% individual / {analysis.effectiveFamilyRate.toFixed(1)}% family</strong>). T3 begins around {(analysis.recursiveT3Threshold * 100).toFixed(1)}% total attrition, or through unused reserve / more homeschool-other selections.</li>
+                            <li><strong>Observed vs. projected (May 29):</strong> the cascade is live and on-track — {MAY29_CASCADE.t2Cascaded.toLocaleString()} more Tier 2 awarded (the first realization of the projected attrition cascade), leaving ~{MAY29_CASCADE.t2RemainingAfterCascade.toLocaleString()} Tier 2 ahead of Tier 3 (was {analysis.unfundedT2.toLocaleString()}); all went to Tier 2, confirming strict tier order. The ~{MAY29_CASCADE.optOuts.toLocaleString()} opt-outs so far (~1.4%) are <strong>not</strong> evidence attrition is running low — this window has no decision pressure yet. The real attrition wave is <strong>June and especially July</strong>: the Jul 1 first-funding sticker shock (only 25% of the award arrives) and the Jul 15 confirm/homeschool/opt-out deadline. We keep 15% central.</li>
+                            <li><strong>Reserve drawdown caveat:</strong> the {(MAY29_CASCADE.spedAwards + MAY29_CASCADE.spedSiblings).toLocaleString()} special-education awards ({MAY29_CASCADE.spedAwards.toLocaleString()} students + {MAY29_CASCADE.spedSiblings.toLocaleString()} siblings) were paid from the <em>appeals reserve</em> — the same inferred ~$100M pool the "$25M reaches the waitlist" upside lever draws on. SPED appeals deploying is a mild <strong>drag</strong> on the Tier 3 upside, not a help.</li>
                             <li>For next year (2027-28): likely tighter for <strong>new</strong> T2/T3/T4 applicants if Year 1 uses most of the biennium cap, but "<em>slim to none</em>" is still not proven until final spend, churn, and implementation details are known.</li>
                         </ul>
                     </div>
                 </div>
                 <div className="mt-4 p-3 bg-amber-100 rounded-lg text-xs text-amber-900 border border-amber-300">
-                    <strong>Sources:</strong> Texas Comptroller, <em>TEFA Application Insights: Year 1</em> (Apr 2026), pages 5 &amp; 8 · Comptroller Apr 2 press release · Comptroller Apr 22 press release · <strong>TEFA Lottery Update PDF (revised May 7, 2026)</strong> with exact counts (28,233 T1 / 16,520 siblings / 51,181 T2 awarded / 20,383 T2 waitlisted / 65,368 T3 / 13,245 T4a / 53,706 T4b), week-of-May-11 waitlist-position notifications, and two-track Jun 1/Jul 15 family deadlines · SB 2 §29.3521(c-1), §29.3521(d), §29.361(a)(1). ·{' '}
+                    <strong>Sources:</strong> Texas Comptroller, <em>TEFA Application Insights: Year 1</em> (Apr 2026), pages 5 &amp; 8 · Comptroller Apr 2 press release · Comptroller Apr 22 press release · <strong>TEFA Lottery Update PDF (revised May 7, 2026)</strong> with exact counts (28,233 T1 / 16,520 siblings / 51,181 T2 awarded / 20,383 T2 waitlisted / 65,368 T3 / 13,245 T4a / 53,706 T4b), week-of-May-11 waitlist-position notifications, and two-track Jun 1/Jul 15 family deadlines · <strong>Comptroller News &amp; Updates, "Additional Awards Issued to Waitlisted Students" (May 29, 2026)</strong> — {MAY29_CASCADE.t2Cascaded.toLocaleString()} additional Tier 2 awards + {MAY29_CASCADE.spedAwards.toLocaleString()} SPED + {MAY29_CASCADE.spedSiblings.toLocaleString()} siblings, ~{MAY29_CASCADE.optOuts.toLocaleString()} opt-outs, ~{MAY29_CASCADE.activeApproxAfterOptOuts.toLocaleString()} active · SB 2 §29.3521(c-1), §29.3521(d), §29.361(a)(1). ·{' '}
                     <a
                       href="https://support.withodyssey.com/hc/en-us/categories/44027751004699-Texas-Education-Freedom-Accounts-Program"
                       target="_blank"
