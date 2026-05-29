@@ -128,6 +128,39 @@ T1 (incl. siblings) is 100% funded — AWARDED & NOTIFIED. T3 / T4 receive 0 fro
 
 With the planner-default **$50M** waitlist pool, Tier 3 no longer waits for the attrition-only **17.5%** threshold. The $50M first reduces the remaining T2 queue, so T3 starts around **13.1%** total attrition. This is why the projected outcome can become positive before 15% when the waitlist-pool slider is above $0.
 
+### 1.5a May 29, 2026 observed cascade (snapshot + tracking — no assumption change)
+
+The Comptroller's May 29 News & Updates post (*"Additional Awards Issued to Waitlisted Students"*) is the **first observed waitlist cascade** since the May 4 Tier 2 batch. It records:
+
+- **3,317** waitlisted **Tier 2** students newly awarded, funded by awardees who opted out or selected **homeschool/other** (reducing their amount to $2,000). All assigned to **priority tier 2** (≤200% FPL).
+- **294** additional awards based on **special-education** info confirmed on file with TEA, plus **183** siblings of those students (= **477** total).
+- Running total ≈ **just under 100,000** awarded ("nearly 96,000 previously" + these); after **~1,400** opt-outs, ≈ **just over 98,000 active**.
+- The waitlist remains **dynamic**; more awards as families opt out and appeals resolve.
+
+**Reconciliation with the model (validates v10/v11):**
+
+```
+95,934 awards to date (44,753 T1-family + 51,181 T2)   ← "nearly 96,000 previously awarded"
++ 3,317 T2 cascade + 294 SPED + 183 SPED-siblings       = 99,728 gross  ← "slightly fewer than 100,000"
+− ~1,400 opt-outs                                        ≈ 98,328 active ← "just over 98,000"
+```
+
+**What this confirms:**
+- **Strict tier order.** All 3,317 cascade awards went to Tier 2 — empirical confirmation that every unfunded T2 spot clears before any T3 offer. Nothing has reached Tier 3 yet.
+- **Cascade fuel = opt-outs + homeschool/other downgrades**, exactly as §1.5 / §4.3 model it.
+- **Remaining T2 backlog ahead of T3 ≈ 20,383 − 3,317 = 17,066.** Track this as observed progress; do **not** hardcode it into the engine, which already projects the full cascade from the 20,383 baseline (the 3,317 are the first realization of that projection — subtracting them too would double-count).
+- **SPED reserve drawdown.** The 477 SPED awards were paid from the **appeals reserve** — the same inferred ~$100M pool the §4.3a/§4.3b "$25M reaches the waitlist" upside lever draws on. SPED deployment is therefore a mild **drag** on the T3 upside lever, not a help.
+
+**What does NOT change — attrition stays 15% central (8–25% range).** The ~1,400 opt-outs (~1.4%) are a **pre-deadline trickle**, not evidence attrition is running low.
+
+> **Model the real attrition wave as June and especially July, not May.** The May window has **no decision pressure** — families have not yet had to choose. The bulk of opt-outs and homeschool/other downgrades will land:
+> - **June:** the **Jun 1** July-funding-track family opt-in deadline and **Jun 15** school-confirmation deadline force the first real wave of confirm/decline decisions.
+> - **July (the largest event):** **Jul 1** first-funding disbursement is the sticker-shock moment — families see only ~25% of the award (~$2,618 of a $10,474 private award) against a full tuition bill — and **Jul 15** is the hard August-track confirm / homeschool-other / opt-out deadline. Per §2.3 and the Apr 28 PDF, **Jul 15 is the single largest attrition event of Year 1.**
+>
+> A ~1.4% opt-out read in late May is therefore fully consistent with the 15% central case accruing by year-end. **Do not lower the central attrition assumption based on the May snapshot** — the curve is back-loaded into June/July by design of the program calendar.
+
+Treat the May 29 counts as a **tracking** data point, not a recalibration.
+
 ### 1.6 Capacity sensitivity (legacy IEP-scalar models — DO NOT USE)
 
 *All legacy IEP-scalar derivations (~89,570, ~85,358, ~92,573, ~76,019, ~76,942), prior no-overhead figures (~111,264), prior $55M-overhead figures (~104,812), the pre-May-4 full-admin-cap derived figure (~101,293), and the May 4 lower-bound 53,000+ framing predate the current model. Use the revised May 7 exact counts as the baseline, not setting-mix derivations.*
@@ -451,6 +484,7 @@ At the central 15% estimate, Tier 3 does not move under the conservative attriti
 - **v10** (May 6, **current conservative baseline** — revised PDF exact counts): awards to date **95,934** = 44,753 T1-family + 51,181 T2; T2 waitlist **20,383**; T3 **65,368**. Attrition-only T3 odds remain **0% / 0%** at 15%; T3 begins around **17.5%** attrition. The May 7 PDF revision is wording-only (no count or model changes) — see §1 note.
 - **v11** (May 6, personal research default): use separate decline rates — 15% T1-family, 18% T2 first-wave, 35% late replacement-offer decline — plus **$25M** net reserve reaching the regular waitlist. This produces roughly **7,150 accepted T3 awards**, **11,000 T3 queue depth offered**, **10.9% accepted-award rate**, and **29.4% family-of-3 accepted-award odds**. Queue-depth odds for a willing-to-accept family of 3 are higher (~42.5%) because declined late offers consume queue depth but not award dollars. Sensitivity only until an official reserve table and actual opt-in/decline data are published.
 - **v12** (May 11+ waitlist position): when a family has a notified position, map **global vs tier-only** ranks per §4.3c and compare Tier 3 ordinal to the ~7,150 / ~11,000 personal-default cutoffs (see Iddings planner **Analysis** tab). Pool averages are the fallback when no rank is known.
+- **v13** (May 29 observed cascade — snapshot + tracking, **no count or assumption change**): the Comptroller's May 29 post reports the first live cascade — **3,317** additional Tier 2 awards (from opt-outs + homeschool/other downgrades) + **294 SPED + 183 siblings** (from the appeals reserve); ~**1,400** opt-outs → ~**98,000 active** of ~**99,728 gross**. This **validates** v10/v11: awards moved in strict tier order, remaining T2 backlog ahead of T3 ≈ **17,066** (20,383 − 3,317), and the reconciliation matches within rounding (§1.5a). Attrition stays **15% central** — the ~1.4% opt-out rate is pre-Jul-15 and not a recalibration. The 477 SPED awards draw down the same inferred reserve the $25M-to-waitlist lever uses, a mild drag on the T3 upside. Engine math unchanged; the 3,317 are tracked as observed progress, not subtracted from the baseline.
 
 ### 4.5 What's NOT modeled
 
