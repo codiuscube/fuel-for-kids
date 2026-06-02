@@ -2792,19 +2792,20 @@ Text STOP to opt-out`}
                                 <div className="bg-white rounded p-3 border border-red-200">
                                     <div className="text-xs text-red-800 uppercase font-bold mb-1">Commit Past June 30</div>
                                     <ul className="text-red-700 space-y-1 text-xs">
-                                        <li>Full tuition contracts bind — ~$40,950 for 3 children</li>
+                                        <li>Tuition penalties bind — 10% ($4,802.50) in July, 20% ($9,605.00) in August</li>
                                         <li>Preserves eligibility for the Jul 15 opt-out cascade (largest Year 1 attrition event, per Apr 22 press release)</li>
                                         <li>The bet: a large July/August cascade reaches the {IDDINGS_BUCKET.label} band. Per the May 7 + May 12 PDFs and the model, plausible but unlikely</li>
-                                        <li>Maximum financial exposure without guaranteed funding</li>
+                                        <li>Significant financial exposure without guaranteed funding</li>
                                     </ul>
                                 </div>
                             </div>
                             <div className="bg-white rounded p-3 border border-tefa-navy/10">
-                                <div className="text-xs text-tefa-body/50 uppercase font-bold mb-1">Dual-Track Mitigation Strategy</div>
-                                <ul className="text-tefa-body/70 space-y-1 text-xs">
-                                    <li><strong>TEFA + NBCA FACTS Aid ($16,200 granted):</strong> If TEFA is awarded ($10,474 x 3 = $31,422) plus granted aid ($16,200), total coverage exceeds tuition — fully subsidized</li>
-                                    <li><strong>NBCA Scholarship (pending):</strong> NBCA expects awards by June 5; with band {IDDINGS_BUCKET.label} now known, plan NBCA need on the assumption of zero TEFA in Year 1. Up to 35% of tuition (~$4,777/child max)</li>
-                                    <li><strong>Without TEFA:</strong> NBCA Aid ($16,200) + potential scholarship reduces out-of-pocket, but significant gap remains. June 30 withdrawal is the safety valve.</li>
+                                <div className="text-xs text-tefa-body/50 uppercase font-bold mb-1">The June Playbook (Mitigation Strategy)</div>
+                                <ul className="text-tefa-body/70 space-y-2 text-xs">
+                                    <li><strong>1. Wait for Final Numbers (June 5 – June 20):</strong> Let the NBCA Scholarship (expected June 5) and ACE Scholarship (expected end of June) come in. If the final out-of-pocket gap is affordable without TEFA, stay enrolled. If not, proceed to Step 2.</li>
+                                    <li><strong>2. The Late-June Negotiation (June 24):</strong> If unaffordable, contact NBCA. Explain the gap, note the TEFA waitlist cascade won't happen until mid-July, and state you cannot risk the $4,800 penalty on July 1. Ask for a written extension of the penalty-free withdrawal date to July 31.</li>
+                                    <li><strong>3. The "Drop-Dead" Decision (June 29):</strong> If NBCA grants the extension, ride out the July 15 TEFA cascade. If they say no, formally withdraw on June 29 to protect against the $4,800 penalty.</li>
+                                    <li><strong>4. The "Withdraw and Wait" Backup:</strong> Withdrawing does not cancel the TEFA application. If a miracle cascade reaches band {IDDINGS_BUCKET.label} in August, call NBCA to re-enroll with the ~$31,000 in ESA funds.</li>
                                 </ul>
                             </div>
                         </div>
