@@ -79,14 +79,14 @@ const IddingsPlanner = () => {
   const [bandRank, setBandRank] = useState(IDDINGS_BUCKET.lo); // Band slider value (drives the input)
 
   // Student Data
+  // Per-grade 2026-27 gross tuition confirmed by Nanette: HS $16,790 + MS $16,050 + Elem $15,185 = $48,025
   const students = [
-    { name: 'Cassius', grade: '9th Grade', school: 'High School', aceAmount: 4000, nbcaAid: 5850 },
-    { name: 'Dorothy', grade: '7th Grade', school: 'Middle School', aceAmount: 3000, nbcaAid: 5600 },
-    { name: 'Sebastian', grade: '4th Grade', school: 'Elementary', aceAmount: 3000, nbcaAid: 4750 }
+    { name: 'Cassius', grade: '9th Grade', school: 'High School', tuition: 16790, aceAmount: 4000, nbcaAid: 5850 },
+    { name: 'Dorothy', grade: '7th Grade', school: 'Middle School', tuition: 16050, aceAmount: 3000, nbcaAid: 5600 },
+    { name: 'Sebastian', grade: '4th Grade', school: 'Elementary', tuition: 15185, aceAmount: 3000, nbcaAid: 4750 }
   ];
 
   // Financial Data State - "Most Likely Scenario" Defaults
-  const [tuition, setTuition] = useState(48025);
   const [tefaPerStudent, setTefaPerStudent] = useState(10474);
 
   // Default: TEFA unlikely for T3 (OFF per Comptroller Apr 3), ACE unlikely (OFF)
@@ -95,15 +95,45 @@ const IddingsPlanner = () => {
   const [paymentTefaTrack, setPaymentTefaTrack] = useState('august');
   const [paymentPlanMode, setPaymentPlanMode] = useState('recommended');
 
-  // NBCA Aid - Granted: Cassius $5,850 + Dorothy $5,600 + Sebastian $4,750 = $16,200
-  const nbcaAidAmount = 16200;
-  const siblingDiscountAmount = 1518.5;
+  // Per-student enrollment — model partial scenarios (e.g. only Cassius attends).
+  const [enrolled, setEnrolled] = useState({ Cassius: true, Dorothy: true, Sebastian: true });
+
+  // NBCA Scholarship - AWARDED Jun 5 (Nanette Jones email): $4,000 per student = $12,000.
+  // NBCA lets us apply funds to a specific student's balance OR split them; allocate per child here.
+  // Accept by replying to NBCA by Jun 15. An allocation on a non-enrolled child is forfeited unless NBCA transfers it.
+  const NBCA_SCHOLARSHIP_AWARD = 12000;
+  const [scholarshipAlloc, setScholarshipAlloc] = useState({ Cassius: 4000, Dorothy: 4000, Sebastian: 4000 });
+
+  // FACTS applies the full family sibling discount to Sebastian's account (per the Jun balances screen).
+  const siblingDiscountFull = 1518.5;
   const factsCardTransactionFee = 92.43;
 
-  // NBCA Scholarship - Depends on TEFA outcome (either/or per NBCA). Defaulting to 0.
-  const [nbcaScholarshipAmount, setNbcaScholarshipAmount] = useState(0);
+  // Enrollment-derived figures — everything recomputes to just the enrolled students.
+  const enrolledStudents = students.filter(s => enrolled[s.name]);
+  const enrolledCount = enrolledStudents.length;
 
-  // Fee Calculations (One-time)
+  const tuition = enrolledStudents.reduce((acc, s) => acc + s.tuition, 0);
+  // NBCA Aid - Granted: Cassius $5,850 + Dorothy $5,600 + Sebastian $4,750 = $16,200 (all 3 enrolled)
+  const nbcaAidAmount = enrolledStudents.reduce((acc, s) => acc + s.nbcaAid, 0);
+  // Sibling discount applies only when 2+ students are enrolled (approx; NBCA's exact 2-child schedule may differ).
+  const siblingDiscountAmount = enrolledCount >= 2 ? siblingDiscountFull : 0;
+  // Scholarship that actually credits = allocations on enrolled students only.
+  const nbcaScholarshipAmount = enrolledStudents.reduce((acc, s) => acc + (scholarshipAlloc[s.name] || 0), 0);
+  const totalScholarshipAllocated = students.reduce((acc, s) => acc + (scholarshipAlloc[s.name] || 0), 0);
+
+  // Per-student net balance matching the FACTS screen: tuition − own aid − (sibling disc. on Sebastian) − scholarship.
+  const studentBalances = students.map(s => {
+    const isEnrolled = !!enrolled[s.name];
+    const afterAid = s.tuition - s.nbcaAid;
+    const sib = (isEnrolled && s.name === 'Sebastian' && enrolledCount >= 2) ? siblingDiscountFull : 0;
+    const schol = isEnrolled ? (scholarshipAlloc[s.name] || 0) : 0;
+    const preScholarship = afterAid - sib;
+    const balance = isEnrolled ? Math.max(0, preScholarship - schol) : 0;
+    const overflow = isEnrolled ? Math.max(0, schol - preScholarship) : 0; // scholarship beyond what this child owes
+    return { ...s, isEnrolled, afterAid, sib, schol, preScholarship, balance, overflow };
+  });
+
+  // Fee Calculations (One-time) — already paid for all 3, regardless of go-forward enrollment.
   const fees = {
     nbcaApp: 150 * 3, // $150 per student
     nbcaEnroll: (175 + 55) * 3, // $175 + $55 additional enrollment fee per student x 3
@@ -113,24 +143,28 @@ const IddingsPlanner = () => {
   const totalFees = fees.nbcaApp + fees.nbcaEnroll + fees.factsApp + fees.aceApp;
 
   // Recurring Financial Calculations
-  const totalTefa = includeTefa ? tefaPerStudent * 3 : 0;
-  const totalAce = includeAce ? students.reduce((acc, s) => acc + s.aceAmount, 0) : 0;
+  const totalTefa = includeTefa ? tefaPerStudent * enrolledCount : 0;
+  const totalAce = includeAce ? enrolledStudents.reduce((acc, s) => acc + s.aceAmount, 0) : 0;
 
   const totalAid = totalTefa + totalAce + nbcaAidAmount + siblingDiscountAmount + nbcaScholarshipAmount;
   const finalCost = tuition - totalAid;
   const factsBalanceDue = Math.max(0, finalCost);
   const monthlyCost = factsBalanceDue / 10; // 10 month plan estimate
   const monthlyDraftWithCardFee = monthlyCost > 0 ? monthlyCost + factsCardTransactionFee : 0;
-  const tefaTotalAward = tefaPerStudent * students.length;
+  const tefaTotalAward = tefaPerStudent * enrolledCount;
+  // Per the Jun 4 press release, private school students receive their award in three
+  // installments: 25% first (Jul 1 or mid-Aug), an additional 25% on Oct 1 (→50%
+  // cumulative), and the remaining 50% on Feb 1 (→100%). This supersedes the SB 2
+  // §29.362(a) default three-tranche schedule (25% / 50% cumulative / balance by Apr 1).
   const tefaFirstTranche = tefaTotalAward * 0.25;
-  const tefaCumulativeSecondTranche = tefaTotalAward * 0.75;
+  const tefaCumulativeSecondTranche = tefaTotalAward * 0.50; // cumulative through Oct 1
 
   // Status Tracking Data
   const appStatus = [
     { item: "NBCA Application", status: "Accepted (3/3)", date: "All 3 Accepted", type: "success", funding: "N/A" },
     { item: "NBCA Enrollment Fee", status: "Paid ($690)", date: "April 2", type: "success", funding: "($175 + $55) x 3" },
     { item: "NBCA Financial Aid", status: "Granted ($16,200)", date: "March 31", type: "success", funding: "Tuition Credit" },
-    { item: "NBCA Scholarship", status: "Delayed; expected by June 5", date: "By June 5", type: "pending", funding: "Tuition Credit" },
+    { item: "NBCA Scholarship", status: "Awarded ($12,000)", date: "June 5 — accept by June 15", type: "success", funding: "Tuition Credit" },
     { item: "ACE Scholarships", status: "Processed; awaiting decision", date: "Reviewed Mar 7; decision by end of June", type: "pending", funding: "Optional Tuition Scholarship" },
     { item: "TEFA Grant (ESA)", status: `Waitlisted (Tier 3) — band ${IDDINGS_BUCKET.label}`, date: `Comptroller notified us ${IDDINGS_BUCKET.notifiedOn}: bucket ${IDDINGS_BUCKET.label} (Tier 3 portion ≈9,618–29,617). Past both modeled cutoffs — Year 1 funded seat unlikely barring large cascades. May 29: cascade began — ${MAY29_CASCADE.t2Cascaded.toLocaleString()} more Tier 2 awarded, ~${MAY29_CASCADE.t2RemainingAfterCascade.toLocaleString()} Tier 2 still ahead of T3.`, type: "pending", funding: "Odyssey ESA Account" },
   ];
@@ -831,7 +865,7 @@ The contribution amount we listed represents the maximum we can sustainably budg
     { date: 'May 15', day: 'Fri', isoDate: '2026-05-15', event: 'NBCA Financial Aid / Scholarship Application Deadline', type: 'nbca', desc: 'Per Nanette Jones (Apr 28), Iddings financial aid and scholarship applications are in order, with all documents and recommendations uploaded. No further action needed unless the committee requests clarification.', funding: 'Application Window Closes' },
     { date: 'May 22', day: 'Fri', isoDate: '2026-05-22', event: 'T1 Appeals Window Closes (est.)', type: 'tefa', desc: '30 days after the first Apr 22 notifications. Per the Apr 22 press release: "Parents may appeal funding determinations within 30 days of receiving their notice; however, adjustments will be made only based on school district and Individualized Education Program documentation." Narrow relevance to Iddings — would only matter if a child obtained a qualifying IEP (moving from T3 to T1).', funding: 'Appeal Deadline' },
     { date: 'May 29', day: 'Fri', isoDate: '2026-05-29', event: `TEFA Cascade Begins — ${MAY29_CASCADE.t2Cascaded.toLocaleString()} More Tier 2 Awarded`, type: 'tefa', desc: `Per the Comptroller's May 29 News & Updates post: ${MAY29_CASCADE.t2Cascaded.toLocaleString()} waitlisted Tier 2 students awarded using funds freed by opt-outs and homeschool/other downgrades ($2,000), plus ${MAY29_CASCADE.spedAwards.toLocaleString()} special-education awards and ${MAY29_CASCADE.spedSiblings.toLocaleString()} of their siblings (from the appeals reserve). Gross awards now ≈ ${MAY29_CASCADE.grossAwardedApprox.toLocaleString()}; after ~${MAY29_CASCADE.optOuts.toLocaleString()} opt-outs, ≈ ${MAY29_CASCADE.activeApproxAfterOptOuts.toLocaleString()} active. Every new award went to Tier 2 — confirming strict tier order — leaving ≈ ${MAY29_CASCADE.t2RemainingAfterCascade.toLocaleString()} Tier 2 still ahead of Tier 3. The ~1.4% opt-out rate is a pre-deadline trickle; the real attrition wave is June and especially the Jul 15 opt-in/opt-out deadline. Nothing has reached our ${IDDINGS_BUCKET.label} band yet.`, funding: 'Observed Cascade (T2)' },
-    { date: 'Jun 05', day: 'Fri', isoDate: '2026-06-05', event: 'NBCA Scholarship Awards Expected (Delayed)', type: 'nbca', desc: `Per NBCA (Nanette Jones, Jun 2): unexpected delay caused the Scholarship Committee not to meet; decisions now expected by the end of this week (June 5). TEFA waitlist bucket (${IDDINGS_BUCKET.label}, received ${IDDINGS_BUCKET.notifiedOn}) can be forwarded to the committee — band sits past the modeled funded/offer-depth cutoffs, so NBCA need should be planned assuming zero TEFA in Year 1.`, funding: 'Credited to Tuition' },
+    { date: 'Jun 05', day: 'Fri', isoDate: '2026-06-05', event: 'NBCA Scholarship Awarded ($12,000)', type: 'nbca', desc: `Per NBCA (Nanette Jones, Jun 5): all three students selected for scholarship awards for 2026-27 — Cassius $4,000, Dorothy $4,000, Sebastian $4,000 = $12,000 total. Flat per-student award, independent of TEFA outcome. Must reply to confirm acceptance by June 15; funds then credited to tuition (can be split across students or applied to one balance). Since the ${IDDINGS_BUCKET.label} TEFA band sits past the modeled cutoffs, this $12,000 is now firm Year-1 aid on top of the $16,200 financial aid.`, funding: 'Credited to Tuition' },
     { date: 'Jun 01', day: 'Mon', isoDate: '2026-06-01', event: 'TEFA July-Funding Track: Family Opt-In Deadline', type: 'tefa', desc: 'Per the Apr 28 Lottery Update PDF: parents on the July 1 funding track must opt in and select their participating private school by this date. Awarded families who miss this deadline shift to the August-funding track (Jul 15 family deadline). Non-confirmations begin trickling waitlist movement — but the bulk arrives later.', funding: 'July Track Family Deadline' },
     { date: 'Jun 15', day: 'Mon', isoDate: '2026-06-15', event: 'TEFA July-Funding Track: School Confirms Enrollment', type: 'tefa', desc: `Per the Apr 28 Lottery Update PDF: participating private schools must confirm enrollment through the program portal by this date for July 1 funding. Key trigger for waitlist cascade — the state now formally knows which Jun 1 selections were completed vs. which fell through. Our ${IDDINGS_BUCKET.label} band sits past the modeled cutoffs, so meaningful movement for us depends on a much larger cascade than this date typically produces.`, funding: 'July Track School Lock-In' },
     { date: 'Jun 16', day: 'TBD', isoDate: '2026-06-16', event: 'TEFA Waitlist Movement Accelerates (est.)', type: 'tefa', desc: `After Jun 15 school confirmations on the July-funding track, unfilled spots cascade down the waitlist (T2 backfill first, then T3). For our ${IDDINGS_BUCKET.label} band the biggest realistic upside event is the post-Jul 15 opt-outs on the August-funding track — and that falls **after** the Jun 30 NBCA withdrawal deadline.`, funding: 'Waitlist Movement' },
@@ -839,11 +873,13 @@ The contribution amount we listed represents the maximum we can sustainably budg
     { date: 'Jun 30', day: 'Tue', isoDate: '2026-06-30', event: 'NBCA Withdrawal Deadline (No Penalty)', type: 'nbca', desc: 'Can withdraw penalty-free before this date per the continuous enrollment agreement. If not withdrawn by June 30, a 10% penalty ($4,802.50) applies for July withdrawals, and a 20% penalty ($9,605.00) applies for August withdrawals. Critical tension: June 30 falls ~2 weeks before the Jul 15 TEFA opt-out/confirmation deadline — meaning the penalty-free NBCA withdrawal decision is made BEFORE the main waitlist-cascade event.', funding: 'N/A' },
     { date: 'Jul 06', day: 'Mon', isoDate: '2026-07-06', event: 'First FACTS Tuition Payment', type: 'nbca', desc: 'Current FACTS schedule shows $3,030.65 due. Nanette confirmed the $92.43 monthly transaction fee applies only to debit/credit cards; checking/savings automatic payments avoid the card usage fee.', funding: 'Tuition Draft' },
     { date: 'Jul 01', day: 'Wed', isoDate: '2026-07-01', event: 'TEFA First Round Funding Available', type: 'tefa', desc: 'Per official TEFA email: "First round of funding becomes available in Odyssey\'s platform." This is when award recipients first see real dollar amounts vs. their actual tuition bill — potential sticker-shock attrition event. Families who drop here create a second wave of waitlist opportunities for those not yet called up.', funding: 'Distribution' },
-    { date: 'Jul 15', day: 'Wed', isoDate: '2026-07-15', event: 'TEFA August-Funding Track: Family Opt-In Deadline', type: 'tefa', desc: 'Per the Apr 22 press release and the Apr 28 PDF: families on the August funding track have until July 15 to confirm enrollment in a participating private school, select homeschool/other ($2,000), or opt out of the program. This is the largest single attrition event of Year 1 — opt-outs cascade funding down the waitlist for both T2 and T3. Note: the May 12 PDF does not commit to a specific August date for first disbursement — only "in August." For FACTS planning, assume mid-to-late August at earliest.', funding: 'August Track Family Deadline' },
-    { date: 'Jul 31', day: 'Fri', isoDate: '2026-07-31', event: 'TEFA August-Funding Track: School Confirms Enrollment', type: 'tefa', desc: 'Per the Apr 28 Lottery Update PDF: participating private schools must confirm enrollments by this date for August funding. Back-office step — no family action required. Any subsequent attrition (mid-school-year) generates late waitlist movement. Note: the May 12 PDF only says "funding in August" with no specific date, unlike the precise July 1 disbursement for the earlier track.', funding: 'August Track School Lock-In' },
+    { date: 'Jul 15', day: 'Wed', isoDate: '2026-07-15', event: 'TEFA August-Funding Track: Family Opt-In Deadline', type: 'tefa', desc: 'Per the Apr 22 press release and the Apr 28 PDF: families on the August funding track have until July 15 to confirm enrollment in a participating private school, select homeschool/other ($2,000), or opt out of the program. This is the largest single attrition event of Year 1 — opt-outs cascade funding down the waitlist for both T2 and T3. Update (Jun 4): the Funding Timelines press release now commits to a date — students whose schools confirm enrollment by Jul 31 receive their first 25% installment by mid-August.', funding: 'August Track Family Deadline' },
+    { date: 'Jul 31', day: 'Fri', isoDate: '2026-07-31', event: 'TEFA August-Funding Track: School Confirms Enrollment', type: 'tefa', desc: 'Per the Apr 28 Lottery Update PDF: participating private schools must confirm enrollments by this date for August funding. Back-office step — no family action required. Any subsequent attrition (mid-school-year) generates late waitlist movement. Update (Jun 4): the Funding Timelines press release confirms students confirmed by this date receive their first 25% installment by mid-August.', funding: 'August Track School Lock-In' },
     { date: 'Aug 01', day: 'TBD', isoDate: '2026-08-01', event: 'TEFA Appeals Reserve → Waitlist (est.)', type: 'tefa', desc: 'Per the Apr 28 PDF item 5: the Comptroller has set aside a reserve budget for successful eligibility / priority-tier / funding-amount appeals. Once the appeals window closes and adjustments are made, any unused reserve cascades to the next-available students on the waitlist — a small upside for waitlisted T2 and T3 families. Magnitude is undisclosed; treat as a sensitivity vector, not baseline.', funding: 'Reserve Cascade' },
-    { date: 'Oct 01', day: 'Thu', isoDate: '2026-10-01', event: 'TEFA Second Funding Release (50%)', type: 'tefa', desc: 'Per the TEFA site, at least 50% of approved funding becomes available by Oct 1. Some families may have re-enrolled in public school by now, freeing additional waitlist spots. SB 2 §29.362(a) sets a three-tranche default: at least 25% by Jul 1, 50% cumulative by Oct 1, balance by Apr 1.', funding: 'Distribution' },
-    { date: 'Apr 01', day: 'Thu', isoDate: '2027-04-01', event: 'TEFA Final Funding Release', type: 'tefa', desc: 'Remaining funding available in participant accounts. Per SB 2 §29.361(e), unused funds carry forward while the child remains eligible and participating; remaining money returns to the program fund when the account closes.', funding: 'Distribution' },
+    { date: 'Sep 15', day: 'Tue', isoDate: '2026-09-15', event: 'TEFA Second-Installment Confirmation Deadline', type: 'tefa', desc: 'Per the Jun 4 Funding Timelines press release: students must have confirmed enrollment in a participating private school by Sept 15 to receive the full second installment (funded Oct 1). Confirmations after this date are prorated to 75%. Sept 15 is also the cutoff to receive a full award for anyone brought off the waitlist.', funding: 'Confirmation Deadline' },
+    { date: 'Oct 01', day: 'Thu', isoDate: '2026-10-01', event: 'TEFA Second Installment (+25% → 50% cumulative)', type: 'tefa', desc: 'Per the Jun 4 Funding Timelines press release: private school students receive an additional 25% of their total award on Oct 1 (50% cumulative). The Comptroller has set the actual private-school schedule at 25% (Jul 1 / mid-Aug) → 25% (Oct 1) → 50% (Feb 1), within the SB 2 §29.362(a) defaults. Students must remain enrolled in a participating private school to receive it.', funding: 'Distribution' },
+    { date: 'Jan 15', day: 'Fri', isoDate: '2027-01-15', event: 'TEFA Final-Installment Confirmation Deadline', type: 'tefa', desc: 'Per the Jun 4 Funding Timelines press release: confirmation deadline for the final 50% installment (funded Feb 1). Confirmations after this date are prorated to 50%.', funding: 'Confirmation Deadline' },
+    { date: 'Feb 01', day: 'Mon', isoDate: '2027-02-01', event: 'TEFA Final Installment (remaining 50%)', type: 'tefa', desc: 'Per the Jun 4 Funding Timelines press release: private school students receive the remaining half of their funding on Feb 1 — earlier and larger than the SB 2 default "balance by Apr 1." Students must remain enrolled in a participating private school. Per SB 2 §29.361(e), unused funds carry forward while the child remains eligible and participating; remaining money returns to the program fund when the account closes.', funding: 'Distribution' },
   ];
 
   const buildRecommendedPaymentDates = () => {
@@ -938,36 +974,37 @@ The contribution amount we listed represents the maximum we can sustainably budg
       note: 'Only if pulled early enough to opt in by Jun 1 and NBCA confirms by Jun 15.',
     },
     {
-      date: 'Early Aug 2026',
+      date: 'Mid-Aug 2026',
       scenario: 'August funding track',
       amount: tefaFirstTranche,
       likelihood: 'More plausible if T3 is reached',
-      note: 'Requires being pulled by Jul 15 and NBCA confirming by Jul 31.',
+      note: 'Per Jun 4 press release: opt in / school confirms by Jul 31 → first 25% by mid-August.',
     },
     {
       date: 'Oct 1, 2026',
-      scenario: 'Second TEFA release',
-      amount: tefaCumulativeSecondTranche,
+      scenario: 'Second installment (+25%)',
+      amount: tefaFirstTranche,
       likelihood: 'Only if already funded',
-      note: 'TEFA site says accounts reach at least 75% cumulative by Oct 1.',
+      note: 'Jun 4 press release: an additional 25% on Oct 1 → 50% cumulative. Confirm enrollment by Sept 15 (prorated to 75% if later).',
     },
     {
-      date: 'Apr 1, 2027',
-      scenario: 'Final TEFA release',
-      amount: tefaTotalAward,
+      date: 'Feb 1, 2027',
+      scenario: 'Final installment (50%)',
+      amount: tefaTotalAward - tefaCumulativeSecondTranche,
       likelihood: 'Only if already funded',
-      note: 'Remaining funds available; unused funds carry forward while eligible.',
+      note: 'Jun 4 press release: remaining 50% on Feb 1. Confirm by Jan 15 (prorated to 50% if later). Must remain enrolled in a participating private school.',
     },
   ];
 
   const getTefaCumulativeByDate = (track, isoDate) => {
     if (track === 'none') return 0;
 
-    const firstReleaseDate = track === 'july' ? '2026-07-01' : '2026-08-01';
+    // Per the Jun 4 press release the August track lands "mid-August"; model as Aug 15.
+    const firstReleaseDate = track === 'july' ? '2026-07-01' : '2026-08-15';
 
-    if (isoDate >= '2027-04-01') return tefaTotalAward;
-    if (isoDate >= '2026-10-01') return tefaCumulativeSecondTranche;
-    if (isoDate >= firstReleaseDate) return tefaFirstTranche;
+    if (isoDate >= '2027-02-01') return tefaTotalAward;        // final 50% on Feb 1
+    if (isoDate >= '2026-10-01') return tefaCumulativeSecondTranche; // +25% → 50% cumulative
+    if (isoDate >= firstReleaseDate) return tefaFirstTranche;  // first 25%
     return 0;
   };
 
@@ -1163,7 +1200,7 @@ Text STOP to opt-out`}
                     <li><strong>May 4-6:</strong> T2 award notifications go out; awarded families see funding amounts in the portal.</li>
                     <li><strong>Week of May 11 → May 15:</strong> notification received {IDDINGS_BUCKET.notifiedOn} as <strong>{IDDINGS_BUCKET.label}</strong> (Tier 3 portion ≈9,618–29,617). All three Iddings students share this band under the household-rank rule. Odyssey portal continues to open for awarded families to opt in.</li>
                     <li><strong>Jun 1 / Jun 15:</strong> family opt-in / school confirmation for the <em>July 1 funding</em> track (a specific date).</li>
-                    <li><strong>Jul 15 / Jul 31:</strong> family opt-in / school confirmation for the <em>August funding</em> track <span className="bg-amber-200 text-amber-900 px-1.5 rounded font-semibold">(PDF gives no specific date — just "in August")</span> — Jul 15 opt-outs are the largest cascade event of Year 1.</li>
+                    <li><strong>Jul 15 / Jul 31:</strong> family opt-in / school confirmation for the <em>August funding</em> track <span className="bg-tefa-green/15 text-tefa-green px-1.5 rounded font-semibold">(Jun 4 release: first 25% by mid-August)</span> — Jul 15 opt-outs are the largest cascade event of Year 1.</li>
                     <li><strong>Reserve budget:</strong> the program holds funds for successful appeals; unused reserve cascades to the next available waitlisted students.</li>
                 </ul>
             </div>
@@ -1302,14 +1339,73 @@ Text STOP to opt-out`}
                         </div>
                         <div className="bg-amber-50 rounded p-3 border border-amber-300">
                             <div className="font-bold text-amber-700 mb-1">August track</div>
-                            <div className="text-tefa-body/80">Family opt-in + school by <strong>Jul 15</strong>; school confirms by <strong>Jul 31</strong> → funding <span className="bg-amber-200 text-amber-900 px-1.5 rounded font-bold">"in August"</span> — <strong>no specific date in the PDF</strong>, unlike the precise July 1 above.</div>
+                            <div className="text-tefa-body/80">Family opt-in + school by <strong>Jul 15</strong>; school confirms by <strong>Jul 31</strong> → first 25% installment <span className="bg-tefa-green/15 text-tefa-green px-1.5 rounded font-bold">by mid-August</span> (Jun 4 press release now gives a date).</div>
                         </div>
+                    </div>
+
+                    {/* Installment schedule — Jun 4 Funding Timelines press release */}
+                    <div className="mt-4 bg-tefa-navy/[0.03] rounded-lg p-3 border border-tefa-navy/10">
+                        <div className="text-xs font-bold text-tefa-navy mb-2 uppercase tracking-wide">Installment schedule (private school) — Jun 4 press release</div>
+                        <p className="text-[11px] text-tefa-body/70 mb-3">
+                            Funding is paid in three installments — <strong>25% / 25% / 50%</strong> — not one lump sum. Per child the award is <strong>${tefaPerStudent.toLocaleString()}</strong>; for all {enrolledCount} enrolled, <strong>${tefaTotalAward.toLocaleString()}</strong>. <span className="text-tefa-body/60">(Homeschool/other instead receive all $2,000 in a single installment.)</span>
+                        </p>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-[11px] text-left">
+                                <thead>
+                                    <tr className="text-tefa-body/60 border-b border-tefa-navy/10">
+                                        <th className="py-1 pr-2 font-semibold">Installment</th>
+                                        <th className="py-1 px-2 font-semibold">Confirm by</th>
+                                        <th className="py-1 px-2 font-semibold">Funded</th>
+                                        <th className="py-1 px-2 font-semibold text-right">Share</th>
+                                        <th className="py-1 pl-2 font-semibold text-right">All {enrolledCount}</th>
+                                        <th className="py-1 pl-2 font-semibold">If confirmed late</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="text-tefa-body/80">
+                                    <tr className="border-b border-tefa-navy/5">
+                                        <td className="py-1 pr-2 font-semibold">1st (July track)</td>
+                                        <td className="py-1 px-2">Jun 15</td>
+                                        <td className="py-1 px-2">Jul 1</td>
+                                        <td className="py-1 px-2 text-right">25%</td>
+                                        <td className="py-1 pl-2 text-right font-mono">${tefaFirstTranche.toLocaleString()}</td>
+                                        <td className="py-1 pl-2 text-tefa-body/50">—</td>
+                                    </tr>
+                                    <tr className="border-b border-tefa-navy/5">
+                                        <td className="py-1 pr-2 font-semibold">1st (Aug track)</td>
+                                        <td className="py-1 px-2">Jul 31</td>
+                                        <td className="py-1 px-2">Mid-Aug</td>
+                                        <td className="py-1 px-2 text-right">25%</td>
+                                        <td className="py-1 pl-2 text-right font-mono">${tefaFirstTranche.toLocaleString()}</td>
+                                        <td className="py-1 pl-2">100%</td>
+                                    </tr>
+                                    <tr className="border-b border-tefa-navy/5">
+                                        <td className="py-1 pr-2 font-semibold">2nd</td>
+                                        <td className="py-1 px-2">Sept 15</td>
+                                        <td className="py-1 px-2">Oct 1</td>
+                                        <td className="py-1 px-2 text-right">25%</td>
+                                        <td className="py-1 pl-2 text-right font-mono">${tefaFirstTranche.toLocaleString()}</td>
+                                        <td className="py-1 pl-2">75% if later</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="py-1 pr-2 font-semibold">Final</td>
+                                        <td className="py-1 px-2">Jan 15</td>
+                                        <td className="py-1 px-2">Feb 1</td>
+                                        <td className="py-1 px-2 text-right">50%</td>
+                                        <td className="py-1 pl-2 text-right font-mono">${(tefaTotalAward - tefaCumulativeSecondTranche).toLocaleString()}</td>
+                                        <td className="py-1 pl-2">50% if later</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p className="text-[11px] text-tefa-body/60 mt-2">
+                            Students must <strong>remain enrolled in a participating private school</strong> to receive each later installment. Anyone brought off the waitlist must confirm by <strong>Sept 15</strong> to receive the full award; later confirmations are prorated. This replaces our earlier model (which followed the SB 2 default of up to 50% cumulative by Oct 1 and the balance by Apr 1).
+                        </p>
                     </div>
                     <p className="text-xs text-tefa-body/70 bg-tefa-red/5 border border-tefa-red/20 rounded p-3 mt-3">
                         <strong className="text-tefa-red">Miss Jul 15 = forfeit.</strong> Families who don't opt in + select a school by Jul 15 lose the award; their funding is re-issued to the next waitlisted student.
                     </p>
                     <p className="text-xs text-tefa-body/70 mt-3">
-                        <strong>FACTS planning note:</strong> The Comptroller has not committed to a calendar date for the August-track first disbursement. With the first FACTS draft on <strong>Jul 6</strong>, assume August funds may not land before mid-to-late August and confirm before relying on them to offset the Jul/Aug draws. <strong>Update (Jun 2):</strong> Nanette confirmed she is modifying the payment plan for TEFA families to align with TEFA disbursements (allocating private pay evenly and scheduling lump sums for TEFA disbursements).
+                        <strong>FACTS planning note:</strong> Per the Jun 4 Funding Timelines press release, the August-track first installment lands <strong>by mid-August</strong>. With the first FACTS draft on <strong>Jul 6</strong>, the July draw still precedes any TEFA funds. <strong>Update (Jun 2):</strong> Nanette confirmed she is modifying the payment plan for TEFA families to align with TEFA disbursements (allocating private pay evenly and scheduling lump sums for TEFA disbursements).
                     </p>
                 </div>
             </div>
@@ -1407,10 +1503,10 @@ Text STOP to opt-out`}
                         <span className="font-bold text-amber-700 text-lg">Waitlist Position: {IDDINGS_BUCKET.label}</span>
                         <span className="text-xs text-tefa-body/40 hidden sm:block">Bucket received {IDDINGS_BUCKET.notifiedOn}; precise rank within the band is not provided. Odyssey shows all 3 kids as "Eligible — waitlisted."</span>
                     </div>
-                    <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-navy/10">
+                    <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-green/20">
                         <span className="text-tefa-body/60 font-medium">NBCA Scholarship</span>
-                        <span className="font-bold text-tefa-navy text-lg">By June 5</span>
-                        <span className="text-xs text-tefa-body/40 hidden sm:block">TEFA bucket ({IDDINGS_BUCKET.label}) already known — review proceeds on zero-TEFA assumption</span>
+                        <span className="font-bold text-green-600 text-lg">$12,000 Awarded</span>
+                        <span className="text-xs text-tefa-body/40 hidden sm:block">$4,000 each (Cassius / Dorothy / Sebastian). Awarded Jun 5 — accept by June 15</span>
                     </div>
                     <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-navy/10">
                         <span className="text-tefa-body/60 font-medium">Withdraw penalty-free by</span>
@@ -1424,7 +1520,7 @@ Text STOP to opt-out`}
                     </div>
                 </div>
                 <div className="mt-4 p-3 bg-tefa-navy/5 rounded-lg text-xs text-tefa-body/70">
-                    <strong>Sunk cost:</strong> $690 enrollment fee (non-refundable). Per the continuous enrollment agreement, withdrawing in July incurs a 10% penalty ($4,802.50), and withdrawing in August incurs a 20% penalty ($9,605.00). Per the Apr 28 Lottery Update PDF, the <strong>Jul 15 opt-in deadline</strong> for the August-funding track is the largest single attrition event of Year 1 — but it falls ~2 weeks AFTER the Jun 30 NBCA penalty-free withdrawal deadline. The Iddings family received their approximate waitlist position ({IDDINGS_BUCKET.label}) on {IDDINGS_BUCKET.notifiedOn}, and NBCA scholarship decisions are now expected by <strong>June 5</strong>.
+                    <strong>Sunk cost:</strong> $690 enrollment fee (non-refundable). Per the continuous enrollment agreement, withdrawing in July incurs a 10% penalty ($4,802.50), and withdrawing in August incurs a 20% penalty ($9,605.00). Per the Apr 28 Lottery Update PDF, the <strong>Jul 15 opt-in deadline</strong> for the August-funding track is the largest single attrition event of Year 1 — but it falls ~2 weeks AFTER the Jun 30 NBCA penalty-free withdrawal deadline. The Iddings family received their approximate waitlist position ({IDDINGS_BUCKET.label}) on {IDDINGS_BUCKET.notifiedOn}, and NBCA awarded <strong>$12,000</strong> in scholarships ($4,000 per student) on <strong>June 5</strong> — acceptance must be confirmed with NBCA by <strong>June 15</strong>.
                 </div>
             </div>
 
@@ -1440,20 +1536,72 @@ Text STOP to opt-out`}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div className="space-y-6">
-                        {/* Tuition input */}
+                        {/* Per-Student Enrollment & Scholarship Allocation */}
                         <div>
-                          <label className="text-xs font-bold text-tefa-body/50 uppercase">Gross 2026-27 Tuition (3 Kids)</label>
-                          <div className="flex items-center mt-1">
-                            <span className="text-tefa-body/40 mr-2">$</span>
-                            <input
-                              type="number"
-                              value={tuition}
-                              onChange={(e) => setTuition(Number(e.target.value))}
-                              className="w-full bg-tefa-light border border-gray-200 rounded p-2 font-mono font-bold text-right"
-                            />
+                          <div className="flex items-center justify-between">
+                            <label className="text-xs font-bold text-tefa-body/50 uppercase">Who attends + Scholarship split</label>
+                            <div className="flex gap-1">
+                              <button
+                                type="button"
+                                onClick={() => setScholarshipAlloc({ Cassius: 4000, Dorothy: 4000, Sebastian: 4000 })}
+                                className="text-[10px] px-2 py-0.5 rounded bg-tefa-green/10 text-tefa-green font-bold hover:bg-tefa-green/20"
+                              >Split $4k each</button>
+                              <button
+                                type="button"
+                                onClick={() => setScholarshipAlloc({ Cassius: 12000, Dorothy: 0, Sebastian: 0 })}
+                                className="text-[10px] px-2 py-0.5 rounded bg-tefa-navy/10 text-tefa-navy font-bold hover:bg-tefa-navy/20"
+                              >All on Cassius</button>
+                            </div>
+                          </div>
+                          <div className="mt-2 space-y-2">
+                            {studentBalances.map(s => (
+                              <div key={s.name} className={`rounded-lg border p-2.5 transition-colors ${s.isEnrolled ? 'bg-tefa-light border-gray-200' : 'bg-gray-100 border-gray-200 opacity-60'}`}>
+                                <div className="flex items-center justify-between">
+                                  <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                      type="checkbox"
+                                      checked={s.isEnrolled}
+                                      onChange={() => setEnrolled(prev => ({ ...prev, [s.name]: !prev[s.name] }))}
+                                      className="w-4 h-4 accent-tefa-green cursor-pointer"
+                                    />
+                                    <span className="font-bold text-tefa-navy text-sm">{s.name}</span>
+                                    <span className="text-[10px] text-tefa-body/50">{s.grade}</span>
+                                  </label>
+                                  <span className="text-[10px] text-tefa-body/50 font-mono">
+                                    ${s.tuition.toLocaleString()} − ${s.nbcaAid.toLocaleString()} aid{s.sib > 0 ? ' − $1,518.50' : ''}
+                                  </span>
+                                </div>
+                                {s.isEnrolled && (
+                                  <div className="flex items-center justify-between mt-2 pl-6">
+                                    <div className="flex items-center gap-1">
+                                      <GraduationCap size={12} className="text-tefa-green"/>
+                                      <span className="text-[11px] text-tefa-body/60">Scholarship</span>
+                                      <span className="text-tefa-body/40 text-xs">$</span>
+                                      <input
+                                        type="number"
+                                        min="0"
+                                        step="100"
+                                        value={s.schol}
+                                        onChange={(e) => setScholarshipAlloc(prev => ({ ...prev, [s.name]: Math.max(0, Number(e.target.value)) }))}
+                                        className="w-20 bg-white border border-tefa-green/30 rounded px-1.5 py-0.5 font-mono text-xs text-right"
+                                      />
+                                    </div>
+                                    <span className={`text-xs font-bold font-mono ${s.balance === 0 ? 'text-green-600' : 'text-tefa-navy'}`}>
+                                      → ${s.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                      {s.overflow > 0 && <span className="text-amber-600 font-medium"> (+${s.overflow.toLocaleString(undefined, {maximumFractionDigits: 2})} over)</span>}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                          <div className={`text-[10px] mt-2 font-medium ${totalScholarshipAllocated === NBCA_SCHOLARSHIP_AWARD ? 'text-tefa-body/50' : 'text-amber-600'}`}>
+                            Scholarship allocated: ${totalScholarshipAllocated.toLocaleString()} of ${NBCA_SCHOLARSHIP_AWARD.toLocaleString()} awarded
+                            {totalScholarshipAllocated > NBCA_SCHOLARSHIP_AWARD && ' — over the award'}
+                            {totalScholarshipAllocated < NBCA_SCHOLARSHIP_AWARD && ` — $${(NBCA_SCHOLARSHIP_AWARD - totalScholarshipAllocated).toLocaleString()} unassigned`}
                           </div>
                           <div className="text-[10px] text-tefa-body/50 mt-1">
-                            Nanette confirmed: HS $16,790 + MS $16,050 + Elem $15,185 = $48,025. After $1,518.50 sibling discount and $16,200 aid, FACTS balance is $30,306.50.
+                            Balances match FACTS (Cassius $10,940 / Dorothy $10,450 / Sebastian $8,916.50 before scholarship). Allocation on a withdrawn child is forfeited unless NBCA transfers it — confirm with Nanette whether overflow rolls to a sibling.
                           </div>
                         </div>
 
@@ -1508,48 +1656,32 @@ Text STOP to opt-out`}
                                 <span className="text-[10px] bg-tefa-green text-white px-1.5 py-0.5 rounded uppercase tracking-wide">Granted</span>
                             </div>
                             <div className="text-xs font-bold text-tefa-green bg-white px-2 py-0.5 rounded border border-tefa-green/30">
-                              $16,200
+                              ${nbcaAidAmount.toLocaleString()}
                             </div>
                           </div>
                           <div className="space-y-1 text-xs text-tefa-green/80">
-                            <div className="flex justify-between"><span>Cassius:</span><span className="font-bold">$5,850</span></div>
-                            <div className="flex justify-between"><span>Dorothy:</span><span className="font-bold">$5,600</span></div>
-                            <div className="flex justify-between"><span>Sebastian:</span><span className="font-bold">$4,750</span></div>
+                            {enrolledStudents.map(s => (
+                              <div key={s.name} className="flex justify-between"><span>{s.name}:</span><span className="font-bold">${s.nbcaAid.toLocaleString()}</span></div>
+                            ))}
                           </div>
                           <div className="text-[10px] text-tefa-green/80 mt-2">
-                                Credited to Tuition
+                                Credited to Tuition{enrolledCount < 3 ? ` (${enrolledCount} of 3 enrolled)` : ''}
                           </div>
                         </div>
 
-                        {/* NBCA Scholarship Slider */}
+                        {/* NBCA Scholarship - Awarded (allocation handled in the per-student panel above) */}
                         <div className="p-3 bg-tefa-green/5 rounded-lg border border-tefa-green/10">
-                          <div className="flex justify-between items-center mb-2">
+                          <div className="flex justify-between items-center mb-1">
                             <div className="font-bold text-tefa-green flex items-center gap-2">
                                 <GraduationCap size={14}/> NBCA Scholarship
-                                <span className="text-[10px] bg-amber-400 text-white px-1.5 py-0.5 rounded uppercase tracking-wide">Pending June 5</span>
+                                <span className="text-[10px] bg-tefa-green text-white px-1.5 py-0.5 rounded uppercase tracking-wide">Awarded</span>
                             </div>
                             <div className="text-xs font-bold text-tefa-green/70 bg-white px-2 py-0.5 rounded border border-tefa-green/20">
-                              ${nbcaScholarshipAmount.toLocaleString()}
+                              ${nbcaScholarshipAmount.toLocaleString()} applied
                             </div>
                           </div>
-                          <input
-                            type="range"
-                            min="0"
-                            max="30000"
-                            step="100"
-                            value={nbcaScholarshipAmount}
-                            onChange={(e) => setNbcaScholarshipAmount(Number(e.target.value))}
-                            className="w-full h-2 bg-tefa-green/20 rounded-lg appearance-none cursor-pointer accent-tefa-green"
-                          />
-                          <div className="flex justify-between text-xs text-tefa-green/60 mt-1 font-medium">
-                            <span>$0</span>
-                            <span>$30k Max</span>
-                          </div>
-                          <div className="text-[10px] text-tefa-green/80 mt-1">
-                                Credited to Tuition
-                          </div>
-                          <div className="text-[10px] text-amber-600 mt-1 font-medium">
-                                NBCA expects awards by June 5; TEFA bucket {IDDINGS_BUCKET.label} (received {IDDINGS_BUCKET.notifiedOn}) → plan need on a zero-TEFA Year 1 basis
+                          <div className="text-[10px] text-tefa-green/80 mt-1 font-medium">
+                                Awarded Jun 5: $4,000 each = $12,000 total. Use the "Who attends + Scholarship split" panel above to move it between kids. Accept by replying to NBCA by Jun 15.
                           </div>
                         </div>
 
@@ -1594,6 +1726,26 @@ Text STOP to opt-out`}
                                 <span>-${nbcaScholarshipAmount.toLocaleString()}</span>
                               </div>
                             )}
+                        </div>
+
+                        {/* Per-student balance mirror — matches the FACTS Balances screen */}
+                        <div className="mb-6 bg-white rounded-lg border border-gray-200 p-3">
+                          <div className="text-[10px] uppercase font-bold text-tefa-body/50 mb-2">Per-Student Balance (after scholarship)</div>
+                          <div className="space-y-1">
+                            {studentBalances.filter(s => s.isEnrolled).map(s => (
+                              <div key={s.name} className="flex justify-between text-sm">
+                                <span className="text-tefa-body/70">{s.name} Iddings</span>
+                                <span className={`font-mono font-bold ${s.balance === 0 ? 'text-green-600' : 'text-tefa-navy'}`}>
+                                  ${s.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                  {s.balance === 0 && <span className="text-[10px] text-green-600 font-medium"> PAID</span>}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                          <div className="flex justify-between text-sm border-t border-gray-200 mt-2 pt-2">
+                            <span className="font-bold text-tefa-body/80">Total Amount Due</span>
+                            <span className="font-mono font-bold text-tefa-navy">${factsBalanceDue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                          </div>
                         </div>
 
                         <div className="border-t-2 border-dashed border-gray-300 pt-4 mt-auto">
@@ -2802,7 +2954,7 @@ Text STOP to opt-out`}
                             <div className="bg-white rounded p-3 border border-tefa-navy/10">
                                 <div className="text-xs text-tefa-body/50 uppercase font-bold mb-1">The June Playbook (Mitigation Strategy)</div>
                                 <ul className="text-tefa-body/70 space-y-2 text-xs">
-                                    <li><strong>1. Wait for Final Numbers (June 5 – June 20):</strong> Let the NBCA Scholarship (expected June 5) and ACE Scholarship (expected end of June) come in. If the final out-of-pocket gap is affordable without TEFA, stay enrolled. If not, proceed to Step 2.</li>
+                                    <li><strong>1. Wait for Final Numbers (June 5 – June 20):</strong> NBCA Scholarship is in — <strong>$12,000 awarded</strong> ($4,000/student), accept by June 15. Now wait on the ACE Scholarship (expected end of June). If the final out-of-pocket gap is affordable without TEFA, stay enrolled. If not, proceed to Step 2.</li>
                                     <li><strong>2. The Late-June Negotiation (June 24):</strong> If unaffordable, contact NBCA. Explain the gap, note the TEFA waitlist cascade won't happen until mid-July, and state you cannot risk the $4,800 penalty on July 1. Ask for a written extension of the penalty-free withdrawal date to July 31.</li>
                                     <li><strong>3. The "Drop-Dead" Decision (June 29):</strong> If NBCA grants the extension, ride out the July 15 TEFA cascade. If they say no, formally withdraw on June 29 to protect against the $4,800 penalty.</li>
                                     <li><strong>4. The "Withdraw and Wait" Backup:</strong> Withdrawing does not cancel the TEFA application. If a miracle cascade reaches band {IDDINGS_BUCKET.label} in August, call NBCA to re-enroll with the ~$31,000 in ESA funds.</li>
@@ -2827,7 +2979,7 @@ Text STOP to opt-out`}
                             <strong>Two mechanisms can reach Tier 3:</strong> attrition from awarded T1/T2 families, plus any uncommitted/appeals money that ultimately reaches the normal T2/T3 waitlist pool. At the current waitlist-pool setting (${(analysis.reserveWaitlistBudget / 1e6).toFixed(0)}M), the sensitivity case is <strong>{analysis.reserveEffectiveFamilyRate.toFixed(1)}%</strong> for the family after the T2 queue is cleared. This remains separate from the conservative attrition-only baseline because appeals and SPED awards can consume part of the pool first.
                         </div>
                         <p className="text-xs text-tefa-red/80 bg-tefa-gold/10 border border-tefa-gold/30 rounded p-3">
-                            <strong>Timing caveat (updated {IDDINGS_BUCKET.notifiedOn}):</strong> Per the Apr 28 Lottery Update PDF, the originally locked-in timeline was: T1 awards Apr 22–24 ({analysis.firstRoundAwards.toLocaleString()} students), <strong>T2 lottery week of Apr 27</strong>, ranked waitlist position notified by <strong>May 11</strong> (portal opens for opt-in same day). That May 11 target slipped; per the May 12 Waitlist Information PDF positions arrive as bucket ranges, and we received <strong>{IDDINGS_BUCKET.label}</strong> on {IDDINGS_BUCKET.notifiedOn}. Then a two-track funding cascade: <strong>July funding</strong> (Jun 1 family opt-in, Jun 15 school confirmation, Jul 1 first disbursement — a specific date) and <strong>"August funding"</strong> <span className="bg-amber-200 text-amber-900 px-1.5 rounded font-semibold">(Jul 15 family opt-in/opt-out, Jul 31 school confirmation — Comptroller has not committed to a specific August date, only "in August")</span>.
+                            <strong>Timing caveat (updated {IDDINGS_BUCKET.notifiedOn}):</strong> Per the Apr 28 Lottery Update PDF, the originally locked-in timeline was: T1 awards Apr 22–24 ({analysis.firstRoundAwards.toLocaleString()} students), <strong>T2 lottery week of Apr 27</strong>, ranked waitlist position notified by <strong>May 11</strong> (portal opens for opt-in same day). That May 11 target slipped; per the May 12 Waitlist Information PDF positions arrive as bucket ranges, and we received <strong>{IDDINGS_BUCKET.label}</strong> on {IDDINGS_BUCKET.notifiedOn}. Then a two-track funding cascade: <strong>July funding</strong> (Jun 1 family opt-in, Jun 15 school confirmation, Jul 1 first disbursement — a specific date) and <strong>August funding</strong> <span className="bg-tefa-green/15 text-tefa-green px-1.5 rounded font-semibold">(Jul 15 family opt-in/opt-out, Jul 31 school confirmation — Jun 4 press release confirms first 25% installment by mid-August)</span>.
                             <strong> Bottom line under current modeling:</strong> band {IDDINGS_BUCKET.label} sits past the modeled funded ({personalDefault.t3Awards.toLocaleString()}) and offer-depth ({personalDefault.t3QueueDepth.toLocaleString()}) cutoffs. The Jul 15 opt-out cascade falls <strong>after</strong> the Jun 30 NBCA withdrawal deadline — the biggest upside event happens after the most expensive decision. Withdrawing on Jun 30 exits penalty-free before the main cascade plays out; staying past Jun 30 binds the family to a 10% penalty ($4,802.50) in July or 20% ($9,605.00) in August on the bet that a large cascade reaches our band.
                         </p>
                     </div>
