@@ -117,21 +117,25 @@ const IddingsPlanner = () => {
   const nbcaAidAmount = enrolledStudents.reduce((acc, s) => acc + s.nbcaAid, 0);
   // Sibling discount applies only when 2+ students are enrolled (approx; NBCA's exact 2-child schedule may differ).
   const siblingDiscountAmount = enrolledCount >= 2 ? siblingDiscountFull : 0;
-  // Scholarship that actually credits = allocations on enrolled students only.
-  const nbcaScholarshipAmount = enrolledStudents.reduce((acc, s) => acc + (scholarshipAlloc[s.name] || 0), 0);
   const totalScholarshipAllocated = students.reduce((acc, s) => acc + (scholarshipAlloc[s.name] || 0), 0);
 
   // Per-student net balance matching the FACTS screen: tuition − own aid − (sibling disc. on Sebastian) − scholarship.
+  // Scholarship only credits up to what each child actually owes; anything beyond is "overflow" that NBCA
+  // may or may not roll to a sibling — so by default it does NOT reduce the family bill (conservative).
   const studentBalances = students.map(s => {
     const isEnrolled = !!enrolled[s.name];
     const afterAid = s.tuition - s.nbcaAid;
     const sib = (isEnrolled && s.name === 'Sebastian' && enrolledCount >= 2) ? siblingDiscountFull : 0;
     const schol = isEnrolled ? (scholarshipAlloc[s.name] || 0) : 0;
     const preScholarship = afterAid - sib;
+    const usableSchol = isEnrolled ? Math.min(schol, Math.max(0, preScholarship)) : 0;
     const balance = isEnrolled ? Math.max(0, preScholarship - schol) : 0;
-    const overflow = isEnrolled ? Math.max(0, schol - preScholarship) : 0; // scholarship beyond what this child owes
-    return { ...s, isEnrolled, afterAid, sib, schol, preScholarship, balance, overflow };
+    const overflow = isEnrolled ? Math.max(0, schol - Math.max(0, preScholarship)) : 0; // scholarship beyond what this child owes
+    return { ...s, isEnrolled, afterAid, sib, schol, preScholarship, usableSchol, balance, overflow };
   });
+  // Only the usable portion reduces the family bill, so the headline always matches the per-student total.
+  const nbcaScholarshipAmount = studentBalances.reduce((acc, s) => acc + s.usableSchol, 0);
+  const scholarshipOverflow = studentBalances.reduce((acc, s) => acc + s.overflow, 0);
 
   // Fee Calculations (One-time) — already paid for all 3, regardless of go-forward enrollment.
   const fees = {
@@ -1600,6 +1604,11 @@ Text STOP to opt-out`}
                             {totalScholarshipAllocated > NBCA_SCHOLARSHIP_AWARD && ' — over the award'}
                             {totalScholarshipAllocated < NBCA_SCHOLARSHIP_AWARD && ` — $${(NBCA_SCHOLARSHIP_AWARD - totalScholarshipAllocated).toLocaleString()} unassigned`}
                           </div>
+                          {scholarshipOverflow > 0 && (
+                            <div className="text-[10px] mt-1 font-medium text-amber-600">
+                              ⚠ ${scholarshipOverflow.toLocaleString(undefined, {maximumFractionDigits: 2})} exceeds what the assigned child owes — wasted unless NBCA rolls the overflow to a sibling. Spread it across kids to use the full $12,000.
+                            </div>
+                          )}
                           <div className="text-[10px] text-tefa-body/50 mt-1">
                             Balances match FACTS (Cassius $10,940 / Dorothy $10,450 / Sebastian $8,916.50 before scholarship). Allocation on a withdrawn child is forfeited unless NBCA transfers it — confirm with Nanette whether overflow rolls to a sibling.
                           </div>
