@@ -1,3042 +1,448 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Calendar,
-  CheckSquare,
-  Square,
-  ExternalLink,
   DollarSign,
-  Users,
   AlertCircle,
-  GraduationCap,
-  Clock,
-  Printer,
-  CreditCard,
-  Percent,
-  FileText,
-  Copy,
-  BarChart2,
   CheckCircle,
-  TrendingUp,
-  Briefcase,
-  Layers,
-  Shield,
-  Scale
+  Clock,
+  ExternalLink,
+  Scale,
 } from 'lucide-react';
 
-const VALID_TABS = ['dashboard', 'payments', 'timeline', 'analysis'];
+// ---------------------------------------------------------------------------
+// Single source of truth for the family's real numbers. Everything the page
+// shows is derived from the data in this block — update here if a figure changes.
+// ---------------------------------------------------------------------------
 
-// Comptroller bucket notification we received. Single source of truth — every
-// piece of copy below reads from this. Update here if details change.
-const IDDINGS_BUCKET = {
+const TODAY = '2026-06-10';
+
+// Per-child 2026-27 gross tuition and the NBCA financial aid already granted.
+const STUDENTS = [
+  { name: 'Cassius', grade: '9th Grade', tuition: 16790, nbcaAid: 5850, scholarship: 4000 },
+  { name: 'Dorothy', grade: '7th Grade', tuition: 16050, nbcaAid: 5600, scholarship: 4000 },
+  { name: 'Sebastian', grade: '4th Grade', tuition: 15185, nbcaAid: 4750, scholarship: 4000 },
+];
+
+const SIBLING_DISCOUNT = 1518.5;   // FACTS applies the family sibling discount to Sebastian's account.
+const ENROLLMENT_FEE_PAID = 690;   // ($175 + $55) x 3 — paid Apr 2, non-refundable.
+
+// TEFA waitlist status — the bucket the Comptroller texted us on May 13.
+const TEFA = {
+  tier: 'Tier 3 (200–500% FPL)',
+  band: '30,001 – 50,000',
   notifiedOn: '2026-05-13',
-  lo: 30001,
-  hi: 50000,
-  label: '30,001 – 50,000',
-  sourceLabel: 'Comptroller approximate-range notification',
 };
 
-// May 29, 2026 Comptroller News & Updates post ("Additional Awards Issued to
-// Waitlisted Students") — the first OBSERVED waitlist cascade since the May 4 Tier 2
-// batch. This is a dated snapshot / progress tracker; it does NOT change the model's
-// lottery-time baseline counts or attrition assumptions below. The 3,317 are the first
-// realization of the cascade getScenarioAnalysis() already projects from the 20,383
-// T2 backlog — so they are tracked here, not subtracted from the engine (avoids
-// double-counting). Reconciliation: 95,934 (awards to date) + 3,317 + 294 + 183 =
-// 99,728 gross ("slightly fewer than 100,000"); 99,728 − ~1,400 opt-outs ≈ 98,328
-// active ("just over 98,000"). Remaining T2 backlog ahead of T3 ≈ 20,383 − 3,317 = 17,066.
-const MAY29_CASCADE = {
-  asOf: '2026-05-29',
-  t2Cascaded: 3317,        // Tier 2 waitlisted students newly awarded (priority tier 2, ≤200% FPL)
-  spedAwards: 294,         // Awards from confirmed special-education info on file with TEA (appeals reserve)
-  spedSiblings: 183,       // Siblings of the 294 SPED awardees, pulled in by the sibling rule
-  optOuts: 1400,           // Approx. opt-outs to date (pre-Jul-15 deadline → expected to rise)
-  grossAwardedApprox: 99728,        // 95,934 + 3,317 + 294 + 183
-  activeApproxAfterOptOuts: 98328,  // grossAwardedApprox − ~1,400 opt-outs
-  prevAwarded: 95934,      // "nearly 96,000 previously awarded" = our prior capacity figure
-  get t2RemainingAfterCascade() { return 20383 - this.t2Cascaded; }, // ≈ 17,066 T2 still ahead of T3
-};
+// The dates that actually require a decision or a payment, in order.
+const TIMELINE = [
+  { date: 'Jun 15', iso: '2026-06-15', title: 'Accept NBCA scholarship', kind: 'do',
+    detail: 'Reply to NBCA to lock in the $12,000 scholarship ($4,000 per child).' },
+  { date: 'End of June', iso: '2026-06-29', title: 'ACE scholarship decision', kind: 'wait',
+    detail: 'ACE said decisions arrive by the end of June. Any award lowers the balance further.' },
+  { date: 'Jun 30', iso: '2026-06-30', title: 'Penalty-free withdrawal deadline', kind: 'decide',
+    detail: 'Last day to withdraw from NBCA losing only the $690 enrollment fee. After this: 10% penalty ($4,802.50) in July, 20% ($9,605) in August.' },
+  { date: 'Jul 6', iso: '2026-07-06', title: 'First FACTS tuition draft', kind: 'pay',
+    detail: 'First scheduled payment. Use checking/savings ACH to avoid the card fee. See the Money tab for the full schedule.' },
+  { date: 'Jul 15', iso: '2026-07-15', title: 'TEFA opt-in / opt-out deadline', kind: 'info',
+    detail: 'The biggest TEFA waitlist-cascade event of the year — but it lands AFTER the June 30 withdrawal deadline.' },
+  { date: 'Oct 1', iso: '2026-10-01', title: 'TEFA 2nd installment (if funded)', kind: 'info',
+    detail: 'Only relevant if a waitlist offer reached us and we opted in. Not expected in Year 1.' },
+  { date: 'Feb 1', iso: '2027-02-01', title: 'TEFA final installment (if funded)', kind: 'info',
+    detail: 'Final 50% of a TEFA award, if one ever arrives. Not expected in Year 1.' },
+];
 
-// June 10, 2026 Texas Comptroller "Awarded Applications" Fact Sheet — the latest OFFICIAL
-// snapshot, superseding the May 29 News post as the freshest observed datum. Like the May 29
-// block, this is a dated progress tracker: it does NOT change the model's lottery-time baseline
-// counts (20,383 T2 backlog, 65,368 T3) or the attrition assumptions below. Do NOT feed
-// t2WaitlistRemaining / activeAwarded into getScenarioAnalysis() — the engine already projects
-// the full cascade from the 20,383 T2 baseline, so subtracting observed progress would
-// double-count. Reconciliation: T2 waitlist 20,383 → 12,860 (−7,523 cleared; −4,206 since
-// May 29). Total waitlist 152,702 → 144,744 (−7,958 ≈ 7,523 T2 cleared + the 477 May-29
-// SPED-reserve awards). Every bit of the reduction is Tier 2 — Tier 3 (our band) is untouched,
-// confirming strict tier order. Grade-level awards sum to exactly 102,037.
-const JUN10_SNAPSHOT = {
-  asOf: '2026-06-10',
-  source: 'Comptroller "Awarded Applications" Fact Sheet (6/10/2026)',
-  optOutsAsOf: '2026-06-08',        // active awards are net of opt-outs as of this date
-  activeAwarded: 102037,            // active awards (Tier 1 + siblings + Tier 2), net of opt-outs
-  totalWaitlist: 144744,            // eligible students remaining on the waitlist
-  t2WaitlistRemaining: 12860,       // Tier 2 students still on the waitlist ahead of all Tier 3
-  baselineT2Waitlist: 20383,        // May 7 lottery-time T2 backlog (engine baseline; unchanged)
-  baselineTotalWaitlist: 152702,    // May 7 lottery-time total waitlist (20,383+65,368+13,245+53,706)
-  gradeAwards: {                    // 2026-27 grade level → active awards (sums to 102,037)
-    'Pre-K': 8287, Kinder: 8290, First: 8231, Second: 8642, Third: 8647,
-    Fourth: 8463, Fifth: 8634, Sixth: 7432, Seventh: 6439, Eighth: 5910,
-    Ninth: 4973, Tenth: 4048, Eleventh: 3103, Twelfth: 10938,
+// Payment plan options. Amounts are computed from the live balance below.
+const PAYMENT_PLANS = {
+  recommended: {
+    label: 'Recommended (TEFA families)',
+    note: 'Nanette\'s plan for TEFA families: five drafts starting in August. Shares: 15% / 15% / 15% / 15% / 40%.',
+    shares: [0.15, 0.15, 0.15, 0.15, 0.4],
+    dates: ['Aug 5, 2026', 'Oct 5, 2026', 'Dec 7, 2026', 'Feb 5, 2027', 'Apr 5, 2027'],
   },
-  get t2ClearedSinceBaseline() { return this.baselineT2Waitlist - this.t2WaitlistRemaining; }, // 7,523
-  get totalWaitlistCleared() { return this.baselineTotalWaitlist - this.totalWaitlist; },       // 7,958
+  ten: {
+    label: '10 month (standard FACTS)',
+    note: 'Standard FACTS schedule: ten equal drafts starting July 6.',
+    shares: Array(10).fill(0.1),
+    dates: ['Jul 6, 2026', 'Aug 5, 2026', 'Sep 8, 2026', 'Oct 5, 2026', 'Nov 5, 2026',
+      'Dec 7, 2026', 'Jan 5, 2027', 'Feb 5, 2027', 'Mar 5, 2027', 'Apr 5, 2027'],
+  },
+  full: {
+    label: 'Pay in full',
+    note: 'One draft after the July 15 TEFA deadline.',
+    shares: [1],
+    dates: ['Aug 5, 2026'],
+  },
 };
+
+const VALID_TABS = ['now', 'money', 'timeline'];
+
+const usd = (n) => `$${n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+const usd2 = (n) => `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 const IddingsPlanner = () => {
   const { tab } = useParams();
   const navigate = useNavigate();
-  const activeTab = VALID_TABS.includes(tab) ? tab : 'dashboard';
-  const setActiveTab = (t) => navigate(`/${t}`);
+  const activeTab = VALID_TABS.includes(tab) ? tab : 'now';
+  const setTab = (t) => navigate(`/${t}`);
 
-  // Scenario State - Empirical tier breakdown from the revised May 7, 2026 TEFA Lottery Update PDF,
-  // superseding the Apr 8 Year 1 PDF's percentage-based estimates and the earlier Apr 28/MAY 4
-  // lower-bound counts. Revised lottery update gives hard counts: 25,400 ineligible /
-  // 28,233 T1 (awarded) / 16,520 T1 siblings (awarded) / 51,181 T2 awarded /
-  // 20,383 T2 waitlisted / 65,368 T3 waitlisted / 66,951 T4 waitlisted
-  // (13,245 T4a + 53,706 T4b). Sum: 274,036 total applications, 248,636 eligible.
-  const TOTAL_APPLICATIONS = 274036;
-  const INELIGIBLE_APPLICATIONS = 25400;
-  const ELIGIBLE_APPLICATIONS = TOTAL_APPLICATIONS - INELIGIBLE_APPLICATIONS;
-  const INELIGIBILITY_RATE = INELIGIBLE_APPLICATIONS / TOTAL_APPLICATIONS;
-  const [attritionRate, setAttritionRate] = useState(0.15); // Est. 15% of lottery winners don't follow through
-  const [reserveWaitlistShare, setReserveWaitlistShare] = useState(0.25); // % of inferred $100M+ pool reaching normal waitlist
-  const [t3WaitlistRankInput, setT3WaitlistRankInput] = useState(String(IDDINGS_BUCKET.lo)); // Seeded at the band's lower bound (worst-case anchor)
-  const [bandRank, setBandRank] = useState(IDDINGS_BUCKET.lo); // Band slider value (drives the input)
+  const [planId, setPlanId] = useState('recommended');
 
-  // Student Data
-  // Per-grade 2026-27 gross tuition confirmed by Nanette: HS $16,790 + MS $16,050 + Elem $15,185 = $48,025
-  const students = [
-    { name: 'Cassius', grade: '9th Grade', school: 'High School', tuition: 16790, aceAmount: 4000, nbcaAid: 5850 },
-    { name: 'Dorothy', grade: '7th Grade', school: 'Middle School', tuition: 16050, aceAmount: 3000, nbcaAid: 5600 },
-    { name: 'Sebastian', grade: '4th Grade', school: 'Elementary', tuition: 15185, aceAmount: 3000, nbcaAid: 4750 }
-  ];
-
-  // Financial Data State - "Most Likely Scenario" Defaults
-  const [tefaPerStudent, setTefaPerStudent] = useState(10474);
-
-  // Default: TEFA unlikely for T3 (OFF per Comptroller Apr 3), ACE unlikely (OFF)
-  const [includeTefa, setIncludeTefa] = useState(false);
-  const [includeAce, setIncludeAce] = useState(false);
-  const [paymentTefaTrack, setPaymentTefaTrack] = useState('august');
-  const [paymentPlanMode, setPaymentPlanMode] = useState('recommended');
-
-  // Per-student enrollment — model partial scenarios (e.g. only Cassius attends).
-  const [enrolled, setEnrolled] = useState({ Cassius: true, Dorothy: true, Sebastian: true });
-
-  // NBCA Scholarship - AWARDED Jun 5 (Nanette Jones email): $4,000 per student = $12,000.
-  // NBCA lets us apply funds to a specific student's balance OR split them; allocate per child here.
-  // Accept by replying to NBCA by Jun 15. An allocation on a non-enrolled child is forfeited unless NBCA transfers it.
-  const NBCA_SCHOLARSHIP_AWARD = 12000;
-  const [scholarshipAlloc, setScholarshipAlloc] = useState({ Cassius: 4000, Dorothy: 4000, Sebastian: 4000 });
-
-  // FACTS applies the full family sibling discount to Sebastian's account (per the Jun balances screen).
-  const siblingDiscountFull = 1518.5;
-  const factsCardTransactionFee = 92.43;
-
-  // Enrollment-derived figures — everything recomputes to just the enrolled students.
-  const enrolledStudents = students.filter(s => enrolled[s.name]);
-  const enrolledCount = enrolledStudents.length;
-
-  const tuition = enrolledStudents.reduce((acc, s) => acc + s.tuition, 0);
-  // NBCA Aid - Granted: Cassius $5,850 + Dorothy $5,600 + Sebastian $4,750 = $16,200 (all 3 enrolled)
-  const nbcaAidAmount = enrolledStudents.reduce((acc, s) => acc + s.nbcaAid, 0);
-  // Sibling discount applies only when 2+ students are enrolled (approx; NBCA's exact 2-child schedule may differ).
-  const siblingDiscountAmount = enrolledCount >= 2 ? siblingDiscountFull : 0;
-  const totalScholarshipAllocated = students.reduce((acc, s) => acc + (scholarshipAlloc[s.name] || 0), 0);
-
-  // Per-student net balance matching the FACTS screen: tuition − own aid − (sibling disc. on Sebastian) − scholarship.
-  // Scholarship only credits up to what each child actually owes; anything beyond is "overflow" that NBCA
-  // may or may not roll to a sibling — so by default it does NOT reduce the family bill (conservative).
-  const studentBalances = students.map(s => {
-    const isEnrolled = !!enrolled[s.name];
-    const afterAid = s.tuition - s.nbcaAid;
-    const sib = (isEnrolled && s.name === 'Sebastian' && enrolledCount >= 2) ? siblingDiscountFull : 0;
-    const schol = isEnrolled ? (scholarshipAlloc[s.name] || 0) : 0;
-    const preScholarship = afterAid - sib;
-    const usableSchol = isEnrolled ? Math.min(schol, Math.max(0, preScholarship)) : 0;
-    const balance = isEnrolled ? Math.max(0, preScholarship - schol) : 0;
-    const overflow = isEnrolled ? Math.max(0, schol - Math.max(0, preScholarship)) : 0; // scholarship beyond what this child owes
-    return { ...s, isEnrolled, afterAid, sib, schol, preScholarship, usableSchol, balance, overflow };
+  // --- Money: derive the family balance from the data above -----------------
+  const perStudent = STUDENTS.map((s) => {
+    const discount = s.name === 'Sebastian' ? SIBLING_DISCOUNT : 0;
+    const balance = s.tuition - s.nbcaAid - discount - s.scholarship;
+    return { ...s, discount, balance };
   });
-  // Only the usable portion reduces the family bill, so the headline always matches the per-student total.
-  const nbcaScholarshipAmount = studentBalances.reduce((acc, s) => acc + s.usableSchol, 0);
-  const scholarshipOverflow = studentBalances.reduce((acc, s) => acc + s.overflow, 0);
 
-  // Fee Calculations (One-time) — already paid for all 3, regardless of go-forward enrollment.
-  const fees = {
-    nbcaApp: 150 * 3, // $150 per student
-    nbcaEnroll: (175 + 55) * 3, // $175 + $55 additional enrollment fee per student x 3
-    factsApp: 40,     // $40 per family
-    aceApp: 0         // $0 (Waived per user update)
-  };
-  const totalFees = fees.nbcaApp + fees.nbcaEnroll + fees.factsApp + fees.aceApp;
-
-  // Recurring Financial Calculations
-  const totalTefa = includeTefa ? tefaPerStudent * enrolledCount : 0;
-  const totalAce = includeAce ? enrolledStudents.reduce((acc, s) => acc + s.aceAmount, 0) : 0;
-
-  const totalAid = totalTefa + totalAce + nbcaAidAmount + siblingDiscountAmount + nbcaScholarshipAmount;
-  const finalCost = tuition - totalAid;
-  const factsBalanceDue = Math.max(0, finalCost);
-  const monthlyCost = factsBalanceDue / 10; // 10 month plan estimate
-  const monthlyDraftWithCardFee = monthlyCost > 0 ? monthlyCost + factsCardTransactionFee : 0;
-  const tefaTotalAward = tefaPerStudent * enrolledCount;
-  // Per the Jun 4 press release, private school students receive their award in three
-  // installments: 25% first (Jul 1 or mid-Aug), an additional 25% on Oct 1 (→50%
-  // cumulative), and the remaining 50% on Feb 1 (→100%). This supersedes the SB 2
-  // §29.362(a) default three-tranche schedule (25% / 50% cumulative / balance by Apr 1).
-  const tefaFirstTranche = tefaTotalAward * 0.25;
-  const tefaCumulativeSecondTranche = tefaTotalAward * 0.50; // cumulative through Oct 1
-
-  // Status Tracking Data
-  const appStatus = [
-    { item: "NBCA Application", status: "Accepted (3/3)", date: "All 3 Accepted", type: "success", funding: "N/A" },
-    { item: "NBCA Enrollment Fee", status: "Paid ($690)", date: "April 2", type: "success", funding: "($175 + $55) x 3" },
-    { item: "NBCA Financial Aid", status: "Granted ($16,200)", date: "March 31", type: "success", funding: "Tuition Credit" },
-    { item: "NBCA Scholarship", status: "Awarded ($12,000)", date: "June 5 — accept by June 15", type: "success", funding: "Tuition Credit" },
-    { item: "ACE Scholarships", status: "Processed; awaiting decision", date: "Reviewed Mar 7; decision by end of June", type: "pending", funding: "Optional Tuition Scholarship" },
-    { item: "TEFA Grant (ESA)", status: `Waitlisted (Tier 3) — band ${IDDINGS_BUCKET.label}`, date: `Comptroller notified us ${IDDINGS_BUCKET.notifiedOn}: bucket ${IDDINGS_BUCKET.label} (Tier 3 portion ≈9,618–29,617). Past both modeled cutoffs — Year 1 funded seat unlikely barring large cascades. Jun 10 official fact sheet: ${JUN10_SNAPSHOT.activeAwarded.toLocaleString()} active awards, ${JUN10_SNAPSHOT.t2WaitlistRemaining.toLocaleString()} Tier 2 still ahead of all Tier 3 (down from ${JUN10_SNAPSHOT.baselineT2Waitlist.toLocaleString()} at lottery). Cascade still strictly Tier 2 — nothing has reached our band.`, type: "pending", funding: "Odyssey ESA Account" },
-  ];
-
-  // Checklist Data
-  const checklistData = {
-    nbca: {
-      title: "NBCA Admissions",
-      color: "bg-tefa-green/10 text-tefa-green",
-      items: [
-        { id: 'nbca-app', text: 'Submit Online Application ($150 fee)', done: true },
-        { id: 'nbca-pastor', text: 'Pastor Recommendation Form', done: true },
-        { id: 'nbca-principal', text: 'Principal Recommendation Form', done: true },
-        { id: 'nbca-teacher', text: 'Teacher Recommendation Form(s)', done: true },
-        { id: 'nbca-math', text: 'Math Teacher Recommendation (6th-12th)', done: true },
-        { id: 'nbca-report', text: 'Current Report Card / Transcript', done: true },
-        { id: 'nbca-immun', text: 'Immunization Record', done: true },
-        { id: 'nbca-assess', text: 'Student Assessments (Completed Feb 20)', done: true },
-        { id: 'nbca-interview', text: 'Family Interview (Completed Feb 27)', done: true },
-      ]
-    },
-    facts: {
-      title: "Financial Aid & Scholarships",
-      color: "bg-tefa-gold/20 text-tefa-gold",
-      items: [
-        { id: 'facts-app', text: 'Submit FACTS Grant & Aid App ($40 fee)', done: true },
-        { id: 'nbca-schol', text: 'Submit NBCA Scholarship App (Mar 15)', done: true },
-        { id: 'facts-tax', text: '2025 Tax Return (or 2024 if before May 15)', done: true },
-        { id: 'facts-w2', text: '2025 W-2s', done: true },
-        { id: 'facts-income', text: 'Other Income Documentation', done: true },
-      ]
-    },
-    tefa: {
-      title: "TEFA Voucher (Texas)",
-      color: "bg-tefa-navy/10 text-tefa-navy",
-      items: [
-        { id: 'tefa-create', text: 'Create Account on TEFA Portal', done: true },
-        { id: 'tefa-citizen', text: 'Proof of Citizenship/Residency', done: true },
-        { id: 'tefa-eligibility', text: 'Proof of Public School Eligibility', done: true },
-        { id: 'tefa-submit', text: 'Submit Application (Feb 4 - Mar 31, Extended)', done: true },
-      ]
-    },
-    ace: {
-      title: "ACE Scholarships",
-      color: "bg-tefa-red/10 text-tefa-red",
-      items: [
-        { id: 'ace-qualify', text: 'Confirm Income Eligibility', done: true },
-        { id: 'ace-school', text: 'Confirm NBCA Enrollment/Application', done: true },
-        { id: 'ace-tax', text: '2025 Form 1040 Tax Return', done: true },
-        { id: 'ace-sup', text: 'SNAP / Child Support Docs (if applicable)', done: true },
-        { id: 'ace-submit', text: 'Submit Application (Feb 2 - Apr 15)', done: true },
-      ]
-    }
-  };
-
-  const [checklist, setChecklist] = useState(checklistData);
-
-  const toggleCheck = (category, id) => {
-    setChecklist(prev => ({
-      ...prev,
-      [category]: {
-        ...prev[category],
-        items: prev[category].items.map(item =>
-          item.id === id ? { ...item, done: !item.done } : item
-        )
-      }
-    }));
-  };
-
-  // Scenario Logic — Dual Model: Comptroller's Implementation vs Strict SB 2 Reading
-  const getScenarioAnalysis = (totalApps, overrideAttrition, overrideReserveWaitlistShare) => {
-    // === BUDGET (statutory) ===
-    // SB 2, Sec. 29.3521(c-1): $1 billion cap for the 2025-2027 biennium.
-    // The Comptroller committed the full $1B to Year 1 (Travis Pillow to The Texan, Apr 2 2026:
-    // "$1 billion committed in year one") — administrative choice, statutorily permitted.
-    const budget = 1_000_000_000;
-
-    // === ADMINISTRATIVE OVERHEAD + APPEALS RESERVE (diagnostic / sensitivity) ===
-    // SB 2 §29.362(b)-(c) allows up to 3% for Comptroller administration plus
-    // up to 5% for certified educational assistance organizations = $80M on
-    // the $1B Year 1 program. The Apr 28 Lottery Update PDF item 5 confirms an
-    // appeals reserve exists (amount not published; $5M is a conservative placeholder).
-    // Community Impact later reported, citing an agency spokesperson, that about $820M
-    // has been set aside for accepted students to date. That implies ~$180M gross remains,
-    // or at least ~$100M after the max $80M admin/vendor allowance. Treat that as an upside
-    // sensitivity, not guaranteed normal waitlist capacity.
-    const STATUTORY_ADMIN_CAP = 80_000_000;
-    const APPEALS_RESERVE = 5_000_000;
-    const programOverhead = STATUTORY_ADMIN_CAP + APPEALS_RESERVE;
-    const reportedCommittedAwardsBudget = 820_000_000;
-    const reportedGrossUncommittedBudget = budget - reportedCommittedAwardsBudget;
-    const reportedMinimumAppealsWaitlistBudget = Math.max(
-      0,
-      reportedGrossUncommittedBudget - STATUTORY_ADMIN_CAP
-    );
-
-    const attrRate = overrideAttrition !== undefined ? overrideAttrition : attritionRate;
-    const reserveShare = overrideReserveWaitlistShare !== undefined
-      ? overrideReserveWaitlistShare
-      : reserveWaitlistShare;
-    const eligibleApps = ELIGIBLE_APPLICATIONS;
-
-    // === PER-STUDENT ALLOCATION (statutory) ===
-    // SB 2 Sec. 29.361(a)(1): base = 85% × statewide avg state-and-local funding per ADA ≈ $10,474.
-    // SB 2 Sec. 29.361(b):    SPED with active IEP = base + supplement, cap $30,000/year.
-    // SB 2 Sec. 29.361(b-1):  Homeschool/other = $2,000/year.
-    const perStudentBase = 10474;
-    const perStudentHomeschool = 2000;
-
-    // === T1-FAMILY AWARDS (May 7, 2026 revised Lottery Update PDF — empirical) ===
-    // Revised PDF gives hard counts: 28,233 T1 students + 16,520 T1 siblings
-    // = 44,753 T1-family awards. This reconciles the May 4 "53,000+ additional"
-    // release: 51,181 true Tier 2 awards plus ~2,100 additional T1-family/disability awards.
-    const fundedT1 = 28233;             // T1 proper (May 7 revised PDF — AWARDED & NOTIFIED)
-    const siblingsFunded = 16520;       // Non-T1 siblings pulled in by sibling rule (May 7 revised PDF)
-    const firstRoundAwards = fundedT1 + siblingsFunded; // 44,753
-
-    // === CAPACITY (Apr 28 PDF empirical T1-family cost) ===
-    // PDF item 1 — verbatim: "all eligible tier 1 applicants and siblings will qualify
-    // for funding of approximately $415 million." This is the gross allocation, not
-    // post-attrition. The figure is reliable because the Parent Application Guide
-    // (Feb 12, 2026) establishes that the selected educational setting "locks" at the
-    // end of the application period and post-lock changes can only reduce funding
-    // (private → homeschool $2,000), never increase it. The program therefore knew the
-    // exact per-student allocation for every T1-family awardee at lottery time.
-    //
-    // Why $415M is reachable while the prior derivation produced $640.7M: the Parent
-    // Guide formalizes a "Prioritization Only" sub-class — a child with documented
-    // disability gets T1 priority but no SPED supplement unless a current TEA-confirmed
-    // IEP exists. Combined with the Apr 8 PDF's 77% private / 23% homeschool setting
-    // split and 8,618 IEP-active applicants, the empirical math reconciles within ~1%:
-    //   T1 IEP-active private    : 8,618 × 0.77 × $17,654 ≈ $117.1M
-    //   T1 IEP-active homeschool : 8,618 × 0.23 × $2,000  ≈   $4.0M
-    //   T1 priority-only private : 19,615 × 0.77 × $10,474 ≈ $158.3M
-    //   T1 priority-only homesch : 19,615 × 0.23 × $2,000  ≈   $9.0M
-    //   T1 siblings private      : 16,520 × 0.77 × $10,474 ≈ $133.3M
-    //   T1 siblings homeschool   : 16,520 × 0.23 × $2,000  ≈   $7.6M
-    //                                                          ≈ low-$400Ms  (PDF: ~$415M)
-    const t1FamilyCost = 415_000_000;
-
-    // === T2/T3 BLENDED COST ===
-    // T2 (≤200% FPL, no disability) and T3 (200-500% FPL, no disability) carry no SPED
-    // supplement by tier definition. Per-student cost depends only on educational
-    // setting. Apr 8 PDF reports the overall applicant setting split as 77% private /
-    // 23% homeschool — applied here to T2 (and T3 cascade) as the central estimate.
-    const privateShare = 0.77;
-    const perStudentT2Blended = privateShare * perStudentBase
-      + (1 - privateShare) * perStudentHomeschool; // ≈ $8,525
-
-    // May 7 revised Lottery Update PDF: 51,181 true Tier 2 students were awarded and
-    // 20,383 Tier 2 students remain on the waitlist.
-    const officialT2Awards = 51181;
-
-    // Pre-May-4 derived capacity retained only as diagnostic context. The official award batch
-    // implies either a larger reserve/holdback, a more private-heavy T2 setting mix, or both.
-    const t2Budget = budget - t1FamilyCost - programOverhead;
-    const derivedT2LotteryCapacity = Math.floor(t2Budget / perStudentT2Blended); // ≈ 58,651
-    const t2LotteryCapacityFloor = Math.floor(t2Budget / perStudentBase); // ≈ 47,737
-    const t2LotteryCapacity = officialT2Awards;
-    const capacity = firstRoundAwards + t2LotteryCapacity; // 95,934
-
-    // =====================================================
-    // MODEL A: COMPTROLLER'S ACTUAL IMPLEMENTATION
-    // (4-tier system — empirical tier counts from the Apr 28, 2026 Lottery Update PDF;
-    //  no longer percentage-derived from eligibleApps)
-    // =====================================================
-    // T1 demand = T1 awarded (28,233) + T1 siblings (16,520) = full T1 family block.
-    // Siblings are funded alongside T1 by the sibling rule, so they count as T1-family demand.
-    const demandT1 = fundedT1 + siblingsFunded; // 44,753 — AWARDED & NOTIFIED per May 7 PDF
-    const demandT2 = officialT2Awards + 20383; // 71,564 total Tier 2 (51,181 awarded + 20,383 waitlisted)
-    const demandT3 = 65368;  // T3 waitlisted (May 7 revised PDF)
-    const demandT4a = 13245; // T4a: prior public school 2024-25 (May 7 revised PDF)
-    const demandT4b = 53706; // T4b: not enrolled in public school 2024-25 (May 7 revised PDF)
-
-    // T1 + T1-siblings committed first (Apr 22 press release — fundedT1 and siblingsFunded
-    // computed above). T2 lottery funds the remaining budget. T3 and T4 receive 0 from the
-    // initial lottery and compete only via waitlist cascade.
-    const fundedT2 = Math.min(demandT2, officialT2Awards);
-    const fundedT3 = 0;
-    const fundedT4a = 0;
-    const fundedT4b = 0;
-
-    const tier3Rate = demandT3 > 0 ? Math.min(100, (fundedT3 / demandT3) * 100) : 100;
-    const tier4Rate = (demandT4a + demandT4b) > 0
-      ? Math.min(100, ((fundedT4a + fundedT4b) / (demandT4a + demandT4b)) * 100) : 100;
-
-    // Sibling Rule (Comptroller administrative rule):
-    // If ANY one child wins the lottery, all eligible siblings are automatically accepted.
-    // P(family funded) = 1 - P(all 3 children lose independently)
-    const singleFailRate = 1 - (tier3Rate / 100);
-    const familySuccessRate = (1 - Math.pow(singleFailRate, 3)) * 100;
-
-    // =====================================================
-    // ATTRITION MODEL: Lottery winners who don't participate
-    // Freed spots cascade down the waitlist (T1→T2→T3→T4)
-    // T1-family attrition counts the full first-round cohort (T1 proper + pulled-in siblings);
-    // if a T1 family opts out (by Jul 15 per Apr 22 press release), all their awards return
-    // to the pool.
-    // =====================================================
-    const totalInitialFunded = firstRoundAwards + fundedT2 + fundedT3 + fundedT4a + fundedT4b;
-    const t1Attrition = Math.round(firstRoundAwards * attrRate);
-    const t2Attrition = Math.round(fundedT2 * attrRate);
-
-    // Freed spots first fill unfunded T2 (lottery losers within T2). Think of attrition
-    // recursively: replacements can also decline, and those replacement offers still go to
-    // the remaining T2 queue until that queue is exhausted.
-    const firstWaveFreedSpots = t1Attrition + t2Attrition;
-    const unfundedT2 = demandT2 - fundedT2;
-    const recursiveT3Threshold = unfundedT2 / (totalInitialFunded + unfundedT2);
-    const totalWaitlistOffersFromAttrition = attrRate < 1
-      ? Math.round(firstWaveFreedSpots / (1 - attrRate))
-      : demandT2 + demandT3 + demandT4a + demandT4b;
-
-    const additionalT2Funded = Math.min(totalWaitlistOffersFromAttrition, unfundedT2);
-    const remainingT2AfterCascade = Math.max(0, unfundedT2 - additionalT2Funded);
-
-    // Only attrition offers beyond the full remaining T2 queue can reach T3.
-    const t3FromWaitlist = Math.min(
-      Math.max(0, totalWaitlistOffersFromAttrition - unfundedT2),
-      demandT3 - fundedT3
-    );
-
-    // T2 replacement attrition is included in totalWaitlistOffersFromAttrition; retained for display.
-    const additionalT2Attrition = Math.round(additionalT2Funded * attrRate);
-
-    // T3 attrition from waitlist-funded T3
-    const t3Attrition = Math.round((fundedT3 + t3FromWaitlist) * attrRate);
-
-    const effectiveFundedT3 = fundedT3 + t3FromWaitlist;
-    const effectiveTier3Rate = demandT3 > 0 ? Math.min(100, (effectiveFundedT3 / demandT3) * 100) : 100;
-    const effectiveSingleFail = 1 - (effectiveTier3Rate / 100);
-    const effectiveFamilyRate = (1 - Math.pow(effectiveSingleFail, 3)) * 100;
-
-    // Community Impact waitlist-pool sensitivity: if some share of the reported $100M+
-    // minimum remaining after max admin/vendor costs later flows through the normal
-    // T2/T3 waitlist, estimate its effect at the same blended cost. Successful appeals
-    // and SPED awards can consume this first, so this is upside context rather than baseline.
-    const reserveWaitlistBudget = reportedMinimumAppealsWaitlistBudget * reserveShare;
-    const reserveEquivalentWaitlistSeats = Math.floor(reserveWaitlistBudget / perStudentT2Blended);
-    const reserveT2Covered = Math.min(reserveEquivalentWaitlistSeats, unfundedT2);
-    const reserveRemainingT2 = Math.max(0, unfundedT2 - reserveT2Covered);
-    const reserveRecursiveT3Threshold = reserveRemainingT2 / (totalInitialFunded + reserveRemainingT2);
-    const reserveT3FromBudget = Math.min(
-      Math.max(0, reserveEquivalentWaitlistSeats - unfundedT2),
-      demandT3
-    );
-    const reserveT3FromAttritionAtCurrentRate = Math.min(
-      Math.max(0, totalWaitlistOffersFromAttrition - reserveRemainingT2),
-      demandT3 - reserveT3FromBudget
-    );
-    const reserveEffectiveFundedT3 = reserveT3FromBudget + reserveT3FromAttritionAtCurrentRate;
-    const reserveEffectiveTier3Rate = demandT3 > 0
-      ? Math.min(100, (reserveEffectiveFundedT3 / demandT3) * 100)
-      : 100;
-    const reserveEffectiveFamilyRate = (1 - Math.pow(1 - (reserveEffectiveTier3Rate / 100), 3)) * 100;
-
-    // Total attrition summary
-    const totalAttritionFreed = t1Attrition + t2Attrition + additionalT2Attrition + t3Attrition;
-
-    return {
-        capacity, eligibleApps,
-        // Apr 28 PDF empirical calibration
-        firstRoundAwards, siblingsFunded, officialT2Awards, t2LotteryCapacity, derivedT2LotteryCapacity, t2LotteryCapacityFloor,
-        t1FamilyCost, t2Budget, perStudentT2Blended, programOverhead,
-        reportedCommittedAwardsBudget, reportedGrossUncommittedBudget,
-        reportedMinimumAppealsWaitlistBudget, reserveShare, reserveWaitlistBudget,
-        // Model A: Comptroller's implementation (initial lottery)
-        demandT1, demandT2, demandT3, demandT4a, demandT4b,
-        fundedT1, fundedT2, fundedT3, fundedT4a, fundedT4b,
-        tier3Rate, tier4Rate, familySuccessRate,
-        // Attrition / waitlist cascade
-        t1Attrition, t2Attrition, firstWaveFreedSpots, totalWaitlistOffersFromAttrition,
-        recursiveT3Threshold,
-        additionalT2Funded, additionalT2Attrition, remainingT2AfterCascade,
-        t3FromWaitlist, t3Attrition, unfundedT2,
-        effectiveFundedT3, effectiveTier3Rate, effectiveFamilyRate,
-        reserveEquivalentWaitlistSeats, reserveT2Covered, reserveRemainingT2,
-        reserveRecursiveT3Threshold,
-        reserveT3FromBudget, reserveT3FromAttritionAtCurrentRate,
-        reserveEffectiveFundedT3, reserveEffectiveTier3Rate, reserveEffectiveFamilyRate,
-        totalInitialFunded, totalAttritionFreed,
-    };
-  };
-
-  const analysis = getScenarioAnalysis(TOTAL_APPLICATIONS);
-
-  // Scenario Outlook: Best / Most Likely / Worst (fixed ineligibility rates, current applicant count)
-  // Best/worst now driven by attrition (the real uncertainty), since ineligibility is fixed.
-  // All scenarios include the $85M admin/reserve assumption baked into the baseline budget.
-  const scenarioOutlook = {
-    best: getScenarioAnalysis(TOTAL_APPLICATIONS, 0.25),       // high attrition → more T3 cascade
-    mostLikely: getScenarioAnalysis(TOTAL_APPLICATIONS, 0.15),
-    worst: getScenarioAnalysis(TOTAL_APPLICATIONS, 0.08),      // low attrition
-  };
-
-  // Personal planning default — separate from the public-safe single-slider model.
-  // This follows the more nuanced researcher framing: T1 and T2 first-wave declines differ,
-  // late replacement offers decline at a higher rate, and only $25M of the inferred reserve
-  // is assumed to reach the regular waitlist after appeals/SPED/admin.
-  // Parameterized so the band-rank reverse-solve below can probe alternate scenarios.
-  const PERSONAL_DEFAULT_BASELINE = {
-    t1DeclineRate: 0.15,
-    t2DeclineRate: 0.18,
-    replacementDeclineRate: 0.35,
-    reserveNetToWaitlist: 25_000_000,
-  };
-  const T2_AWARDED_UNIT_COST = Math.max(
-    0,
-    (analysis.reportedCommittedAwardsBudget - analysis.t1FamilyCost) / analysis.officialT2Awards
-  ); // Reconciles $820M committed less ~$415M T1-family cost.
-  const T2_WAITLIST_UNIT_COST = 7_500;
-  const T3_UNIT_COST = 8_500;
-
-  const runPersonalDefault = ({ t1DeclineRate, t2DeclineRate, replacementDeclineRate, reserveNetToWaitlist }) => {
-    const t2AwardedUnitCost = T2_AWARDED_UNIT_COST;
-    const t2WaitlistUnitCost = T2_WAITLIST_UNIT_COST;
-    const t3UnitCost = T3_UNIT_COST;
-    const acceptedShare = 1 - replacementDeclineRate;
-
-    const initialAttritionDollars =
-      (analysis.t1FamilyCost * t1DeclineRate)
-      + (analysis.officialT2Awards * t2AwardedUnitCost * t2DeclineRate);
-
-    const t2QueueDepthFromAttrition = Math.min(
-      analysis.unfundedT2,
-      Math.floor(initialAttritionDollars / (t2WaitlistUnitCost * acceptedShare))
-    );
-    const t2AcceptedFromAttrition = Math.round(t2QueueDepthFromAttrition * acceptedShare);
-    const t2DeclinedWhenReached = t2QueueDepthFromAttrition - t2AcceptedFromAttrition;
-    const attritionDollarsAfterT2 = t2QueueDepthFromAttrition >= analysis.unfundedT2
-      ? Math.max(0, initialAttritionDollars - (t2AcceptedFromAttrition * t2WaitlistUnitCost))
-      : 0;
-
-    const remainingT2QueueAfterAttrition = Math.max(0, analysis.unfundedT2 - t2QueueDepthFromAttrition);
-    const reserveT2QueueDepth = Math.min(
-      remainingT2QueueAfterAttrition,
-      Math.floor(reserveNetToWaitlist / (t2WaitlistUnitCost * acceptedShare))
-    );
-    const reserveT2Accepted = Math.round(reserveT2QueueDepth * acceptedShare);
-    const reserveAfterT2 = (t2QueueDepthFromAttrition + reserveT2QueueDepth) >= analysis.unfundedT2
-      ? Math.max(0, reserveNetToWaitlist - (reserveT2Accepted * t2WaitlistUnitCost))
-      : 0;
-
-    const t3Dollars = attritionDollarsAfterT2 + reserveAfterT2;
-    const t3Awards = Math.min(analysis.demandT3, Math.floor(t3Dollars / t3UnitCost));
-    const t3QueueDepth = Math.min(
-      analysis.demandT3,
-      Math.floor(t3Awards / acceptedShare)
-    );
-    const t3AcceptedRate = analysis.demandT3 > 0 ? (t3Awards / analysis.demandT3) * 100 : 0;
-    const t3QueueDepthRate = analysis.demandT3 > 0 ? (t3QueueDepth / analysis.demandT3) * 100 : 0;
-    const t3AcceptedFamilyRate = (1 - Math.pow(1 - (t3AcceptedRate / 100), 3)) * 100;
-    const t3QueueDepthFamilyRate = (1 - Math.pow(1 - (t3QueueDepthRate / 100), 3)) * 100;
-
-    return {
-      t1DeclineRate,
-      t2DeclineRate,
-      replacementDeclineRate,
-      reserveNetToWaitlist,
-      t2AwardedUnitCost,
-      t2WaitlistUnitCost,
-      t3UnitCost,
-      initialAttritionDollars,
-      t2QueueDepthFromAttrition,
-      t2AcceptedFromAttrition,
-      t2DeclinedWhenReached,
-      attritionDollarsAfterT2,
-      reserveAfterT2,
-      t3Dollars,
-      t3Awards,
-      t3QueueDepth,
-      t3AcceptedRate,
-      t3QueueDepthRate,
-      t3AcceptedFamilyRate,
-      t3QueueDepthFamilyRate,
-    };
-  };
-
-  const personalDefault = runPersonalDefault(PERSONAL_DEFAULT_BASELINE);
-
-  // Optional global waitlist rank (T2 band → T3 band → T4 band). Lower = better. Parsed rank is converted
-  // to a Tier-3-only ordinal for comparison to personalDefault funded / offer-depth cutoffs.
-  const parsedT3WaitlistRank = (() => {
-    const n = parseInt(String(t3WaitlistRankInput).replace(/,/g, ''), 10);
-    if (!Number.isFinite(n) || n < 1) return null;
-    return Math.floor(n);
-  })();
-
-  // Pure: returns funded% / offer% for a valid T3 global rank using the shared
-  // exponential decay past each modeled cutoff. Same decay constants as before.
-  const computeT3PctForRank = (g, a, pd) => {
-    const t2w = a.unfundedT2;
-    const t3Local = g - t2w;
-    const { t3Awards, t3QueueDepth, t3AcceptedRate, t3QueueDepthRate } = pd;
-    const poolF = t3AcceptedRate / 100;
-    const poolQ = t3QueueDepthRate / 100;
-    const decayFundedPerRank = 0.014;
-    const decayOfferPerRank = 0.012;
-    const clampPct = (x) => Math.min(100, Math.max(0, x));
-    const fundedPct = t3Local <= t3Awards
-      ? 100
-      : clampPct(poolF * 100 + (100 - poolF * 100) * Math.exp(-decayFundedPerRank * (t3Local - t3Awards)));
-    const offerPct = t3Local <= t3QueueDepth
-      ? 100
-      : clampPct(poolQ * 100 + (100 - poolQ * 100) * Math.exp(-decayOfferPerRank * (t3Local - t3QueueDepth)));
-    return { t3Local, fundedPct, offerPct };
-  };
-
-  const t3RankPersonalized = (() => {
-    if (parsedT3WaitlistRank == null) return null;
-    const g = parsedT3WaitlistRank;
-    const t2w = analysis.unfundedT2;
-    const t3d = analysis.demandT3;
-    const t4a = analysis.demandT4a;
-    const t4b = analysis.demandT4b;
-    const globalT3Start = t2w + 1;
-    const globalT3End = t2w + t3d;
-    const globalMax = t2w + t3d + t4a + t4b;
-
-    if (g > globalMax) {
-      return {
-        invalid: true,
-        reason: 'range',
-        g,
-        message: `That rank (${g.toLocaleString()}) is above the modeled ${globalMax.toLocaleString()}-student global waitlist (T2+T3+T4a+T4b per May 7 PDF). Double-check the number.`,
-      };
-    }
-
-    if (g <= t2w) {
-      return {
-        invalid: true,
-        reason: 'tier2',
-        g,
-        message: `Global rank ${g.toLocaleString()} falls in the Tier 2 waitlist band (1–${t2w.toLocaleString()}). Enter a Tier 3 global rank (${globalT3Start.toLocaleString()}–${globalT3End.toLocaleString()}) to use this card.`,
-      };
-    }
-
-    if (g > globalT3End) {
-      return {
-        invalid: true,
-        reason: 'tier4',
-        g,
-        message: `Global rank ${g.toLocaleString()} is past the Tier 3 band. Tier 3 is global ${globalT3Start.toLocaleString()}–${globalT3End.toLocaleString()} here; higher ranks are Tier 4a/b in this single-line model.`,
-      };
-    }
-
-    const { t3Local, fundedPct: perChildFundedPct, offerPct: perChildOfferPct } =
-      computeT3PctForRank(g, analysis, personalDefault);
-    const { t3Awards, t3QueueDepth, t3AcceptedRate, t3QueueDepthRate, t3AcceptedFamilyRate, t3QueueDepthFamilyRate } = personalDefault;
-    const inFunded = t3Local <= t3Awards;
-    const inOffer = t3Local <= t3QueueDepth;
-    const globalFundedCutoff = t2w + t3Awards;
-    const globalOfferCutoff = t2w + t3QueueDepth;
-
-    // Sibling rule with a single household rank: same as per-child (all-or-nothing).
-    const familyFundedPct = perChildFundedPct;
-    const familyOfferPct = perChildOfferPct;
-
-    return {
-      invalid: false,
-      g,
-      t3Local,
-      globalT3Start,
-      globalT3End,
-      globalFundedCutoff,
-      globalOfferCutoff,
-      inFunded,
-      inOffer,
-      perChildFundedPct,
-      perChildOfferPct,
-      familyFundedPct,
-      familyOfferPct,
-      poolAcceptedRate: t3AcceptedRate,
-      poolQueueDepthRate: t3QueueDepthRate,
-      poolFamilyAccepted: t3AcceptedFamilyRate,
-      poolFamilyQueue: t3QueueDepthFamilyRate,
-    };
-  })();
-
-  // Snapshot of the Iddings band endpoints. Used by the band slider to show
-  // the plausibility spread across the 30,001–50,000 range.
-  const bandSnapshot = (() => {
-    const { fundedPct: fundedLo, offerPct: offerLo } = computeT3PctForRank(IDDINGS_BUCKET.hi, analysis, personalDefault); // worst case in band
-    const { fundedPct: fundedHi, offerPct: offerHi } = computeT3PctForRank(IDDINGS_BUCKET.lo, analysis, personalDefault); // best case in band
-    return { fundedLo, fundedHi, offerLo, offerHi };
-  })();
-
-  // Reverse-solve: "what mix of attrition + reserve would the model need
-  // to put offer-depth / a funded seat at THIS exact band rank?"
-  // Replaces the previous stuck "16.8% pool average" KPI for ranks past the
-  // modeled offer-depth cutoff (where the exponential decay saturated almost
-  // immediately, so every rank in the band read the same value).
-  const bandReverseSolve = (() => {
-    const targetT3Local = Math.max(0, bandRank - analysis.unfundedT2);
-    const acceptedShareBase = 1 - PERSONAL_DEFAULT_BASELINE.replacementDeclineRate;
-    // To get an offer to land at this rank, t3QueueDepth ≥ targetT3Local.
-    // t3QueueDepth = floor(t3Awards / acceptedShare); t3Awards = floor(t3Dollars / 8500).
-    // So t3Awards must be ≥ ceil(targetT3Local * acceptedShare), and t3Dollars must
-    // cover that × $8,500. Funded-seat ladder is the same shape without the acceptedShare step.
-    const awardsForOffer = Math.ceil(targetT3Local * acceptedShareBase);
-    const awardsForFunded = targetT3Local;
-    const dollarsForOffer = awardsForOffer * T3_UNIT_COST;
-    const dollarsForFunded = awardsForFunded * T3_UNIT_COST;
-
-    const currentT3Dollars = personalDefault.t3Dollars;
-    const offerGap = Math.max(0, dollarsForOffer - currentT3Dollars);
-    const fundedGap = Math.max(0, dollarsForFunded - currentT3Dollars);
-    const inOfferAlready = personalDefault.t3QueueDepth >= targetT3Local;
-    const inFundedAlready = personalDefault.t3Awards >= targetT3Local;
-
-    // Lever A: hold reserve at $25M, find smallest uniform multiplier m on
-    // (t1Decline, t2Decline, replacementDecline) such that t3QueueDepth ≥ targetT3Local.
-    // Bounded by the structural cap where each rate ≤ 0.95.
-    const solveDeclineMultiplier = (target, mode) => {
-      if (target <= 0) return { ok: true, multiplier: 1, scenario: null };
-      const baseT1 = PERSONAL_DEFAULT_BASELINE.t1DeclineRate;
-      const baseT2 = PERSONAL_DEFAULT_BASELINE.t2DeclineRate;
-      const baseR = PERSONAL_DEFAULT_BASELINE.replacementDeclineRate;
-      const maxMultiplier = Math.min(0.95 / baseT1, 0.95 / baseT2, 0.95 / baseR);
-      const evalAt = (m) => {
-        const scen = runPersonalDefault({
-          t1DeclineRate: Math.min(0.95, baseT1 * m),
-          t2DeclineRate: Math.min(0.95, baseT2 * m),
-          replacementDeclineRate: Math.min(0.95, baseR * m),
-          reserveNetToWaitlist: PERSONAL_DEFAULT_BASELINE.reserveNetToWaitlist,
-        });
-        const v = mode === 'funded' ? scen.t3Awards : scen.t3QueueDepth;
-        return { v, scen };
-      };
-      // If even the max multiplier can't reach the target, fail out.
-      const maxEval = evalAt(maxMultiplier);
-      if (maxEval.v < target) return { ok: false, multiplier: null, scenario: maxEval.scen };
-      // Binary search.
-      let lo = 1, hi = maxMultiplier;
-      for (let i = 0; i < 40; i += 1) {
-        const mid = (lo + hi) / 2;
-        const { v } = evalAt(mid);
-        if (v >= target) hi = mid; else lo = mid;
-      }
-      const finalEval = evalAt(hi);
-      return { ok: true, multiplier: hi, scenario: finalEval.scen };
-    };
-
-    // Lever B: hold declines at baseline, solve extra reserve $ needed.
-    const solveReserveDollars = (target, mode) => {
-      if (target <= 0) return { ok: true, reserve: PERSONAL_DEFAULT_BASELINE.reserveNetToWaitlist, scenario: null };
-      // Try a high ceiling — full Community Impact-inferred pool plus headroom: $200M.
-      const ceiling = 200_000_000;
-      const evalAt = (r) => {
-        const scen = runPersonalDefault({
-          ...PERSONAL_DEFAULT_BASELINE,
-          reserveNetToWaitlist: r,
-        });
-        const v = mode === 'funded' ? scen.t3Awards : scen.t3QueueDepth;
-        return { v, scen };
-      };
-      const ceilEval = evalAt(ceiling);
-      if (ceilEval.v < target) return { ok: false, reserve: null, scenario: ceilEval.scen };
-      let lo = PERSONAL_DEFAULT_BASELINE.reserveNetToWaitlist, hi = ceiling;
-      for (let i = 0; i < 40; i += 1) {
-        const mid = (lo + hi) / 2;
-        const { v } = evalAt(mid);
-        if (v >= target) hi = mid; else lo = mid;
-      }
-      return { ok: true, reserve: hi, scenario: evalAt(hi).scen };
-    };
-
-    const declineLeverOffer = inOfferAlready ? null : solveDeclineMultiplier(targetT3Local, 'offer');
-    const reserveLeverOffer = inOfferAlready ? null : solveReserveDollars(targetT3Local, 'offer');
-    const declineLeverFunded = inFundedAlready ? null : solveDeclineMultiplier(targetT3Local, 'funded');
-    const reserveLeverFunded = inFundedAlready ? null : solveReserveDollars(targetT3Local, 'funded');
-
-    const formatDeclineLever = (lever) => {
-      if (!lever) return null;
-      if (!lever.ok) return { feasible: false };
-      const m = lever.multiplier;
-      return {
-        feasible: true,
-        multiplier: m,
-        t1Pct: Math.min(95, PERSONAL_DEFAULT_BASELINE.t1DeclineRate * m * 100),
-        t2Pct: Math.min(95, PERSONAL_DEFAULT_BASELINE.t2DeclineRate * m * 100),
-        replacementPct: Math.min(95, PERSONAL_DEFAULT_BASELINE.replacementDeclineRate * m * 100),
-        avgPct: ((PERSONAL_DEFAULT_BASELINE.t1DeclineRate + PERSONAL_DEFAULT_BASELINE.t2DeclineRate + PERSONAL_DEFAULT_BASELINE.replacementDeclineRate) / 3 * m * 100),
-      };
-    };
-    const formatReserveLever = (lever) => {
-      if (!lever) return null;
-      if (!lever.ok) return { feasible: false };
-      return {
-        feasible: true,
-        reserve: lever.reserve,
-        extraOverBaseline: Math.max(0, lever.reserve - PERSONAL_DEFAULT_BASELINE.reserveNetToWaitlist),
-      };
-    };
-
-    return {
-      targetT3Local,
-      bandRank,
-      currentT3Dollars,
-      currentT3Awards: personalDefault.t3Awards,
-      currentT3QueueDepth: personalDefault.t3QueueDepth,
-      dollarsForOffer,
-      dollarsForFunded,
-      offerGap,
-      fundedGap,
-      inOfferAlready,
-      inFundedAlready,
-      offer: {
-        decline: formatDeclineLever(declineLeverOffer),
-        reserve: formatReserveLever(reserveLeverOffer),
-      },
-      funded: {
-        decline: formatDeclineLever(declineLeverFunded),
-        reserve: formatReserveLever(reserveLeverFunded),
-      },
-    };
-  })();
-
-  // Tier 2 funding rate for display
-  const tier2FundingRate = analysis.demandT2 > 0 ? Math.min(100, (analysis.fundedT2 / analysis.demandT2) * 100) : 100;
-
-  // Essay/Text Data
-  const applicationTexts = {
-    scholarshipEssays: {
-        title: "Submitted Scholarship Essays (Core Values)",
-        content: `TRUTH:
-In our family, we believe that truth is not merely a concept or a rule to follow, but a person: Jesus Christ. Because of this, truth in the Iddings home means aligning our lives with Him. In a world that treats truth as subjective, we anchor our family in the conviction that God's Word is the ultimate standard for how we live, love, and learn. For us, the pursuit of truth is the pursuit of knowing God.
-
-We model Christ-centered honesty primarily through a culture of transparency and repentance. Chelsea and I strive to show our children—Cassius, Sebastian, and Dorothy—that being a Christian means being honest about who we are. We openly admit when we are wrong, ask for forgiveness when we lose our patience, and demonstrate that grace is the natural response to confession. We want our home to be a place where truth is spoken in love, and where integrity means that who we are in public is who we are in private.
-
-This practice is vital because we view our family as 'worker bees' in God's kingdom. While we are sojourners on this earth, we are called to actively participate in His work of restoration. We deeply desire for our children to bring order and light into a chaotic world; to do that, they must learn to love the truth.
-
-We are seeking a partnership with a school that reinforces this same foundation, helping us raise children who champion the truth in every area of their lives.
-
-EXCELLENCE:
-We define excellence not as perfection, but as honoring God by fully utilizing the gifts and capacity He has given us. Paul wrote in Colossians: "Whatever you do, work heartily, as for the Lord and not for men."
-
-Because of this, we emphasize process over outcome. We try to celebrate the discipline and effort it took to achieve something. We want our children to feel safe enough to take risks and make mistakes, knowing that their worth is secure in Christ, not in their performance. We want to raise lifelong learners who run toward difficult challenges because they view the struggle as a chance to grow, not a threat to their identity.
-
-We already see the fruit of this approach in our home: it empowers Cassius to publish his music online without fear, inspires Dorothy to create art for others with confidence, and encourages Sebastian to channel his high energy into attempting every sport he loves.
-
-Ultimately, we help them build internal motivation to do the hard work and steward their gifts well. We are seeking a school that shares this vision—one that holds high academic standards not for the sake of prestige, but because the pursuit of excellence is an act of worship.
-
-COMMUNITY:
-Having lived all over the world, our family has learned that community is built and fostered through intentional presence. Living with open hearts and open doors, we are preparing our children to not only navigate the world with wisdom but to lead with good character.
-
-In our home, we cultivate a posture of hospitality. Whether it is hosting a meal or simply making our space available to those around us, we model that people are image-bearers of God and deserve to be treated with dignity and kindness. It wouldn't be surprising to see others in our home for dinner regularly or notice a family staying with us for a season.
-
-We are deeply plugged into the life of our local body, King's Community Church. For us, church is not an event we attend, but a family we serve and serve alongside. Chelsea serves as the Worship Arts Director, using her gifts to lead others in worship, while Cody serves as a leader in Student Ministry, mentoring young teenagers and demonstrating that faith is relevant to every stage of life. Our children see us preparing, rehearsing, and showing up early—teaching them that "service" often looks like doing the hard work behind the scenes to create space for others to encounter Jesus.
-
-Beyond our home and church, we foster responsibility by acting as stewards of our local community. We believe the restoration work of the gospel includes caring for the place we live. This looks like saying "yes" to friends when they need coffee, consistently showing up to our community group, volunteering for meal service at First Footing, getting our hands dirty maintaining trails with the Comal Trails Alliance, and more. We want to be known as a family that says "YES" to the Spirit's nudges, which often starts with saying "YES" to others.
-
-Ultimately, we teach our children that we are "Here For Good"—active participants in our home, school, church, and neighborhood, looking for ways to serve rather than to be served.
-
-LEADERSHIP:
-Our family recently debated the definition of a leader. One child suggested it is "someone who serves," another said "someone who knows more," and a third defined it as "accepting responsibility." While these are true, we see Godly leadership as distinct from mere management. We teach our children that leadership is the courage to have vision and pursue it with integrity.
-
-We model this by striving to live an integrated life. We don't want to be one person at church and a different person at work. Whether it is Chelsea leading worship or me navigating business decisions, we want our kids to see that we are the same people at home and outside it. We talk openly about the weight of decision-making, showing them that giving glory to God isn't just for Sunday mornings; it is for the hard work done behind the scenes. We model that true authority comes not from a title, but from honoring one's word and doing what you say you will do.
-
-Part of this integrity is listening to the Spirit. We encourage our children to practice this through compassion with eyes to see. At King's Community Church, one of our core values is "Showing Compassion," which requires noticing needs before they are announced. We are teaching them that if they see a problem, they might be the leader God sent to solve it. As Paul wrote in Philippians 2:4: "Let each of you look not only to his own interests, but also to the interests of others."
-
-We want them to understand that by taking responsibility, they participate in the transformation of their community. We are seeking a school that partners with us in this equipping, helping us to raise servant-leaders.`
-    },
-    finAid: {
-      title: "Financial Aid Statement (FACTS)",
-      content: `We are seeking a partnership with NBCA not just for character academic potential, but to build a cohesive family culture where all three of our children—Cassius, Dorothy, and Sebastian—can grow together in unity.
-
-However, any of the three students to NBCA presents a significant financial barrier. Prior to this school year, NBCA has not been an option due to the high tuition costs. Now that TEFA may be an option, we have decided to pursue this school to see what doors God opens for our children. We view this investment as a matter of stewardship and are committed to doing our part; we are actively applying for the Texas Education Freedom Account (TEFA) and ACE Scholarships to cover the majority of tuition.
-
-The contribution amount we listed represents the maximum we can sustainably budget for our family of five. We respectfully request financial aid to help bridge the remaining gap, allowing us to steward our resources wisely while securing this vital partnership for our children's future.`
-    }
-  };
-
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
-  };
-
-  // Timeline Data
-  const timelineEvents = [
-    { date: 'Feb 20', day: 'Fri', isoDate: '2026-02-20', event: 'Student Assessments', type: 'nbca', desc: 'Required testing for placement.', funding: 'N/A' },
-    { date: 'Feb 27', day: 'Fri', isoDate: '2026-02-27', event: 'Family Interview', type: 'nbca', desc: 'Final step before acceptance decision.', funding: 'N/A' },
-    { date: 'Mar 07', day: 'Sat', isoDate: '2026-03-07', event: 'ACE Application Reviewed & Processed', type: 'ace', desc: 'ACE Scholarships confirmed the application was reviewed and processed. Award decisions will be made and notified by the end of June 2026.', funding: 'Decision Pending' },
-    { date: 'Mar 14', day: 'Sat', isoDate: '2026-03-14', event: 'NBCA Round 1 Notification', type: 'nbca', desc: 'Acceptance letters emailed to families.', funding: 'Decision Only' },
-    { date: 'Mar 17', day: 'Tue', isoDate: '2026-03-17', event: 'TEFA Original Deadline (Extended)', type: 'tefa', desc: 'Original deadline. Extended by federal court order.', funding: 'Superseded' },
-    { date: 'Mar 31', day: 'Tue', isoDate: '2026-03-31', event: 'TEFA Application Closes (Extended)', type: 'tefa', desc: 'New deadline per federal court order (Judge Bennett, S.D. Texas). 11:59 PM CT. After today: cannot switch homeschool/other to private school (can switch private to homeschool/other).', funding: 'Deadline' },
-    { date: 'Mar 31', day: 'Tue', isoDate: '2026-03-31', event: 'NBCA Financial Aid Granted ($16,200)', type: 'nbca', desc: 'Financial aid awarded: Cassius $5,850, Dorothy $5,600, Sebastian $4,750. Nanette confirmed 2026-27 gross tuition is $48,025; after $1,518.50 sibling discount and $16,200 financial aid, FACTS balance is $30,306.50, or 10 payments of $3,030.65. The $92.43 monthly transaction fee applies only to debit/credit card payments, not checking/savings ACH.', funding: 'Credited to Tuition' },
-    { date: 'Apr 01', day: 'Wed', isoDate: '2026-04-01', event: 'TEFA Surpasses 274,000 Applications (AFC)', type: 'tefa', desc: 'AFC press release confirms 274,000+ applications — largest school choice launch in history.', funding: 'N/A' },
-    { date: 'Apr 02', day: 'Thu', isoDate: '2026-04-02', event: 'Comptroller Releases Initial TEFA Breakdown', type: 'tefa', desc: 'Initial breakdown: 274,183 total applications, 77% private / 23% homeschool.', funding: 'N/A' },
-    { date: 'Apr 03', day: 'Fri', isoDate: '2026-04-03', event: 'Comptroller Confirms: Public School Priority Only Applies to Tier 4', type: 'tefa', desc: 'TEFA team email response to our inquiry confirms: per Sec. 29.3521(d), prior public school enrollment priority only applies to Tier 4 (≥500% FPL). For Tier 3 (200-500% FPL), public school history provides no priority advantage. Also confirmed: $1B spending cap for 2025-2027 biennium, 20% cap on Tier 4 spending.', funding: 'N/A' },
-    { date: 'Apr 02', day: 'Thu', isoDate: '2026-04-02', event: 'NBCA Enrollment Fee Paid', type: 'nbca', desc: 'Enrolled all 3 children. Paid ($175 + $55) x 3 = $690.', funding: '$690 Paid' },
-    { date: 'Apr 08', day: 'Wed', isoDate: '2026-04-08', event: 'Comptroller Publishes TEFA Application Insights: Year 1', type: 'tefa', desc: 'Official Year 1 PDF released — 274,183 applications, tier breakdown, demographics, ISD-level data.', funding: 'N/A', link: { href: '/TEFA-Application-Insights-Year-1.pdf', label: 'View PDF' } },
-    { date: 'Apr 15', day: 'Wed', isoDate: '2026-04-15', event: 'ACE Scholarship Deadline', type: 'ace', desc: 'Closes 11:59 PM (Tax Day).', funding: 'Deadline' },
-    { date: 'Apr 22', day: 'Wed', isoDate: '2026-04-22', event: 'TEFA Tier 1 Notifications Begin — 44,753 Awards', type: 'tefa', desc: 'Per the Apr 22 press release and revised May 7 Lottery Update PDF: 44,753 T1-family students are awarded — 28,233 Tier 1 students (disability + ≤500% FPL) plus 16,520 of their siblings pulled in by the sibling rule. Approximately half previously attended a public school. 30-day appeal window opens from notice receipt — adjustments only on school-district or IEP documentation.', funding: 'Award or Waitlist Position' },
-    { date: 'Apr 24', day: 'Fri', isoDate: '2026-04-24', event: 'Federal Injunction Hearing', type: 'tefa', desc: 'Key hearing in Muslim schools v. Texas. Court decides whether to maintain, modify, or dissolve the injunction blocking Comptroller Hancock from excluding Islamic schools. TEFA funding timeline depends on outcome.', funding: 'Court Date' },
-    { date: 'Apr 27', day: 'Mon', isoDate: '2026-04-27', event: 'TEFA Tier 2 Lottery + Waitlist Assignment', type: 'tefa', desc: `Per Apr 22 press release: the Comptroller conducts a lottery during the week of April 27 for Tier 2 award **order** and assigns **sequential waitlist positions** to unfunded Tier 2 and to all of Tiers 3–4 in the same draw. **Tier 2 award emails / portal updates begin the week of May 4** (next timeline row). **Approximate waitlist position for all tiers** was originally targeted for the **week of May 11**; it slipped to mid-May and arrived ${IDDINGS_BUCKET.notifiedOn} as a bucket range, not a precise rank.`, funding: 'Lottery + Ranked Waitlist' },
-    { date: 'May 04', day: 'Mon', isoDate: '2026-05-04', event: 'TEFA Tier 2 Awards Begin — 51,181 Tier 2 Awards', type: 'tefa', desc: 'May 7 revised Lottery Update PDF gives the exact Tier 2 result: 51,181 Tier 2 students awarded and 20,383 Tier 2 students waitlisted. Award notifications began the week of May 4. Awarded families see funding amounts in the portal and must confirm private school enrollment, select homeschool/other ($2,000), or opt out by July 15.', funding: 'Tier 2 Award Batch' },
-    { date: 'May 11', day: 'Mon', isoDate: '2026-05-11', event: 'TEFA Waitlist Notifications + Opt-In Portal Opens', type: 'tefa', desc: `Per the revised May 7 Lottery Update PDF: the week of May 11, the program notifies students in all tiers of their approximate waitlist position. **Update ${IDDINGS_BUCKET.notifiedOn}:** bucket received — **${IDDINGS_BUCKET.label}**. Odyssey continues to show all 3 Iddings students as "Eligible" with the standard waitlist message; precise rank within the band is not provided. Per the May 12 Waitlist Information PDF, positions arrive as **bucket ranges** (1–1,000 / 1,001–2,000 / … / 100,001+), with precise numbers only for higher-list families. This is the sharpest TEFA signal we will have before NBCA scholarship awards finalize by June 5 and before the Jun 30 NBCA withdrawal deadline.`, funding: 'Waitlist Position + Scholarship Input' },
-    { date: 'May 15', day: 'Fri', isoDate: '2026-05-15', event: 'NBCA Financial Aid / Scholarship Application Deadline', type: 'nbca', desc: 'Per Nanette Jones (Apr 28), Iddings financial aid and scholarship applications are in order, with all documents and recommendations uploaded. No further action needed unless the committee requests clarification.', funding: 'Application Window Closes' },
-    { date: 'May 22', day: 'Fri', isoDate: '2026-05-22', event: 'T1 Appeals Window Closes (est.)', type: 'tefa', desc: '30 days after the first Apr 22 notifications. Per the Apr 22 press release: "Parents may appeal funding determinations within 30 days of receiving their notice; however, adjustments will be made only based on school district and Individualized Education Program documentation." Narrow relevance to Iddings — would only matter if a child obtained a qualifying IEP (moving from T3 to T1).', funding: 'Appeal Deadline' },
-    { date: 'May 29', day: 'Fri', isoDate: '2026-05-29', event: `TEFA Cascade Begins — ${MAY29_CASCADE.t2Cascaded.toLocaleString()} More Tier 2 Awarded`, type: 'tefa', desc: `Per the Comptroller's May 29 News & Updates post: ${MAY29_CASCADE.t2Cascaded.toLocaleString()} waitlisted Tier 2 students awarded using funds freed by opt-outs and homeschool/other downgrades ($2,000), plus ${MAY29_CASCADE.spedAwards.toLocaleString()} special-education awards and ${MAY29_CASCADE.spedSiblings.toLocaleString()} of their siblings (from the appeals reserve). Gross awards now ≈ ${MAY29_CASCADE.grossAwardedApprox.toLocaleString()}; after ~${MAY29_CASCADE.optOuts.toLocaleString()} opt-outs, ≈ ${MAY29_CASCADE.activeApproxAfterOptOuts.toLocaleString()} active. Every new award went to Tier 2 — confirming strict tier order — leaving ≈ ${MAY29_CASCADE.t2RemainingAfterCascade.toLocaleString()} Tier 2 still ahead of Tier 3. The ~1.4% opt-out rate is a pre-deadline trickle; the real attrition wave is June and especially the Jul 15 opt-in/opt-out deadline. Nothing has reached our ${IDDINGS_BUCKET.label} band yet.`, funding: 'Observed Cascade (T2)' },
-    { date: 'Jun 05', day: 'Fri', isoDate: '2026-06-05', event: 'NBCA Scholarship Awarded ($12,000)', type: 'nbca', desc: `Per NBCA (Nanette Jones, Jun 5): all three students selected for scholarship awards for 2026-27 — Cassius $4,000, Dorothy $4,000, Sebastian $4,000 = $12,000 total. Flat per-student award, independent of TEFA outcome. Must reply to confirm acceptance by June 15; funds then credited to tuition (can be split across students or applied to one balance). Since the ${IDDINGS_BUCKET.label} TEFA band sits past the modeled cutoffs, this $12,000 is now firm Year-1 aid on top of the $16,200 financial aid.`, funding: 'Credited to Tuition' },
-    { date: 'Jun 10', day: 'Wed', isoDate: '2026-06-10', event: `TEFA Awarded Fact Sheet — ${JUN10_SNAPSHOT.activeAwarded.toLocaleString()} Active Awards`, type: 'tefa', desc: `Per the Comptroller's ${JUN10_SNAPSHOT.source}: ${JUN10_SNAPSHOT.activeAwarded.toLocaleString()} active awards (Tier 1 + siblings + Tier 2, net of opt-outs as of ${JUN10_SNAPSHOT.optOutsAsOf}). ${JUN10_SNAPSHOT.totalWaitlist.toLocaleString()} eligible students remain on the waitlist, including ${JUN10_SNAPSHOT.t2WaitlistRemaining.toLocaleString()} Tier 2 still ahead of all Tier 3. Reconciliation vs. the May 7 baseline: T2 waitlist ${JUN10_SNAPSHOT.baselineT2Waitlist.toLocaleString()} → ${JUN10_SNAPSHOT.t2WaitlistRemaining.toLocaleString()} (−${JUN10_SNAPSHOT.t2ClearedSinceBaseline.toLocaleString()} cleared); total waitlist ${JUN10_SNAPSHOT.baselineTotalWaitlist.toLocaleString()} → ${JUN10_SNAPSHOT.totalWaitlist.toLocaleString()} (−${JUN10_SNAPSHOT.totalWaitlistCleared.toLocaleString()}). The entire reduction is Tier 2 — the cascade is still strictly in tier order and nothing has reached our ${IDDINGS_BUCKET.label} band. Tracking snapshot only; the model's baseline counts and 15% attrition are unchanged.`, funding: 'Observed Snapshot (Official)' },
-    { date: 'Jun 01', day: 'Mon', isoDate: '2026-06-01', event: 'TEFA July-Funding Track: Family Opt-In Deadline', type: 'tefa', desc: 'Per the Apr 28 Lottery Update PDF: parents on the July 1 funding track must opt in and select their participating private school by this date. Awarded families who miss this deadline shift to the August-funding track (Jul 15 family deadline). Non-confirmations begin trickling waitlist movement — but the bulk arrives later.', funding: 'July Track Family Deadline' },
-    { date: 'Jun 15', day: 'Mon', isoDate: '2026-06-15', event: 'TEFA July-Funding Track: School Confirms Enrollment', type: 'tefa', desc: `Per the Apr 28 Lottery Update PDF: participating private schools must confirm enrollment through the program portal by this date for July 1 funding. Key trigger for waitlist cascade — the state now formally knows which Jun 1 selections were completed vs. which fell through. Our ${IDDINGS_BUCKET.label} band sits past the modeled cutoffs, so meaningful movement for us depends on a much larger cascade than this date typically produces.`, funding: 'July Track School Lock-In' },
-    { date: 'Jun 16', day: 'TBD', isoDate: '2026-06-16', event: 'TEFA Waitlist Movement Accelerates (est.)', type: 'tefa', desc: `After Jun 15 school confirmations on the July-funding track, unfilled spots cascade down the waitlist (T2 backfill first, then T3). For our ${IDDINGS_BUCKET.label} band the biggest realistic upside event is the post-Jul 15 opt-outs on the August-funding track — and that falls **after** the Jun 30 NBCA withdrawal deadline.`, funding: 'Waitlist Movement' },
-    { date: 'Jun 30', day: 'Tue', isoDate: '2026-06-30', event: 'ACE Award Decisions Expected', type: 'ace', desc: 'Per ACE email on Mar 7: scholarship award decisions will be made and notified by the end of June 2026.', funding: 'Paid directly to School if awarded' },
-    { date: 'Jun 30', day: 'Tue', isoDate: '2026-06-30', event: 'NBCA Withdrawal Deadline (No Penalty)', type: 'nbca', desc: 'Can withdraw penalty-free before this date per the continuous enrollment agreement. If not withdrawn by June 30, a 10% penalty ($4,802.50) applies for July withdrawals, and a 20% penalty ($9,605.00) applies for August withdrawals. Critical tension: June 30 falls ~2 weeks before the Jul 15 TEFA opt-out/confirmation deadline — meaning the penalty-free NBCA withdrawal decision is made BEFORE the main waitlist-cascade event.', funding: 'N/A' },
-    { date: 'Jul 06', day: 'Mon', isoDate: '2026-07-06', event: 'First FACTS Tuition Payment', type: 'nbca', desc: 'Current FACTS schedule shows $3,030.65 due. Nanette confirmed the $92.43 monthly transaction fee applies only to debit/credit cards; checking/savings automatic payments avoid the card usage fee.', funding: 'Tuition Draft' },
-    { date: 'Jul 01', day: 'Wed', isoDate: '2026-07-01', event: 'TEFA First Round Funding Available', type: 'tefa', desc: 'Per official TEFA email: "First round of funding becomes available in Odyssey\'s platform." This is when award recipients first see real dollar amounts vs. their actual tuition bill — potential sticker-shock attrition event. Families who drop here create a second wave of waitlist opportunities for those not yet called up.', funding: 'Distribution' },
-    { date: 'Jul 15', day: 'Wed', isoDate: '2026-07-15', event: 'TEFA August-Funding Track: Family Opt-In Deadline', type: 'tefa', desc: 'Per the Apr 22 press release and the Apr 28 PDF: families on the August funding track have until July 15 to confirm enrollment in a participating private school, select homeschool/other ($2,000), or opt out of the program. This is the largest single attrition event of Year 1 — opt-outs cascade funding down the waitlist for both T2 and T3. Update (Jun 4): the Funding Timelines press release now commits to a date — students whose schools confirm enrollment by Jul 31 receive their first 25% installment by mid-August.', funding: 'August Track Family Deadline' },
-    { date: 'Jul 31', day: 'Fri', isoDate: '2026-07-31', event: 'TEFA August-Funding Track: School Confirms Enrollment', type: 'tefa', desc: 'Per the Apr 28 Lottery Update PDF: participating private schools must confirm enrollments by this date for August funding. Back-office step — no family action required. Any subsequent attrition (mid-school-year) generates late waitlist movement. Update (Jun 4): the Funding Timelines press release confirms students confirmed by this date receive their first 25% installment by mid-August.', funding: 'August Track School Lock-In' },
-    { date: 'Aug 01', day: 'TBD', isoDate: '2026-08-01', event: 'TEFA Appeals Reserve → Waitlist (est.)', type: 'tefa', desc: 'Per the Apr 28 PDF item 5: the Comptroller has set aside a reserve budget for successful eligibility / priority-tier / funding-amount appeals. Once the appeals window closes and adjustments are made, any unused reserve cascades to the next-available students on the waitlist — a small upside for waitlisted T2 and T3 families. Magnitude is undisclosed; treat as a sensitivity vector, not baseline.', funding: 'Reserve Cascade' },
-    { date: 'Sep 15', day: 'Tue', isoDate: '2026-09-15', event: 'TEFA Second-Installment Confirmation Deadline', type: 'tefa', desc: 'Per the Jun 4 Funding Timelines press release: students must have confirmed enrollment in a participating private school by Sept 15 to receive the full second installment (funded Oct 1). Confirmations after this date are prorated to 75%. Sept 15 is also the cutoff to receive a full award for anyone brought off the waitlist.', funding: 'Confirmation Deadline' },
-    { date: 'Oct 01', day: 'Thu', isoDate: '2026-10-01', event: 'TEFA Second Installment (+25% → 50% cumulative)', type: 'tefa', desc: 'Per the Jun 4 Funding Timelines press release: private school students receive an additional 25% of their total award on Oct 1 (50% cumulative). The Comptroller has set the actual private-school schedule at 25% (Jul 1 / mid-Aug) → 25% (Oct 1) → 50% (Feb 1), within the SB 2 §29.362(a) defaults. Students must remain enrolled in a participating private school to receive it.', funding: 'Distribution' },
-    { date: 'Jan 15', day: 'Fri', isoDate: '2027-01-15', event: 'TEFA Final-Installment Confirmation Deadline', type: 'tefa', desc: 'Per the Jun 4 Funding Timelines press release: confirmation deadline for the final 50% installment (funded Feb 1). Confirmations after this date are prorated to 50%.', funding: 'Confirmation Deadline' },
-    { date: 'Feb 01', day: 'Mon', isoDate: '2027-02-01', event: 'TEFA Final Installment (remaining 50%)', type: 'tefa', desc: 'Per the Jun 4 Funding Timelines press release: private school students receive the remaining half of their funding on Feb 1 — earlier and larger than the SB 2 default "balance by Apr 1." Students must remain enrolled in a participating private school. Per SB 2 §29.361(e), unused funds carry forward while the child remains eligible and participating; remaining money returns to the program fund when the account closes.', funding: 'Distribution' },
-  ];
-
-  const buildRecommendedPaymentDates = () => {
-    const recommendedDates = [
-      { date: 'Aug 5, 2026', isoDate: '2026-08-05' },
-      { date: 'Oct 5, 2026', isoDate: '2026-10-05' },
-      { date: 'Dec 7, 2026', isoDate: '2026-12-07' },
-      { date: 'Feb 5, 2027', isoDate: '2027-02-05' },
-      { date: 'Apr 5, 2027', isoDate: '2027-04-05' },
-    ];
-
-    return recommendedDates.map((payment, idx) => {
-      return {
-        ...payment,
-        amount: idx < 4 ? factsBalanceDue * 0.15 : factsBalanceDue * 0.4,
-      };
-    });
-  };
-
-  const paymentPlanOptions = {
-    full: {
-      label: 'Pay In Full',
-      note: 'One large draft after the July 15 TEFA opt-in deadline.',
-      dates: [
-        { date: 'Aug 5, 2026', isoDate: '2026-08-05' },
-      ],
-    },
-    eleven: {
-      label: '11 Month',
-      note: 'Starts in June, before the June 30 withdrawal safety valve.',
-      dates: [
-        { date: 'Jun 5, 2026', isoDate: '2026-06-05' },
-        { date: 'Jul 6, 2026', isoDate: '2026-07-06' },
-        { date: 'Aug 5, 2026', isoDate: '2026-08-05' },
-        { date: 'Sep 8, 2026', isoDate: '2026-09-08' },
-        { date: 'Oct 5, 2026', isoDate: '2026-10-05' },
-        { date: 'Nov 5, 2026', isoDate: '2026-11-05' },
-        { date: 'Dec 7, 2026', isoDate: '2026-12-07' },
-        { date: 'Jan 5, 2027', isoDate: '2027-01-05' },
-        { date: 'Feb 5, 2027', isoDate: '2027-02-05' },
-        { date: 'Mar 5, 2027', isoDate: '2027-03-05' },
-        { date: 'Apr 5, 2027', isoDate: '2027-04-05' },
-      ],
-    },
-    ten: {
-      label: '10 Month',
-      note: 'Current FACTS schedule: starts July 6.',
-      dates: [
-        { date: 'Jul 6, 2026', isoDate: '2026-07-06' },
-        { date: 'Aug 5, 2026', isoDate: '2026-08-05' },
-        { date: 'Sep 8, 2026', isoDate: '2026-09-08' },
-        { date: 'Oct 5, 2026', isoDate: '2026-10-05' },
-        { date: 'Nov 5, 2026', isoDate: '2026-11-05' },
-        { date: 'Dec 7, 2026', isoDate: '2026-12-07' },
-        { date: 'Jan 5, 2027', isoDate: '2027-01-05' },
-        { date: 'Feb 5, 2027', isoDate: '2027-02-05' },
-        { date: 'Mar 5, 2027', isoDate: '2027-03-05' },
-        { date: 'Apr 5, 2027', isoDate: '2027-04-05' },
-      ],
-    },
-    recommended: {
-      label: 'Recommended',
-      note: 'Nanette (Jun 2) confirmed TEFA plans allocate private pay evenly over monthly payments with lump sums scheduled for TEFA disbursements. This modeled plan uses five payments starting in August.',
-      dates: buildRecommendedPaymentDates(),
-      hasVariableAmounts: true,
-    },
-  };
-
-  const selectedPaymentPlan = paymentPlanOptions[paymentPlanMode] || paymentPlanOptions.recommended;
-  const selectedPlanPaymentAmount = selectedPaymentPlan.dates.length > 0
-    ? factsBalanceDue / selectedPaymentPlan.dates.length
-    : 0;
-
-  const factsPaymentSchedule = selectedPaymentPlan.dates.map((payment, idx) => ({
-    ...payment,
-    number: idx + 1,
-    amount: payment.amount ?? selectedPlanPaymentAmount,
-    cardAmount: (payment.amount ?? selectedPlanPaymentAmount) + factsCardTransactionFee,
+  const tuition = STUDENTS.reduce((a, s) => a + s.tuition, 0);
+  const nbcaAid = STUDENTS.reduce((a, s) => a + s.nbcaAid, 0);
+  const scholarship = STUDENTS.reduce((a, s) => a + s.scholarship, 0);
+  const balanceDue = perStudent.reduce((a, s) => a + s.balance, 0);
+
+  const plan = PAYMENT_PLANS[planId];
+  const schedule = plan.dates.map((date, i) => ({
+    number: i + 1,
+    date,
+    amount: balanceDue * plan.shares[i],
   }));
-
-  const totalFactsCardFees = factsCardTransactionFee * factsPaymentSchedule.length;
-  const selectedPlanDraftDisplay = selectedPaymentPlan.hasVariableAmounts
-    ? 'Variable'
-    : `$${selectedPlanPaymentAmount.toFixed(2)}`;
-
-  const possibleTefaInflows = [
-    {
-      date: 'Jul 1, 2026',
-      scenario: 'July funding track',
-      amount: tefaFirstTranche,
-      likelihood: 'Unlikely for T3',
-      note: 'Only if pulled early enough to opt in by Jun 1 and NBCA confirms by Jun 15.',
-    },
-    {
-      date: 'Mid-Aug 2026',
-      scenario: 'August funding track',
-      amount: tefaFirstTranche,
-      likelihood: 'More plausible if T3 is reached',
-      note: 'Per Jun 4 press release: opt in / school confirms by Jul 31 → first 25% by mid-August.',
-    },
-    {
-      date: 'Oct 1, 2026',
-      scenario: 'Second installment (+25%)',
-      amount: tefaFirstTranche,
-      likelihood: 'Only if already funded',
-      note: 'Jun 4 press release: an additional 25% on Oct 1 → 50% cumulative. Confirm enrollment by Sept 15 (prorated to 75% if later).',
-    },
-    {
-      date: 'Feb 1, 2027',
-      scenario: 'Final installment (50%)',
-      amount: tefaTotalAward - tefaCumulativeSecondTranche,
-      likelihood: 'Only if already funded',
-      note: 'Jun 4 press release: remaining 50% on Feb 1. Confirm by Jan 15 (prorated to 50% if later). Must remain enrolled in a participating private school.',
-    },
-  ];
-
-  const getTefaCumulativeByDate = (track, isoDate) => {
-    if (track === 'none') return 0;
-
-    // Per the Jun 4 press release the August track lands "mid-August"; model as Aug 15.
-    const firstReleaseDate = track === 'july' ? '2026-07-01' : '2026-08-15';
-
-    if (isoDate >= '2027-02-01') return tefaTotalAward;        // final 50% on Feb 1
-    if (isoDate >= '2026-10-01') return tefaCumulativeSecondTranche; // +25% → 50% cumulative
-    if (isoDate >= firstReleaseDate) return tefaFirstTranche;  // first 25%
-    return 0;
-  };
-
-  const buildPaymentProjection = (track) => {
-    let remainingBalance = factsBalanceDue;
-    let tefaAvailable = 0;
-    let previousCumulativeTefa = 0;
-
-    return factsPaymentSchedule.map((payment) => {
-      const cumulativeTefa = getTefaCumulativeByDate(track, payment.isoDate);
-      tefaAvailable += Math.max(0, cumulativeTefa - previousCumulativeTefa);
-      previousCumulativeTefa = cumulativeTefa;
-
-      const scheduledDue = Math.min(payment.amount, Math.max(0, remainingBalance));
-      const tefaApplied = Math.min(scheduledDue, tefaAvailable);
-      const familyPaid = scheduledDue - tefaApplied;
-
-      tefaAvailable -= tefaApplied;
-      remainingBalance -= scheduledDue;
-
-      return {
-        ...payment,
-        scheduledDue,
-        tefaApplied,
-        familyPaid,
-        tefaAvailable,
-        remainingBalance: Math.max(0, remainingBalance),
-      };
-    });
-  };
-
-  const noTefaPaymentProjection = buildPaymentProjection('none');
-  const julyTefaPaymentProjection = buildPaymentProjection('july');
-  const augustTefaPaymentProjection = buildPaymentProjection('august');
-  const selectedTefaPaymentProjection = paymentTefaTrack === 'july'
-    ? julyTefaPaymentProjection
-    : paymentTefaTrack === 'august'
-      ? augustTefaPaymentProjection
-      : noTefaPaymentProjection;
-  const selectedTrackLabel = paymentTefaTrack === 'july'
-    ? 'July funding track'
-    : paymentTefaTrack === 'august'
-      ? 'August funding track'
-      : 'No TEFA';
-  const totalFamilyPaidUnderSelectedTrack = selectedTefaPaymentProjection.reduce((sum, payment) => sum + payment.familyPaid, 0);
-  const totalTefaAppliedUnderSelectedTrack = selectedTefaPaymentProjection.reduce((sum, payment) => sum + payment.tefaApplied, 0);
 
   return (
     <div className="min-h-screen bg-tefa-light font-sans text-tefa-body pb-12">
       {/* Header */}
       <header className="bg-tefa-navy text-white p-6 shadow-lg">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center">
+        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Iddings Family Planner</h1>
-            <p className="text-tefa-sky mt-1">NBCA Enrollment 2026-2027</p>
+            <h1 className="text-2xl font-bold tracking-tight">Iddings Family Planner</h1>
+            <p className="text-tefa-sky text-sm mt-1">NBCA 2026–2027 · what to do, when, and what we owe</p>
           </div>
-          <div className="mt-4 md:mt-0 flex flex-wrap gap-2 text-sm font-medium">
-            {VALID_TABS.map(tab => (
+          <nav className="flex gap-2 text-sm font-medium">
+            {VALID_TABS.map((t) => (
               <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 rounded-[20px] transition capitalize ${activeTab === tab ? 'bg-white text-tefa-navy font-bold' : 'text-white border border-white/20 hover:text-tefa-sky'}`}
+                key={t}
+                onClick={() => setTab(t)}
+                className={`px-4 py-2 rounded-full transition capitalize ${
+                  activeTab === t
+                    ? 'bg-white text-tefa-navy font-bold'
+                    : 'text-white border border-white/20 hover:text-tefa-sky'
+                }`}
               >
-                {tab}
+                {t}
               </button>
             ))}
-          </div>
+          </nav>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto p-6">
-
-        {/* DASHBOARD VIEW */}
-        {activeTab === 'dashboard' && (
-          <div className="space-y-8">
-
-            {/* Status Overview Table */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <div className="lg:col-span-8 bg-white p-6 rounded-lg shadow-md border border-gray-200">
-                    <h3 className="font-bold text-tefa-navy mb-4 flex items-center gap-2">
-                        <TrendingUp size={20}/> Application Status
-                    </h3>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left">
-                            <thead className="text-xs text-tefa-navy uppercase bg-tefa-navy/5 border-b border-tefa-navy/10">
-                                <tr>
-                                    <th className="px-4 py-3 rounded-tl-lg">Item</th>
-                                    <th className="px-4 py-3">Status</th>
-                                    <th className="px-4 py-3">Notification</th>
-                                    <th className="px-4 py-3 rounded-tr-lg">Funding Method</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                                {appStatus.map((row, idx) => (
-                                    <tr key={idx} className="hover:bg-tefa-light transition">
-                                        <td className="px-4 py-3 font-medium text-tefa-body flex items-center gap-2">
-                                            {row.type === 'success'
-                                                ? <CheckSquare size={16} className="text-green-600"/>
-                                                : <Square size={16} className="text-tefa-body/40"/>}
-                                            {row.item}
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <span className={`px-2 py-1 rounded text-xs font-bold ${
-                                              row.type === 'success' ? 'bg-green-100 text-green-700' :
-                                              row.status === 'Scheduled' ? 'bg-tefa-navy/10 text-tefa-navy/70' :
-                                              'bg-amber-100 text-tefa-red/80'
-                                            }`}>
-                                                {row.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-3 text-tefa-body/70">{row.date}</td>
-                                        <td className="px-4 py-3 text-xs text-tefa-body/60 font-mono">{row.funding}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div className="lg:col-span-4 bg-white p-6 rounded-lg shadow-md border border-gray-200">
-                     <h3 className="font-bold text-tefa-navy mb-4 flex items-center gap-2">
-                        <CreditCard size={20}/> One-Time Fees
-                    </h3>
-                    <div className="space-y-3">
-                        <div className="flex justify-between items-center text-sm">
-                            <span className="text-tefa-body/70">NBCA Apps (3)</span>
-                            <span className="font-bold">${fees.nbcaApp}</span>
-                        </div>
-                        <div className="flex justify-between items-center text-sm">
-                            <span className="text-tefa-body/70">NBCA Enrollment (3)</span>
-                            <span className="font-bold">${fees.nbcaEnroll}</span>
-                        </div>
-                        <div className="flex justify-between items-center text-sm">
-                            <span className="text-tefa-body/70">FACTS Fee</span>
-                            <span className="font-bold">${fees.factsApp}</span>
-                        </div>
-                        <div className="flex justify-between items-center text-sm">
-                            <span className="text-tefa-body/70">ACE Apps (3)</span>
-                            <span className="font-bold">${fees.aceApp}</span>
-                        </div>
-                        <div className="pt-3 border-t border-gray-200 flex justify-between items-center font-bold text-lg">
-                            <span>Total</span>
-                            <span>${totalFees}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Odyssey Portal Status — May 12, 2026 */}
-            <div className="bg-amber-50 p-6 rounded-lg shadow-md border-2 border-amber-400">
-                <h2 className="text-xl font-bold flex items-center gap-2 text-amber-800 mb-2">
-                    <AlertCircle size={20} /> Odyssey Portal — All 3 Kids Show "Eligible" (Waitlisted) · May 12, 2026
-                </h2>
-                <p className="text-sm text-amber-900 mb-3">
-                    Checked <a href="https://withodyssey.com" target="_blank" rel="noopener noreferrer" className="underline decoration-amber-700/60 hover:text-tefa-green font-semibold">withodyssey.com</a> today — no waitlist position number yet for any of the three Iddings students. Each child's screen carries the same standard message:
-                </p>
-                <blockquote className="text-sm italic text-tefa-body/80 bg-white border-l-4 border-amber-400 px-4 py-3 mb-4 rounded-r">
-                    "Your student is currently on the waitlist to receive an award. If your student moves off the waitlist, your status will be updated to Approved - Awaiting Opt In and you will be notified."
-                </blockquote>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
-                    {students.map((s) => (
-                        <div key={s.name} className="bg-white rounded-lg p-3 border border-amber-200 text-center">
-                            <div className="text-xs text-tefa-body/50 font-medium">{s.name} · {s.grade}</div>
-                            <div className="font-bold text-amber-700 text-lg mt-1">Eligible</div>
-                            <div className="text-[10px] text-tefa-body/40 mt-1">Waitlisted · award not yet visible</div>
-                        </div>
-                    ))}
-                </div>
-                <p className="text-xs text-tefa-body/70 bg-white rounded p-3 border border-amber-200">
-                    <strong>We have a bucket, not a number.</strong> Per the May 12 TEFA Waitlist Information PDF, only ranks ≤ 25,000 receive precise positions; we received <strong>{IDDINGS_BUCKET.label}</strong> on {IDDINGS_BUCKET.notifiedOn}. Odyssey continues to show all 3 Iddings students as <em>"Eligible"</em> with the standard waitlist message — no funding amount is visible.
-                </p>
-                <div className="mt-3 text-xs text-tefa-body/70 bg-white rounded p-3 border border-amber-200">
-                    <div className="text-[11px] uppercase font-bold text-amber-800 mb-1.5">Comptroller SMS notification ({IDDINGS_BUCKET.notifiedOn}) — verbatim</div>
-                    <blockquote className="italic text-tefa-body/80 whitespace-pre-line">
-{`Odyssey - Texas: Texas Education Freedom Accounts Update. Your student(s) have been placed on the waitlist for the upcoming school year. Their approximate position is 30,001-50,000. Your household priority is tier 3. If your student(s) move off of the waitlist, you will be notified and the update will be reflected on your Odyssey portal (https://withodyssey.com).
-Text STOP to opt-out`}
-                    </blockquote>
-                </div>
-            </div>
-
-            {/* Funding Update Banner - May 4 Tier 2 Awards */}
-            <div className="bg-tefa-green/10 p-4 rounded-lg shadow-md border-2 border-tefa-green/40">
-                <h2 className="text-base font-bold flex items-center gap-2 text-tefa-green mb-2">
-                    <AlertCircle size={18} /> Funding Update — May 4, 2026 (Tier 2 Awards)
-                </h2>
-                <p className="text-sm text-tefa-body mb-2">
-                    The revised May 7 Lottery Update PDF gives exact counts: <strong>{analysis.firstRoundAwards.toLocaleString()} T1-family awards</strong>, <strong>{analysis.officialT2Awards.toLocaleString()} Tier 2 awards</strong>, and <strong>{analysis.unfundedT2.toLocaleString()} Tier 2 students waitlisted</strong> ahead of Tier 3. Total awards to date are <strong>{analysis.capacity.toLocaleString()}</strong>, matching the "nearly 96,000" public reporting. Tier 2 is ~{tier2FundingRate.toFixed(1)}% funded initially.
-                </p>
-                <p className="text-sm text-tefa-body mb-2 bg-tefa-green/5 border border-tefa-green/20 rounded-lg p-2.5">
-                    <strong>May 29 update — the cascade has begun (and it's flowing exactly as modeled).</strong> The Comptroller awarded <strong>{MAY29_CASCADE.t2Cascaded.toLocaleString()}</strong> more <strong>Tier 2</strong> waitlisted students (funded by opt-outs + homeschool/other downgrades to $2,000), plus <strong>{(MAY29_CASCADE.spedAwards + MAY29_CASCADE.spedSiblings).toLocaleString()}</strong> special-education awards ({MAY29_CASCADE.spedAwards.toLocaleString()} students + {MAY29_CASCADE.spedSiblings.toLocaleString()} siblings, from the appeals reserve). Gross awards ≈ <strong>{MAY29_CASCADE.grossAwardedApprox.toLocaleString()}</strong>; after ~{MAY29_CASCADE.optOuts.toLocaleString()} opt-outs, ≈ <strong>{MAY29_CASCADE.activeApproxAfterOptOuts.toLocaleString()} active</strong>. Every new award went to Tier 2 (strict tier order), leaving ≈ <strong>{MAY29_CASCADE.t2RemainingAfterCascade.toLocaleString()} Tier 2 still ahead of Tier 3</strong> — nothing has reached our band yet, but the queue ahead is shrinking on schedule. <strong>Jun 10 official fact sheet:</strong> <strong>{JUN10_SNAPSHOT.activeAwarded.toLocaleString()}</strong> active awards and <strong>{JUN10_SNAPSHOT.t2WaitlistRemaining.toLocaleString()} Tier 2 still on the waitlist</strong> (of {JUN10_SNAPSHOT.totalWaitlist.toLocaleString()} total) — that's <strong>{JUN10_SNAPSHOT.t2ClearedSinceBaseline.toLocaleString()} Tier 2 cleared</strong> since the lottery, and the entire waitlist reduction is Tier 2. The cascade is still strictly in tier order; at this pace the T2 backlog clears around mid-to-late July, right at the Jul 15 cascade event.
-                </p>
-                <ul className="text-xs text-tefa-body/80 space-y-1 list-disc pl-5">
-                    <li><strong>May 4-6:</strong> T2 award notifications go out; awarded families see funding amounts in the portal.</li>
-                    <li><strong>Week of May 11 → May 15:</strong> notification received {IDDINGS_BUCKET.notifiedOn} as <strong>{IDDINGS_BUCKET.label}</strong> (Tier 3 portion ≈9,618–29,617). All three Iddings students share this band under the household-rank rule. Odyssey portal continues to open for awarded families to opt in.</li>
-                    <li><strong>Jun 1 / Jun 15:</strong> family opt-in / school confirmation for the <em>July 1 funding</em> track (a specific date).</li>
-                    <li><strong>Jul 15 / Jul 31:</strong> family opt-in / school confirmation for the <em>August funding</em> track <span className="bg-tefa-green/15 text-tefa-green px-1.5 rounded font-semibold">(Jun 4 release: first 25% by mid-August)</span> — Jul 15 opt-outs are the largest cascade event of Year 1.</li>
-                    <li><strong>Reserve budget:</strong> the program holds funds for successful appeals; unused reserve cascades to the next available waitlisted students.</li>
-                </ul>
-            </div>
-
-            {/* TEFA Program Status Card */}
-            <div className="bg-tefa-light p-6 rounded-lg shadow-md border-2 border-tefa-navy">
-                <h2 className="text-xl font-bold flex items-center gap-2 text-tefa-navy mb-3">
-                    <Scale size={20} /> TEFA Program Status: Tier 3 Waitlisted · band {IDDINGS_BUCKET.label}
-                </h2>
-                <p className="text-sm text-tefa-body mb-4">
-                    <strong>{TOTAL_APPLICATIONS.toLocaleString()} students</strong> applied in Year 1 ({ELIGIBLE_APPLICATIONS.toLocaleString()} eligible per the Apr 28 Lottery Update PDF). <strong>{analysis.firstRoundAwards.toLocaleString()} first-round awards</strong> (T1 + siblings) were followed by <strong>{analysis.officialT2Awards.toLocaleString()}+ Tier 2 awards</strong> in the May 4 batch. Total awards to date are therefore <strong>{analysis.capacity.toLocaleString()}+</strong>. Tier 3 (Iddings) remains <strong>waitlisted</strong>; movement now depends on opt-outs, homeschool/other selections, missed confirmations, and appeals reserve releases.
-                </p>
-                <div className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-tefa-gold/40 bg-tefa-gold/10 px-3 py-2.5 text-xs text-tefa-navy">
-                  <span className="font-bold">Waitlist rank received:</span>
-                  <span>Bucket <strong>{IDDINGS_BUCKET.label}</strong> ({IDDINGS_BUCKET.notifiedOn}) — Tier 3 portion ≈ {(IDDINGS_BUCKET.lo - analysis.unfundedT2).toLocaleString()}–{(IDDINGS_BUCKET.hi - analysis.unfundedT2).toLocaleString()}. Open the <button type="button" onClick={() => navigate('/analysis')} className="font-bold underline decoration-tefa-navy/60 hover:text-tefa-green">Analysis</button> tab — the band slider on the first gold card shows the plausibility spread across this range.</span>
-                </div>
-                <div className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-tefa-green/30 bg-tefa-green/5 px-3 py-2.5 text-xs text-tefa-navy">
-                  <span className="font-bold">May 29 cascade:</span>
-                  <span>{MAY29_CASCADE.t2Cascaded.toLocaleString()} more Tier 2 awarded from the waitlist → ≈ {MAY29_CASCADE.t2RemainingAfterCascade.toLocaleString()} Tier 2 still ahead of us; ~{MAY29_CASCADE.activeApproxAfterOptOuts.toLocaleString()} active awards (after ~{MAY29_CASCADE.optOuts.toLocaleString()} opt-outs). Cascade moved in strict tier order — nothing has reached Tier 3 yet.</span>
-                </div>
-                <div className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-tefa-green/40 bg-tefa-green/10 px-3 py-2.5 text-xs text-tefa-navy">
-                  <span className="font-bold">Jun 10 official fact sheet (latest):</span>
-                  <span><strong>{JUN10_SNAPSHOT.activeAwarded.toLocaleString()}</strong> active awards; <strong>{JUN10_SNAPSHOT.t2WaitlistRemaining.toLocaleString()} Tier 2 still ahead of us</strong> (down from {JUN10_SNAPSHOT.baselineT2Waitlist.toLocaleString()} at lottery; −{JUN10_SNAPSHOT.t2ClearedSinceBaseline.toLocaleString()} cleared) of {JUN10_SNAPSHOT.totalWaitlist.toLocaleString()} on the waitlist. The full waitlist reduction is Tier 2 — Tier 3 untouched, strict tier order holding. On track.</span>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm mb-4">
-                    <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
-                        <div className="text-xs text-tefa-body/50 font-medium">Total Apps</div>
-                        <div className="font-bold text-tefa-navy text-lg">{TOTAL_APPLICATIONS.toLocaleString()}</div>
-                        <div className="text-[10px] text-tefa-body/40">Apr 28 Lottery Update PDF</div>
-                    </div>
-                    <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
-                        <div className="text-xs text-tefa-body/50 font-medium">Awards To Date</div>
-                        <div className="font-bold text-tefa-navy text-lg">{analysis.capacity.toLocaleString()}+</div>
-                        <div className="text-[10px] text-tefa-body/40">44,753 T1-fam + 51,181 T2</div>
-                    </div>
-                    <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
-                        <div className="text-xs text-tefa-body/50 font-medium">Iddings Tier</div>
-                        <div className="font-bold text-tefa-gold text-lg">Tier 3</div>
-                        <div className="text-[10px] text-tefa-body/40">200-500% FPL · band {IDDINGS_BUCKET.label}</div>
-                    </div>
-                    <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
-                        <div className="text-xs text-tefa-body/50 font-medium">Initial Lottery</div>
-                        <div className={`font-bold text-lg ${analysis.familySuccessRate > 10 ? 'text-amber-600' : 'text-red-500'}`}>{analysis.familySuccessRate.toFixed(1)}%</div>
-                        <div className="text-[10px] text-tefa-body/40">Family rate (sibling rule)</div>
-                    </div>
-                    <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
-                        <div className="text-xs text-tefa-body/50 font-medium">With Attrition ({Math.round(attritionRate * 100)}%)</div>
-                        <div className={`font-bold text-lg ${analysis.effectiveFamilyRate > 50 ? 'text-amber-500' : analysis.effectiveFamilyRate > 10 ? 'text-amber-600' : 'text-red-500'}`}>{analysis.effectiveFamilyRate.toFixed(1)}%</div>
-                        <div className="text-[10px] text-tefa-body/40">After waitlist cascade</div>
-                    </div>
-                    <div className="bg-white rounded-lg p-3 border border-tefa-navy/10 text-center">
-                        <div className="text-xs text-tefa-body/50 font-medium">If Accepted</div>
-                        <div className="font-bold text-tefa-green text-lg">Kept for Life</div>
-                        <div className="text-[10px] text-tefa-body/40">No reapplication needed</div>
-                    </div>
-                </div>
-                <div className="grid grid-cols-4 gap-1 text-xs text-center">
-                    <div className="bg-tefa-green/10 rounded p-1.5 border border-tefa-green/20">
-                        <div className="font-bold text-tefa-green">T1: {analysis.firstRoundAwards.toLocaleString()}</div>
-                        <div className="text-tefa-green/70">Awarded (incl. sibs)</div>
-                    </div>
-                    <div className="bg-tefa-navy/10 rounded p-1.5 border border-tefa-navy/20">
-                        <div className="font-bold text-tefa-navy">T2: {analysis.fundedT2.toLocaleString()}+</div>
-                        <div className="text-tefa-navy/70">Awarded ({analysis.demandT2.toLocaleString()} demand)</div>
-                    </div>
-                    <div className="bg-tefa-gold/20 rounded p-1.5 border-2 border-tefa-gold/60">
-                        <div className="font-bold text-tefa-red">T3: {analysis.demandT3.toLocaleString()}</div>
-                        <div className="text-tefa-red/70">Waitlisted</div>
-                    </div>
-                    <div className="bg-tefa-red/10 rounded p-1.5 border border-tefa-red/20">
-                        <div className="font-bold text-tefa-red">T4: {(analysis.demandT4a + analysis.demandT4b).toLocaleString()}</div>
-                        <div className="text-tefa-red/70">Waitlisted</div>
-                    </div>
-                </div>
-            </div>
-
-            {/* How the Waitlist Works — May 12 PDF */}
-            <div className="bg-tefa-light p-6 rounded-lg shadow-md border-2 border-tefa-navy">
-                <h2 className="text-xl font-bold flex items-center gap-2 text-tefa-navy mb-3">
-                    <Layers size={20} /> How the Waitlist Works (May 12 PDF)
-                </h2>
-                <p className="text-sm text-tefa-body mb-4">
-                    The Comptroller's May 12 TEFA Waitlist Information PDF explains how positions are communicated, how funds free up for waitlisted students, and what happens once an award is issued.
-                </p>
-
-                {/* A. How positions are communicated */}
-                <div className="bg-white rounded-lg p-4 border border-tefa-navy/10 mb-3">
-                    <h3 className="font-bold text-tefa-navy mb-2 flex items-center gap-2">
-                        <BarChart2 size={16}/> A. How positions are communicated
-                    </h3>
-                    <p className="text-sm text-tefa-body/80 mb-3">
-                        The Comptroller is communicating <strong>approximate</strong> positions in buckets — only families higher on the list get a precise number. Bucket schedule (verbatim from PDF):
-                    </p>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-1.5 text-xs mb-3">
-                        {[
-                            '1 – 1,000', '1,001 – 2,000', '2,001 – 3,000', '3,001 – 4,000',
-                            '4,001 – 5,000', '5,001 – 10,000', '10,001 – 15,000', '15,001 – 20,000',
-                            '20,001 – 25,000', '25,001 – 30,000', '30,001 – 50,000', '50,001 – 100,000',
-                            '100,001+'
-                        ].map((bucket) => (
-                            <div key={bucket} className="bg-tefa-navy/5 rounded px-2 py-1.5 text-center font-mono text-tefa-navy/80 border border-tefa-navy/10">
-                                {bucket}
-                            </div>
-                        ))}
-                    </div>
-                    <p className="text-xs text-tefa-body/70">
-                        We received bucket <strong>{IDDINGS_BUCKET.label}</strong> on {IDDINGS_BUCKET.notifiedOn}. Open the <button type="button" onClick={() => navigate('/analysis')} className="font-bold underline decoration-tefa-navy/60 hover:text-tefa-green">Analysis</button> tab — the band slider on the first gold card walks through the worst-case (50,000) and best-case (30,001) plausibility.
-                    </p>
-                </div>
-
-                {/* B. How funds free up */}
-                <div className="bg-white rounded-lg p-4 border border-tefa-navy/10 mb-3">
-                    <h3 className="font-bold text-tefa-navy mb-2 flex items-center gap-2">
-                        <TrendingUp size={16}/> B. How funds free up (3 sources)
-                    </h3>
-                    <ol className="text-sm text-tefa-body/80 list-decimal pl-5 space-y-1.5">
-                        <li>Students opt out of the program.</li>
-                        <li>Students who initially applied as private school students select homeschool/other, lowering their funding amount to $2,000.</li>
-                        <li>Appeals of eligibility, funding, and prioritization get resolved, freeing up funding reserved by the Comptroller's Office to accommodate those appeals.</li>
-                    </ol>
-                    <p className="text-xs text-tefa-body/60 mt-3">
-                        Awards are issued in sequential order — by prioritization tier (T1 → T2 → T3 → T4) and lottery position within tier. Tier 3 backfill therefore only begins after the remaining ~{analysis.unfundedT2.toLocaleString()} unfunded T2 students are cleared.
-                    </p>
-                </div>
-
-                {/* C. When you come off the waitlist */}
-                <div className="bg-white rounded-lg p-4 border border-tefa-navy/10">
-                    <h3 className="font-bold text-tefa-navy mb-2 flex items-center gap-2">
-                        <CheckCircle size={16}/> C. When you come off the waitlist
-                    </h3>
-                    <ul className="text-sm text-tefa-body/80 list-disc pl-5 space-y-1.5 mb-3">
-                        <li>Awards are issued to <strong>all eligible students in the same household at one time</strong> (sibling rule).</li>
-                        <li>Parent notified by <strong>email + text</strong>; funding amount becomes visible in Odyssey.</li>
-                        <li>Then complete in order: (1) <strong>opt in</strong>, (2) <strong>select participating private school</strong> or homeschool/other, (3) <strong>withdraw from public school</strong> per district policy.</li>
-                    </ul>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                        <div className="bg-tefa-green/10 rounded p-3 border border-tefa-green/30">
-                            <div className="font-bold text-tefa-green mb-1">July track</div>
-                            <div className="text-tefa-body/80">Family opt-in + school by <strong>Jun 1</strong>; school confirms by <strong>Jun 15</strong> → first disbursement <strong>July 1</strong> (specific date).</div>
-                        </div>
-                        <div className="bg-amber-50 rounded p-3 border border-amber-300">
-                            <div className="font-bold text-amber-700 mb-1">August track</div>
-                            <div className="text-tefa-body/80">Family opt-in + school by <strong>Jul 15</strong>; school confirms by <strong>Jul 31</strong> → first 25% installment <span className="bg-tefa-green/15 text-tefa-green px-1.5 rounded font-bold">by mid-August</span> (Jun 4 press release now gives a date).</div>
-                        </div>
-                    </div>
-
-                    {/* Installment schedule — Jun 4 Funding Timelines press release */}
-                    <div className="mt-4 bg-tefa-navy/[0.03] rounded-lg p-3 border border-tefa-navy/10">
-                        <div className="text-xs font-bold text-tefa-navy mb-2 uppercase tracking-wide">Installment schedule (private school) — Jun 4 press release</div>
-                        <p className="text-[11px] text-tefa-body/70 mb-3">
-                            Funding is paid in three installments — <strong>25% / 25% / 50%</strong> — not one lump sum. Per child the award is <strong>${tefaPerStudent.toLocaleString()}</strong>; for all {enrolledCount} enrolled, <strong>${tefaTotalAward.toLocaleString()}</strong>. <span className="text-tefa-body/60">(Homeschool/other instead receive all $2,000 in a single installment.)</span>
-                        </p>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-[11px] text-left">
-                                <thead>
-                                    <tr className="text-tefa-body/60 border-b border-tefa-navy/10">
-                                        <th className="py-1 pr-2 font-semibold">Installment</th>
-                                        <th className="py-1 px-2 font-semibold">Confirm by</th>
-                                        <th className="py-1 px-2 font-semibold">Funded</th>
-                                        <th className="py-1 px-2 font-semibold text-right">Share</th>
-                                        <th className="py-1 pl-2 font-semibold text-right">All {enrolledCount}</th>
-                                        <th className="py-1 pl-2 font-semibold">If confirmed late</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="text-tefa-body/80">
-                                    <tr className="border-b border-tefa-navy/5">
-                                        <td className="py-1 pr-2 font-semibold">1st (July track)</td>
-                                        <td className="py-1 px-2">Jun 15</td>
-                                        <td className="py-1 px-2">Jul 1</td>
-                                        <td className="py-1 px-2 text-right">25%</td>
-                                        <td className="py-1 pl-2 text-right font-mono">${tefaFirstTranche.toLocaleString()}</td>
-                                        <td className="py-1 pl-2 text-tefa-body/50">—</td>
-                                    </tr>
-                                    <tr className="border-b border-tefa-navy/5">
-                                        <td className="py-1 pr-2 font-semibold">1st (Aug track)</td>
-                                        <td className="py-1 px-2">Jul 31</td>
-                                        <td className="py-1 px-2">Mid-Aug</td>
-                                        <td className="py-1 px-2 text-right">25%</td>
-                                        <td className="py-1 pl-2 text-right font-mono">${tefaFirstTranche.toLocaleString()}</td>
-                                        <td className="py-1 pl-2">100%</td>
-                                    </tr>
-                                    <tr className="border-b border-tefa-navy/5">
-                                        <td className="py-1 pr-2 font-semibold">2nd</td>
-                                        <td className="py-1 px-2">Sept 15</td>
-                                        <td className="py-1 px-2">Oct 1</td>
-                                        <td className="py-1 px-2 text-right">25%</td>
-                                        <td className="py-1 pl-2 text-right font-mono">${tefaFirstTranche.toLocaleString()}</td>
-                                        <td className="py-1 pl-2">75% if later</td>
-                                    </tr>
-                                    <tr>
-                                        <td className="py-1 pr-2 font-semibold">Final</td>
-                                        <td className="py-1 px-2">Jan 15</td>
-                                        <td className="py-1 px-2">Feb 1</td>
-                                        <td className="py-1 px-2 text-right">50%</td>
-                                        <td className="py-1 pl-2 text-right font-mono">${(tefaTotalAward - tefaCumulativeSecondTranche).toLocaleString()}</td>
-                                        <td className="py-1 pl-2">50% if later</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <p className="text-[11px] text-tefa-body/60 mt-2">
-                            Students must <strong>remain enrolled in a participating private school</strong> to receive each later installment. Anyone brought off the waitlist must confirm by <strong>Sept 15</strong> to receive the full award; later confirmations are prorated. This replaces our earlier model (which followed the SB 2 default of up to 50% cumulative by Oct 1 and the balance by Apr 1).
-                        </p>
-                    </div>
-                    <p className="text-xs text-tefa-body/70 bg-tefa-red/5 border border-tefa-red/20 rounded p-3 mt-3">
-                        <strong className="text-tefa-red">Miss Jul 15 = forfeit.</strong> Families who don't opt in + select a school by Jul 15 lose the award; their funding is re-issued to the next waitlisted student.
-                    </p>
-                    <p className="text-xs text-tefa-body/70 mt-3">
-                        <strong>FACTS planning note:</strong> Per the Jun 4 Funding Timelines press release, the August-track first installment lands <strong>by mid-August</strong>. With the first FACTS draft on <strong>Jul 6</strong>, the July draw still precedes any TEFA funds. <strong>Update (Jun 2):</strong> Nanette confirmed she is modifying the payment plan for TEFA families to align with TEFA disbursements (allocating private pay evenly and scheduling lump sums for TEFA disbursements).
-                    </p>
-                </div>
-            </div>
-
-            {/* Misinformation Alert Card */}
-            <div className="bg-amber-50 p-6 rounded-lg shadow-md border-2 border-amber-400">
-                <h2 className="text-xl font-bold flex items-center gap-2 text-amber-800 mb-2">
-                    <AlertCircle size={20} /> Misinformation Alert — Circulating Figures Are Wrong
-                </h2>
-                <p className="text-sm text-amber-900 mb-4">
-                    Emails from several Texas archdioceses and private schools (including at least one San Antonio-area Catholic high school) are circulating <strong>inaccurate tier counts and lottery rates</strong>. Corrected against the Comptroller's <em>TEFA Application Insights: Year 1</em> PDF (Apr 2026) and SB 2 statute:
-                </p>
-                <div className="space-y-3 text-sm">
-                    <div className="bg-white rounded-lg p-4 border border-amber-300">
-                        <div className="text-xs uppercase font-bold text-amber-700 mb-2">Claim (VCHS / Catholic HS email)</div>
-                        <p className="text-tefa-body/80 italic mb-2">"42,000 (all Tier 1) have been approved for those in special ed or below poverty level stated for Tier 1."</p>
-                        <div className="text-xs uppercase font-bold text-tefa-red mb-1">What's wrong (mostly a definition problem — raw count was close)</div>
-                        <ul className="list-disc ml-5 text-tefa-body/80 space-y-1 text-xs">
-                            <li><strong>The 42,000 number was directionally correct.</strong> Per the Apr 28 Lottery Update PDF, <strong>{analysis.firstRoundAwards.toLocaleString()}</strong> students received first-round awards — but that is NOT "all Tier 1." It's Tier 1 (<strong>{analysis.fundedT1.toLocaleString()}</strong> students) <strong>plus their siblings</strong> ({analysis.siblingsFunded.toLocaleString()}) pulled in by the sibling rule. T1 proper is {analysis.fundedT1.toLocaleString()}, not 42,000.</li>
-                            <li><strong>T1 definition is still wrong in the email.</strong> T1 = disability (active IEP) <em>AND</em> household at or below 500% FPL (SB 2 §29.356(b)(2)(A)). "Below poverty level" describes <strong>Tier 2</strong> (≤200% FPL), not Tier 1.</li>
-                        </ul>
-                    </div>
-                    <div className="bg-white rounded-lg p-4 border border-amber-300">
-                        <div className="text-xs uppercase font-bold text-amber-700 mb-2">Claim (VCHS / Catholic HS email)</div>
-                        <p className="text-tefa-body/80 italic mb-2">"Tier 2 has 65,000 qualified but only 22,000 vouchers, so a lottery will determine who gets funding."</p>
-                        <div className="text-xs uppercase font-bold text-tefa-red mb-1">What's wrong (severely understated)</div>
-                        <ul className="list-disc ml-5 text-tefa-body/80 space-y-1 text-xs">
-                            <li><strong>T2 qualified is {analysis.demandT2.toLocaleString()}</strong> per the Apr 28 Lottery Update PDF, not 65,000.</li>
-                            <li><strong>Funded T2 count is {analysis.fundedT2.toLocaleString()}+</strong> per the May 4 Comptroller release (~{tier2FundingRate.toFixed(1)}% of T2 demand). The 22,000 figure undercounts the official T2 award batch by at least {(analysis.fundedT2 - 22000).toLocaleString()} seats.</li>
-                        </ul>
-                    </div>
-                    <div className="bg-white rounded-lg p-4 border border-amber-300">
-                        <div className="text-xs uppercase font-bold text-amber-700 mb-2">Claim (Archdiocese TEFA bulletin)</div>
-                        <p className="text-tefa-body/80 italic mb-2">"Only a portion of applicants (approximately 30–40%) will receive funding at [the T2 lottery] stage."</p>
-                        <div className="text-xs uppercase font-bold text-tefa-red mb-1">What's wrong (severely understated)</div>
-                        <ul className="list-disc ml-5 text-tefa-body/80 space-y-1 text-xs">
-                            <li>The May 4 Comptroller release confirms <strong>{analysis.fundedT2.toLocaleString()}+ Tier 2 awards</strong>, or ~{tier2FundingRate.toFixed(1)}% of the {analysis.demandT2.toLocaleString()} T2 pool — well above the 30–40% range the archdiocese cited.</li>
-                            <li>The official count is lower than this planner's prior derived ~{analysis.derivedT2LotteryCapacity.toLocaleString()} estimate, suggesting a larger reserve/holdback, a more private-heavy T2 mix, or both. Still, T2 is mostly funded, not only 30–40% funded.</li>
-                        </ul>
-                    </div>
-                    <div className="bg-white rounded-lg p-4 border border-amber-300">
-                        <div className="text-xs uppercase font-bold text-amber-700 mb-2">Claim (Archdiocese TEFA bulletin — since confirmed by Comptroller)</div>
-                        <p className="text-tefa-body/80 italic mb-2">"All awarded families must select a school and have their enrollment confirmed by July 15."</p>
-                        <div className="text-xs uppercase font-bold text-tefa-green mb-1">Archdiocese was right — superseded correction</div>
-                        <ul className="list-disc ml-5 text-tefa-body/80 space-y-1 text-xs">
-                            <li>The Apr 22 Comptroller press release states plainly: <em>"Students who receive awards will have until July 15 to confirm enrollment in a participating private school, select homeschool/other (which qualifies them for $2,000 in funding) or opt out of the program."</em></li>
-                            <li>An earlier version of this planner claimed Jul 15 was selection-only and Jul 31 was confirmation. That was wrong — <strong>Jul 15 is the hard family-side deadline for confirm / opt-out</strong>. Jul 31 is the school-side confirmation of those selections, not a family action.</li>
-                        </ul>
-                    </div>
-                    <div className="bg-white rounded-lg p-4 border border-amber-300">
-                        <div className="text-xs uppercase font-bold text-amber-700 mb-2">Claim (Archdiocese TEFA bulletin)</div>
-                        <p className="text-tefa-body/80 italic mb-2">"Applicants in Priority Tiers 3 and 4 are not expected to receive funding this year."</p>
-                        <div className="text-xs uppercase font-bold text-tefa-red mb-1">What this means (T3 needs upside; T4 is correct)</div>
-                        <ul className="list-disc ml-5 text-tefa-body/80 space-y-1 text-xs">
-                            <li>For T4 in Year 1: correct — effectively 0%.</li>
-                            <li>For T3: <strong>possible only through upside beyond the conservative case.</strong> With the official May 4 T2 award batch, the T2 backlog ahead of T3 is ~{analysis.unfundedT2.toLocaleString()} students. At the central 15% attrition rate, Tier 2 still absorbs the cascade (<strong>{analysis.effectiveTier3Rate.toFixed(1)}% individual / {analysis.effectiveFamilyRate.toFixed(1)}% family</strong>). T3 begins around {(analysis.recursiveT3Threshold * 100).toFixed(1)}% total attrition, or through unused reserve / more homeschool-other selections.</li>
-                            <li><strong>Observed vs. projected (May 29):</strong> the cascade is live and on-track — {MAY29_CASCADE.t2Cascaded.toLocaleString()} more Tier 2 awarded (the first realization of the projected attrition cascade), leaving ~{MAY29_CASCADE.t2RemainingAfterCascade.toLocaleString()} Tier 2 ahead of Tier 3 (was {analysis.unfundedT2.toLocaleString()}); all went to Tier 2, confirming strict tier order. The ~{MAY29_CASCADE.optOuts.toLocaleString()} opt-outs so far (~1.4%) are <strong>not</strong> evidence attrition is running low — this window has no decision pressure yet. The real attrition wave is <strong>June and especially July</strong>: the Jul 1 first-funding sticker shock (only 25% of the award arrives) and the Jul 15 confirm/homeschool/opt-out deadline. We keep 15% central.</li>
-                            <li><strong>Observed vs. projected (Jun 10 official fact sheet):</strong> the latest snapshot shows <strong>{JUN10_SNAPSHOT.activeAwarded.toLocaleString()}</strong> active awards and <strong>{JUN10_SNAPSHOT.t2WaitlistRemaining.toLocaleString()}</strong> Tier 2 still on the waitlist — <strong>{JUN10_SNAPSHOT.t2ClearedSinceBaseline.toLocaleString()}</strong> Tier 2 cleared since the lottery, of which ~{(JUN10_SNAPSHOT.t2ClearedSinceBaseline - MAY29_CASCADE.t2Cascaded).toLocaleString()} since May 29. The total waitlist fell {JUN10_SNAPSHOT.baselineTotalWaitlist.toLocaleString()} → {JUN10_SNAPSHOT.totalWaitlist.toLocaleString()} (−{JUN10_SNAPSHOT.totalWaitlistCleared.toLocaleString()}), and <strong>every bit of that reduction is Tier 2</strong> — Tier 3 is untouched, confirming strict tier order exactly as modeled. This is a <strong>tracking</strong> datum, not a recalibration: the engine still projects from the {analysis.unfundedT2.toLocaleString()} baseline, so we do not subtract observed progress (that would double-count). At the observed burn-down (~{JUN10_SNAPSHOT.t2WaitlistRemaining.toLocaleString()} T2 left, clearing on the order of a few hundred a day), the backlog ahead of us empties around mid-to-late July — aligning the first plausible Tier 3 movement with the Jul 15 cascade, which still falls <strong>after</strong> the Jun 30 NBCA penalty-free withdrawal.</li>
-                            <li><strong>Reserve drawdown caveat:</strong> the {(MAY29_CASCADE.spedAwards + MAY29_CASCADE.spedSiblings).toLocaleString()} special-education awards ({MAY29_CASCADE.spedAwards.toLocaleString()} students + {MAY29_CASCADE.spedSiblings.toLocaleString()} siblings) were paid from the <em>appeals reserve</em> — the same inferred ~$100M pool the "$25M reaches the waitlist" upside lever draws on. SPED appeals deploying is a mild <strong>drag</strong> on the Tier 3 upside, not a help.</li>
-                            <li>For next year (2027-28): likely tighter for <strong>new</strong> T2/T3/T4 applicants if Year 1 uses most of the biennium cap, but "<em>slim to none</em>" is still not proven until final spend, churn, and implementation details are known.</li>
-                        </ul>
-                    </div>
-                </div>
-                <div className="mt-4 p-3 bg-amber-100 rounded-lg text-xs text-amber-900 border border-amber-300">
-                    <strong>Sources:</strong> Texas Comptroller, <em>TEFA Application Insights: Year 1</em> (Apr 2026), pages 5 &amp; 8 · Comptroller Apr 2 press release · Comptroller Apr 22 press release · <strong>TEFA Lottery Update PDF (revised May 7, 2026)</strong> with exact counts (28,233 T1 / 16,520 siblings / 51,181 T2 awarded / 20,383 T2 waitlisted / 65,368 T3 / 13,245 T4a / 53,706 T4b), week-of-May-11 waitlist-position notifications, and two-track Jun 1/Jul 15 family deadlines · <strong>Comptroller News &amp; Updates, "Additional Awards Issued to Waitlisted Students" (May 29, 2026)</strong> — {MAY29_CASCADE.t2Cascaded.toLocaleString()} additional Tier 2 awards + {MAY29_CASCADE.spedAwards.toLocaleString()} SPED + {MAY29_CASCADE.spedSiblings.toLocaleString()} siblings, ~{MAY29_CASCADE.optOuts.toLocaleString()} opt-outs, ~{MAY29_CASCADE.activeApproxAfterOptOuts.toLocaleString()} active · <strong>{JUN10_SNAPSHOT.source}</strong> — {JUN10_SNAPSHOT.activeAwarded.toLocaleString()} active awards, {JUN10_SNAPSHOT.totalWaitlist.toLocaleString()} on the waitlist including {JUN10_SNAPSHOT.t2WaitlistRemaining.toLocaleString()} Tier 2 · SB 2 §29.3521(c-1), §29.3521(d), §29.361(a)(1). ·{' '}
-                    <a
-                      href="https://support.withodyssey.com/hc/en-us/categories/44027751004699-Texas-Education-Freedom-Accounts-Program"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-tefa-body/80 underline decoration-tefa-navy/40 hover:text-tefa-green"
-                    >
-                      Odyssey Help Center — TEFA Program
-                    </a>
-                    <span className="text-tefa-body/80"> (appeals, meals/marketplace, assessments, moves).</span>
-                </div>
-            </div>
-
-            {/* Enrollment Status Card */}
-            <div className="bg-tefa-sky/10 p-6 rounded-lg shadow-md border border-tefa-navy/20">
-                <h2 className="text-xl font-bold flex items-center gap-2 text-tefa-navy mb-4">
-                    <Shield size={20} /> Enrollment Status
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                    <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-green/20">
-                        <span className="text-tefa-body/60 font-medium">Enrollment</span>
-                        <span className="font-bold text-tefa-green text-lg">Enrolled (3/3)</span>
-                        <span className="text-xs text-tefa-body/40 hidden sm:block">Paid $690 on April 2</span>
-                    </div>
-                    <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-green/20">
-                        <span className="text-tefa-body/60 font-medium">NBCA Financial Aid</span>
-                        <span className="font-bold text-green-600 text-lg">$16,200 Granted</span>
-                        <span className="text-xs text-tefa-body/40 hidden sm:block">Cassius $5,850 / Dorothy $5,600 / Sebastian $4,750</span>
-                    </div>
-                    <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-amber-300">
-                        <span className="text-tefa-body/60 font-medium">TEFA Notification</span>
-                        <span className="font-bold text-amber-700 text-lg">Waitlist Position: {IDDINGS_BUCKET.label}</span>
-                        <span className="text-xs text-tefa-body/40 hidden sm:block">Bucket received {IDDINGS_BUCKET.notifiedOn}; precise rank within the band is not provided. Odyssey shows all 3 kids as "Eligible — waitlisted."</span>
-                    </div>
-                    <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-green/20">
-                        <span className="text-tefa-body/60 font-medium">NBCA Scholarship</span>
-                        <span className="font-bold text-green-600 text-lg">$12,000 Awarded</span>
-                        <span className="text-xs text-tefa-body/40 hidden sm:block">$4,000 each (Cassius / Dorothy / Sebastian). Awarded Jun 5 — accept by June 15</span>
-                    </div>
-                    <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-navy/10">
-                        <span className="text-tefa-body/60 font-medium">Withdraw penalty-free by</span>
-                        <span className="font-bold text-tefa-navy text-lg">June 30</span>
-                        <span className="text-xs text-tefa-body/40 hidden sm:block">Full refund except $690 enrollment fee</span>
-                    </div>
-                    <div className="flex justify-between sm:flex-col sm:gap-1 bg-white rounded-lg p-3 border border-tefa-navy/10">
-                        <span className="text-tefa-body/60 font-medium">No tuition due until</span>
-                        <span className="font-bold text-tefa-navy text-lg">July 6</span>
-                        <span className="text-xs text-tefa-body/40 hidden sm:block">$3,030.65 via ACH</span>
-                    </div>
-                </div>
-                <div className="mt-4 p-3 bg-tefa-navy/5 rounded-lg text-xs text-tefa-body/70">
-                    <strong>Sunk cost:</strong> $690 enrollment fee (non-refundable). Per the continuous enrollment agreement, withdrawing in July incurs a 10% penalty ($4,802.50), and withdrawing in August incurs a 20% penalty ($9,605.00). Per the Apr 28 Lottery Update PDF, the <strong>Jul 15 opt-in deadline</strong> for the August-funding track is the largest single attrition event of Year 1 — but it falls ~2 weeks AFTER the Jun 30 NBCA penalty-free withdrawal deadline. The Iddings family received their approximate waitlist position ({IDDINGS_BUCKET.label}) on {IDDINGS_BUCKET.notifiedOn}, and NBCA awarded <strong>$12,000</strong> in scholarships ($4,000 per student) on <strong>June 5</strong> — acceptance must be confirmed with NBCA by <strong>June 15</strong>.
-                </div>
-            </div>
-
-            {/* Cost Calculator */}
-            <div className="grid grid-cols-1 gap-6">
-                <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-                  <h2 className="text-xl font-bold flex items-center gap-2 text-tefa-navy mb-4">
-                    <DollarSign size={20} /> Financial Estimate Calculator
-                    <span className="text-xs font-normal bg-tefa-navy/5 text-tefa-body/60 px-2 py-1 rounded ml-auto">
-                        "Most Likely" Scenario Loaded
-                    </span>
-                  </h2>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      <div className="space-y-6">
-                        {/* Per-Student Enrollment & Scholarship Allocation */}
-                        <div>
-                          <div className="flex items-center justify-between">
-                            <label className="text-xs font-bold text-tefa-body/50 uppercase">Who attends + Scholarship split</label>
-                            <div className="flex gap-1">
-                              <button
-                                type="button"
-                                onClick={() => setScholarshipAlloc({ Cassius: 4000, Dorothy: 4000, Sebastian: 4000 })}
-                                className="text-[10px] px-2 py-0.5 rounded bg-tefa-green/10 text-tefa-green font-bold hover:bg-tefa-green/20"
-                              >Split $4k each</button>
-                              <button
-                                type="button"
-                                onClick={() => setScholarshipAlloc({ Cassius: 12000, Dorothy: 0, Sebastian: 0 })}
-                                className="text-[10px] px-2 py-0.5 rounded bg-tefa-navy/10 text-tefa-navy font-bold hover:bg-tefa-navy/20"
-                              >All on Cassius</button>
-                            </div>
-                          </div>
-                          <div className="mt-2 space-y-2">
-                            {studentBalances.map(s => (
-                              <div key={s.name} className={`rounded-lg border p-2.5 transition-colors ${s.isEnrolled ? 'bg-tefa-light border-gray-200' : 'bg-gray-100 border-gray-200 opacity-60'}`}>
-                                <div className="flex items-center justify-between">
-                                  <label className="flex items-center gap-2 cursor-pointer">
-                                    <input
-                                      type="checkbox"
-                                      checked={s.isEnrolled}
-                                      onChange={() => setEnrolled(prev => ({ ...prev, [s.name]: !prev[s.name] }))}
-                                      className="w-4 h-4 accent-tefa-green cursor-pointer"
-                                    />
-                                    <span className="font-bold text-tefa-navy text-sm">{s.name}</span>
-                                    <span className="text-[10px] text-tefa-body/50">{s.grade}</span>
-                                  </label>
-                                  <span className="text-[10px] text-tefa-body/50 font-mono">
-                                    ${s.tuition.toLocaleString()} − ${s.nbcaAid.toLocaleString()} aid{s.sib > 0 ? ' − $1,518.50' : ''}
-                                  </span>
-                                </div>
-                                {s.isEnrolled && (
-                                  <div className="flex items-center justify-between mt-2 pl-6">
-                                    <div className="flex items-center gap-1">
-                                      <GraduationCap size={12} className="text-tefa-green"/>
-                                      <span className="text-[11px] text-tefa-body/60">Scholarship</span>
-                                      <span className="text-tefa-body/40 text-xs">$</span>
-                                      <input
-                                        type="number"
-                                        min="0"
-                                        step="100"
-                                        value={s.schol}
-                                        onChange={(e) => setScholarshipAlloc(prev => ({ ...prev, [s.name]: Math.max(0, Number(e.target.value)) }))}
-                                        className="w-20 bg-white border border-tefa-green/30 rounded px-1.5 py-0.5 font-mono text-xs text-right"
-                                      />
-                                    </div>
-                                    <span className={`text-xs font-bold font-mono ${s.balance === 0 ? 'text-green-600' : 'text-tefa-navy'}`}>
-                                      → ${s.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                      {s.overflow > 0 && <span className="text-amber-600 font-medium"> (+${s.overflow.toLocaleString(undefined, {maximumFractionDigits: 2})} over)</span>}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                          <div className={`text-[10px] mt-2 font-medium ${totalScholarshipAllocated === NBCA_SCHOLARSHIP_AWARD ? 'text-tefa-body/50' : 'text-amber-600'}`}>
-                            Scholarship allocated: ${totalScholarshipAllocated.toLocaleString()} of ${NBCA_SCHOLARSHIP_AWARD.toLocaleString()} awarded
-                            {totalScholarshipAllocated > NBCA_SCHOLARSHIP_AWARD && ' — over the award'}
-                            {totalScholarshipAllocated < NBCA_SCHOLARSHIP_AWARD && ` — $${(NBCA_SCHOLARSHIP_AWARD - totalScholarshipAllocated).toLocaleString()} unassigned`}
-                          </div>
-                          {scholarshipOverflow > 0 && (
-                            <div className="text-[10px] mt-1 font-medium text-amber-600">
-                              ⚠ ${scholarshipOverflow.toLocaleString(undefined, {maximumFractionDigits: 2})} exceeds what the assigned child owes — wasted unless NBCA rolls the overflow to a sibling. Spread it across kids to use the full $12,000.
-                            </div>
-                          )}
-                          <div className="text-[10px] text-tefa-body/50 mt-1">
-                            Balances match FACTS (Cassius $10,940 / Dorothy $10,450 / Sebastian $8,916.50 before scholarship). Allocation on a withdrawn child is forfeited unless NBCA transfers it — confirm with Nanette whether overflow rolls to a sibling.
-                          </div>
-                        </div>
-
-                        {/* TEFA Toggle */}
-                        <div className="p-3 bg-tefa-navy/5 rounded-lg border border-tefa-navy/10 relative overflow-hidden">
-                          <div className="flex items-start justify-between relative z-10">
-                            <div>
-                                <div className="font-bold text-tefa-navy flex items-center gap-2">
-                                    TEFA Voucher
-                                    <span className={`text-[10px] text-white px-1.5 py-0.5 rounded uppercase tracking-wide ${analysis.effectiveFamilyRate > 80 ? 'bg-green-500' : analysis.effectiveFamilyRate > 50 ? 'bg-tefa-gold' : analysis.effectiveFamilyRate > 10 ? 'bg-amber-500' : 'bg-red-500'}`}>{analysis.effectiveFamilyRate > 80 ? 'Excellent' : analysis.effectiveFamilyRate > 50 ? 'Good' : analysis.effectiveFamilyRate > 10 ? 'Possible' : 'Unlikely'} ({analysis.effectiveFamilyRate.toFixed(1)}%)</span>
-                                </div>
-                                <div className="text-xs text-tefa-navy/70 mt-1">3 x $10,474 (Est)</div>
-                                <div className="text-[10px] text-tefa-navy/50 mt-2 flex items-center gap-1">
-                                    <Briefcase size={10}/> Paid to Digital Wallet
-                                </div>
-                                <div className="text-[10px] text-tefa-red mt-1 flex items-center gap-1">
-                                    <AlertCircle size={10}/> T3 band {IDDINGS_BUCKET.label} — past modeled cutoffs; Year 1 TEFA unlikely; Jul 15 cascade = upside
-                                </div>
-                            </div>
-                            <label className="relative inline-flex items-center cursor-pointer mt-1">
-                                <input type="checkbox" checked={includeTefa} onChange={() => setIncludeTefa(!includeTefa)} className="sr-only peer" />
-                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tefa-navy"></div>
-                            </label>
-                          </div>
-                        </div>
-
-                        {/* ACE Toggle */}
-                        <div className="p-3 bg-tefa-red/5 rounded-lg border border-tefa-red/10">
-                          <div className="flex items-start justify-between">
-                            <div>
-                                <div className="font-bold text-tefa-red flex items-center gap-2">
-                                    ACE Scholarship
-                                    <span className="text-[10px] bg-amber-400 text-white px-1.5 py-0.5 rounded uppercase tracking-wide">Low ({'<'}10%)</span>
-                                </div>
-                                <div className="text-xs text-tefa-red/70 mt-1">Needs-based (~$10k Max)</div>
-                                <div className="text-[10px] text-tefa-red/50 mt-2 flex items-center gap-1">
-                                    <GraduationCap size={10}/> Paid to School
-                                </div>
-                            </div>
-                            <label className="relative inline-flex items-center cursor-pointer mt-1">
-                                <input type="checkbox" checked={includeAce} onChange={() => setIncludeAce(!includeAce)} className="sr-only peer" />
-                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tefa-red"></div>
-                            </label>
-                          </div>
-                        </div>
-
-                        {/* NBCA Financial Aid - Granted */}
-                        <div className="p-3 bg-tefa-green/10 rounded-lg border border-tefa-green/30">
-                          <div className="flex justify-between items-center mb-2">
-                            <div className="font-bold text-tefa-green flex items-center gap-2">
-                                <Percent size={14}/> NBCA Fin. Aid
-                                <span className="text-[10px] bg-tefa-green text-white px-1.5 py-0.5 rounded uppercase tracking-wide">Granted</span>
-                            </div>
-                            <div className="text-xs font-bold text-tefa-green bg-white px-2 py-0.5 rounded border border-tefa-green/30">
-                              ${nbcaAidAmount.toLocaleString()}
-                            </div>
-                          </div>
-                          <div className="space-y-1 text-xs text-tefa-green/80">
-                            {enrolledStudents.map(s => (
-                              <div key={s.name} className="flex justify-between"><span>{s.name}:</span><span className="font-bold">${s.nbcaAid.toLocaleString()}</span></div>
-                            ))}
-                          </div>
-                          <div className="text-[10px] text-tefa-green/80 mt-2">
-                                Credited to Tuition{enrolledCount < 3 ? ` (${enrolledCount} of 3 enrolled)` : ''}
-                          </div>
-                        </div>
-
-                        {/* NBCA Scholarship - Awarded (allocation handled in the per-student panel above) */}
-                        <div className="p-3 bg-tefa-green/5 rounded-lg border border-tefa-green/10">
-                          <div className="flex justify-between items-center mb-1">
-                            <div className="font-bold text-tefa-green flex items-center gap-2">
-                                <GraduationCap size={14}/> NBCA Scholarship
-                                <span className="text-[10px] bg-tefa-green text-white px-1.5 py-0.5 rounded uppercase tracking-wide">Awarded</span>
-                            </div>
-                            <div className="text-xs font-bold text-tefa-green/70 bg-white px-2 py-0.5 rounded border border-tefa-green/20">
-                              ${nbcaScholarshipAmount.toLocaleString()} applied
-                            </div>
-                          </div>
-                          <div className="text-[10px] text-tefa-green/80 mt-1 font-medium">
-                                Awarded Jun 5: $4,000 each = $12,000 total. Use the "Who attends + Scholarship split" panel above to move it between kids. Accept by replying to NBCA by Jun 15.
-                          </div>
-                        </div>
-
-                      </div>
-
-                      {/* Results Column */}
-                      <div className="bg-tefa-light p-6 rounded-lg border border-gray-200 flex flex-col justify-center h-full">
-                        <h3 className="text-tefa-body/60 font-bold uppercase text-xs mb-4">Estimated Breakdown</h3>
-
-                        <div className="space-y-3 mb-6">
-                            <div className="flex justify-between text-sm text-tefa-body/60">
-                              <span>FACTS Balance + Aid Basis:</span>
-                              <span>${tuition.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                            </div>
-                            {includeTefa && (
-                              <div className="flex justify-between text-sm text-tefa-navy font-medium bg-tefa-navy/5 px-2 py-1 rounded">
-                                <span>TEFA Credit:</span>
-                                <span>-${totalTefa.toLocaleString()}</span>
-                              </div>
-                            )}
-                            {includeAce && (
-                              <div className="flex justify-between text-sm text-tefa-red font-medium bg-tefa-red/5 px-2 py-1 rounded">
-                                <span>ACE Credit:</span>
-                                <span>-${totalAce.toLocaleString()}</span>
-                              </div>
-                            )}
-                            {siblingDiscountAmount > 0 && (
-                              <div className="flex justify-between text-sm text-tefa-green/80 font-medium bg-tefa-green/5 px-2 py-1 rounded">
-                                <span>Sibling Discount:</span>
-                                <span>-${siblingDiscountAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                              </div>
-                            )}
-                             {nbcaAidAmount > 0 && (
-                              <div className="flex justify-between text-sm text-tefa-green/80 font-medium bg-tefa-green/5 px-2 py-1 rounded">
-                                <span>NBCA Aid:</span>
-                                <span>-${nbcaAidAmount.toLocaleString()}</span>
-                              </div>
-                            )}
-                            {nbcaScholarshipAmount > 0 && (
-                              <div className="flex justify-between text-sm text-tefa-green/80 font-medium bg-tefa-green/5 px-2 py-1 rounded">
-                                <span>Scholarship:</span>
-                                <span>-${nbcaScholarshipAmount.toLocaleString()}</span>
-                              </div>
-                            )}
-                        </div>
-
-                        {/* Per-student balance mirror — matches the FACTS Balances screen */}
-                        <div className="mb-6 bg-white rounded-lg border border-gray-200 p-3">
-                          <div className="text-[10px] uppercase font-bold text-tefa-body/50 mb-2">Per-Student Balance (after scholarship)</div>
-                          <div className="space-y-1">
-                            {studentBalances.filter(s => s.isEnrolled).map(s => (
-                              <div key={s.name} className="flex justify-between text-sm">
-                                <span className="text-tefa-body/70">{s.name} Iddings</span>
-                                <span className={`font-mono font-bold ${s.balance === 0 ? 'text-green-600' : 'text-tefa-navy'}`}>
-                                  ${s.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                  {s.balance === 0 && <span className="text-[10px] text-green-600 font-medium"> PAID</span>}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                          <div className="flex justify-between text-sm border-t border-gray-200 mt-2 pt-2">
-                            <span className="font-bold text-tefa-body/80">Total Amount Due</span>
-                            <span className="font-mono font-bold text-tefa-navy">${factsBalanceDue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                          </div>
-                        </div>
-
-                        <div className="border-t-2 border-dashed border-gray-300 pt-4 mt-auto">
-                            <div className="flex justify-between items-end">
-                              <span className="font-bold text-tefa-navy">Est. Annual Cost</span>
-                              <span className={`text-3xl font-bold ${finalCost <= 5000 ? 'text-green-600' : 'text-tefa-navy'}`}>
-                                ${finalCost > 0 ? finalCost.toLocaleString(undefined, {maximumFractionDigits: 0}) : 0}
-                              </span>
-                            </div>
-                            <div className="text-right text-sm text-tefa-body/50 mt-1 font-medium">
-                              approx ${Math.max(0, monthlyCost).toFixed(2)} / month (10-mo)
-                            </div>
-                            <div className="text-right text-xs text-tefa-body/50 mt-1">
-                              ACH draft avoids card fee; card draft would be ${monthlyDraftWithCardFee.toFixed(2)} / month
-                            </div>
-                            {finalCost < 0 && (
-                              <div className="flex justify-between items-center mt-3 bg-green-50 px-3 py-2 rounded-lg border border-green-200">
-                                <span className="font-bold text-green-700 text-sm">Remainder (uniforms, supplies, etc.)</span>
-                                <span className="text-lg font-bold text-green-600">${Math.abs(finalCost).toLocaleString(undefined, {maximumFractionDigits: 0})}</span>
-                              </div>
-                            )}
-                        </div>
-                      </div>
-                  </div>
-                </div>
-            </div>
-          </div>
+      <main className="max-w-4xl mx-auto p-6 space-y-6">
+        {activeTab === 'now' && (
+          <NowView balanceDue={balanceDue} perStudent={perStudent} setTab={setTab} />
         )}
-
-        {/* PAYMENTS VIEW */}
-        {activeTab === 'payments' && (
-          <div className="max-w-5xl mx-auto space-y-6">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-2xl font-bold text-tefa-navy flex items-center gap-2 mb-2">
-                <DollarSign /> Payment Schedule
-              </h2>
-              <p className="text-sm text-tefa-body/70">
-                Current FACTS plan uses checking/savings ACH, so the 3% card fee is avoided. TEFA can cover the annual balance if awarded, but timing matters: August-track funds may arrive after the July FACTS draft.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-white rounded-lg p-4 border border-tefa-navy/10 shadow-sm">
-                <div className="text-xs uppercase font-bold text-tefa-body/50">FACTS Balance</div>
-                <div className="text-2xl font-bold text-tefa-navy">${factsBalanceDue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                <div className="text-xs text-tefa-body/60 mt-1">After sibling discount + $16,200 aid</div>
-              </div>
-              <div className="bg-white rounded-lg p-4 border border-tefa-navy/10 shadow-sm">
-                <div className="text-xs uppercase font-bold text-tefa-body/50">Selected ACH Draft</div>
-                <div className="text-2xl font-bold text-tefa-navy">{selectedPlanDraftDisplay}</div>
-                <div className="text-xs text-tefa-body/60 mt-1">{selectedPaymentPlan.label}: {factsPaymentSchedule.length} payment{factsPaymentSchedule.length === 1 ? '' : 's'}</div>
-              </div>
-              <div className="bg-white rounded-lg p-4 border border-amber-300 shadow-sm">
-                <div className="text-xs uppercase font-bold text-amber-700">Avoided Card Fees</div>
-                <div className="text-2xl font-bold text-amber-700">${totalFactsCardFees.toFixed(2)}</div>
-                <div className="text-xs text-tefa-body/60 mt-1">Checking/savings ACH vs card</div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                <div>
-                  <h3 className="font-bold text-tefa-navy">Payment Plan Option</h3>
-                  <p className="text-xs text-tefa-body/60 mt-1">
-                    The recommended plan starts in August, drafts every other month, and ends in April.
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {Object.entries(paymentPlanOptions).map(([id, option]) => (
-                    <button
-                      key={id}
-                      onClick={() => setPaymentPlanMode(id)}
-                      className={`px-3 py-1.5 rounded-full text-sm font-bold border transition ${
-                        paymentPlanMode === id
-                          ? 'bg-tefa-green text-white border-tefa-green'
-                          : 'bg-white text-tefa-navy border-tefa-navy/20 hover:bg-tefa-navy/5'
-                      }`}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="mt-4 rounded-lg bg-tefa-green/10 border border-tefa-green/20 p-3 text-sm text-tefa-body">
-                <strong>{selectedPaymentPlan.label}:</strong> {selectedPaymentPlan.note} {selectedPaymentPlan.hasVariableAmounts ? 'Drafts are shaped around the August-track TEFA release dates.' : <>Scheduled ACH draft: <strong>${selectedPlanPaymentAmount.toFixed(2)}</strong>.</>}
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                <div>
-                  <h3 className="font-bold text-tefa-navy">TEFA Timing Scenario</h3>
-                  <p className="text-xs text-tefa-body/60 mt-1">
-                    Use August track as the planning case for T3 waitlist movement. July track is shown only as an upside case.
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    { id: 'none', label: 'No TEFA' },
-                    { id: 'july', label: 'July Track' },
-                    { id: 'august', label: 'August Track' },
-                  ].map((option) => (
-                    <button
-                      key={option.id}
-                      onClick={() => setPaymentTefaTrack(option.id)}
-                      className={`px-3 py-1.5 rounded-full text-sm font-bold border transition ${
-                        paymentTefaTrack === option.id
-                          ? 'bg-tefa-navy text-white border-tefa-navy'
-                          : 'bg-white text-tefa-navy border-tefa-navy/20 hover:bg-tefa-navy/5'
-                      }`}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4 text-sm">
-                <div className="bg-tefa-light rounded p-3">
-                  <div className="text-xs uppercase font-bold text-tefa-body/50">TEFA Award</div>
-                  <div className="font-mono font-bold text-tefa-navy">${tefaTotalAward.toLocaleString()}</div>
-                </div>
-                <div className="bg-tefa-light rounded p-3">
-                  <div className="text-xs uppercase font-bold text-tefa-body/50">TEFA Applied In Schedule</div>
-                  <div className="font-mono font-bold text-tefa-green">${totalTefaAppliedUnderSelectedTrack.toFixed(2)}</div>
-                </div>
-                <div className="bg-tefa-light rounded p-3">
-                  <div className="text-xs uppercase font-bold text-tefa-body/50">Net Cash Drafts</div>
-                  <div className="font-mono font-bold text-amber-700">${totalFamilyPaidUnderSelectedTrack.toFixed(2)}</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden lg:col-span-2">
-                <div className="px-4 py-3 bg-tefa-navy/5 border-b border-tefa-navy/10">
-                  <h3 className="font-bold text-tefa-navy flex items-center gap-2">
-                    <CreditCard size={18} /> Monthly Balance + TEFA Application
-                  </h3>
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead className="text-xs uppercase text-tefa-body/50 bg-tefa-light">
-                      <tr>
-                        <th className="text-left px-4 py-2">#</th>
-                        <th className="text-left px-4 py-2">Date</th>
-                        <th className="text-right px-4 py-2">Due</th>
-                        <th className="text-right px-4 py-2">TEFA Applied</th>
-                        <th className="text-right px-4 py-2">Family Pays</th>
-                        <th className="text-right px-4 py-2">TEFA Left</th>
-                        <th className="text-right px-4 py-2">FACTS Balance After</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {factsPaymentSchedule.map((payment, idx) => {
-                        const noTefa = noTefaPaymentProjection[idx];
-                        const selected = selectedTefaPaymentProjection[idx];
-
-                        return (
-                          <tr key={payment.isoDate}>
-                            <td className="px-4 py-2 font-mono text-tefa-body/60">{payment.number}</td>
-                            <td className="px-4 py-2 font-medium text-tefa-navy">{payment.date}</td>
-                            <td className="px-4 py-2 text-right font-mono">${payment.amount.toFixed(2)}</td>
-                            <td className="px-4 py-2 text-right font-mono text-tefa-green">${selected.tefaApplied.toFixed(2)}</td>
-                            <td className="px-4 py-2 text-right font-mono text-amber-700">{selected.familyPaid > 0 ? `$${selected.familyPaid.toFixed(2)}` : '$0.00'}</td>
-                            <td className="px-4 py-2 text-right font-mono">${selected.tefaAvailable.toFixed(2)}</td>
-                            <td className="px-4 py-2 text-right font-mono">${noTefa.remainingBalance.toFixed(2)}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-                <div className="p-4 text-xs text-tefa-body/60 bg-tefa-light/60">
-                  FACTS Balance After shows the scheduled school balance after each draft. TEFA Applied shows how much of that month's draft could be covered by available Odyssey funds under the selected track. If TEFA arrives after a draft has already processed, NBCA/FACTS may handle it as a credit or adjustment rather than reversing the payment.
-                </div>
-              </div>
-
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden lg:col-span-2">
-                <div className="px-4 py-3 bg-tefa-navy/5 border-b border-tefa-navy/10">
-                  <h3 className="font-bold text-tefa-navy flex items-center gap-2">
-                    <Briefcase size={18} /> Possible TEFA Money Timing
-                  </h3>
-                </div>
-                <div className="divide-y divide-gray-100">
-                  {possibleTefaInflows.map((item) => (
-                    <div key={`${item.date}-${item.scenario}`} className="p-4">
-                      <div className="flex justify-between gap-4">
-                        <div>
-                          <div className="text-xs font-bold uppercase text-tefa-body/50">{item.date}</div>
-                          <div className="font-bold text-tefa-navy">{item.scenario}</div>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-mono font-bold text-tefa-green">${item.amount.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
-                          <div className="text-[10px] uppercase font-bold text-tefa-body/50">{item.likelihood}</div>
-                        </div>
-                      </div>
-                      <p className="text-xs text-tefa-body/60 mt-2">{item.note}</p>
-                    </div>
-                  ))}
-                </div>
-                <div className="p-4 text-xs text-amber-900 bg-amber-50 border-t border-amber-200">
-                  T3 initial lottery is 0% and our band ({IDDINGS_BUCKET.label}, received {IDDINGS_BUCKET.notifiedOn}) sits past the modeled funded and offer-depth cutoffs. <strong>Plan for full out-of-pocket tuition</strong>; do not budget on TEFA arriving in Year 1. If a Jul 15 cascade reaches our band, treat it as upside, not baseline.
-                </div>
-              </div>
-            </div>
-          </div>
+        {activeTab === 'money' && (
+          <MoneyView
+            tuition={tuition}
+            nbcaAid={nbcaAid}
+            scholarship={scholarship}
+            balanceDue={balanceDue}
+            perStudent={perStudent}
+            plan={plan}
+            planId={planId}
+            setPlanId={setPlanId}
+            schedule={schedule}
+          />
         )}
-
-        {/* TIMELINE VIEW */}
-        {activeTab === 'timeline' && (() => {
-          const today = new Date().toISOString().slice(0, 10);
-          const nextUpIdx = timelineEvents.findIndex(evt => evt.isoDate >= today);
-          return (
-          <div className="max-w-4xl mx-auto">
-             <h2 className="text-2xl font-bold mb-6 text-tefa-navy flex items-center gap-2">
-                <Calendar /> Funding Timeline & Method
-              </h2>
-              <div className="relative border-l-2 border-gray-200 ml-4 space-y-8">
-                {timelineEvents.map((evt, idx) => {
-                  const isPast = evt.isoDate < today;
-                  const isNext = idx === nextUpIdx;
-                  return (
-                  <div key={idx} className={`relative pl-8 ${isPast ? 'opacity-50' : ''}`}>
-                    {/* Dot */}
-                    <div className={`absolute -left-[9px] top-1 w-4 h-4 rounded-full border-2 border-white shadow-sm
-                      ${isPast ? 'bg-gray-300' :
-                        isNext ? 'bg-tefa-navy ring-4 ring-tefa-sky/40' :
-                        evt.type === 'nbca' ? 'bg-tefa-green' :
-                        evt.type === 'tefa' ? 'bg-tefa-navy' :
-                        evt.type === 'ace' ? 'bg-tefa-red' : 'bg-tefa-gold'}`}
-                    />
-
-                    <div className={`bg-white p-4 rounded-lg shadow-sm border hover:shadow-md transition grid grid-cols-1 md:grid-cols-12 gap-4 ${isNext ? 'border-tefa-navy/30 ring-1 ring-tefa-sky/30' : 'border-gray-100'}`}>
-                      <div className="md:col-span-3">
-                        {isNext && (
-                          <span className="text-[10px] font-bold bg-tefa-green text-white px-2 py-0.5 rounded uppercase tracking-wide mb-1 inline-block">Up Next</span>
-                        )}
-                        <span className={`text-xs font-bold px-2 py-1 rounded uppercase tracking-wide block w-fit mb-1
-                           ${evt.type === 'nbca' ? 'bg-tefa-green/10 text-tefa-green' :
-                             evt.type === 'tefa' ? 'bg-tefa-navy/10 text-tefa-navy' :
-                             evt.type === 'ace' ? 'bg-tefa-red/10 text-tefa-red' : 'bg-tefa-gold/20 text-tefa-gold'}`}>
-                          {evt.type}
-                        </span>
-                        <span className="text-sm font-bold text-tefa-body/50">{evt.day}, {evt.date}</span>
-                      </div>
-                      <div className="md:col-span-6">
-                        <h3 className="font-bold text-tefa-navy">{evt.event}</h3>
-                        <p className="text-sm text-tefa-body/70 mt-1">{evt.desc}</p>
-                        {evt.link && (
-                          <a
-                            href={evt.link.href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs font-bold text-tefa-navy hover:text-tefa-red mt-2"
-                          >
-                            <ExternalLink size={12}/> {evt.link.label}
-                          </a>
-                        )}
-                      </div>
-                      <div className="md:col-span-3 flex items-center">
-                         <div className="text-xs font-medium text-tefa-body/60 bg-tefa-light px-3 py-2 rounded border border-gray-100 w-full text-center">
-                            <span className="block uppercase text-[10px] text-tefa-body/50 mb-1">Funding Method</span>
-                            {evt.funding}
-                         </div>
-                      </div>
-                    </div>
-                  </div>
-                  );
-                })}
-              </div>
-          </div>
-          );
-        })()}
-
-        {/* CHECKLIST VIEW */}
-        {activeTab === 'checklist' && (
-          <div className="max-w-3xl mx-auto space-y-6">
-              <h2 className="text-2xl font-bold mb-6 text-tefa-navy flex items-center gap-2">
-                <CheckSquare /> Application Checklist
-              </h2>
-
-              <div className="bg-tefa-gold/10 p-4 rounded-lg border border-tefa-gold/30 text-sm text-tefa-red flex items-start gap-3 mb-6">
-                <AlertCircle className="shrink-0 mt-0.5" size={18} />
-                <p>
-                  <strong>Note:</strong> Main applications are checked off. Focus on supporting documents (Tax returns, Recommendations).
-                </p>
-              </div>
-
-              {Object.entries(checklist).map(([key, section]) => (
-                <div key={key} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                  <div className={`px-4 py-3 font-bold flex justify-between items-center ${section.color}`}>
-                    {section.title}
-                    <span className="text-xs bg-white/50 px-2 py-1 rounded">
-                      {section.items.filter(i => i.done).length}/{section.items.length}
-                    </span>
-                  </div>
-                  <div className="divide-y divide-gray-100">
-                    {section.items.map((item) => (
-                      <div
-                        key={item.id}
-                        onClick={() => toggleCheck(key, item.id)}
-                        className="p-3 flex items-start gap-3 hover:bg-tefa-light cursor-pointer transition"
-                      >
-                        <div className={`mt-1 w-5 h-5 rounded border flex items-center justify-center shrink-0 transition
-                          ${item.done ? 'bg-green-500 border-green-500 text-white' : 'border-gray-300 bg-white'}`}>
-                          {item.done && <CheckCircle size={14} />}
-                        </div>
-                        <span className={`text-sm ${item.done ? 'text-tefa-body/50 line-through' : 'text-tefa-navy'}`}>
-                          {item.text}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-          </div>
-        )}
-
-        {/* ESSAYS VIEW */}
-        {activeTab === 'essays' && (
-          <div className="max-w-4xl mx-auto space-y-6">
-            <h2 className="text-2xl font-bold mb-6 text-tefa-navy flex items-center gap-2">
-              <FileText /> Application Text & Essays
-            </h2>
-            <div className="grid grid-cols-1 gap-6">
-              {Object.values(applicationTexts).map((item, idx) => (
-                <div key={idx} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                  <div className="bg-tefa-light px-4 py-3 border-b border-gray-100 flex justify-between items-center">
-                    <h3 className="font-bold text-tefa-navy">{item.title}</h3>
-                    <button
-                      onClick={() => copyToClipboard(item.content)}
-                      className="text-xs flex items-center gap-1 bg-white border border-gray-200 hover:bg-tefa-light text-tefa-body/70 px-2 py-1 rounded transition"
-                    >
-                      <Copy size={12} /> Copy Text
-                    </button>
-                  </div>
-                  <div className="p-4 bg-tefa-light/30">
-                    <pre className="whitespace-pre-wrap font-sans text-sm text-tefa-navy leading-relaxed">
-                      {item.content}
-                    </pre>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ANALYSIS VIEW */}
-        {activeTab === 'analysis' && (
-          <div className="max-w-4xl mx-auto space-y-6">
-            <h2 className="text-2xl font-bold mb-6 text-tefa-navy flex items-center gap-2">
-              <BarChart2 /> Strategic Financial Analysis Report
-            </h2>
-
-            {/* Grounded default first — avoids confusion with the uniform-attrition slider (which can show 0% T3 at 15%). */}
-            <div className="bg-white rounded-xl shadow-sm border border-tefa-gold/40 p-6">
-                <h3 className="font-bold text-tefa-navy mb-2 flex items-center gap-2">
-                    <TrendingUp size={18}/> Primary planning default (personal research)
-                </h3>
-                <p className="text-xs text-tefa-body/60 mb-4">
-                    Use this block for your grounded default. It uses <strong>separate</strong> decline rates for T1-family awards, first-wave T2, and late replacement offers, plus <strong>${(personalDefault.reserveNetToWaitlist / 1e6).toFixed(0)}M</strong> net reserve reaching the regular waitlist — not the single slider below.
-                </p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                    <div className="bg-tefa-navy/5 rounded p-3">
-                        <div className="text-xs text-tefa-body/50">T1 Decline</div>
-                        <div className="font-bold text-tefa-navy text-lg">{Math.round(personalDefault.t1DeclineRate * 100)}%</div>
-                    </div>
-                    <div className="bg-tefa-navy/5 rounded p-3">
-                        <div className="text-xs text-tefa-body/50">T2 First-Wave Decline</div>
-                        <div className="font-bold text-tefa-navy text-lg">{Math.round(personalDefault.t2DeclineRate * 100)}%</div>
-                    </div>
-                    <div className="bg-tefa-navy/5 rounded p-3">
-                        <div className="text-xs text-tefa-body/50">Replacement Decline</div>
-                        <div className="font-bold text-tefa-navy text-lg">{Math.round(personalDefault.replacementDeclineRate * 100)}%</div>
-                    </div>
-                    <div className="bg-tefa-navy/5 rounded p-3">
-                        <div className="text-xs text-tefa-body/50">Net Reserve to Waitlist</div>
-                        <div className="font-bold text-tefa-navy text-lg">${(personalDefault.reserveNetToWaitlist / 1e6).toFixed(0)}M</div>
-                    </div>
-                </div>
-                <div className="mb-5 rounded-lg border border-tefa-gold/40 bg-tefa-gold/5 px-4 py-3" id="t3-waitlist-rank-section">
-                    <label className="text-sm font-medium text-tefa-navy" htmlFor="t3-waitlist-rank">Your global waitlist rank</label>
-                    <p className="text-[11px] text-tefa-body/55 mt-0.5 mb-1.5">
-                      One combined line: Tier 2 waitlist first (ranks <strong>1–{analysis.unfundedT2.toLocaleString()}</strong>), then Tier 3 (<strong>{(analysis.unfundedT2 + 1).toLocaleString()}–{(analysis.unfundedT2 + analysis.demandT3).toLocaleString()}</strong>), then Tier 4. <strong>Lower is better.</strong> We map your global rank to a Tier 3 position to apply the personal default.
-                    </p>
-                    <input
-                        id="t3-waitlist-rank"
-                        type="text"
-                        inputMode="numeric"
-                        placeholder={`e.g. ${(analysis.unfundedT2 + 12000).toLocaleString()} — Tier 3 band`}
-                        value={t3WaitlistRankInput}
-                        onChange={(e) => setT3WaitlistRankInput(e.target.value.replace(/[^\d,]/g, ''))}
-                        className="mt-1 w-full max-w-sm rounded-lg border border-tefa-gold/50 bg-white px-3 py-2 text-sm text-tefa-navy placeholder:text-tefa-body/40 focus:border-tefa-navy focus:outline-none focus:ring-1 focus:ring-tefa-navy"
-                        autoComplete="off"
-                    />
-                    <p className="mt-2 text-sm text-tefa-body/80">
-                        <span className="font-semibold text-tefa-navy">≤{(analysis.unfundedT2 + personalDefault.t3QueueDepth).toLocaleString()}</span>
-                        {' '}global rank for better modeled <strong>offer-depth</strong> chances
-                        <span className="text-tefa-body/50"> (Tier 3 position ≤{personalDefault.t3QueueDepth.toLocaleString()})</span>.
-                    </p>
-                    <p className="mt-1 text-xs text-tefa-body/55">
-                      For a modeled <strong>funded</strong> seat: global <strong>≤{(analysis.unfundedT2 + personalDefault.t3Awards).toLocaleString()}</strong>
-                      {' '}(Tier 3 ≤{personalDefault.t3Awards.toLocaleString()}). Estimates only.
-                    </p>
-                    <p className="mt-2 text-[11px] text-tefa-body/50">
-                      Past each cutoff, personalized % <strong>rolls down</strong> toward the pool average (not a jump to 0% in one rank) — reflects uncertain real cutlines.
-                    </p>
-                    {t3RankPersonalized?.invalid && (
-                        <div className="mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-900">{t3RankPersonalized.message}</div>
-                    )}
-
-                    {/* Iddings-family band slider — drives the rank input across our notified bucket */}
-                    <div className="mt-4 border-t border-tefa-gold/30 pt-3">
-                        <div className="flex items-center justify-between mb-1">
-                            <label className="text-xs font-medium text-tefa-navy" htmlFor="iddings-band-slider">
-                                Our band ({IDDINGS_BUCKET.label}) — explore plausibility
-                            </label>
-                            <span className="text-xs font-bold text-tefa-navy">rank {bandRank.toLocaleString()}</span>
-                        </div>
-                        <input
-                            id="iddings-band-slider"
-                            type="range"
-                            min={IDDINGS_BUCKET.lo}
-                            max={IDDINGS_BUCKET.hi}
-                            step={100}
-                            value={bandRank}
-                            onChange={(e) => {
-                                const v = parseInt(e.target.value, 10);
-                                setBandRank(v);
-                                setT3WaitlistRankInput(String(v));
-                            }}
-                            className="w-full accent-tefa-navy"
-                        />
-                        <div className="flex justify-between text-[11px] text-tefa-body/55 mt-1">
-                            <span>{IDDINGS_BUCKET.lo.toLocaleString()} (best in band)</span>
-                            <span>{Math.round((IDDINGS_BUCKET.lo + IDDINGS_BUCKET.hi) / 2).toLocaleString()}</span>
-                            <span>{IDDINGS_BUCKET.hi.toLocaleString()} (worst)</span>
-                        </div>
-                        <p className="mt-2 text-[11px] text-tefa-body/65">
-                            Plausibility across this band: funded %{' '}
-                            <strong>{bandSnapshot.fundedHi.toFixed(1)}%</strong> at {IDDINGS_BUCKET.lo.toLocaleString()} →{' '}
-                            <strong>{bandSnapshot.fundedLo.toFixed(1)}%</strong> at {IDDINGS_BUCKET.hi.toLocaleString()};
-                            offer-reaches-you {bandSnapshot.offerHi.toFixed(1)}% → {bandSnapshot.offerLo.toFixed(1)}%.
-                            Whole band sits past the modeled funded ({personalDefault.t3Awards.toLocaleString()}) and offer-depth ({personalDefault.t3QueueDepth.toLocaleString()}) cutoffs.
-                            <span className="block mt-1 text-tefa-body/55">
-                              Why the offer-% looked stuck at the pool average ({personalDefault.t3QueueDepthRate.toFixed(1)}%) across this whole band: every rank here is far past the modeled 11k-deep offer cutoff, so the curve has already decayed to the pool floor. The "what needs to go right" panel below replaces that flat readout with the concrete dollar gap and the two levers that can close it.
-                            </span>
-                        </p>
-
-                        {/* Reverse-solve: what mix of attrition + reserve would need to occur for an
-                            offer / funded seat to reach the slider's exact rank. */}
-                        <div className="mt-4 rounded-lg border border-tefa-navy/20 bg-white p-3">
-                            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                                <div className="text-xs font-bold text-tefa-navy uppercase tracking-wide">What needs to go right at rank {bandReverseSolve.bandRank.toLocaleString()}</div>
-                                <div className="text-[11px] text-tefa-body/55">Tier 3 position {bandReverseSolve.targetT3Local.toLocaleString()} · personalDefault assumptions</div>
-                            </div>
-                            <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                                <div className="rounded-md bg-tefa-navy/5 p-2">
-                                    <div className="text-tefa-body/50">Modeled T3 $ today</div>
-                                    <div className="font-bold text-tefa-navy text-base">${(bandReverseSolve.currentT3Dollars / 1e6).toFixed(1)}M</div>
-                                    <div className="text-[10px] text-tefa-body/45">{bandReverseSolve.currentT3Awards.toLocaleString()} funded · {bandReverseSolve.currentT3QueueDepth.toLocaleString()} offers-deep</div>
-                                </div>
-                                <div className={`rounded-md p-2 ${bandReverseSolve.inOfferAlready ? 'bg-tefa-green/10' : 'bg-amber-50'}`}>
-                                    <div className="text-tefa-body/50">T3 $ needed for an offer to reach you</div>
-                                    <div className={`font-bold text-base ${bandReverseSolve.inOfferAlready ? 'text-tefa-green' : 'text-amber-700'}`}>${(bandReverseSolve.dollarsForOffer / 1e6).toFixed(1)}M</div>
-                                    <div className="text-[10px] text-tefa-body/45">
-                                      {bandReverseSolve.inOfferAlready
-                                        ? 'Already covered by the modeled default.'
-                                        : <>Gap <strong>${(bandReverseSolve.offerGap / 1e6).toFixed(1)}M</strong> · funded seat would need ${(bandReverseSolve.dollarsForFunded / 1e6).toFixed(1)}M (gap ${(bandReverseSolve.fundedGap / 1e6).toFixed(1)}M)</>}
-                                    </div>
-                                </div>
-                            </div>
-                            {!bandReverseSolve.inOfferAlready && (
-                                <div className="mt-3 space-y-2 text-xs">
-                                    <div className="text-[11px] uppercase font-bold text-tefa-body/50">To get an offer to your rank, the model needs ONE of:</div>
-                                    {bandReverseSolve.offer.decline?.feasible ? (
-                                        <div className="rounded-md border border-tefa-navy/15 px-2.5 py-2">
-                                            <div className="font-semibold text-tefa-navy">Lever A · Higher attrition (reserve held at ${(PERSONAL_DEFAULT_BASELINE.reserveNetToWaitlist / 1e6).toFixed(0)}M)</div>
-                                            <div className="text-tefa-body/70 mt-0.5">
-                                              All three decline rates scaled <strong>×{bandReverseSolve.offer.decline.multiplier.toFixed(2)}</strong>:
-                                              T1 {bandReverseSolve.offer.decline.t1Pct.toFixed(0)}% ·
-                                              T2 first-wave {bandReverseSolve.offer.decline.t2Pct.toFixed(0)}% ·
-                                              replacement {bandReverseSolve.offer.decline.replacementPct.toFixed(0)}%
-                                              <span className="text-tefa-body/50"> (avg {bandReverseSolve.offer.decline.avgPct.toFixed(0)}%)</span>.
-                                            </div>
-                                            <div className="text-[10px] text-tefa-body/50 mt-0.5">Reference: baseline avg ≈ {((PERSONAL_DEFAULT_BASELINE.t1DeclineRate + PERSONAL_DEFAULT_BASELINE.t2DeclineRate + PERSONAL_DEFAULT_BASELINE.replacementDeclineRate) / 3 * 100).toFixed(0)}%; Milwaukee/NYC historicals ran 30–38%.</div>
-                                        </div>
-                                    ) : (
-                                        <div className="rounded-md border border-red-200 bg-red-50/70 px-2.5 py-2 text-red-900">
-                                            <div className="font-semibold">Lever A · Attrition alone can't close the gap.</div>
-                                            <div className="mt-0.5">Even pushing every decline rate near 95% leaves T3 dollars short of ${(bandReverseSolve.dollarsForOffer / 1e6).toFixed(1)}M.</div>
-                                        </div>
-                                    )}
-                                    {bandReverseSolve.offer.reserve?.feasible ? (
-                                        <div className="rounded-md border border-tefa-navy/15 px-2.5 py-2">
-                                            <div className="font-semibold text-tefa-navy">Lever B · More reserve reaches the regular waitlist (declines held at baseline)</div>
-                                            <div className="text-tefa-body/70 mt-0.5">
-                                              Net reserve to T2/T3 waitlist would need to rise to <strong>${(bandReverseSolve.offer.reserve.reserve / 1e6).toFixed(0)}M</strong>
-                                              <span className="text-tefa-body/50"> (+${(bandReverseSolve.offer.reserve.extraOverBaseline / 1e6).toFixed(0)}M over the ${(PERSONAL_DEFAULT_BASELINE.reserveNetToWaitlist / 1e6).toFixed(0)}M baseline)</span>.
-                                            </div>
-                                            <div className="text-[10px] text-tefa-body/50 mt-0.5">Ceiling: the Community Impact-inferred ${(analysis.reportedMinimumAppealsWaitlistBudget / 1e6).toFixed(0)}M+ pool — assumes a larger share survives appeals/SPED/admin than the $25M default.</div>
-                                        </div>
-                                    ) : (
-                                        <div className="rounded-md border border-red-200 bg-red-50/70 px-2.5 py-2 text-red-900">
-                                            <div className="font-semibold">Lever B · Reserve alone can't close the gap.</div>
-                                            <div className="mt-0.5">Even routing $200M of reserve dollars to the waitlist leaves T3 below this rank under default decline rates.</div>
-                                        </div>
-                                    )}
-                                    {!bandReverseSolve.inFundedAlready && (bandReverseSolve.funded.decline?.feasible || bandReverseSolve.funded.reserve?.feasible) && (
-                                        <div className="rounded-md border border-tefa-gold/40 bg-tefa-gold/5 px-2.5 py-2">
-                                            <div className="font-semibold text-tefa-navy">For a <em>funded seat</em> (not just an offer) at this rank:</div>
-                                            <div className="text-tefa-body/70 mt-0.5">
-                                              {bandReverseSolve.funded.decline?.feasible && <>declines scaled ×{bandReverseSolve.funded.decline.multiplier.toFixed(2)} (avg {bandReverseSolve.funded.decline.avgPct.toFixed(0)}%)</>}
-                                              {bandReverseSolve.funded.decline?.feasible && bandReverseSolve.funded.reserve?.feasible && <> · or </>}
-                                              {bandReverseSolve.funded.reserve?.feasible && <>reserve ${(bandReverseSolve.funded.reserve.reserve / 1e6).toFixed(0)}M (+${(bandReverseSolve.funded.reserve.extraOverBaseline / 1e6).toFixed(0)}M)</>}.
-                                            </div>
-                                        </div>
-                                    )}
-                                    <div className="text-[10px] text-tefa-body/50">
-                                      Levers are "either/or" — in reality a combination is more plausible, since high decline rates and a larger surviving reserve usually appear together.
-                                    </div>
-                                </div>
-                            )}
-                            {bandReverseSolve.inOfferAlready && (
-                                <div className="mt-3 rounded-md bg-tefa-green/10 px-2.5 py-2 text-xs text-tefa-green">
-                                  Rank {bandReverseSolve.bandRank.toLocaleString()} already sits inside the modeled offer-depth under the default ({(PERSONAL_DEFAULT_BASELINE.t1DeclineRate * 100).toFixed(0)}/{(PERSONAL_DEFAULT_BASELINE.t2DeclineRate * 100).toFixed(0)}/{(PERSONAL_DEFAULT_BASELINE.replacementDeclineRate * 100).toFixed(0)}% declines · ${(PERSONAL_DEFAULT_BASELINE.reserveNetToWaitlist / 1e6).toFixed(0)}M reserve). Slide higher to stress-test.
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <div className="text-xs text-tefa-body/50">
-                          {t3RankPersonalized && !t3RankPersonalized.invalid ? 'Funded seat — your rank (vs pool)' : 'Per-Child Accepted Award (T3 · pool)'}
-                        </div>
-                        <div className={`text-2xl font-bold ${t3RankPersonalized && !t3RankPersonalized.invalid ? (t3RankPersonalized.perChildFundedPct >= 50 ? 'text-tefa-green' : t3RankPersonalized.perChildFundedPct >= 15 ? 'text-amber-600' : 'text-red-500') : (personalDefault.t3AcceptedRate > 0 ? 'text-tefa-navy' : 'text-red-500')}`}>
-                          {t3RankPersonalized && !t3RankPersonalized.invalid
-                            ? `${t3RankPersonalized.perChildFundedPct.toFixed(1)}%`
-                            : `${personalDefault.t3AcceptedRate.toFixed(1)}%`}
-                        </div>
-                        <div className="text-xs text-tefa-body/50 mt-1">
-                          {t3RankPersonalized && !t3RankPersonalized.invalid ? (
-                            <>Pool average (unknown rank): {t3RankPersonalized.poolAcceptedRate.toFixed(1)}% · modeled funded seats {personalDefault.t3Awards.toLocaleString()}</>
-                          ) : (
-                            <>{personalDefault.t3Awards.toLocaleString()} funded seats (modeled)</>
-                          )}
-                        </div>
-                    </div>
-                    <div>
-                        <div className="text-xs text-tefa-body/50">
-                          {t3RankPersonalized && !t3RankPersonalized.invalid
-                            ? (bandReverseSolve.inOfferAlready ? 'Offer reaches you (modeled default)' : 'T3 $ gap to reach you with an offer')
-                            : 'T3 queue depth (modeled · pool)'}
-                        </div>
-                        <div className={`text-2xl font-bold ${
-                          t3RankPersonalized && !t3RankPersonalized.invalid
-                            ? (bandReverseSolve.inOfferAlready ? 'text-tefa-green' : (bandReverseSolve.offerGap < 25e6 ? 'text-amber-600' : 'text-red-500'))
-                            : 'text-tefa-navy'
-                        }`}>
-                          {t3RankPersonalized && !t3RankPersonalized.invalid
-                            ? (bandReverseSolve.inOfferAlready
-                                ? 'Yes'
-                                : `+$${(bandReverseSolve.offerGap / 1e6).toFixed(1)}M`)
-                            : personalDefault.t3QueueDepth.toLocaleString()}
-                        </div>
-                        <div className="text-xs text-tefa-body/50 mt-1">
-                          {t3RankPersonalized && !t3RankPersonalized.invalid ? (
-                            bandReverseSolve.inOfferAlready
-                              ? <>Modeled offer-depth ({personalDefault.t3QueueDepth.toLocaleString()}) already covers this rank.</>
-                              : <>Modeled today ${(bandReverseSolve.currentT3Dollars / 1e6).toFixed(1)}M → need ${(bandReverseSolve.dollarsForOffer / 1e6).toFixed(1)}M. See levers below.</>
-                          ) : (
-                            <>{personalDefault.t3QueueDepthRate.toFixed(1)}% of T3 queue</>
-                          )}
-                        </div>
-                    </div>
-                    <div>
-                        <div className="text-xs text-tefa-body/50">
-                          {t3RankPersonalized && !t3RankPersonalized.invalid ? 'Family-of-3 — funded (sibling rule)' : 'Family-of-3 (accepted · pool)'}
-                        </div>
-                        <div className={`text-2xl font-bold ${t3RankPersonalized && !t3RankPersonalized.invalid ? (t3RankPersonalized.familyFundedPct >= 50 ? 'text-tefa-green' : t3RankPersonalized.familyFundedPct >= 15 ? 'text-amber-600' : 'text-red-500') : 'text-amber-600'}`}>
-                          {t3RankPersonalized && !t3RankPersonalized.invalid
-                            ? `${t3RankPersonalized.familyFundedPct.toFixed(1)}%`
-                            : `${personalDefault.t3AcceptedFamilyRate.toFixed(1)}%`}
-                        </div>
-                        <div className="text-xs text-tefa-body/50 mt-1">
-                          {t3RankPersonalized && !t3RankPersonalized.invalid ? (
-                            <>Pool avg: {t3RankPersonalized.poolFamilyAccepted.toFixed(1)}% · offer view {t3RankPersonalized.familyOfferPct.toFixed(1)}%</>
-                          ) : (
-                            <>Queue-depth if willing to accept {personalDefault.t3QueueDepthFamilyRate.toFixed(1)}%</>
-                          )}
-                        </div>
-                    </div>
-                </div>
-                {t3RankPersonalized && !t3RankPersonalized.invalid && (
-                    <div className={`mt-3 rounded-lg border px-3 py-2 text-xs text-tefa-navy ${
-                      t3RankPersonalized.inFunded ? 'border-tefa-green/30 bg-green-50/80' :
-                      t3RankPersonalized.inOffer ? 'border-amber-200 bg-amber-50/90' :
-                      'border-tefa-gold/40 bg-tefa-gold/10'
-                    }`}>
-                      <strong>Global {t3RankPersonalized.g.toLocaleString()}</strong> → Tier 3 position <strong>{t3RankPersonalized.t3Local.toLocaleString()}</strong> / {analysis.demandT3.toLocaleString()}.{' '}
-                      {t3RankPersonalized.inFunded && t3RankPersonalized.inOffer && 'At or before both modeled cutoffs — strongest band in this default.'}
-                      {!t3RankPersonalized.inFunded && t3RankPersonalized.inOffer && 'Past the modeled funded seat count: funded % tapers toward the pool average; you may still be in offer-depth for a replacement offer.'}
-                      {!t3RankPersonalized.inOffer && 'Past modeled offer-depth: both curves keep sliding toward pool averages as rank worsens — not a hard 0% at one rank.'}
-                    </div>
-                )}
-                <div className="mt-3 text-xs text-tefa-body/60 bg-tefa-gold/10 rounded p-3">
-                    <strong>Why two sections?</strong> The sliders use <em>one</em> attrition percentage for every tier and every replacement wave. That is simple to stress-test, but at 15% + $25M it often leaves hundreds of Tier 2 students still ahead of Tier 3 — so Tier 3 can read <strong>0%</strong> there even though this nuanced default still projects non-zero Tier 3 movement.
-                </div>
-            </div>
-
-            {/* Official Applicant Figures */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-                <h3 className="font-bold text-tefa-navy mb-3 flex items-center gap-2">
-                    <Layers size={18}/> Official Applicant Pool (Year 1 PDF)
-                </h3>
-                <div className="text-sm text-tefa-body/70">
-                    <strong>{TOTAL_APPLICATIONS.toLocaleString()}</strong> total applications · <strong>{ELIGIBLE_APPLICATIONS.toLocaleString()}</strong> eligible ({(INELIGIBILITY_RATE * 100).toFixed(1)}% ineligible) — per the revised May 7, 2026 TEFA Lottery Update PDF (empirical tier breakdown).
-                </div>
-                <div className="mt-1 text-xs text-tefa-body/50">
-                    Pre-K accounts for most ineligibility (18,677 of 36,666 per the Apr 8 Year 1 PDF); K-12 ineligibility is much lower.
-                </div>
-
-
-                {/* Attrition / Non-Participation Rate */}
-                <div className="mt-5 pt-4 border-t border-gray-100">
-                    <div className="flex items-center justify-between mb-2">
-                        <label className="text-sm font-medium text-tefa-navy">Uniform attrition (same % on every tier)</label>
-                        <span className="text-sm font-bold text-tefa-navy">{Math.round(attritionRate * 100)}%</span>
-                    </div>
-                    <input
-                        type="range"
-                        min="0"
-                        max="30"
-                        step="1"
-                        value={Math.round(attritionRate * 100)}
-                        onChange={(e) => setAttritionRate(parseInt(e.target.value) / 100)}
-                        className="w-full accent-tefa-navy"
-                    />
-                    <div className="flex justify-between text-xs text-tefa-body/50 mt-1">
-                        <span>0%</span>
-                        <span>15%</span>
-                        <span>30%</span>
-                    </div>
-                    <div className="mt-2 text-sm text-tefa-body/70">
-                        Est. {Math.round(attritionRate * 100)}% of lottery winners won't follow through → freed spots cascade to waitlist
-                    </div>
-                    <div className="mt-1 text-xs text-tefa-body/50">
-                        School choice programs typically see 10-30% non-participation. Reasons: can't afford tuition gap, no nearby school, life changes, applied "just in case." Spots freed go to waitlist in tier order.
-                    </div>
-
-                    {/* Inferred Remainder Reaching Waitlist */}
-                    <div className="mt-4 pt-4 border-t border-gray-100">
-                        <div className="flex items-center justify-between mb-2">
-                            <label className="text-sm font-medium text-tefa-navy">Inferred Remainder Reaching Normal Waitlist</label>
-                            <span className="text-sm font-bold text-tefa-navy">
-                                ${(analysis.reserveWaitlistBudget / 1e6).toFixed(0)}M
-                            </span>
-                        </div>
-                        <input
-                            type="range"
-                            min="0"
-                            max="100"
-                            step="5"
-                            value={Math.round(reserveWaitlistShare * 100)}
-                            onChange={(e) => setReserveWaitlistShare(parseInt(e.target.value) / 100)}
-                            className="w-full accent-tefa-green"
-                        />
-                        <div className="flex justify-between text-xs text-tefa-body/50 mt-1">
-                            <span>$0M</span>
-                            <span>$50M</span>
-                            <span>$100M+</span>
-                        </div>
-                        <div className="mt-2 text-sm text-tefa-body/70">
-                            Est. {Math.round(reserveWaitlistShare * 100)}% of the Community Impact-inferred ${(analysis.reportedMinimumAppealsWaitlistBudget / 1e6).toFixed(0)}M+ remainder reaches the regular T2/T3 waitlist after appeals/admin.
-                        </div>
-                        <div className="mt-1 text-xs text-tefa-body/50">
-                            Personal-planning default is $25M. This is separate from attrition; appeals and higher-cost SPED corrections may consume part of the inferred pool before normal waitlist movement.
-                        </div>
-                    </div>
-
-                    {/* Historical Attrition Benchmarks */}
-                    <div className="mt-4 pt-4 border-t border-gray-100">
-                        <div className="text-xs text-tefa-body/50 uppercase font-bold mb-2">Historical Benchmarks — Why 15% Is Conservative</div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-xs text-left border-collapse">
-                                <thead>
-                                    <tr className="border-b border-gray-200 text-tefa-body/50">
-                                        <th className="py-2 pr-3 font-bold">Program</th>
-                                        <th className="py-2 pr-3 font-bold">Attrition</th>
-                                        <th className="py-2 font-bold">Primary Drivers</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="text-tefa-body/70">
-                                    <tr className="border-b border-gray-100">
-                                        <td className="py-2 pr-3 font-medium">Milwaukee Parental Choice</td>
-                                        <td className="py-2 pr-3 font-bold text-red-600">30%</td>
-                                        <td className="py-2">School closures, logistical hurdles, no transportation</td>
-                                    </tr>
-                                    <tr className="border-b border-gray-100">
-                                        <td className="py-2 pr-3 font-medium">NYC Voucher (Year 3)</td>
-                                        <td className="py-2 pr-3 font-bold text-red-600">38%</td>
-                                        <td className="py-2">Unmanageable tuition gaps, transport issues</td>
-                                    </tr>
-                                    <tr className="border-b border-gray-100">
-                                        <td className="py-2 pr-3 font-medium">D.C. Opportunity Scholarship</td>
-                                        <td className="py-2 pr-3 font-bold text-amber-600">14.3%</td>
-                                        <td className="py-2">Couldn't find suitable school, waitlist fatigue</td>
-                                    </tr>
-                                    <tr className="border-b border-gray-100">
-                                        <td className="py-2 pr-3 font-medium">Virginia Pre-K Initiative</td>
-                                        <td className="py-2 pr-3 font-bold text-red-600">20–34%</td>
-                                        <td className="py-2">State budget forecasting rate — lack of local capacity</td>
-                                    </tr>
-                                    <tr>
-                                        <td className="py-2 pr-3 font-medium">Queueing Theory Baseline</td>
-                                        <td className="py-2 pr-3 font-bold text-amber-600">8–10%</td>
-                                        <td className="py-2">Minimum renege rate in constrained waitlist environments</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div className="mt-2 text-[10px] text-tefa-body/40">
-                            Sources: ERIC ED472999 (Milwaukee), AEA (NYC), Hoover Institution (D.C.), VA Budget Bills (VPI), Kanoria (queueing theory)
-                        </div>
-                    </div>
-
-                    {/* Tuition Gap / Sticker Shock */}
-                    <div className="mt-4 pt-4 border-t border-gray-100">
-                        <div className="text-xs text-tefa-body/50 uppercase font-bold mb-2">Tuition Gap — The "Sticker Shock" Driver</div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-                            <div className="bg-tefa-navy/5 rounded p-3">
-                                <div className="text-tefa-body/50 mb-1">TEFA Max Award</div>
-                                <div className="font-bold text-tefa-navy text-lg">$10,474</div>
-                            </div>
-                            <div className="bg-red-50 rounded p-3">
-                                <div className="text-tefa-body/50 mb-1">NBCA Actual Cost (w/ fees)</div>
-                                <div className="font-bold text-red-600 text-lg">~$14,000+</div>
-                                <div className="text-[10px] text-tefa-body/40 mt-1">Tuition $12,350–$13,650 + app/tech/uniform fees</div>
-                            </div>
-                            <div className="bg-amber-50 rounded p-3">
-                                <div className="text-tefa-body/50 mb-1">Residual Gap Per Child</div>
-                                <div className="font-bold text-amber-600 text-lg">$3,000–3,500</div>
-                                <div className="text-[10px] text-tefa-body/40 mt-1">~$10,000 for 3 children</div>
-                            </div>
-                        </div>
-                        <div className="mt-2 text-xs text-tefa-body/60">
-                            {analysis.demandT2.toLocaleString()} Tier 2 applicants (under 200% FPL) face this gap at most private schools. Low-income families are highly price-elastic — many applied "just in case" and will renege upon discovering the residual bill. National avg private tuition: $12,790 (elementary) to $16,420 (high school). This sticker shock is the primary engine driving attrition above the 10% queueing-theory baseline.
-                        </div>
-                    </div>
-                </div>
-
-                {/* Scenario Result — uniform slider only (can differ sharply from personalDefault) */}
-                <div className="mt-6 pt-4 border-t border-gray-100">
-                    <div className="text-xs text-tefa-body/50 uppercase font-bold mb-1">
-                        Slider stress test — not the primary default
-                    </div>
-                    <p className="text-xs text-tefa-body/60 mb-3">
-                        Uniform {Math.round(attritionRate * 100)}% attrition + ${(analysis.reserveWaitlistBudget / 1e6).toFixed(0)}M waitlist pool. This is a simplified cascade; <strong>0% Tier 3 here does not contradict</strong> the primary planning default above.
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div>
-                            <div className="text-xs text-tefa-body/50">Per-Child (Tier 3)</div>
-                            <div className={`text-2xl font-bold ${analysis.reserveEffectiveTier3Rate > 80 ? 'text-green-600' : analysis.reserveEffectiveTier3Rate > 50 ? 'text-amber-500' : analysis.reserveEffectiveTier3Rate > 0 ? 'text-amber-600' : 'text-red-500'}`}>
-                                {analysis.reserveEffectiveTier3Rate.toFixed(1)}%
-                            </div>
-                            <div className="text-xs text-tefa-body/50 mt-1">Attrition-only: {analysis.effectiveTier3Rate.toFixed(1)}%</div>
-                        </div>
-                        <div>
-                            <div className="text-xs text-tefa-body/50">Family (Sibling Rule)</div>
-                            <div className={`text-2xl font-bold ${analysis.reserveEffectiveFamilyRate > 80 ? 'text-green-600' : analysis.reserveEffectiveFamilyRate > 50 ? 'text-amber-500' : analysis.reserveEffectiveFamilyRate > 0 ? 'text-amber-600' : 'text-red-500'}`}>
-                                {analysis.reserveEffectiveFamilyRate.toFixed(1)}%
-                            </div>
-                            <div className="text-xs text-tefa-body/50 mt-1">Attrition-only: {analysis.effectiveFamilyRate.toFixed(1)}%</div>
-                        </div>
-                        <div>
-                            <div className="text-xs text-tefa-body/50">T3 Spots</div>
-                            <div className="text-2xl font-bold text-tefa-navy">
-                                {analysis.reserveEffectiveFundedT3.toLocaleString()}
-                            </div>
-                            <div className="text-xs text-tefa-body/60 mt-1">
-                                {analysis.reserveT3FromBudget.toLocaleString()} pool + {analysis.reserveT3FromAttritionAtCurrentRate.toLocaleString()} attrition
-                            </div>
-                        </div>
-                    </div>
-                    {analysis.reserveEffectiveFundedT3 > 0 && (
-                        <div className="mt-3 text-xs text-tefa-body/60 bg-tefa-sky/10 rounded p-3">
-                            <strong>Combined cascade:</strong> ${(analysis.reserveWaitlistBudget / 1e6).toFixed(0)}M waitlist pool creates {analysis.reserveEquivalentWaitlistSeats.toLocaleString()} equivalent offers
-                            → {analysis.reserveT2Covered.toLocaleString()} applied to T2 first
-                            → recursive attrition creates {analysis.totalWaitlistOffersFromAttrition.toLocaleString()} additional waitlist offers
-                            → <strong>{analysis.reserveEffectiveFundedT3.toLocaleString()}</strong> total spots reach T3
-                        </div>
-                    )}
-                    {analysis.reserveEffectiveFundedT3 === 0 && analysis.reserveRemainingT2 > 0 && (
-                        <div className="mt-3 text-xs text-tefa-body/60 bg-red-50 rounded p-3">
-                            <strong>Cascade blocked (slider model):</strong> The ${(analysis.reserveWaitlistBudget / 1e6).toFixed(0)}M waitlist pool and {analysis.totalWaitlistOffersFromAttrition.toLocaleString()} recursive attrition offers are still absorbed by T2 under this <em>uniform</em> attrition assumption.
-                            {Math.max(0, analysis.reserveRemainingT2 - analysis.totalWaitlistOffersFromAttrition) > 0 && ` About ${Math.max(0, analysis.reserveRemainingT2 - analysis.totalWaitlistOffersFromAttrition).toLocaleString()} T2 students still remain ahead of T3.`} See <strong>Primary planning default</strong> at the top for tier-specific rates — that is why the numbers differ.
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Scenario Outlook Card */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 className="font-bold text-tefa-navy mb-2 flex items-center gap-2">
-                    <TrendingUp size={18}/> Tier 3 Outlook — Iddings Family
-                </h3>
-                <p className="text-xs text-tefa-body/60 mb-2">
-                    Eligibility is fixed at {(INELIGIBILITY_RATE * 100).toFixed(1)}% ineligible (per the revised May 7 PDF). The variables here are <strong>attrition</strong> and the share of the Community Impact-inferred remainder that reaches the normal T2/T3 waitlist pool.
-                </p>
-                <div className="bg-tefa-navy/5 rounded p-3 mb-4 text-xs text-tefa-body/70">
-                    <strong>Critical Threshold:</strong> {scenarioOutlook.mostLikely.unfundedT2.toLocaleString()} unfunded T2 students sit ahead of T3 after the revised May 7 T2 award count. Attrition-only T3 movement begins around {(scenarioOutlook.mostLikely.recursiveT3Threshold * 100).toFixed(1)}%. With ${(scenarioOutlook.mostLikely.reserveWaitlistBudget / 1e6).toFixed(0)}M reaching the normal waitlist pool, T3 movement begins around {(scenarioOutlook.mostLikely.reserveRecursiveT3Threshold * 100).toFixed(1)}%, because the pool reduces the remaining T2 queue first.
-                </div>
-                <div className="bg-green-50 border border-green-200 rounded p-3 mb-4 text-xs text-green-800">
-                    <strong>Community Impact waitlist-pool sensitivity:</strong> Community Impact reported, citing an agency spokesperson, that about ${(analysis.reportedCommittedAwardsBudget / 1e6).toFixed(0)}M has been set aside for selected students, leaving about ${(analysis.reportedGrossUncommittedBudget / 1e6).toFixed(0)}M gross. After the max $80M admin/vendor allowance, that implies at least ${(analysis.reportedMinimumAppealsWaitlistBudget / 1e6).toFixed(0)}M potentially available for successful appeals and later movement. The waitlist-pool slider assumes ${(scenarioOutlook.mostLikely.reserveWaitlistBudget / 1e6).toFixed(0)}M reaches the regular T2/T3 waitlist, or roughly {scenarioOutlook.mostLikely.reserveEquivalentWaitlistSeats.toLocaleString()} T2/T3-equivalent seats. Under the <strong>uniform</strong> 15% attrition slider (same % on every tier), combined Tier 3 odds are ~{scenarioOutlook.mostLikely.reserveEffectiveTier3Rate.toFixed(1)}% per child — which can be <strong>0%</strong> while Tier 2 still has backlog. For your grounded default, use <strong>Primary planning default</strong> above (~{personalDefault.t3AcceptedRate.toFixed(1)}% per-child accepted awards). Treat Community Impact figures as upside sensitivity; appeals and SPED can consume the pool first.
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="p-4 rounded-lg bg-green-50 border border-green-200">
-                        <div className="text-xs text-green-800 uppercase font-bold mb-1">Best Case (25% Attrition)</div>
-                        <div className="text-xs text-green-700 mb-2">Timeline delays + sticker shock among low-income T2 → mass non-participation (mirrors Milwaukee 30%, Virginia 25-34%)</div>
-                        <div className="flex items-baseline gap-2">
-                            <div className="text-2xl font-bold text-green-700">{scenarioOutlook.best.effectiveFamilyRate.toFixed(1)}%</div>
-                            <div className="text-xs text-green-600">family rate</div>
-                        </div>
-                        <div className="text-xs text-green-600 mt-1">
-                            Per-child: {scenarioOutlook.best.effectiveTier3Rate.toFixed(1)}% · +{scenarioOutlook.best.t3FromWaitlist.toLocaleString()} spots reach T3
-                        </div>
-                        <div className="text-xs text-green-600">{scenarioOutlook.best.effectiveFundedT3.toLocaleString()} / {scenarioOutlook.best.demandT3.toLocaleString()} T3 funded</div>
-                    </div>
-                    <div className="p-4 rounded-lg bg-amber-50 border-2 border-amber-300">
-                        <div className="text-xs text-amber-800 uppercase font-bold mb-1">Most Likely (15% uniform attrition)</div>
-                        <div className="text-xs text-amber-700 mb-2">Slider model — same 15% on every tier (not the tier-split personal default). D.C. Opportunity Scholarship saw 14.3%; TEFA adds friction (new platform, tuition gaps, CAIR delay).</div>
-                        <div className="flex items-baseline gap-2">
-                            <div className="text-2xl font-bold text-amber-700">{scenarioOutlook.mostLikely.effectiveFamilyRate.toFixed(1)}%</div>
-                            <div className="text-xs text-amber-600">family rate</div>
-                        </div>
-                        <div className="text-xs text-amber-600 mt-1">
-                            Per-child: {scenarioOutlook.mostLikely.effectiveTier3Rate.toFixed(1)}% · +{scenarioOutlook.mostLikely.t3FromWaitlist.toLocaleString()} spots reach T3
-                        </div>
-                        <div className="text-xs text-amber-700 mt-1">
-                            With ${(scenarioOutlook.mostLikely.reserveWaitlistBudget / 1e6).toFixed(0)}M waitlist pool: {scenarioOutlook.mostLikely.reserveEffectiveFamilyRate.toFixed(1)}% family
-                        </div>
-                        <div className="text-xs text-amber-600">{scenarioOutlook.mostLikely.effectiveFundedT3.toLocaleString()} / {scenarioOutlook.mostLikely.demandT3.toLocaleString()} T3 funded</div>
-                    </div>
-                    <div className="p-4 rounded-lg bg-red-50 border border-red-200">
-                        <div className="text-xs text-red-800 uppercase font-bold mb-1">Worst Case (8% Attrition)</div>
-                        <div className="text-xs text-red-700 mb-2">Abnormally low — most T1/T2 winners already in low-cost parochial schools, voucher merely supplants existing tuition</div>
-                        <div className="flex items-baseline gap-2">
-                            <div className="text-2xl font-bold text-red-700">{scenarioOutlook.worst.effectiveFamilyRate.toFixed(1)}%</div>
-                            <div className="text-xs text-red-600">family rate</div>
-                        </div>
-                        <div className="text-xs text-red-600 mt-1">
-                            Per-child: {scenarioOutlook.worst.effectiveTier3Rate.toFixed(1)}% · +{scenarioOutlook.worst.t3FromWaitlist.toLocaleString()} spots reach T3
-                        </div>
-                        <div className="text-xs text-red-600">{scenarioOutlook.worst.effectiveFundedT3.toLocaleString()} / {scenarioOutlook.worst.demandT3.toLocaleString()} T3 funded</div>
-                    </div>
-                </div>
-                <div className="mt-4 p-3 bg-tefa-navy/5 rounded-lg text-xs text-tefa-body/70 space-y-2">
-                    <div>
-                        <strong>Sibling Rule Formula:</strong>{' '}
-                        <span className="font-mono bg-white px-2 py-0.5 rounded border border-gray-200">
-                            P(family) = 1 - (1 - P<sub>child</sub>)<sup>3</sup>
-                        </span>
-                        {' '}— three independent draws from the Tier 3 waitlist pool. One win funds all three children automatically.
-                    </div>
-                    <div>
-                        <strong>Non-linear dynamics:</strong> Under the revised May 7 official T2 award count, {scenarioOutlook.mostLikely.unfundedT2.toLocaleString()} unfunded T2 students sit ahead of T3. The prior 77/23 derived model implied only ~{(analysis.demandT2 - analysis.derivedT2LotteryCapacity).toLocaleString()} T2 students ahead of T3; the official batch is more conservative and makes the cascade smaller.
-                    </div>
-                </div>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div className="bg-tefa-navy text-white px-6 py-4 flex justify-between items-center">
-                    <div>
-                        <h3 className="font-bold text-lg">Iddings Family Funding Strategy</h3>
-                        <p className="text-tefa-sky/70 text-sm">Dual Model Analysis — Comptroller's Rules vs. SB 2 Text — April 2026</p>
-                    </div>
-                </div>
-                <div className="p-8">
-                    <div className="prose prose-sm max-w-none text-tefa-navy">
-                        <h3 className="font-bold text-tefa-navy text-lg mb-2">1. The Projection Model</h3>
-                        <p className="mb-4">
-                            <strong>{TOTAL_APPLICATIONS.toLocaleString()}</strong> students applied in Year 1. The Apr 28, 2026 TEFA Lottery Update PDF
-                            now provides empirical tier counts (replacing the percentage-derived estimates from the Apr 8 Year 1 PDF).
-                            The application window closed <strong>March 31 at 11:59 PM CT</strong> per a federal court order (Judge Bennett, S.D. Texas).
-                            More than 2,300 participating schools are listed in the school finder tool, including a growing number of accredited online schools.
-                        </p>
-                        <p className="mb-4">
-                            <strong>Not all applicants are eligible.</strong> The Apr 28 PDF reports <strong>{INELIGIBLE_APPLICATIONS.toLocaleString()}</strong> ineligible applications
-                            ({(INELIGIBILITY_RATE * 100).toFixed(1)}% of total). Pre-K has the highest ineligibility rate (50%+, with 18,677 of 36,666 pre-K apps ineligible per the Apr 8 PDF),
-                            while K-12 is much lower. This leaves <strong>{ELIGIBLE_APPLICATIONS.toLocaleString()}</strong> eligible applicants competing for funding.
-                        </p>
-
-                        <h3 className="font-bold text-tefa-navy text-lg mb-2">2. Supply vs. Demand</h3>
-                        <ul className="list-disc pl-5 mb-4 space-y-1">
-                            <li><strong>Statutory Budget Cap:</strong> $1 Billion for 2025–2027 biennium (SB 2, §29.3521(c-1))</li>
-                            <li><strong>Year 1 Commitment:</strong> Full $1B (Comptroller administrative choice — Travis Pillow, Apr 2: "$1 billion committed in year one")</li>
-                            <li><strong>Per-Student Base:</strong> $10,474 (SB 2 §29.361(a)(1) — 85% × statewide avg state-and-local funding per ADA)</li>
-                            <li><strong>Homeschool/other:</strong> $2,000/yr (SB 2 §29.361(b-1)). Setting <em>locks</em> at application close (Mar 31); post-lock changes can only reduce funding, never increase.</li>
-                            <li><strong>SPED supplement:</strong> Up to $30,000 with a TEA-confirmed current IEP (SB 2 §29.361(b)). Note: T1 priority does NOT automatically grant SPED supplement — the Parent Application Guide formalizes a "Prioritization Only" sub-class for disability-documented students without a TEA-electronic IEP match.</li>
-                            <li><strong>T4 statutory cap:</strong> 20% of program funds (Parent Guide page 4) — $200M ceiling on T4 in Year 1; not load-bearing here since T4 gets $0 anyway.</li>
-                            <li><strong>First-Round Awards (Apr 28 PDF):</strong> <strong>{analysis.firstRoundAwards.toLocaleString()}</strong> (T1 family) — {analysis.fundedT1.toLocaleString()} T1 students + {analysis.siblingsFunded.toLocaleString()} T1 siblings via the sibling rule. T1-family allocation: <strong>~$415M</strong> (Apr 28 PDF item 1, verbatim).</li>
-                            <li><strong>Awards to date (May 4 official):</strong> <strong>{analysis.capacity.toLocaleString()}+</strong> students — {analysis.firstRoundAwards.toLocaleString()} T1-family awards plus {analysis.officialT2Awards.toLocaleString()}+ Tier 2 awards.</li>
-                            <li><strong>Eligible Applicants:</strong> {analysis.eligibleApps.toLocaleString()} of {TOTAL_APPLICATIONS.toLocaleString()} ({INELIGIBLE_APPLICATIONS.toLocaleString()} ineligible per Apr 28 PDF)</li>
-                        </ul>
-                        <div className="mb-4 p-3 bg-tefa-navy/5 border border-tefa-navy/20 rounded text-xs text-tefa-body/70">
-                            <div className="font-bold text-tefa-navy mb-1">Capacity Calibration (Apr 28 T1-family + May 4 official T2 awards):</div>
-                            <ul className="list-disc pl-5 space-y-1">
-                                <li><strong>Step 1 — T1 family block (empirical):</strong> Apr 28 PDF item 1, verbatim: <em>"all eligible tier 1 applicants and siblings will qualify for funding of approximately $415 million."</em> {analysis.firstRoundAwards.toLocaleString()} students at an avg ~${Math.round(analysis.t1FamilyCost / analysis.firstRoundAwards).toLocaleString()}/student. Reliable because the Parent Application Guide establishes that educational setting (private $10,474 vs. homeschool $2,000) <em>locks</em> at application close (Mar 31) — the program knew the exact per-student cost at lottery time.</li>
-                                <li><strong>Step 2 — T2/T3 blended cost:</strong> T2 (≤200% FPL) and T3 (200-500% FPL) both have no SPED supplement by tier definition. Per-student cost depends only on setting. Apr 8 PDF reports the overall application setting split as 77% private / 23% homeschool. Blended cost = 0.77 × $10,474 + 0.23 × $2,000 ≈ <strong>${analysis.perStudentT2Blended.toLocaleString()}/student</strong>.</li>
-                                <li><strong>Step 3 — Admin/reserve:</strong> SB 2 §29.362(b)-(c) allows up to 3% for Comptroller administration plus up to 5% for certified educational assistance organizations ($80M total cap); the Apr 28 PDF item 5 confirms an appeals reserve but does not publish the amount. Earlier baseline used a small ~$5M placeholder; the new Community Impact article makes that look too conservative as an upside sensitivity.</li>
-                                <li><strong>Step 4 — T2 award batch:</strong> The pre-May-4 77/23 model would have derived ~{analysis.derivedT2LotteryCapacity.toLocaleString()} T2 slots from the remaining <strong>~${(analysis.t2Budget / 1e6).toFixed(0)}M</strong>. The revised May 7 PDF supersedes that estimate with <strong>{analysis.officialT2Awards.toLocaleString()} official Tier 2 awards</strong> and <strong>{analysis.unfundedT2.toLocaleString()} Tier 2 students waitlisted</strong>. The gap points to a larger reserve/holdback, a more private-heavy T2 setting mix, or both.</li>
-                                <li><strong>Total awards to date:</strong> {analysis.firstRoundAwards.toLocaleString()} + {analysis.fundedT2.toLocaleString()} = <strong>{analysis.capacity.toLocaleString()}</strong> students.</li>
-                                <li><strong>Community Impact waitlist-pool signal:</strong> Community Impact reported, citing an agency spokesperson, that nearly 96,000 selected students have about <strong>${(analysis.reportedCommittedAwardsBudget / 1e6).toFixed(0)}M</strong> set aside so far. That leaves about <strong>${(analysis.reportedGrossUncommittedBudget / 1e6).toFixed(0)}M</strong> gross, or at least <strong>${(analysis.reportedMinimumAppealsWaitlistBudget / 1e6).toFixed(0)}M</strong> after the max $80M admin/vendor allowance. The current slider assumes <strong>${(analysis.reserveWaitlistBudget / 1e6).toFixed(0)}M</strong> reaches the regular waitlist, or roughly <strong>{analysis.reserveEquivalentWaitlistSeats.toLocaleString()}</strong> T2/T3-equivalent seats at the blended cost.</li>
-                                <li><strong>Why this supersedes the prior $640.7M derivation:</strong> The earlier model assumed every T1 student received the $17,650 IEP-blended rate. Reality (per the Parent Guide's "Prioritization Only" sub-class + the Apr 8 PDF's 8,618 IEP-active count + 77/23 setting split) keeps the T1-family block in the low-$400Ms: most T1 students receive only the base rate, and ~23% homeschool dramatically lowers the per-student cost.</li>
-                                <li><strong>Appeals / waitlist pool:</strong> Per the revised May 7 PDF and the May 4 release, the program holds a reserve for successful appeals. Community Impact's $100M+ figure is credible secondary reporting, but the planner only counts the slider-selected share as reaching the normal waitlist because appeals and SPED awards may consume the rest first.</li>
-                                <li><strong>Cross-check:</strong> T1-family fully funds, T2 ({analysis.demandT2.toLocaleString()}) funds at {tier2FundingRate.toFixed(1)}% (lottery), and T3/T4 receive 0 from the initial award batches. The remaining T2 backlog ahead of T3 is {analysis.unfundedT2.toLocaleString()} students.</li>
-                            </ul>
-                        </div>
-
-                        <div className="mb-4 p-3 bg-white border border-tefa-navy/20 rounded text-xs">
-                            <div className="font-bold text-tefa-navy mb-2">Capacity Sensitivity — Official vs. Derived T2</div>
-                            <div className="text-tefa-body/70 mb-2">
-                                The prior model derived T2 capacity from a $500M residual pool and a 77/23 setting mix. The May 4 release provides the authoritative public count: <strong>{analysis.officialT2Awards.toLocaleString()}+ Tier 2 awards</strong>. Keep the derived rows as diagnostics only.
-                            </div>
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-xs">
-                                    <thead className="bg-tefa-navy/5 text-tefa-navy">
-                                        <tr>
-                                            <th className="px-2 py-1.5 text-left">Scenario</th>
-                                            <th className="px-2 py-1.5 text-left">Basis</th>
-                                            <th className="px-2 py-1.5 text-right">Per-student cost</th>
-                                            <th className="px-2 py-1.5 text-right">T2 slots</th>
-                                            <th className="px-2 py-1.5 text-right">T2 rate</th>
-                                            <th className="px-2 py-1.5 text-right">Capacity</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-100 text-tefa-body/80">
-                                        <tr className="bg-tefa-gold/10 font-medium">
-                                            <td className="px-2 py-1.5">Official <strong>(baseline)</strong></td>
-                                            <td className="px-2 py-1.5">May 4 release</td>
-                                            <td className="px-2 py-1.5 text-right font-mono">Implied</td>
-                                            <td className="px-2 py-1.5 text-right font-mono">{analysis.t2LotteryCapacity.toLocaleString()}</td>
-                                            <td className="px-2 py-1.5 text-right font-mono">{tier2FundingRate.toFixed(1)}%</td>
-                                            <td className="px-2 py-1.5 text-right font-mono">{analysis.capacity.toLocaleString()}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="px-2 py-1.5">Prior derived estimate</td>
-                                            <td className="px-2 py-1.5">77% private / 23% homeschool</td>
-                                            <td className="px-2 py-1.5 text-right font-mono">${analysis.perStudentT2Blended.toLocaleString()}</td>
-                                            <td className="px-2 py-1.5 text-right font-mono">{analysis.derivedT2LotteryCapacity.toLocaleString()}</td>
-                                            <td className="px-2 py-1.5 text-right font-mono">{((analysis.derivedT2LotteryCapacity / analysis.demandT2) * 100).toFixed(1)}%</td>
-                                            <td className="px-2 py-1.5 text-right font-mono">{(analysis.firstRoundAwards + analysis.derivedT2LotteryCapacity).toLocaleString()}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div className="text-tefa-body/70 mt-2">
-                                The official batch being lower than the 77/23 derived estimate is the new signal: either more money was held back for appeals/admin, T2 awards skew more private than the overall applicant pool, or both. The official count is now the baseline for waitlist math.
-                            </div>
-                            <div className="text-tefa-body/60 mt-2 text-[11px] italic">
-                                Earlier IEP-scalar sensitivity tables ($14k / $17,650 / $22,769) have been removed — the Apr 28 PDF's empirical $415M T1-family allocation supersedes any IEP-scalar derivation.
-                            </div>
-                        </div>
-
-                        <h3 className="font-bold text-tefa-navy text-lg mb-2">3. Comptroller's Tier System (How the Lottery Will Actually Run)</h3>
-                        <div className="bg-tefa-navy/5 border border-tefa-navy/20 rounded-lg p-4 mb-4">
-                            <p className="text-sm text-tefa-navy mb-2">
-                                <strong>Sibling Rule:</strong> Per the Comptroller's administrative rules, if <em>any one child</em> is accepted in the lottery,
-                                all eligible siblings who applied during the same period are <strong>automatically accepted</strong>.
-                                Your family effectively gets 3 lottery tickets — one win covers the whole household.
-                            </p>
-                            <p className="text-xs text-tefa-navy/70">
-                                All 3 children (Cassius, Dorothy, Sebastian) are in <strong>Tier 3 (200-500% FPL)</strong> under the Comptroller's implementation,
-                                The Comptroller confirmed (Apr 3 email, citing Sec. 29.3521(d)) that public school enrollment only affects Tier 4 priority — not Tiers 1-3.
-                            </p>
-                        </div>
-
-                        <p className="mb-4">With {analysis.eligibleApps.toLocaleString()} eligible applicants, here is how the $1B budget drains by tier:</p>
-
-                        <div className="space-y-4 mb-6">
-                            <div className="p-3 bg-green-50 border border-green-200 rounded">
-                                <div className="font-bold text-green-800">Tier 1 — Disability + ≤500% FPL (incl. siblings)</div>
-                                <div className="text-sm text-green-700">
-                                    {analysis.demandT1.toLocaleString()} students ({analysis.fundedT1.toLocaleString()} T1 + {analysis.siblingsFunded.toLocaleString()} siblings) — Funded first, 100% funded (Apr 28 PDF: AWARDED &amp; NOTIFIED)
-                                </div>
-                            </div>
-                            <div className={`p-3 border rounded ${tier2FundingRate >= 100 ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}`}>
-                                <div className={`font-bold ${tier2FundingRate >= 100 ? 'text-green-800' : 'text-amber-800'}`}>Tier 2 — ≤200% FPL</div>
-                                <div className={`text-sm ${tier2FundingRate >= 100 ? 'text-green-700' : 'text-amber-700'}`}>
-                                    {analysis.demandT2.toLocaleString()} applicants — {tier2FundingRate >= 100 ? '100% funded' : `${tier2FundingRate.toFixed(1)}% funded (${analysis.fundedT2.toLocaleString()} of ${analysis.demandT2.toLocaleString()} — lottery within tier)`}
-                                </div>
-                            </div>
-                            <div className={`p-4 border-2 rounded-lg ${analysis.effectiveTier3Rate === 100 ? 'bg-green-50 border-green-300' : 'bg-tefa-gold/10 border-tefa-gold/40'}`}>
-                                <div className={`font-bold text-lg ${analysis.effectiveTier3Rate === 100 ? 'text-green-800' : 'text-tefa-red'}`}>
-                                    Tier 3 — 200-500% FPL — All 3 Iddings Children
-                                </div>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3 text-sm">
-                                    <div>
-                                        <div className="text-xs text-tefa-body/50">Demand</div>
-                                        <div className="font-bold">{analysis.demandT3.toLocaleString()}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-xs text-tefa-body/50">Funded (incl. waitlist)</div>
-                                        <div className="font-bold">{analysis.effectiveFundedT3.toLocaleString()}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-xs text-tefa-body/50">Per-Child Rate</div>
-                                        <div className={`font-bold ${analysis.effectiveTier3Rate > 80 ? 'text-green-600' : analysis.effectiveTier3Rate > 50 ? 'text-amber-600' : 'text-red-600'}`}>
-                                            {analysis.effectiveTier3Rate.toFixed(1)}%
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div className="text-xs text-tefa-body/50">Family Rate (Sibling Rule)</div>
-                                        <div className={`font-bold ${analysis.effectiveFamilyRate > 80 ? 'text-green-600' : analysis.effectiveFamilyRate > 50 ? 'text-amber-600' : 'text-red-600'}`}>
-                                            {analysis.effectiveFamilyRate.toFixed(1)}%
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="mt-3 text-xs text-tefa-body/60">
-                                    Sibling math: P(family) = 1 - P(all 3 lose) = 1 - (1 - {(analysis.effectiveTier3Rate / 100).toFixed(4)})³ = {(analysis.effectiveFamilyRate / 100).toFixed(4)}
-                                </div>
-                                {analysis.t3FromWaitlist > 0 && (
-                                    <div className="mt-2 text-xs text-tefa-body/50">
-                                        Initial lottery: {analysis.fundedT3.toLocaleString()} funded ({analysis.tier3Rate.toFixed(1)}%) + {analysis.t3FromWaitlist.toLocaleString()} from waitlist cascade
-                                    </div>
-                                )}
-                            </div>
-                            <div className={`p-3 border rounded ${analysis.tier4Rate > 0 ? 'bg-red-50 border-red-200' : 'bg-tefa-light border-gray-200'}`}>
-                                <div className={`font-bold ${analysis.tier4Rate > 50 ? 'text-tefa-red' : 'text-tefa-red'}`}>
-                                    Tier 4 — ≥500% FPL{' '}
-                                    <span className="text-xs font-normal text-tefa-body/60">(4a: prior public school {analysis.demandT4a.toLocaleString()} | 4b: all others {analysis.demandT4b.toLocaleString()})</span>
-                                </div>
-                                <div className={`text-sm ${analysis.tier4Rate > 50 ? 'text-tefa-red/80' : 'text-tefa-red/80'}`}>
-                                    {(analysis.demandT4a + analysis.demandT4b).toLocaleString()} applicants — {analysis.tier4Rate.toFixed(1)}% funded
-                                </div>
-                            </div>
-                        </div>
-
-                        <h3 className="font-bold text-tefa-navy text-lg mb-2">4. Per-Student Breakdown</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                            {students.map((student) => (
-                                <div key={student.name} className={`p-4 rounded-lg border ${analysis.effectiveFamilyRate > 80 ? 'bg-green-50 border-green-200' : analysis.effectiveFamilyRate > 50 ? 'bg-tefa-gold/10 border-tefa-gold/30' : 'bg-red-50 border-red-200'}`}>
-                                    <div className="font-bold text-tefa-navy">{student.name}</div>
-                                    <div className="text-xs text-tefa-body/60">{student.grade} — Tier 3</div>
-                                    <div className={`text-2xl font-bold mt-2 ${analysis.effectiveTier3Rate > 80 ? 'text-green-600' : analysis.effectiveTier3Rate > 50 ? 'text-amber-600' : 'text-red-600'}`}>
-                                        {analysis.effectiveTier3Rate.toFixed(1)}%
-                                    </div>
-                                    <div className="text-xs text-tefa-body/50 mt-1">
-                                        Public school history: no effect on Tier 3 (confirmed Apr 3)
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className={`p-4 rounded-lg border-2 mb-6 ${analysis.effectiveFamilyRate > 80 ? 'bg-green-50 border-green-300' : analysis.effectiveFamilyRate > 50 ? 'bg-tefa-gold/10 border-tefa-gold/40' : 'bg-red-50 border-red-300'}`}>
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <div className="text-xs text-tefa-body/50 uppercase font-bold">Family Probability (All 3 Funded via Sibling Rule)</div>
-                                    <div className="text-xs text-tefa-body/60 mt-1">1 win in Tier 3 lottery or waitlist = all 3 children automatically accepted</div>
-                                </div>
-                                <div className={`text-4xl font-bold ${analysis.effectiveFamilyRate > 80 ? 'text-green-600' : analysis.effectiveFamilyRate > 50 ? 'text-amber-600' : 'text-red-600'}`}>
-                                    {analysis.effectiveFamilyRate.toFixed(1)}%
-                                </div>
-                            </div>
-                        </div>
-
-                        <h3 className="font-bold text-tefa-navy text-lg mb-2">5. Comptroller Email Exchange (Apr 3)</h3>
-                        <div className="bg-tefa-sky/10 border border-tefa-sky/30 rounded-lg p-4 mb-4">
-                            <p className="text-xs text-tefa-body/60 mb-3">
-                                Sent to tefa@cpa.texas.gov on Apr 3 regarding SB 2 public school enrollment interpretation for Tier 3 families.
-                            </p>
-                            <div className="bg-white rounded p-4 border border-gray-200 text-sm text-tefa-body mb-3">
-                                <div className="text-xs text-tefa-body/50 uppercase font-bold mb-2">Our Question</div>
-                                <p className="text-tefa-body/70">
-                                    For families in the 200-500% FPL range (Tier 3), does prior public school enrollment provide any priority advantage?
-                                </p>
-                            </div>
-                            <div className="bg-green-50 rounded p-4 border border-green-200 text-sm text-tefa-body">
-                                <div className="text-xs text-green-800 uppercase font-bold mb-2">Comptroller's Response (Apr 3, 2026)</div>
-                                <ul className="text-green-700 space-y-2 text-sm">
-                                    <li>Per <strong>Sec. 29.3521(d)</strong>, prior public school enrollment priority <strong>only applies to Tier 4</strong> (≥500% FPL)</li>
-                                    <li>For Tier 3 (200-500% FPL), public school history provides <strong>no priority advantage</strong></li>
-                                    <li>Cited Sec. 29.3521 (not 29.356) as the governing section for Tier 4 sub-prioritization</li>
-                                    <li>Confirmed: $1B spending cap for 2025-2027 biennium, 20% of appropriated money cap for Tier 4 children</li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <h3 className="font-bold text-tefa-navy text-lg mb-2">6. Federal Lawsuit & Political Conflict</h3>
-                        <div className="bg-tefa-red/5 border border-tefa-red/20 rounded-lg p-4 mb-4">
-                            <p className="text-sm text-tefa-red mb-3">
-                                <strong>The TEFA program is caught in a federal civil rights lawsuit and a political feud.</strong> Acting
-                                Comptroller Kelly Hancock blocked several Islamic private schools (including Houston Quran Academy) from participating,
-                                citing alleged ties to organizations Gov. Abbott designated as terrorist organizations. Muslim families and schools
-                                sued for religious discrimination. A federal judge (Judge Bennett, S.D. Texas) temporarily sided with the plaintiffs,
-                                ordering the state to extend the deadline to March 31, 2026 and allow the excluded schools to submit applications.
-                            </p>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-3">
-                                <div className="bg-white rounded p-3 border border-tefa-red/10">
-                                    <div className="text-xs text-tefa-body/50 uppercase font-bold mb-1">The Lawsuit</div>
-                                    <ul className="text-tefa-body/70 space-y-1 text-xs">
-                                        <li>Hancock banned Islamic schools citing terror ties</li>
-                                        <li>Federal judge sided with plaintiffs (temporary injunction)</li>
-                                        <li>Deadline extended from Mar 17 to Mar 31</li>
-                                        <li><strong>Permanent injunction hearing: April 24, 2026</strong></li>
-                                    </ul>
-                                </div>
-                                <div className="bg-white rounded p-3 border border-tefa-red/10">
-                                    <div className="text-xs text-tefa-body/50 uppercase font-bold mb-1">The Political Feud</div>
-                                    <ul className="text-tefa-body/70 space-y-1 text-xs">
-                                        <li>Hancock blames AG Paxton for poorly defending the ban</li>
-                                        <li>Hancock demanded Paxton strip school charters</li>
-                                        <li>Paxton called Hancock an "incompetent loser"</li>
-                                        <li>Paxton wants Gov. Abbott to fire Hancock</li>
-                                        <li className="text-tefa-body/50">Backdrop: Hancock voted to impeach Paxton in 2023</li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div className="bg-white rounded p-3 border border-tefa-red/10 mb-3">
-                                <div className="text-xs text-tefa-body/50 uppercase font-bold mb-1">Impact on TEFA Funding Timeline</div>
-                                <ul className="text-tefa-body/70 space-y-1 text-xs">
-                                    <li>No state funds have been ordered to flow yet</li>
-                                    <li>Financial side of the program is stalled until court proceedings resolve</li>
-                                    <li>Internal Comptroller-AG conflict adds additional unpredictability to administration</li>
-                                    <li>{TOTAL_APPLICATIONS.toLocaleString()} total applications ({ELIGIBLE_APPLICATIONS.toLocaleString()} eligible per Apr 28 PDF) to process once the legal path is clear</li>
-                                </ul>
-                            </div>
-                            <div className="bg-amber-50 rounded p-3 border border-amber-200 mb-3">
-                                <div className="text-xs text-amber-800 uppercase font-bold mb-1">Timeline Attrition — Why Delays Help Tier 3</div>
-                                <ul className="text-amber-700 space-y-1 text-xs">
-                                    <li>Private schools enforce early summer deadlines (June 1–30) for enrollment deposits and binding tuition contracts</li>
-                                    <li>If award notifications arrive after these deadlines, lottery winners face signing $13,000+ contracts without guaranteed state funding</li>
-                                    <li>Risk-averse families — especially the {analysis.demandT2.toLocaleString()} Tier 2 applicants under 200% FPL — will default to free public school rather than take on that financial exposure</li>
-                                    <li>This "waitlist fatigue" drives a massive late-stage cascade of abandoned accounts directly benefiting Tier 3</li>
-                                    <li>Odyssey platform is backlogged processing extended Mar 31 applications, compounding the delay</li>
-                                </ul>
-                            </div>
-                            <div className="bg-tefa-green/5 rounded p-3 border border-tefa-green/20">
-                                <div className="text-xs text-tefa-green uppercase font-bold mb-1">What This Means for Your Family</div>
-                                <ul className="text-tefa-green/70 space-y-1 text-xs">
-                                    <li><strong>Your application is valid</strong> — submitted before the deadline</li>
-                                    <li><strong>Your lottery odds are unchanged</strong> — this lawsuit concerns which schools can participate, not family tier placement</li>
-                                    <li><strong>The risk is timing, not eligibility</strong> — funds may arrive later than originally expected</li>
-                                    <li><strong>Your safety valve:</strong> June 30 NBCA withdrawal deadline lets you back out penalty-free if funding is delayed too long (after Jun 30, a 10% or 20% penalty applies).</li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <h3 className="font-bold text-tefa-navy text-lg mb-2">7. Supply-Side Capacity Constraints</h3>
-                        <div className="bg-tefa-navy/5 border border-tefa-navy/20 rounded-lg p-4 mb-4">
-                            <p className="text-sm text-tefa-body/70 mb-3">
-                                Even with a funded TEFA account, families must independently secure admission at a participating private school.
-                                The private school market is structurally inelastic in the short term — schools cannot rapidly expand capacity to absorb
-                                {TOTAL_APPLICATIONS.toLocaleString()} new applicants.
-                            </p>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                                <div className="bg-white rounded p-3 border border-gray-200">
-                                    <div className="font-bold text-tefa-body/50 uppercase mb-1">Capacity Limits</div>
-                                    <ul className="text-tefa-body/70 space-y-1">
-                                        <li>High-performing schools (like NBCA) operate at or near max enrollment</li>
-                                        <li>Growth typically limited to incremental kindergarten cohort expansions</li>
-                                        <li>NBCA enforces strict admissions standards and biblical lifestyle covenants</li>
-                                    </ul>
-                                </div>
-                                <div className="bg-white rounded p-3 border border-gray-200">
-                                    <div className="font-bold text-tefa-body/50 uppercase mb-1">Opt-Out Schools</div>
-                                    <ul className="text-tefa-body/70 space-y-1">
-                                        <li>Many elite private schools opted out of TEFA entirely</li>
-                                        <li>Some avoid state administrative oversight</li>
-                                        <li>Others charge $30,000+ — the $10,474 voucher is negligible</li>
-                                        <li>Rural families face severe geographic mismatch</li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div className="mt-3 text-xs text-tefa-body/60">
-                                Thousands of lottery winners will be unable to find a suitable, geographically accessible private school — forcing them to forfeit awards back to the waitlist pool.
-                            </div>
-                        </div>
-
-                        <h3 className="font-bold text-tefa-navy text-lg mb-2">8. Strategic Risk Management — June 30 Decision Point</h3>
-                        <p className="text-xs text-tefa-body/70 mb-3">
-                            We now have the sharpest TEFA signal we'll get before Jun 30: bucket <strong>{IDDINGS_BUCKET.label}</strong> (received {IDDINGS_BUCKET.notifiedOn}). Tier 3 portion ≈ {(IDDINGS_BUCKET.lo - analysis.unfundedT2).toLocaleString()}–{(IDDINGS_BUCKET.hi - analysis.unfundedT2).toLocaleString()} — past both modeled cutoffs ({personalDefault.t3Awards.toLocaleString()} funded · {personalDefault.t3QueueDepth.toLocaleString()} offer-depth). The columns below frame the decision against that signal.
-                        </p>
-                        <div className="bg-tefa-gold/10 border border-tefa-gold/30 rounded-lg p-4 mb-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-3">
-                                <div className="bg-white rounded p-3 border border-green-200">
-                                    <div className="text-xs text-green-800 uppercase font-bold mb-1">Withdraw by June 30</div>
-                                    <ul className="text-green-700 space-y-1 text-xs">
-                                        <li>Exit with only $690 enrollment fee lost</li>
-                                        <li>No tuition liability</li>
-                                        <li>Nullifies any subsequent TEFA waitlist offer</li>
-                                        <li>With band {IDDINGS_BUCKET.label}, baseline modeling shows no funded seat in Year 1 — withdrawing caps exposure and preserves NBCA scholarship runway</li>
-                                    </ul>
-                                </div>
-                                <div className="bg-white rounded p-3 border border-red-200">
-                                    <div className="text-xs text-red-800 uppercase font-bold mb-1">Commit Past June 30</div>
-                                    <ul className="text-red-700 space-y-1 text-xs">
-                                        <li>Tuition penalties bind — 10% ($4,802.50) in July, 20% ($9,605.00) in August</li>
-                                        <li>Preserves eligibility for the Jul 15 opt-out cascade (largest Year 1 attrition event, per Apr 22 press release)</li>
-                                        <li>The bet: a large July/August cascade reaches the {IDDINGS_BUCKET.label} band. Per the May 7 + May 12 PDFs and the model, plausible but unlikely</li>
-                                        <li>Significant financial exposure without guaranteed funding</li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div className="bg-white rounded p-3 border border-tefa-navy/10">
-                                <div className="text-xs text-tefa-body/50 uppercase font-bold mb-1">The June Playbook (Mitigation Strategy)</div>
-                                <ul className="text-tefa-body/70 space-y-2 text-xs">
-                                    <li><strong>1. Wait for Final Numbers (June 5 – June 20):</strong> NBCA Scholarship is in — <strong>$12,000 awarded</strong> ($4,000/student), accept by June 15. Now wait on the ACE Scholarship (expected end of June). If the final out-of-pocket gap is affordable without TEFA, stay enrolled. If not, proceed to Step 2.</li>
-                                    <li><strong>2. The Late-June Negotiation (June 24):</strong> If unaffordable, contact NBCA. Explain the gap, note the TEFA waitlist cascade won't happen until mid-July, and state you cannot risk the $4,800 penalty on July 1. Ask for a written extension of the penalty-free withdrawal date to July 31.</li>
-                                    <li><strong>3. The "Drop-Dead" Decision (June 29):</strong> If NBCA grants the extension, ride out the July 15 TEFA cascade. If they say no, formally withdraw on June 29 to protect against the $4,800 penalty.</li>
-                                    <li><strong>4. The "Withdraw and Wait" Backup:</strong> Withdrawing does not cancel the TEFA application. If a miracle cascade reaches band {IDDINGS_BUCKET.label} in August, call NBCA to re-enroll with the ~$31,000 in ESA funds.</li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <h3 className="font-bold text-tefa-navy text-lg mb-2">9. Conclusion</h3>
-                        <p className="mb-3">
-                            Under the Comptroller's confirmed implementation, accounting for {Math.round(attritionRate * 100)}% attrition only, your family has a
-                            <strong> {analysis.effectiveFamilyRate.toFixed(1)}%</strong> probability of all 3 children receiving TEFA funding
-                            (at the official 9.9% ineligibility rate).
-                            {analysis.effectiveFamilyRate > 90
-                                ? " The combination of Tier 3 placement, the sibling rule, and waitlist movement puts you in an excellent position."
-                                : analysis.effectiveFamilyRate > 50
-                                ? " The sibling rule significantly boosts your odds — 3 independent lottery draws with 1 win covering all. Waitlist cascade from attrition further improves your chances."
-                                : analysis.effectiveFamilyRate > 10
-                                ? " Odds are low but not zero — the sibling rule triples your effective lottery entries, and waitlist movement from attrition may open additional spots. The Sibling Rule is the single most powerful demographic advantage available to Tier 3 families."
-                                : " The Comptroller projects funding exhausts within Tier 2. Tier 3 (Iddings) is waitlisted; whether attrition spots reach T3 depends on the size of the unfunded T2 waitlist sitting ahead of you."}
-                        </p>
-                        <div className="text-xs text-tefa-body/70 bg-tefa-sky/10 border border-tefa-sky/30 rounded p-3 mb-3">
-                            <strong>Two mechanisms can reach Tier 3:</strong> attrition from awarded T1/T2 families, plus any uncommitted/appeals money that ultimately reaches the normal T2/T3 waitlist pool. At the current waitlist-pool setting (${(analysis.reserveWaitlistBudget / 1e6).toFixed(0)}M), the sensitivity case is <strong>{analysis.reserveEffectiveFamilyRate.toFixed(1)}%</strong> for the family after the T2 queue is cleared. This remains separate from the conservative attrition-only baseline because appeals and SPED awards can consume part of the pool first.
-                        </div>
-                        <p className="text-xs text-tefa-red/80 bg-tefa-gold/10 border border-tefa-gold/30 rounded p-3">
-                            <strong>Timing caveat (updated {IDDINGS_BUCKET.notifiedOn}):</strong> Per the Apr 28 Lottery Update PDF, the originally locked-in timeline was: T1 awards Apr 22–24 ({analysis.firstRoundAwards.toLocaleString()} students), <strong>T2 lottery week of Apr 27</strong>, ranked waitlist position notified by <strong>May 11</strong> (portal opens for opt-in same day). That May 11 target slipped; per the May 12 Waitlist Information PDF positions arrive as bucket ranges, and we received <strong>{IDDINGS_BUCKET.label}</strong> on {IDDINGS_BUCKET.notifiedOn}. Then a two-track funding cascade: <strong>July funding</strong> (Jun 1 family opt-in, Jun 15 school confirmation, Jul 1 first disbursement — a specific date) and <strong>August funding</strong> <span className="bg-tefa-green/15 text-tefa-green px-1.5 rounded font-semibold">(Jul 15 family opt-in/opt-out, Jul 31 school confirmation — Jun 4 press release confirms first 25% installment by mid-August)</span>.
-                            <strong> Bottom line under current modeling:</strong> band {IDDINGS_BUCKET.label} sits past the modeled funded ({personalDefault.t3Awards.toLocaleString()}) and offer-depth ({personalDefault.t3QueueDepth.toLocaleString()}) cutoffs. The Jul 15 opt-out cascade falls <strong>after</strong> the Jun 30 NBCA withdrawal deadline — the biggest upside event happens after the most expensive decision. Withdrawing on Jun 30 exits penalty-free before the main cascade plays out; staying past Jun 30 binds the family to a 10% penalty ($4,802.50) in July or 20% ($9,605.00) in August on the bet that a large cascade reaches our band.
-                        </p>
-                    </div>
-                </div>
-            </div>
-          </div>
-        )}
-
+        {activeTab === 'timeline' && <TimelineView />}
       </main>
 
-      <footer className="bg-tefa-navy text-white max-w-full p-6 text-center text-xs mt-8">
-        <p>Created for Iddings Family | 2026-2027 Academic Year</p>
-        <p className="mt-1">Disclaimer: All financial figures are estimates based on 2026 projections. Final awards are determined by respective agencies. Figures reflect the Comptroller's TEFA Application Insights: Year 1 (Apr 2026).</p>
+      <footer className="bg-tefa-navy text-white p-6 text-center text-xs mt-8">
+        <p>Created for the Iddings Family · 2026–2027 school year</p>
+        <p className="mt-1 text-white/60">
+          Figures are estimates. Final awards are set by NBCA, ACE, and the Texas Comptroller (TEFA).
+        </p>
       </footer>
+    </div>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// NOW — the one page that answers "what do we do, and what do we owe?"
+// ---------------------------------------------------------------------------
+const NowView = ({ balanceDue, perStudent, setTab }) => {
+  const actions = [
+    { date: 'By Jun 15', text: 'Accept the NBCA scholarship ($12,000) by replying to Nanette.', done: false },
+    { date: 'End of June', text: 'Watch for the ACE scholarship decision — it could lower the bill.', done: false },
+    { date: 'By Jun 30', text: 'Decide: withdraw penalty-free, or commit and pay tuition.', done: false },
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* The decision */}
+      <section className="bg-white rounded-xl shadow-md border-2 border-tefa-gold/50 p-6">
+        <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2 mb-2">
+          <Scale size={20} /> The one decision that matters: by June 30
+        </h2>
+        <p className="text-sm text-tefa-body/80 mb-4">
+          TEFA almost certainly won't fund us this school year (see below), so the real choice is whether to
+          commit to NBCA and pay tuition out of pocket. June 30 is the last day to back out cheaply.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+          <div className="rounded-lg border border-tefa-green/30 bg-tefa-green/5 p-4">
+            <div className="font-bold text-tefa-green mb-1">Withdraw by June 30</div>
+            <p className="text-tefa-body/70 text-xs">
+              Walk away losing only the $690 enrollment fee. No tuition owed.
+            </p>
+          </div>
+          <div className="rounded-lg border border-tefa-red/30 bg-tefa-red/5 p-4">
+            <div className="font-bold text-tefa-red mb-1">Commit past June 30</div>
+            <p className="text-tefa-body/70 text-xs">
+              Tuition is owed and penalties bind: 10% ($4,802.50) in July, 20% ($9,605) in August.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* What we owe */}
+      <section className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+        <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2 mb-3">
+          <DollarSign size={20} /> What we owe right now
+        </h2>
+        <div className="flex items-end gap-3 mb-4">
+          <div className="text-4xl font-bold text-tefa-navy">{usd2(balanceDue)}</div>
+          <div className="text-sm text-tefa-body/60 pb-1">for all three kids, after aid &amp; scholarship</div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {perStudent.map((s) => (
+            <div key={s.name} className="rounded-lg bg-tefa-light border border-gray-200 p-3 text-center">
+              <div className="font-bold text-tefa-navy text-sm">{s.name}</div>
+              <div className="text-[11px] text-tefa-body/50">{s.grade}</div>
+              <div className="text-xl font-bold text-tefa-navy mt-1">{usd2(s.balance)}</div>
+            </div>
+          ))}
+        </div>
+        <button
+          onClick={() => setTab('money')}
+          className="mt-4 text-sm font-bold text-tefa-navy underline decoration-tefa-navy/40 hover:text-tefa-green"
+        >
+          See the full breakdown &amp; payment schedule →
+        </button>
+      </section>
+
+      {/* Next steps */}
+      <section className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+        <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2 mb-3">
+          <CheckCircle size={20} /> What to do next
+        </h2>
+        <ul className="space-y-3">
+          {actions.map((a) => (
+            <li key={a.text} className="flex items-start gap-3">
+              <span className="shrink-0 mt-0.5 text-[11px] font-bold uppercase tracking-wide bg-tefa-navy/10 text-tefa-navy rounded px-2 py-1 w-28 text-center">
+                {a.date}
+              </span>
+              <span className="text-sm text-tefa-body/80">{a.text}</span>
+            </li>
+          ))}
+        </ul>
+        <button
+          onClick={() => setTab('timeline')}
+          className="mt-4 text-sm font-bold text-tefa-navy underline decoration-tefa-navy/40 hover:text-tefa-green"
+        >
+          See the full timeline →
+        </button>
+      </section>
+
+      {/* TEFA outlook — the whole modeling story, in one honest card */}
+      <section className="bg-amber-50 rounded-xl shadow-md border border-amber-300 p-6">
+        <h2 className="text-lg font-bold text-amber-800 flex items-center gap-2 mb-2">
+          <AlertCircle size={20} /> TEFA outlook: plan for no voucher this year
+        </h2>
+        <p className="text-sm text-amber-900/90 mb-3">
+          All three kids are <strong>{TEFA.tier}</strong> and <strong>waitlisted</strong> in band{' '}
+          <strong>{TEFA.band}</strong> (texted to us {TEFA.notifiedOn}). Funding is awarded strictly in
+          tier order, and as of the latest Comptroller numbers the cascade is still clearing Tier 2 — it has
+          not reached Tier 3 at all.
+        </p>
+        <p className="text-sm text-amber-900/90">
+          A late-summer cascade <em>could</em> reach our band, but the biggest opt-out event isn't until{' '}
+          <strong>July 15 — after</strong> the June 30 penalty-free withdrawal deadline. So treat TEFA as a
+          possible bonus, never as money you're counting on. <strong>Budget for the full balance above.</strong>
+        </p>
+      </section>
+    </div>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// MONEY — the breakdown and the payment schedule
+// ---------------------------------------------------------------------------
+const MoneyView = ({ tuition, nbcaAid, scholarship, balanceDue, perStudent, plan, planId, setPlanId, schedule }) => {
+  const lines = [
+    { label: 'Tuition (3 kids)', amount: tuition, sign: '+' },
+    { label: 'NBCA financial aid', amount: -nbcaAid, sign: '−' },
+    { label: 'Sibling discount', amount: -SIBLING_DISCOUNT, sign: '−' },
+    { label: 'NBCA scholarship', amount: -scholarship, sign: '−' },
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Breakdown */}
+      <section className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+        <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2 mb-4">
+          <DollarSign size={20} /> How the balance is built
+        </h2>
+        <div className="divide-y divide-gray-100">
+          {lines.map((l) => (
+            <div key={l.label} className="flex justify-between py-2 text-sm">
+              <span className="text-tefa-body/70">{l.label}</span>
+              <span className={`font-mono font-bold ${l.amount < 0 ? 'text-tefa-green' : 'text-tefa-navy'}`}>
+                {l.amount < 0 ? `−${usd2(Math.abs(l.amount))}` : usd2(l.amount)}
+              </span>
+            </div>
+          ))}
+          <div className="flex justify-between py-3 text-base font-bold">
+            <span className="text-tefa-navy">Balance due (FACTS)</span>
+            <span className="font-mono text-tefa-navy">{usd2(balanceDue)}</span>
+          </div>
+        </div>
+        <p className="text-xs text-tefa-body/50 mt-2">
+          TEFA is not included — it's waitlisted and not expected this year. If a voucher ever arrives it would
+          credit against this balance.
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-5">
+          {perStudent.map((s) => (
+            <div key={s.name} className="rounded-lg bg-tefa-light border border-gray-200 p-3">
+              <div className="font-bold text-tefa-navy text-sm">{s.name}</div>
+              <div className="text-[11px] text-tefa-body/50 mb-1">{s.grade}</div>
+              <div className="text-[11px] text-tefa-body/60 font-mono">
+                {usd(s.tuition)} − {usd(s.nbcaAid)} aid
+                {s.discount ? ` − ${usd2(s.discount)}` : ''} − {usd(s.scholarship)} schol.
+              </div>
+              <div className="text-lg font-bold text-tefa-navy mt-1">{usd2(s.balance)}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Payment plan */}
+      <section className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+        <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2 mb-2">
+          <Clock size={20} /> Payment schedule
+        </h2>
+        <div className="flex flex-wrap gap-2 mb-3">
+          {Object.entries(PAYMENT_PLANS).map(([id, p]) => (
+            <button
+              key={id}
+              onClick={() => setPlanId(id)}
+              className={`px-3 py-1.5 rounded-full text-sm font-bold border transition ${
+                planId === id
+                  ? 'bg-tefa-green text-white border-tefa-green'
+                  : 'bg-white text-tefa-navy border-tefa-navy/20 hover:bg-tefa-navy/5'
+              }`}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+        <p className="text-sm text-tefa-body/70 mb-4">{plan.note}</p>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="text-xs uppercase text-tefa-body/50 bg-tefa-light">
+              <tr>
+                <th className="text-left px-4 py-2">#</th>
+                <th className="text-left px-4 py-2">Date</th>
+                <th className="text-right px-4 py-2">Amount</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {schedule.map((p) => (
+                <tr key={p.number}>
+                  <td className="px-4 py-2 font-mono text-tefa-body/50">{p.number}</td>
+                  <td className="px-4 py-2 font-medium text-tefa-navy">{p.date}</td>
+                  <td className="px-4 py-2 text-right font-mono">{usd2(p.amount)}</td>
+                </tr>
+              ))}
+              <tr className="font-bold bg-tefa-light/60">
+                <td className="px-4 py-2" colSpan={2}>Total</td>
+                <td className="px-4 py-2 text-right font-mono">{usd2(balanceDue)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p className="text-xs text-tefa-body/50 mt-3">
+          Pay by checking/savings (ACH) to avoid the ~$92/draft card fee. The $690 enrollment fee is already paid
+          and is non-refundable.
+        </p>
+      </section>
+    </div>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// TIMELINE — the dated steps, marked do / decide / pay / info
+// ---------------------------------------------------------------------------
+const KIND_STYLE = {
+  do: { dot: 'bg-tefa-green', tag: 'bg-tefa-green/10 text-tefa-green', label: 'Do' },
+  wait: { dot: 'bg-tefa-gold', tag: 'bg-tefa-gold/20 text-tefa-gold', label: 'Wait' },
+  decide: { dot: 'bg-tefa-red', tag: 'bg-tefa-red/10 text-tefa-red', label: 'Decide' },
+  pay: { dot: 'bg-tefa-navy', tag: 'bg-tefa-navy/10 text-tefa-navy', label: 'Pay' },
+  info: { dot: 'bg-gray-300', tag: 'bg-gray-100 text-tefa-body/60', label: 'Info' },
+};
+
+const TimelineView = () => {
+  const nextIdx = TIMELINE.findIndex((e) => e.iso >= TODAY);
+
+  return (
+    <div>
+      <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2 mb-6">
+        <Calendar size={20} /> What happens, and when
+      </h2>
+      <div className="relative border-l-2 border-gray-200 ml-3 space-y-6">
+        {TIMELINE.map((e, idx) => {
+          const past = e.iso < TODAY;
+          const isNext = idx === nextIdx;
+          const style = KIND_STYLE[e.kind];
+          return (
+            <div key={e.title} className={`relative pl-6 ${past ? 'opacity-50' : ''}`}>
+              <div
+                className={`absolute -left-[7px] top-1.5 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm ${
+                  isNext ? 'bg-tefa-navy ring-4 ring-tefa-sky/40' : style.dot
+                }`}
+              />
+              <div
+                className={`bg-white p-4 rounded-lg shadow-sm border ${
+                  isNext ? 'border-tefa-navy/30 ring-1 ring-tefa-sky/30' : 'border-gray-100'
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  {isNext && (
+                    <span className="text-[10px] font-bold bg-tefa-green text-white px-2 py-0.5 rounded uppercase tracking-wide">
+                      Up next
+                    </span>
+                  )}
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wide ${style.tag}`}>
+                    {style.label}
+                  </span>
+                  <span className="text-xs font-bold text-tefa-body/50">{e.date}</span>
+                </div>
+                <h3 className="font-bold text-tefa-navy">{e.title}</h3>
+                <p className="text-sm text-tefa-body/70 mt-1">{e.detail}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <p className="mt-6 text-xs text-tefa-body/50 flex items-center gap-1">
+        <ExternalLink size={12} /> TEFA status is checked at{' '}
+        <a
+          href="https://withodyssey.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-tefa-green"
+        >
+          withodyssey.com
+        </a>
+        .
+      </p>
     </div>
   );
 };
