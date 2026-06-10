@@ -2,19 +2,24 @@
 
 ## Main message
 
-Quick TEFA update for the family —
+TEFA update for the family (June 10) —
 
-The state released the real lottery numbers on April 28. Tier 3 families (that's us) don't get any funding in the initial lottery, so we'll be waitlisted.
+We finally have our waitlist position: we're in the **30,001–50,000 bucket**, which is Tier 3. Tier 3 got no funding in the initial lottery, so it all comes down to how far the waitlist "cascades" as Tier 1 and Tier 2 families drop out over the summer.
 
-But there's still a real shot: ~15% of Tier 1 and Tier 2 winners typically drop out over the summer (couldn't find a participating school, tuition gap too big, missed deadlines, etc.). Those spots cascade down to Tier 3.
+The state just put out an official fact sheet (June 10):
+- *102,037 students awarded so far*
+- *12,860 Tier 2 families are still ahead of us in line* (down from ~20,400 at the lottery)
 
-The math for us:
-*~20% chance per child*
-*~48% chance for the family* (the "sibling rule" means if even one of our kids gets pulled off the waitlist, all three are automatically funded)
+The good news: the line is moving and everything is flowing exactly as expected. The bad news: every single spot that's opened up so far has gone to Tier 2 — the cascade hasn't reached Tier 3 (us) at all yet, and our bucket sits past where the modeling expects offers to land this year.
 
-That's a big jump from the ~10% we thought last week. A recent update from the state revealed that Tier 1 only used ~$415M of the $1B budget (we'd estimated ~$640M), because most disability-tier kids don't actually get the extra special-ed supplement — they just get the base $10,474. That leaves a lot more money for Tier 2 (now ~94% funded instead of ~47%), which shrinks the waitlist ahead of us dramatically.
+Honest read: *we should plan as if TEFA does NOT come through in Year 1, and treat it as a bonus if it does.* The realistic chance of movement reaching us is the post–July 15 window, when the biggest wave of dropouts happens — but that's after our June 30 deadline to pull out of the school penalty-free.
 
-We'll know our exact waitlist position by May 11. We've let the school know, and they'll calculate the NBCA scholarship next (the scholarship amount depends on the TEFA outcome). The kids are enrolled at NBCA either way, and we have until June 30 to pull out penalty-free if the funding picture doesn't work.
+Where that leaves us:
+- The kids are enrolled at NBCA either way.
+- NBCA came through with **$12,000 in scholarships** ($4,000 per kid) on top of the **$16,200 in financial aid** — we need to accept the scholarship by **June 15**.
+- We can still withdraw penalty-free until **June 30** if the numbers don't work.
+
+So the plan is steady: accept the NBCA scholarship, budget for full tuition minus the aid/scholarship, and keep an eye on the late-July waitlist movement as upside only.
 
 All the details are here: https://fuel-for-kids-xi.vercel.app/
 
@@ -22,8 +27,8 @@ All the details are here: https://fuel-for-kids-xi.vercel.app/
 
 ## Notes
 
-- WhatsApp renders `*text*` as bold, so the two key numbers will stand out on phones.
-- Length is ~150 words — long for a chat message but reasonable for a one-shot family update.
+- WhatsApp renders `*text*` as bold, so the key numbers stand out on phones.
+- This replaces the earlier "~20% / ~48%" framing, which was based on pre–lottery estimates. Now that we have our actual bucket (30,001–50,000) and three official snapshots (May 7 lottery, May 29 cascade, June 10 fact sheet), the honest read is that Year-1 funding is unlikely for our band — so the message is "plan for full tuition, treat TEFA as upside."
 - If you want a *shorter* version for grandparents (one-pass scan, no jargon), use this:
 
-> Quick voucher update — we're going to be waitlisted for TEFA. About a 20% chance per kid, ~48% chance for the family of getting pulled off the waitlist over the summer (up from ~10% last week — a recent update from the state showed Tier 1 used way less of the budget than expected, so more flows down to us). We'll know our exact spot in line by May 11. We've let the school know and we'll hear back about the NBCA scholarship next. The kids are enrolled at NBCA either way, and we have until June 30 to pull out penalty-free if the funding doesn't come together. All the details: https://fuel-for-kids-xi.vercel.app/
+> Quick voucher update — we got our spot in line for TEFA: bucket 30,001–50,000, which is Tier 3. The state's June 10 numbers show 102,037 kids awarded so far, with about 12,860 Tier 2 families still ahead of us. The line is moving on schedule, but only Tier 2 has been reached so far — nothing has cascaded to Tier 3 (us) yet, and our bucket is past where they expect offers this year. So we're planning as if TEFA won't come through in Year 1 and treating it as a bonus if it does. The kids are enrolled at NBCA either way; NBCA gave us $12,000 in scholarships (accept by June 15) on top of $16,200 in aid, and we can still pull out penalty-free until June 30. Details: https://fuel-for-kids-xi.vercel.app/

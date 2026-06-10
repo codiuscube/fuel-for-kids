@@ -4,10 +4,12 @@ A lot of you got your waitlist position this week. The Comptroller is communicat
 
 **Quick framework**
 
-- About 95,934 students were awarded in the first wave — 44,753 Tier 1 (including siblings pulled in via the sibling rule) and 51,181 Tier 2.
-- The waitlist is roughly 152,700 students — Tier 2 (~20,400) first, then Tier 3 (~65,400), then Tier 4 (~67,000).
+- 95,934 students were awarded in the first wave — 44,753 Tier 1 (including siblings pulled in via the sibling rule) and 51,181 Tier 2. As of the **June 10 official fact sheet**, that's grown to **102,037 active awards** as the cascade has rolled out.
+- The waitlist started at roughly 152,700 students — Tier 2 (~20,400) first, then Tier 3 (~65,400), then Tier 4 (~67,000). As of June 10 it's down to **144,744**, including **12,860 Tier 2 still ahead of all Tier 3**.
 - Spots only free up through three things: families not opting in by July 15, families switching to homeschool/other (funding drops from ~$10,474 to $2,000), and the **appeals reserve** being released. (The appeals reserve is funding the Comptroller holds back to pay out successful tier and eligibility appeals — families who challenge their placement and win. As those appeals resolve over May/June, the unused dollars cascade back to the regular waitlist.)
 - Awards cascade in strict tier order. Every unfunded Tier 2 spot clears before any Tier 3 offer goes out.
+
+**📅 June 10 update — the framework is holding.** The Comptroller's June 10 fact sheet reports **102,037 active awards** and **144,744 students still on the waitlist, including 12,860 Tier 2**. Compared to the lottery: Tier 2 on the waitlist has fallen 20,383 → 12,860 (about 7,500 Tier 2 families cleared, ~4,200 of them since the May 29 update), and the total waitlist is down ~8,000. Here's the key point: **every bit of that reduction is Tier 2.** Tier 3 has not been reached yet — exactly what "strict tier order" predicts. At the current pace the remaining 12,860 Tier 2 clears around mid-to-late July, which lines the first realistic Tier 3 movement up with the July 15 cascade event. Nothing below changes; the bands are tracking as modeled.
 
 **My baseline assumption.** For everything below, I'm assuming non-participation lands at roughly **15% on Tier 1 awards, 18% on first-wave Tier 2 awards, and 35% on late replacement offers** — a blend that matches the 14–34% range seen in D.C., Milwaukee, and Virginia. I'm also assuming **about $25M of the inferred $100M+ appeals reserve actually cascades to the regular waitlist** (the rest gets consumed by successful appeals, SPED set-asides, and admin). Under that baseline the model fully clears Tier 2 and projects roughly **7,150 funded Tier 3 seats with offer-depth out to ~11,000 in Tier 3** (global cutoffs ~27,500 funded / ~31,400 offer).
 
