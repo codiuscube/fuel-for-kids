@@ -161,6 +161,30 @@ The Comptroller's May 29 News & Updates post (*"Additional Awards Issued to Wait
 
 Treat the May 29 counts as a **tracking** data point, not a recalibration.
 
+### 1.5b June 10, 2026 observed fact sheet (snapshot + tracking — no assumption change)
+
+The Comptroller's **"Awarded Applications" Fact Sheet dated 6/10/2026** is the latest official snapshot, superseding the May 29 News post as the freshest observed datum. It records:
+
+- **102,037 active awards** (Tier 1 with a disability + ≤500% FPL, plus eligible siblings; and Tier 2 ≤200% FPL). The count is **net of opt-outs as of June 8, 2026**.
+- **144,744 eligible students remain on the waitlist**, of which **12,860 are Tier 2**.
+- A grade-level award breakdown (Pre-K…12th) summing exactly to 102,037 (12th is anomalously high at 10,938; the three Iddings grades are Fourth 8,463 / Seventh 6,439 / Ninth 4,973).
+
+**Reconciliation with the model (validates the cascade):**
+
+```
+T2 waitlist:    20,383 (May 7 lottery) → 17,066 (post May 29) → 12,860 (Jun 10)   = −7,523 cleared (−4,206 since May 29)
+Total waitlist: 152,702 (20,383 T2 + 65,368 T3 + 13,245 T4a + 53,706 T4b) → 144,744 = −7,958
+                −7,958 ≈ 7,523 T2 cleared + the 477 May-29 SPED-reserve awards (pulled from outside the regular waitlist)
+Active awards:  95,934 → ~98,328 (May 29) → 102,037 (Jun 10)
+```
+
+**What this confirms:**
+- **Strict tier order still holds.** The entire waitlist reduction is **Tier 2**. Tier 3 (our 30,001–50,000 band) has **not** been touched — every freed dollar is still clearing the T2 backlog ahead of T3, exactly as §1.5 / §4.3 model it.
+- **Cascade pace.** ~4,206 Tier 2 cleared in the ~12 days since May 29 (~350/day). At that rate the remaining **12,860** T2 clears around **mid-to-late July** — i.e. the first plausible Tier 3 movement aligns with the **Jul 15** August-track cascade, which still falls **after** the **Jun 30** NBCA penalty-free withdrawal. The Jun 30-before-Jul 15 decision asymmetry is unchanged.
+- **On track.** T3 = 0% funded at baseline is exactly what the 15% central case predicts at this point in the calendar; nothing in the new data moves the Iddings band into funded territory.
+
+**What does NOT change.** Attrition stays **15% central (8–25% range)** and the engine's lottery-time baseline counts (20,383 T2 backlog, 65,368 T3) are unchanged. Do **not** hardcode 12,860 / 102,037 into the cascade engine — it already projects the full cascade from the 20,383 baseline, so subtracting observed progress would double-count (same rule as §1.5a). Treat the June 10 fact sheet as a **tracking** data point, not a recalibration.
+
 ### 1.6 Capacity sensitivity (legacy IEP-scalar models — DO NOT USE)
 
 *All legacy IEP-scalar derivations (~89,570, ~85,358, ~92,573, ~76,019, ~76,942), prior no-overhead figures (~111,264), prior $55M-overhead figures (~104,812), the pre-May-4 full-admin-cap derived figure (~101,293), and the May 4 lower-bound 53,000+ framing predate the current model. Use the revised May 7 exact counts as the baseline, not setting-mix derivations.*
