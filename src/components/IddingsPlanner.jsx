@@ -8,6 +8,7 @@ import {
   Clock,
   ExternalLink,
   Scale,
+  Users,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -40,6 +41,8 @@ const TIMELINE = [
     detail: 'Reply to NBCA to lock in the $12,000 scholarship ($4,000 per child).' },
   { date: 'End of June', iso: '2026-06-29', title: 'ACE scholarship decision', kind: 'wait',
     detail: 'ACE said decisions arrive by the end of June. Any award lowers the balance further.' },
+  { date: 'End of June', iso: '2026-06-29', title: 'Decide: all three at NBCA, or just Cassius?', kind: 'decide',
+    detail: 'Settle whether to enroll all three or send only Cassius to NBCA while Dorothy and Sebastian stay at the School of Science and Technology. The trade-off is cost vs. a two-school commute. Decide alongside the June 30 withdrawal deadline.' },
   { date: 'Jun 30', iso: '2026-06-30', title: 'Penalty-free withdrawal deadline', kind: 'decide',
     detail: 'Last day to withdraw from NBCA losing only the $690 enrollment fee. After this: 10% penalty ($4,802.50) in July, 20% ($9,605) in August.' },
   { date: 'Jul 6', iso: '2026-07-06', title: 'First FACTS tuition draft', kind: 'pay',
@@ -174,6 +177,8 @@ const NowView = ({ balanceDue, perStudent, setTab }) => {
     { date: 'By Jun 30', text: 'Decide: withdraw penalty-free, or commit and pay tuition.', done: false },
   ];
 
+  const cassius = perStudent.find((s) => s.name === 'Cassius');
+
   return (
     <div className="space-y-6">
       {/* The decision */}
@@ -199,6 +204,41 @@ const NowView = ({ balanceDue, perStudent, setTab }) => {
             </p>
           </div>
         </div>
+      </section>
+
+      {/* Split-enrollment question */}
+      <section className="bg-white rounded-xl shadow-md border-2 border-tefa-sky/60 p-6">
+        <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2 mb-2">
+          <Users size={20} /> Open question: all three at NBCA, or just Cassius?
+        </h2>
+        <p className="text-sm text-tefa-body/80 mb-4">
+          NBCA's aid and scholarships are granted per child, so we don't have to move everyone at once. One
+          option is to send <strong>Cassius</strong> to NBCA and keep <strong>Dorothy</strong> and{' '}
+          <strong>Sebastian</strong> at the School of Science and Technology. That trims the bill, but it means
+          a two-school morning — the drop-off and pick-up logistics of running two campuses is the real
+          sticking point. Worth settling <strong>by the end of June</strong>, alongside the withdrawal decision.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+          <div className="rounded-lg border border-tefa-navy/20 bg-tefa-light p-4">
+            <div className="font-bold text-tefa-navy mb-1">All three at NBCA</div>
+            <p className="text-tefa-body/70 text-xs">
+              Balance of {usd2(balanceDue)}, but one school run — everyone in the same place on the same
+              schedule.
+            </p>
+          </div>
+          <div className="rounded-lg border border-tefa-navy/20 bg-tefa-light p-4">
+            <div className="font-bold text-tefa-navy mb-1">Just Cassius at NBCA</div>
+            <p className="text-tefa-body/70 text-xs">
+              Balance drops to {usd2(cassius.balance)} (his alone), but adds a second daily drive — Dorothy
+              and Sebastian stay at the School of Science and Technology.
+            </p>
+          </div>
+        </div>
+        <p className="text-xs text-tefa-body/50 mt-3">
+          Concentrating on one child now means Dorothy and Sebastian's current NBCA aid and scholarships
+          don't carry over — worth confirming with Nanette whether those awards would still be available if
+          they enroll in a later year.
+        </p>
       </section>
 
       {/* What we owe */}
