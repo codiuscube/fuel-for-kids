@@ -5,7 +5,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/:tab" element={<IddingsPlanner />} />
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/" element={<Navigate to="/now" replace />} />
     </Routes>
   );
 }
