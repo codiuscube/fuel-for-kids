@@ -101,9 +101,7 @@ const OPTOUT_TRIGGERS = [
   { date: '2026-06-15', label: 'Jun 15 confirm',   pulse: { weight: 0.10, scale: 2 } },
   { date: '2026-07-01', label: 'Jul 1 first 25%',  pulse: { weight: 0.20, scale: 2 } },
   { date: '2026-07-15', label: 'Jul 15 DEADLINE',  pulse: { weight: 0.55, scale: 1.5 }, emphasized: true },
-  { date: '2026-07-31', label: 'Jul 31 confirm',   pulse: null },
-  { date: '2026-08-15', label: null,               pulse: { weight: 0.15, scale: 10 } }, // post-deadline tail (no chart line)
-  { date: '2026-09-15', label: 'Sep 15 proration', pulse: null },
+  { date: '2026-07-31', label: 'Jul 31 confirm',   pulse: { weight: 0.15, scale: 3 } }, // post-deadline reconciliation tail
 ];
 
 const OPTOUT_SCENARIOS = [
@@ -113,15 +111,16 @@ const OPTOUT_SCENARIOS = [
 ];
 
 // Model origin = opt-out baseline (portal open). Chart extends back to the first
-// T2 observation (May 4) and forward to the proration cutoff.
-const OPTOUT_WINDOW = { origin: '2026-05-11', chartStart: '2026-05-04', end: '2026-09-15' };
+// T2 observation (May 4) and forward to Aug 15, by which point the Jul 31
+// school-confirm reconciliation has flushed the post-deadline tail.
+const OPTOUT_WINDOW = { origin: '2026-05-11', chartStart: '2026-05-04', end: '2026-08-15' };
 
 // Opt-out trajectory model. Cumulative opt-outs decompose into (a) a baseline
 // "trickle" fitted by least squares through the origin to the published counts,
 // and (b) normalized logistic deadline pulses whose combined mass closes the gap
 // between the trickle and each scenario's terminal (rate × 95,934 initially
 // awarded). The normalization guarantees every scenario curve passes exactly
-// through the last observation and lands exactly on its terminal at Sept 15.
+// through the last observation and lands exactly on its terminal at Aug 15.
 // Pure function of the constants above; computed once at module scope.
 function buildOptOutTrajectory({
   observations = OPTOUT_OBSERVATIONS,
@@ -151,10 +150,13 @@ function buildOptOutTrajectory({
   const tHard = dayOf(triggers.find((g) => g.emphasized).date); // 65 (Jul 15)
   const trickleTotal = yL + m * (tHard - tL);
 
-  // Normalized logistic pulses: each is 0 at the last observation, 1 at Sept 15.
+  // Normalized logistic pulses: each is 0 at the last observation, 1 at the
+  // window end. Centered 2 scales AFTER the trigger so the ramp STARTS at the
+  // deadline — opt-outs are revealed at/after a deadline (non-confirmations
+  // counted once it passes), not in the days before it.
   const pulses = triggers
     .filter((g) => g.pulse)
-    .map((g) => ({ c: dayOf(g.date) - 1, s: g.pulse.scale, w: g.pulse.weight }));
+    .map((g) => ({ c: dayOf(g.date) + 2 * g.pulse.scale, s: g.pulse.scale, w: g.pulse.weight }));
   const pulseSum = (t) =>
     pulses.reduce((sum, p) => {
       const lo = sigma((tL - p.c) / p.s);
@@ -244,7 +246,58 @@ const fmtChartDate = (ts) => {
   const d = new Date(ts);
   return `${MONTHS_SHORT[d.getUTCMonth()]} ${d.getUTCDate()}`;
 };
-const OPTOUT_TICKS = ['2026-05-04', '2026-06-01', '2026-07-01', '2026-08-01', '2026-09-01', '2026-09-15'].map(Date.parse);
+const OPTOUT_TICKS = ['2026-05-04', '2026-06-01', '2026-07-01', '2026-07-15', '2026-08-01', '2026-08-15'].map(Date.parse);
+
+// Tier thresholds expressed on the opt-out axis (1 release per opt-out).
+// Tier 3 funding starts when cumulative opt-outs clear the T2 queue; our band
+// sits T3_BAND_START positions deeper. Cascade awards above 1:1 (observed
+// ~3.7×) effectively lower both thresholds.
+const T3_STARTS_OPTOUTS = OPTOUT_KPIS.t2ClearOptOuts; // 2,000 so far + 12,966 queue = 14,966
+const BAND_REACH_OPTOUTS = T3_STARTS_OPTOUTS + T3_BAND_START; // ≈ 24,584
+const OPTOUT_Y_MAX = Math.ceil((BAND_REACH_OPTOUTS * 1.05) / 1000) * 1000;
+
+// Plain-language tooltip. Whitelisting by dataKey also drops the raw `ts`
+// entries the Scatter series would otherwise inject into the default tooltip.
+const TRAJECTORY_SERIES = {
+  observedLine:   { label: 'Observed so far (published)',  group: 'opt' },
+  pace:           { label: 'Current pace, no deadline wave', group: 'opt' },
+  low:            { label: 'If 8% eventually opt out',     group: 'opt' },
+  central:        { label: 'If 15% opt out — central',     group: 'opt' },
+  high:           { label: 'If 25% opt out — high',        group: 'opt' },
+  t2ObservedLine: { label: 'Observed (published)',         group: 't2' },
+  t2Cons:         { label: 'If only opt-outs free seats',  group: 't2' },
+  t2Pace:         { label: 'At current cascade speed',     group: 't2' },
+};
+
+const TrajectoryTooltip = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null;
+  const rows = payload.filter((p) => TRAJECTORY_SERIES[p.dataKey] && p.value != null);
+  if (!rows.length) return null;
+  const groups = [
+    ['opt', 'Opt-outs so far (left axis)'],
+    ['t2', 'Tier 2 families still ahead of us (right axis)'],
+  ];
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3 text-xs max-w-[260px]">
+      <div className="font-bold text-tefa-navy">{fmtChartDate(label)}</div>
+      {groups.map(([g, title]) => {
+        const rs = rows.filter((r) => TRAJECTORY_SERIES[r.dataKey].group === g);
+        if (!rs.length) return null;
+        return (
+          <div key={g} className="mt-2">
+            <div className="text-[10px] uppercase tracking-wide text-tefa-body/40 mb-0.5">{title}</div>
+            {rs.map((r) => (
+              <div key={r.dataKey} className="flex justify-between gap-4">
+                <span style={{ color: r.color || r.stroke }}>{TRAJECTORY_SERIES[r.dataKey].label}</span>
+                <span className="font-semibold tabular-nums text-tefa-body">{Math.round(r.value).toLocaleString()}</span>
+              </div>
+            ))}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 // The dates that actually require a decision or a payment, in order.
 const TIMELINE = [
@@ -741,68 +794,79 @@ const TefaView = () => {
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-sm mb-4">
           <div className="rounded-lg bg-tefa-light border border-gray-200 p-3 text-center">
-            <div className="text-xs text-tefa-body/50 font-medium">Observed Opt-Outs</div>
+            <div className="text-xs text-tefa-body/50 font-medium">Opted Out So Far</div>
             <div className="font-bold text-tefa-navy text-lg">{k.observedToDate.toLocaleString()}</div>
-            <div className="text-[10px] text-tefa-body/40">as of {fmtChartDate(Date.parse(k.asOf))} · pace decelerating</div>
+            <div className="text-[10px] text-tefa-body/40">of {AWARDED_BASE.toLocaleString()} awarded · as of {fmtChartDate(Date.parse(k.asOf))}</div>
           </div>
           <div className="rounded-lg bg-tefa-light border border-gray-200 p-3 text-center">
-            <div className="text-xs text-tefa-body/50 font-medium">Pace Alone → Jul 15</div>
-            <div className="font-bold text-tefa-navy text-lg">~{k.paceAtJul15.toLocaleString()}</div>
-            <div className="text-[10px] text-tefa-body/40">vs {k.terminals.central.toLocaleString()} central — wave must be deadline-driven</div>
-          </div>
-          <div className="rounded-lg bg-tefa-light border border-gray-200 p-3 text-center">
-            <div className="text-xs text-tefa-body/50 font-medium">Modeled by Jul 15</div>
-            <div className="font-bold text-tefa-navy text-lg">~{(Math.round(k.jul15.central / 100) / 10).toFixed(1)}k</div>
-            <div className="text-[10px] text-tefa-body/40">range {(Math.round(k.jul15.low / 100) / 10).toFixed(1)}k–{(Math.round(k.jul15.high / 100) / 10).toFixed(1)}k (8–25%)</div>
-          </div>
-          <div className="rounded-lg bg-tefa-light border border-gray-200 p-3 text-center">
-            <div className="text-xs text-tefa-body/50 font-medium">T2 Still Ahead of T3</div>
+            <div className="text-xs text-tefa-body/50 font-medium">Tier 2 Queue Ahead of Us</div>
             <div className="font-bold text-tefa-gold text-lg">{k.t2Remaining.toLocaleString()}</div>
-            <div className="text-[10px] text-tefa-body/40">clears at {k.t2ClearOptOuts.toLocaleString()} opt-outs ({(k.t2ClearRate * 100).toFixed(1)}%) or ~{fmtChartDate(k.t2ClearTsAtPace)} at observed pace</div>
+            <div className="text-[10px] text-tefa-body/40">families funded before any Tier 3 award · shrinking ~{Math.round(k.releaseRate)}/day</div>
+          </div>
+          <div className="rounded-lg bg-tefa-light border border-gray-200 p-3 text-center">
+            <div className="text-xs text-tefa-body/50 font-medium">Opt-Outs for Tier 3 to Start</div>
+            <div className="font-bold text-tefa-navy text-lg">{k.t2ClearOptOuts.toLocaleString()}</div>
+            <div className="text-[10px] text-tefa-body/40">{(k.t2ClearRate * 100).toFixed(1)}% of awarded — or ~{fmtChartDate(k.t2ClearTsAtPace)} if the cascade keeps its current speed</div>
           </div>
           <div className="rounded-lg bg-tefa-light border border-tefa-red/20 p-3 text-center">
-            <div className="text-xs text-tefa-red/70 font-medium">Our T3 Band</div>
-            <div className="font-bold text-tefa-red text-lg">≥ {T3_BAND_START.toLocaleString()}</div>
-            <div className="text-[10px] text-tefa-body/40">into T3 · 25% case reaches ~{(k.terminals.high - k.t2ClearOptOuts).toLocaleString()} at 1:1 — any amplification ({k.cascadeRatio.toFixed(1)}× observed) crosses in</div>
+            <div className="text-xs text-tefa-red/70 font-medium">Opt-Outs to Reach Our Band</div>
+            <div className="font-bold text-tefa-red text-lg">~{BAND_REACH_OPTOUTS.toLocaleString()}</div>
+            <div className="text-[10px] text-tefa-body/40">more than even the 25% scenario ({k.terminals.high.toLocaleString()}) at 1:1 — needs the {k.cascadeRatio.toFixed(1)}× cascade to hold</div>
+          </div>
+          <div className="rounded-lg bg-tefa-light border border-gray-200 p-3 text-center">
+            <div className="text-xs text-tefa-body/50 font-medium">Expected Total by Aug 15</div>
+            <div className="font-bold text-tefa-navy text-lg">~{k.terminals.central.toLocaleString()}</div>
+            <div className="text-[10px] text-tefa-body/40">15% central scenario · range {k.terminals.low.toLocaleString()}–{k.terminals.high.toLocaleString()}</div>
           </div>
         </div>
+        <p className="text-xs text-tefa-body/60 mb-2">
+          <strong>How to read the chart:</strong> rising lines (left axis) are cumulative opt-outs; falling gold
+          lines (right axis) are the Tier 2 queue still ahead of us. Tier 3 funding starts when the gold queue hits
+          zero — equivalently, when an opt-out curve crosses the gold dashed threshold. Our band is the red dashed
+          threshold above it.
+        </p>
         <div className="h-[340px]">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={OPTOUT_TRAJECTORY.series} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
               <XAxis type="number" dataKey="ts" scale="time" domain={['dataMin', 'dataMax']}
                      ticks={OPTOUT_TICKS} tickFormatter={fmtChartDate} tick={{ fontSize: 11 }} />
-              <YAxis yAxisId="optouts" tickFormatter={(v) => `${Math.round(v / 1000)}k`} tick={{ fontSize: 11 }}
+              <YAxis yAxisId="optouts" domain={[0, OPTOUT_Y_MAX]} tickFormatter={(v) => `${Math.round(v / 1000)}k`} tick={{ fontSize: 11 }}
                      label={{ value: 'Cumulative opt-outs', angle: -90, position: 'insideLeft', fontSize: 11 }} />
               <YAxis yAxisId="t2" orientation="right" domain={[0, 20383]} tickFormatter={(v) => `${Math.round(v / 1000)}k`}
-                     tick={{ fontSize: 11 }} label={{ value: 'T2 ahead of T3', angle: 90, position: 'insideRight', fontSize: 11 }} />
-              <ChartTooltip labelFormatter={fmtChartDate}
-                            formatter={(v, name) => [Math.round(v).toLocaleString(), name]} />
+                     tick={{ fontSize: 11 }} label={{ value: 'Tier 2 queue ahead of us', angle: 90, position: 'insideRight', fontSize: 11 }} />
+              <ChartTooltip content={<TrajectoryTooltip />} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
               {OPTOUT_TRIGGERS.filter((g) => g.label).map((g, i) => (
                 <ReferenceLine key={g.date} yAxisId="optouts" x={Date.parse(g.date)}
                     stroke={g.emphasized ? '#aa2142' : 'rgba(32,37,98,0.25)'} strokeWidth={g.emphasized ? 1.5 : 1}
-                    label={{ value: g.label, position: g.date === '2026-09-15' ? 'insideTopRight' : 'insideTop', dy: i % 2 ? 14 : 2, fontSize: 9, fontWeight: g.emphasized ? 700 : 400, fill: g.emphasized ? '#aa2142' : 'rgba(32,37,98,0.55)' }} />
+                    label={{ value: g.label, position: g.date === '2026-07-31' ? 'insideTopRight' : 'insideTop', dy: i % 2 ? 14 : 2, fontSize: 9, fontWeight: g.emphasized ? 700 : 400, fill: g.emphasized ? '#aa2142' : 'rgba(32,37,98,0.55)' }} />
               ))}
               <ReferenceLine yAxisId="optouts" x={todayTs} stroke="#aa2142" strokeDasharray="2 2"
                   label={{ value: 'Today', fontSize: 10, fill: '#aa2142', position: 'insideBottomLeft' }} />
+              <ReferenceLine yAxisId="optouts" y={T3_STARTS_OPTOUTS} stroke="#b08a3e" strokeDasharray="8 4"
+                  label={{ value: `Tier 3 starts — ${T3_STARTS_OPTOUTS.toLocaleString()} opt-outs (1:1)`, position: 'insideBottomLeft', fontSize: 9, fontWeight: 600, fill: '#b08a3e' }} />
+              <ReferenceLine yAxisId="optouts" y={BAND_REACH_OPTOUTS} stroke="#aa2142" strokeDasharray="8 4"
+                  label={{ value: `Our band — ~${BAND_REACH_OPTOUTS.toLocaleString()} opt-outs (1:1)`, position: 'insideBottomLeft', fontSize: 9, fontWeight: 600, fill: '#aa2142' }} />
               <Line yAxisId="optouts" dataKey="observedLine" name="Observed opt-outs" stroke="#aa2142" strokeWidth={2} dot={false} legendType="none" />
-              <Line yAxisId="optouts" dataKey="pace" name="Current pace only" stroke="#94a3b8" strokeDasharray="6 4" dot={false} />
-              <Line yAxisId="optouts" dataKey="low" name="8% terminal" stroke="#9ad5ed" dot={false} />
-              <Line yAxisId="optouts" dataKey="central" name="15% central" stroke="#202562" strokeWidth={2.5} dot={false} />
-              <Line yAxisId="optouts" dataKey="high" name="25% terminal" stroke="#13612e" dot={false} />
-              <Line yAxisId="t2" dataKey="t2ObservedLine" name="T2 ahead (observed)" stroke="#d8ab61" strokeWidth={2} dot={false} legendType="none" />
-              <Line yAxisId="t2" dataKey="t2Cons" name="T2 ahead — opt-outs only (15%)" stroke="#d8ab61" dot={false} />
-              <Line yAxisId="t2" dataKey="t2Pace" name="T2 ahead — observed cascade pace" stroke="#d8ab61" strokeDasharray="5 3" dot={false} />
-              <Scatter yAxisId="optouts" dataKey="observed" name="Published opt-out counts" fill="#aa2142" />
-              <Scatter yAxisId="t2" dataKey="t2Observed" name="Published T2 backlog" fill="#d8ab61" />
+              <Line yAxisId="optouts" dataKey="pace" name="Pace only (no deadline wave)" stroke="#94a3b8" strokeDasharray="6 4" dot={false} />
+              <Line yAxisId="optouts" dataKey="low" name="8% opt out" stroke="#9ad5ed" dot={false} />
+              <Line yAxisId="optouts" dataKey="central" name="15% opt out (central)" stroke="#202562" strokeWidth={2.5} dot={false} />
+              <Line yAxisId="optouts" dataKey="high" name="25% opt out" stroke="#13612e" dot={false} />
+              <Line yAxisId="t2" dataKey="t2ObservedLine" name="T2 queue (observed)" stroke="#d8ab61" strokeWidth={2} dot={false} legendType="none" />
+              <Line yAxisId="t2" dataKey="t2Cons" name="T2 queue — opt-outs only" stroke="#d8ab61" dot={false} />
+              <Line yAxisId="t2" dataKey="t2Pace" name="T2 queue — cascade speed" stroke="#d8ab61" strokeDasharray="5 3" dot={false} />
+              <Scatter yAxisId="optouts" dataKey="observed" name="Published opt-outs" fill="#aa2142" />
+              <Scatter yAxisId="t2" dataKey="t2Observed" name="Published T2 queue" fill="#d8ab61" />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
         <div className="text-[11px] text-tefa-body/60 bg-tefa-light rounded p-3 mt-3 space-y-1">
           <div><strong>Assumptions.</strong> Scenario terminals = rate × {AWARDED_BASE.toLocaleString()} initially awarded. Trickle = least-squares fit through every published count (May 29: ~1,400 · Jun 10: ~2,000); it re-fits automatically as new posts are appended to <code>OPTOUT_OBSERVATIONS</code>.</div>
-          <div>Deadline pulse weights — Jun 15: 10% · Jul 1: 20% · <strong>Jul 15: 55%</strong> · post-deadline tail: 15% — with ~5–7-day logistic ramps. Curves pass exactly through the last observation and land exactly on their terminals at Sep 15.</div>
+          <div>Deadline pulse weights — Jun 15: 10% · Jul 1: 20% · <strong>Jul 15: 55%</strong> · Jul 31 reconciliation tail: 15% — each ramp <em>starts at its deadline</em> (opt-outs are revealed once a deadline passes, not before). Curves pass exactly through the last observation and land exactly on their terminals at Aug 15.</div>
           <div>T2 depletion is shown as bounds: <em>opt-outs only</em> (1 release per opt-out — a floor) vs. <em>observed cascade pace</em> (~{Math.round(k.releaseRate)}/day, budget/reserve-driven — a ceiling on speed; that fuel is finite). Observed cumulative ratio: ~{k.cascadeRatio.toFixed(1)} releases per opt-out, because homeschool/other downgrades free $8,474 of each $10,474 award and appeals-reserve awards need no opt-out at all.</div>
+          <div>Horizontal thresholds translate opt-outs into tier outcomes at 1:1: Tier 3 funding starts at {T3_STARTS_OPTOUTS.toLocaleString()} cumulative opt-outs ({k.observedToDate.toLocaleString()} so far + the {k.t2Remaining.toLocaleString()} queue); our band, {T3_BAND_START.toLocaleString()} positions into Tier 3, needs ~{BAND_REACH_OPTOUTS.toLocaleString()}. Every cascade award above 1:1 effectively lowers both lines.</div>
+          <div><strong>Watch — appeals-reserve release (~mid-June).</strong> Appeals must be filed within 30 days of notice (T1 notices Apr 22–24 → closed ~May 24 · T2 awards May 4 → ~Jun 3 · waitlist notices May 13 → ~Jun 12), and unused reserve cascades to the waitlist (Apr 28 PDF item 5). As the last windows close, the Comptroller knows its maximum remaining appeal liability — a reserve release could fuel a cascade wave independent of opt-outs. The dashed gold "cascade speed" line is the bound that would benefit.</div>
           <div>Cascade recipients ({JUNE10_CASCADE.grossAwardedApprox.toLocaleString()} gross awarded) can themselves opt out; excluded to keep the base consistent.</div>
         </div>
         <p className="text-xs text-tefa-body/50 mt-3">
