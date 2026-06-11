@@ -128,9 +128,13 @@ const CODY = {
   reserveEnd: '2026-07-15',       // fully released by the opt-in/opt-out deadline
 };
 
-// Chart window: from the lottery (frontier 0) to mid-August, by which point the
-// Jul 31 school-confirm reconciliation has flushed the post-deadline tail.
-const FRONTIER_WINDOW = { chartStart: '2026-05-04', jul15: '2026-07-15', end: '2026-08-15' };
+// Chart window: from the lottery (frontier 0) through end-August. The main
+// mechanisms exhaust by ~Aug 1, but the line doesn't stop cold — confirmed
+// students who never actually enroll (no-shows) and other recovered funds keep
+// reconciling through Aug–Sep, so both lines carry a slow steady drift after
+// their main waves complete.
+const FRONTIER_WINDOW = { chartStart: '2026-05-04', jul15: '2026-07-15', end: '2026-08-31' };
+const RECON_DRIFT = 125;          // seats/day of post-wave reconciliation (~5% no-shows recovering over Aug–Sep)
 
 // Cascade-frontier model. Two projections only. Each is a logistic ramp anchored
 // exactly on the last published frontier point and landing on its terminal at a
@@ -183,9 +187,11 @@ function buildCascadeProjection({
     };
   };
 
-  // Best guess: most of the climb at the Jul 15 cascade, settling on offer depth
-  // by mid-August.
-  const bestGuess = makeLine({ terminal: BG_OFFER, center: '2026-07-19', scale: 7, end: win.end });
+  // Best guess: most of the climb at the Jul 15 cascade, reaching offer depth
+  // by Aug 1, then the slow reconciliation drift.
+  const bgEnd = dayOf('2026-08-01');
+  const bgRamp = makeLine({ terminal: BG_OFFER, center: '2026-07-19', scale: 7, end: '2026-08-01' });
+  const bestGuess = (t) => bgRamp(t) + Math.max(0, t - bgEnd) * RECON_DRIFT;
 
   // Aggressive churn: staged waypoints, not a logistic. Current trend (last
   // observed segment's pace) carries forward; the $50M reserve flows on top of
@@ -205,7 +211,10 @@ function buildCascadeProjection({
     if (p.t <= tL) continue;
     codyPts.push({ t: p.t, f: Math.round(Math.max(p.f, codyPts[codyPts.length - 1].f)) });
   }
-  const codyFn = (t) => (t <= tL ? interp(obsF, t) : interp(codyPts, Math.min(t, codyEnd)));
+  const codyFn = (t) =>
+    t <= tL
+      ? interp(obsF, t)
+      : interp(codyPts, Math.min(t, codyEnd)) + Math.max(0, t - codyEnd) * RECON_DRIFT;
 
   const crossTs = (fn, level) => {
     for (let t = tL; t <= tEnd; t++) if (fn(t) >= level) return t0 + t * DAY;
@@ -245,7 +254,7 @@ function buildCascadeProjection({
 
 const CASCADE = buildCascadeProjection();
 const CASCADE_KPIS = CASCADE.kpis;
-const FRONTIER_Y_MAX = Math.ceil(Math.max(BAND_HI, CASCADE_KPIS.codyTerminal) * 1.05 / 1000) * 1000;
+const FRONTIER_Y_MAX = Math.ceil(Math.max(BAND_HI, ...CASCADE.series.map((r) => r.cody ?? 0)) * 1.05 / 1000) * 1000;
 
 const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const fmtChartDate = (ts) => {
@@ -253,7 +262,7 @@ const fmtChartDate = (ts) => {
   const d = new Date(ts);
   return `${MONTHS_SHORT[d.getUTCMonth()]} ${d.getUTCDate()}`;
 };
-const FRONTIER_TICKS = ['2026-05-04', '2026-06-01', '2026-07-01', '2026-07-15', '2026-08-01', '2026-08-15'].map(Date.parse);
+const FRONTIER_TICKS = ['2026-05-04', '2026-06-01', '2026-07-01', '2026-07-15', '2026-08-01', '2026-08-15', '2026-08-31'].map(Date.parse);
 
 // Plain-language likelihood of the cascade reaching each global waitlist band,
 // drawn from the published bands analysis. ourBand flags the family's bucket.
@@ -916,7 +925,8 @@ const TefaView = () => {
         <div className="text-[11px] text-tefa-body/60 bg-tefa-light rounded p-3 mt-3 space-y-1">
           <div><strong>What's plotted.</strong> The frontier is derived from the published Tier 2 backlog (frontier = {T2_AT_LOTTERY.toLocaleString()} at-lottery − Tier 2 still queued): 0 on May 4 → {k.frontierNow.toLocaleString()} on {fmtChartDate(Date.parse(k.asOf))}. The line ahead clears at roughly <strong>3.7 seats per opt-out</strong> — homeschool/other downgrades free $8,474 of each $10,474 award, and appeals-reserve awards free seats with no opt-out at all — so we measure progress in seats reached, not raw opt-outs.</div>
           <div><strong>Best guess (grounded).</strong> A blended 15/18/35% non-participation plus ~$25M of the inferred $100M+ appeals reserve. Tier 2 clears ~{fmtChartDate(k.bgTier3Ts)}, and the cascade settles around offer depth ~{k.bgOffer.toLocaleString()} (funded ~{k.bgFunded.toLocaleString()}) — just reaching the bottom edge of our band ~{fmtChartDate(k.bgBandLoTs)}.</div>
-          <div><strong>Aggressive churn (aggressive upper edge — not a forecast).</strong> The optimistic bet: the fitted opt-out trickle until Jul 15, then a last-minute shakeout wave landing on <strong>50% of the awarded base</strong> — its cascade surging through the last week of July — plus <strong>$50M of the inferred ~$100M appeals reserve</strong> (~{k.codyReserveSeats.toLocaleString()} blended seats) flowing to the waitlist as the 30-day appeal windows close. That 50% sits <em>above</em> the 14–34% range seen in D.C., Milwaukee and Virginia, so it's the optimistic ceiling, not the expectation. Under it the cascade clears our whole band by ~{fmtChartDate(k.codyBandHiTs)}.</div>
+          <div><strong>Aggressive churn (staged — the upper edge, not a forecast).</strong> Three legs. First, the current pace continues, with <strong>$50M of the inferred ~$100M appeals reserve</strong> (~{k.codyReserveSeats.toLocaleString()} blended seats) flowing on top of it <strong>Jun 15 – Jul 15</strong> as appeals resolve — that stretch reads as "trend + reserve." Then the deadline shakeout lands <strong>25% cumulative opt-outs by Jul 25</strong>, and the wave completes at <strong>50% of the awarded base by Jul 31</strong>. That 50% sits <em>above</em> the 14–34% range seen in D.C., Milwaukee and Virginia, so it's the optimistic ceiling, not the expectation. Under it Tier 3 offers start ~{fmtChartDate(k.codyTier3Ts)} and the cascade clears our whole band by ~{fmtChartDate(k.codyBandHiTs)}.</div>
+          <div><strong>After Aug 1 — the lines don't stop cold.</strong> Some share of confirmed students never actually enroll (historically ~5% no-show in comparable programs), and those seats — plus other recovered funds — reconcile through August and September. Both lines carry a steady ~{RECON_DRIFT}/day drift after their main waves complete, so the curve keeps creeping rather than going flat.</div>
           <div><strong>Watch — appeals-reserve release (~mid-June).</strong> Appeals are filed within 30 days of notice (T1 ~closed May 24 · T2 ~Jun 3 · waitlist ~Jun 12); unused reserve cascades to the waitlist. As the last windows close, a reserve release could move the line independent of opt-outs — the main thing that could push the real outcome toward the aggressive-churn ceiling.</div>
         </div>
       </section>
