@@ -258,7 +258,7 @@ const BAND_OUTLOOK = [
     call: 'Bottom edge possible · rest unlikely in Year 1',
     tone: 'mid',
     ourBand: true,
-    note: 'Only the first ~1,400 positions (to ~31,400) sit at the edge of best-guess offer depth — possible. Deeper in is upside-only: rank ~35k needs +$20M reserve, ~40k needs +$50M, the top (50k) nearly the whole pool. The Cody line is the bet the July cascade + reserve release pushes all the way through.',
+    note: 'Only the first ~1,400 positions (to ~31,400) sit at the edge of best-guess offer depth — possible. Deeper in is upside-only: rank ~35k needs +$20M reserve, ~40k needs +$50M, the top (50k) nearly the whole pool. The aggressive-churn scenario is the bet the July cascade + reserve release pushes all the way through.',
   },
   {
     band: '50,001 +',
@@ -280,7 +280,7 @@ const TONE_STYLE = {
 const FRONTIER_SERIES = {
   observedLine: 'Funded so far (published)',
   bestGuess: 'Best guess',
-  cody: 'Cody line',
+  cody: 'Aggressive churn',
 };
 
 const FrontierTooltip = ({ active, payload, label }) => {
@@ -833,8 +833,8 @@ const TefaView = () => {
         </h2>
         <p className="text-sm text-tefa-body/80 mb-4">
           The chart tracks the <strong>cascade frontier</strong>: how far down the waitlist awards have reached.
-          We show just two lines — the grounded <strong>best guess</strong> and the <strong>Cody line</strong>{' '}
-          (Cody's own, more aggressive bet). When a line crosses a band's threshold, the cascade has reached that
+          We show just two lines — the grounded <strong>best guess</strong> and an <strong>aggressive churn</strong>{' '}
+          scenario (a more optimistic opt-out bet). When a line crosses a band's threshold, the cascade has reached that
           band.
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm mb-4">
@@ -854,7 +854,7 @@ const TefaView = () => {
             <div className="text-[10px] text-tefa-body/40">offer depth (funded ~{k.bgFunded.toLocaleString()}) · only the bottom edge of our band ({BAND_LO.toLocaleString()})</div>
           </div>
           <div className="rounded-lg bg-tefa-light border border-tefa-red/30 p-3 text-center">
-            <div className="text-xs text-tefa-red/70 font-medium">Cody Line Reaches</div>
+            <div className="text-xs text-tefa-red/70 font-medium">Aggressive Churn Reaches</div>
             <div className="font-bold text-tefa-red text-lg">~{k.codyTerminal.toLocaleString()}</div>
             <div className="text-[10px] text-tefa-body/40">through our whole band by ~{fmtChartDate(k.codyBandHiTs)} · assumes 50% opt-out (above history)</div>
           </div>
@@ -876,12 +876,12 @@ const TefaView = () => {
               <ReferenceLine y={T3_START} stroke="#b08a3e" strokeDasharray="8 4"
                   label={{ value: `Tier 3 starts — ${T3_START.toLocaleString()}`, position: 'insideBottomLeft', fontSize: 9, fontWeight: 600, fill: '#b08a3e' }} />
               <ReferenceLine y={BAND_LO} stroke="#aa2142" strokeDasharray="8 4"
-                  label={{ value: `Our band starts — ${BAND_LO.toLocaleString()}`, position: 'insideTopLeft', fontSize: 9, fontWeight: 600, fill: '#aa2142' }} />
+                  label={{ value: `T3 Middle band starts — ${BAND_LO.toLocaleString()}`, position: 'insideTopLeft', fontSize: 9, fontWeight: 600, fill: '#aa2142' }} />
               <ReferenceLine y={BAND_HI} stroke="#aa2142" strokeDasharray="8 4"
-                  label={{ value: `Our band ends — ${BAND_HI.toLocaleString()}`, position: 'insideTopLeft', fontSize: 9, fontWeight: 600, fill: '#aa2142' }} />
+                  label={{ value: `T3 Middle band ends — ${BAND_HI.toLocaleString()}`, position: 'insideTopLeft', fontSize: 9, fontWeight: 600, fill: '#aa2142' }} />
               <Line dataKey="observedLine" name="Funded so far (published)" stroke="#202562" strokeWidth={2.5} dot={false} legendType="none" />
               <Line dataKey="bestGuess" name="Best guess" stroke="#202562" strokeWidth={2.5} dot={false} />
-              <Line dataKey="cody" name="Cody line (aggressive)" stroke="#aa2142" strokeWidth={2.5} strokeDasharray="8 3" dot={false} />
+              <Line dataKey="cody" name="Aggressive churn" stroke="#aa2142" strokeWidth={2.5} strokeDasharray="8 3" dot={false} />
               <Scatter dataKey="observed" name="Published data" fill="#202562" />
             </ComposedChart>
           </ResponsiveContainer>
@@ -889,8 +889,8 @@ const TefaView = () => {
         <div className="text-[11px] text-tefa-body/60 bg-tefa-light rounded p-3 mt-3 space-y-1">
           <div><strong>What's plotted.</strong> The frontier is derived from the published Tier 2 backlog (frontier = {T2_AT_LOTTERY.toLocaleString()} at-lottery − Tier 2 still queued): 0 on May 4 → {k.frontierNow.toLocaleString()} on {fmtChartDate(Date.parse(k.asOf))}. The line ahead clears at roughly <strong>3.7 seats per opt-out</strong> — homeschool/other downgrades free $8,474 of each $10,474 award, and appeals-reserve awards free seats with no opt-out at all — so we measure progress in seats reached, not raw opt-outs.</div>
           <div><strong>Best guess (grounded).</strong> A blended 15/18/35% non-participation plus ~$25M of the inferred $100M+ appeals reserve. Tier 2 clears ~{fmtChartDate(k.bgTier3Ts)}, and the cascade settles around offer depth ~{k.bgOffer.toLocaleString()} (funded ~{k.bgFunded.toLocaleString()}) — just reaching the bottom edge of our band ~{fmtChartDate(k.bgBandLoTs)}.</div>
-          <div><strong>Cody line (aggressive upper edge — not a forecast).</strong> Cody's own bet: the fitted opt-out trickle until Jul 15, then a Tier 2 acceptance-shakeout wave landing on <strong>50% of the awarded base</strong> by Jul 31, plus ~{k.codyReserveSeats.toLocaleString()} reserve-funded seats as the 30-day appeal windows close. That 50% sits <em>above</em> the 14–34% range seen in D.C., Milwaukee and Virginia, so it's the optimistic ceiling, not the expectation. Under it the cascade clears our whole band by ~{fmtChartDate(k.codyBandHiTs)}.</div>
-          <div><strong>Watch — appeals-reserve release (~mid-June).</strong> Appeals are filed within 30 days of notice (T1 ~closed May 24 · T2 ~Jun 3 · waitlist ~Jun 12); unused reserve cascades to the waitlist. As the last windows close, a reserve release could move the line independent of opt-outs — the main thing that could push the real outcome toward the Cody line.</div>
+          <div><strong>Aggressive churn (aggressive upper edge — not a forecast).</strong> The optimistic bet: the fitted opt-out trickle until Jul 15, then a Tier 2 acceptance-shakeout wave landing on <strong>50% of the awarded base</strong> by Jul 31, plus ~{k.codyReserveSeats.toLocaleString()} reserve-funded seats as the 30-day appeal windows close. That 50% sits <em>above</em> the 14–34% range seen in D.C., Milwaukee and Virginia, so it's the optimistic ceiling, not the expectation. Under it the cascade clears our whole band by ~{fmtChartDate(k.codyBandHiTs)}.</div>
+          <div><strong>Watch — appeals-reserve release (~mid-June).</strong> Appeals are filed within 30 days of notice (T1 ~closed May 24 · T2 ~Jun 3 · waitlist ~Jun 12); unused reserve cascades to the waitlist. As the last windows close, a reserve release could move the line independent of opt-outs — the main thing that could push the real outcome toward the aggressive-churn ceiling.</div>
         </div>
       </section>
     </div>
