@@ -10,6 +10,7 @@ import {
   ExternalLink,
   Scale,
   Users,
+  Layers,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -22,7 +23,6 @@ import {
   Tooltip as ChartTooltip,
   Legend,
   ReferenceLine,
-  ReferenceDot,
 } from 'recharts';
 
 // ---------------------------------------------------------------------------
@@ -52,20 +52,34 @@ const TEFA = {
 };
 
 // ---------------------------------------------------------------------------
-// TEFA opt-out trajectory — observed Comptroller counts + deadline-pulse model.
-// Feeds the TEFA tab. All published (empirical) numbers live in the two
-// *_OBSERVATIONS arrays; everything else is derived.
+// TEFA cascade frontier — how deep the waitlist has been funded, vs. two
+// projections. Feeds the TEFA tab. All published (empirical) numbers live in
+// the *_OBSERVATIONS arrays; everything else is derived.
+//
+// The metric that actually answers "will an offer reach us?" is the CASCADE
+// FRONTIER: how far down the single, tier-ordered global waitlist awards have
+// reached. Tier 3 begins at position 20,383 (everyone ahead is Tier 2); our
+// family band is global positions 30,001–50,000. We deliberately do NOT chart
+// raw opt-out counts: the line ahead clears at ~3.7 seats per opt-out
+// (homeschool downgrades free $8,474 of each $10,474 award; appeals-reserve
+// awards free seats with no opt-out at all), so an opt-out count plotted 1:1
+// against the thresholds badly understates real progress.
 // ---------------------------------------------------------------------------
 
-const AWARDED_BASE = 95934;       // initially awarded (44,753 T1-family + 51,181 T2) — attrition base
+const AWARDED_BASE = 95934;       // initially awarded (44,753 T1-family + 51,181 T2)
 const T2_AT_LOTTERY = 20383;      // Tier 2 waitlisted ahead of Tier 3 at lottery time (May 7 PDF)
-const T3_BAND_START = TEFA.bandLo - T2_AT_LOTTERY; // ≈ 9,618 — our band's start, in Tier 3 positions
-const T3_BAND_END = TEFA.bandHi - T2_AT_LOTTERY;   // ≈ 29,617 — our band's end, in Tier 3 positions
+const T3_START = T2_AT_LOTTERY;   // the cascade frontier at which the FIRST Tier 3 offer goes out
+const BAND_LO = TEFA.bandLo;      // 30,001 — top of our family's band
+const BAND_HI = TEFA.bandHi;      // 50,000 — bottom of our family's band
+
+// Best-guess (grounded) model from the published bands analysis: a blended
+// 15%/18%/35% non-participation plus ~$25M of the inferred $100M+ appeals
+// reserve. Under it Tier 2 fully clears and the cascade reaches roughly these
+// global cut-offs. This already bakes in the 3.7× amplification.
+const BG_FUNDED = 27500;          // best-guess funded depth (a seat actually paid)
+const BG_OFFER = 31400;           // best-guess offer depth (an offer reaches this rank)
 
 // Jun 10, 2026 Comptroller press release ("TEFA Pass 100,000-Student Milestone").
-// Reconciliation: 99,728 gross (May 29) + ~4,100 = 103,828 ≈ "more than 102,000";
-// 248,636 eligible − 103,828 = 144,808 ≈ "nearly 145,000 remain on the waitlist";
-// 17,066 − 4,100 = 12,966 ≈ "nearly 13,000 Tier 2 applicants" still waitlisted.
 const JUNE10_CASCADE = {
   asOf: '2026-06-10',
   t2Cascaded: 4100,               // "more than 4,100" newly awarded, all Tier 2
@@ -74,290 +88,215 @@ const JUNE10_CASCADE = {
   t2RemainingAfterCascade: 12966,
 };
 
-// Published cumulative opt-out counts — the ONLY empirical opt-out data so far.
-// APPEND new Comptroller posts here: the trickle rate re-fits (least squares)
-// and the projection re-anchors to the newest point automatically.
+// Published cumulative opt-out counts — kept as supporting context (the headline
+// "X have opted out so far" stat), not as a chart axis.
 const OPTOUT_OBSERVATIONS = [
   { date: '2026-05-11', cumOptOuts: 0 },    // opt-in portal opens — baseline
   { date: '2026-05-29', cumOptOuts: 1400 }, // May 29 News & Updates (~1,400)
   { date: '2026-06-10', cumOptOuts: 2000 }, // Jun 10 press release (~2,000)
 ];
 
-// Observed Tier 2 backlog still ahead of Tier 3 (from the cascade posts). APPEND likewise.
+// Observed Tier 2 backlog still ahead of Tier 3 (from the cascade posts). The
+// cascade frontier is derived from these: frontier = T2_AT_LOTTERY − t2Remaining.
+// APPEND new Comptroller posts here and both the observed line and the
+// projections re-anchor to the newest point automatically.
 const T2_OBSERVATIONS = [
-  { date: '2026-05-04', t2Remaining: 20383 }, // Tier 2 award batch — backlog established
+  { date: '2026-05-04', t2Remaining: 20383 }, // Tier 2 award batch — backlog established (frontier 0)
   { date: '2026-05-29', t2Remaining: 17066 }, // after 3,317 cascade awards
   { date: '2026-06-10', t2Remaining: 12966 }, // after 4,100 more cascade awards
 ];
 
-// Deadline pulses. weight = share of the non-trickle opt-out mass; center sits one
-// day before each deadline (decisions cluster in the final days); scale = logistic
-// ramp width in days. Weights are assumptions, not data: Jul 15 carries the
-// majority (0.55) because the Comptroller's own materials make it the single
-// largest attrition event of Year 1; Jul 1 sticker-shock (families see only
-// ~$2,618 of a $10,474 award against a full tuition bill) gets 0.20; Jun 15
-// July-track school confirmation 0.10; 0.15 tails off through Sept 15. The
-// observed deceleration (77.8/day May 11–29 → 50/day May 29–Jun 10) supports
-// back-loading.
-const OPTOUT_TRIGGERS = [
-  { date: '2026-06-01', label: 'Jun 1 opt-in',     pulse: null },
-  { date: '2026-06-15', label: 'Jun 15 confirm',   pulse: { weight: 0.10, scale: 2 } },
-  { date: '2026-07-01', label: 'Jul 1 first 25%',  pulse: { weight: 0.20, scale: 2 } },
-  { date: '2026-07-15', label: 'Jul 15 DEADLINE',  pulse: { weight: 0.55, scale: 1.5 }, emphasized: true },
-  { date: '2026-07-31', label: 'Jul 31 confirm',   pulse: { weight: 0.15, scale: 3 } }, // post-deadline reconciliation tail
-];
-
-const OPTOUT_SCENARIOS = [
-  { key: 'low',     rate: 0.08, color: '#9ad5ed', label: '8% (low)' },
-  { key: 'central', rate: 0.15, color: '#202562', label: '15% (central)' },
-  { key: 'high',    rate: 0.25, color: '#13612e', label: '25% (high)' },
-];
-
-// The "Cody line" — Cody's own expectation, combining the two waitlist
-// mechanisms explicitly instead of folding them into one attrition rate:
-// (1) opt-outs stay on the fitted trickle until Jul 15 (sub-15% territory);
-// (2) the appeals reserve opens as the 30-day appeal windows close: half of
-//     the inferred remaining reserve (back-calc bracket $47–90M, midpoint
-//     ~$68M → release ~$34M ≈ ~4,000 blended seats) reaches the queue
-//     between the last observation and Jul 15;
-// (3) Jul 15–31: an intense acceptance-shakeout wave — Tier 2 awardees who
-//     can't actually use the award — passing 25% mid-wave and landing on
-//     50% of the awarded base by end of July.
-const CODY_SCENARIO = {
-  terminalRate: 0.50,      // 50% of awarded base by Jul 31
-  waveEnd: '2026-07-31',
-  waveScale: 2.5,          // logistic ramp — bulk of the wave Jul 18–28
-  reserveRemainingM: 68,   // $M — midpoint of the $47M–$90M back-calculation
-  releaseShare: 0.5,       // "even half of that amount"
-  blendedCost: 8525,       // 77/23 private/homeschool blend, $/seat
+// The two projections the page now shows — nothing else.
+//   bestGuess: the grounded model above. Terminal = offer depth (~31,400);
+//              the bulk of movement lands at the Jul 15 deadline cascade.
+//   cody:      Cody's own line. Keeps his stated logic — fitted trickle until
+//              Jul 15, then a Tier 2 acceptance-shakeout wave landing on 50% of
+//              the awarded base by Jul 31, PLUS ~4,000 reserve-funded seats as
+//              the 30-day appeal windows close. That 50% sits ABOVE the 14–34%
+//              historical range (D.C./Milwaukee/Virginia), so it is the
+//              aggressive upper edge, not a forecast — labeled as such.
+const CODY = {
+  optOutRate: 0.50,               // 50% of the awarded base by Jul 31 — Cody's bet
+  reserveSeats: 4000,             // ~half of the inferred ~$68M remaining reserve at ~$8,525/seat
 };
 
-// Model origin = opt-out baseline (portal open). Chart extends back to the first
-// T2 observation (May 4) and forward to Aug 15, by which point the Jul 31
-// school-confirm reconciliation has flushed the post-deadline tail.
-const OPTOUT_WINDOW = { origin: '2026-05-11', chartStart: '2026-05-04', end: '2026-08-15' };
+// Chart window: from the lottery (frontier 0) to mid-August, by which point the
+// Jul 31 school-confirm reconciliation has flushed the post-deadline tail.
+const FRONTIER_WINDOW = { chartStart: '2026-05-04', jul15: '2026-07-15', end: '2026-08-15' };
 
-// Opt-out trajectory model. Cumulative opt-outs decompose into (a) a baseline
-// "trickle" fitted by least squares through the origin to the published counts,
-// and (b) normalized logistic deadline pulses whose combined mass closes the gap
-// between the trickle and each scenario's terminal (rate × 95,934 initially
-// awarded). The normalization guarantees every scenario curve passes exactly
-// through the last observation and lands exactly on its terminal at Aug 15.
-// Pure function of the constants above; computed once at module scope.
-function buildOptOutTrajectory({
-  observations = OPTOUT_OBSERVATIONS,
+// Cascade-frontier model. Two projections only. Each is a logistic ramp anchored
+// exactly on the last published frontier point and landing on its terminal at a
+// stated end date (flat after) — with the bulk of motion at the July deadlines.
+function buildCascadeProjection({
   t2Observations = T2_OBSERVATIONS,
-  scenarios = OPTOUT_SCENARIOS,
-  triggers = OPTOUT_TRIGGERS,
+  optOuts = OPTOUT_OBSERVATIONS,
+  cody = CODY,
   awardedBase = AWARDED_BASE,
-  cody = CODY_SCENARIO,
-  window: win = OPTOUT_WINDOW,
+  window: win = FRONTIER_WINDOW,
 } = {}) {
   const DAY = 86_400_000;
-  const t0 = Date.parse(win.origin); // day 0 = May 11
+  const t0 = Date.parse(win.chartStart);
   const dayOf = (d) => Math.round((Date.parse(d) - t0) / DAY);
-  const sigma = (x) => 1 / (1 + Math.exp(-x));
+  const sig = (x) => 1 / (1 + Math.exp(-x));
 
-  const obs = observations.map((o) => ({ t: dayOf(o.date), y: o.cumOptOuts }));
-  const t2Obs = t2Observations.map((o) => ({ t: dayOf(o.date), y: o.t2Remaining }));
-  const tEnd = dayOf(win.end);               // 127 (Sep 15)
-  const tChartStart = dayOf(win.chartStart); // −7 (May 4)
-  const [tL, yL] = [obs[obs.length - 1].t, obs[obs.length - 1].y]; // last published point
+  // Observed frontier = how deep the cascade has reached down the global list.
+  const obsF = t2Observations.map((o) => ({ t: dayOf(o.date), f: T2_AT_LOTTERY - o.t2Remaining }));
+  const last = obsF[obsF.length - 1];
+  const [tL, fL] = [last.t, last.f];
+  const tEnd = dayOf(win.end);
 
-  // Trickle: least squares through the origin (the May 11 baseline of 0 is exact).
-  const fitPts = obs.filter((o) => o.t > 0);
-  const m = fitPts.reduce((s, o) => s + o.t * o.y, 0) / fitPts.reduce((s, o) => s + o.t * o.t, 0);
-
-  // Trickle runs at m/day until the hard deadline, then stops (the tail pulse
-  // carries the post-deadline drip).
-  const tHard = dayOf(triggers.find((g) => g.emphasized).date); // 65 (Jul 15)
-  const trickleTotal = yL + m * (tHard - tL);
-
-  // Normalized logistic pulses: each is 0 at the last observation, 1 at the
-  // window end. Centered 2 scales AFTER the trigger so the ramp STARTS at the
-  // deadline — opt-outs are revealed at/after a deadline (non-confirmations
-  // counted once it passes), not in the days before it.
-  const pulses = triggers
-    .filter((g) => g.pulse)
-    .map((g) => ({ c: dayOf(g.date) + 2 * g.pulse.scale, s: g.pulse.scale, w: g.pulse.weight }));
-  const pulseSum = (t) =>
-    pulses.reduce((sum, p) => {
-      const lo = sigma((tL - p.c) / p.s);
-      const hi = sigma((tEnd - p.c) / p.s);
-      return sum + p.w * ((sigma((t - p.c) / p.s) - lo) / (hi - lo));
-    }, 0);
-
-  const terminals = scenarios.map((sc) => ({ ...sc, T: Math.round(sc.rate * awardedBase) }));
-  const cum = (t, T) => {
-    if (t <= tL) return interp(obs, t);
-    const P = Math.max(0, T - trickleTotal);
-    return yL + m * (Math.min(t, tHard) - tL) + P * pulseSum(t);
-  };
-  function interp(pts, t) {
-    if (t <= pts[0].t) return pts[0].y;
+  const interp = (pts, t) => {
+    if (t <= pts[0].t) return pts[0].f;
     for (let i = 1; i < pts.length; i++) {
       if (t <= pts[i].t) {
         const [a, b] = [pts[i - 1], pts[i]];
-        return a.y + ((b.y - a.y) * (t - a.t)) / (b.t - a.t);
+        return a.f + ((b.f - a.f) * (t - a.t)) / (b.t - a.t);
       }
     }
-    return pts[pts.length - 1].y;
-  }
-
-  // T2 depletion bounds. Conservative: only opt-outs free seats (1 release per
-  // opt-out) — a floor, since the observed cumulative ratio is ~3.7 releases per
-  // opt-out (7,417 cascade awards vs 2,000 opt-outs: homeschool downgrades free
-  // $8,474 of $10,474 and the appeals reserve adds awards without any opt-out).
-  // Observed-pace: the budget/reserve-driven cascade continues at its latest
-  // window pace — an upper bound on speed, since that fuel is finite.
-  const t2Last = t2Obs[t2Obs.length - 1];
-  const t2Prev = t2Obs[t2Obs.length - 2];
-  const releaseRate = (t2Prev.y - t2Last.y) / (t2Last.t - t2Prev.t); // ≈ 342/day
-  const centralT = terminals.find((s) => s.key === 'central').T;
-  const t2Cons = (t) => Math.max(0, t2Last.y - (cum(t, centralT) - yL));
-  const t2Pace = (t) => Math.max(0, t2Last.y - releaseRate * (t - t2Last.t));
-
-  // Cody line: trickle until Jul 15, then a single normalized logistic wave
-  // landing exactly on terminalRate × awardedBase at waveEnd (flat after).
-  const tWaveEnd = dayOf(cody.waveEnd);
-  const codyT = Math.round(cody.terminalRate * awardedBase);
-  const cw = { c: tHard + (tWaveEnd - tHard) / 2, s: cody.waveScale };
-  const codyL = (t) => {
-    const lo = sigma((tHard - cw.c) / cw.s);
-    const hi = sigma((tWaveEnd - cw.c) / cw.s);
-    return (sigma((Math.min(t, tWaveEnd) - cw.c) / cw.s) - lo) / (hi - lo);
+    return pts[pts.length - 1].f;
   };
-  const codyFn = (t) => {
-    if (t <= tL) return interp(obs, t);
-    if (t <= tHard) return yL + m * (t - tL);
-    return trickleTotal + (codyT - trickleTotal) * codyL(t);
+
+  // Cody's terminal frontier, from his own logic: reserve seats + (his 50%
+  // opt-out target beyond what has already opted out), one freed seat each.
+  const optOutsSoFar = optOuts[optOuts.length - 1].cumOptOuts;
+  const codyTerminal = Math.round(fL + cody.reserveSeats + (cody.optOutRate * awardedBase - optOutsSoFar));
+
+  // A logistic from the last observation to `terminal` at `end`, normalized to
+  // pass exactly through (tL, fL) and reach `terminal` at the end date.
+  const makeLine = ({ terminal, center, scale, end }) => {
+    const tc = dayOf(center);
+    const te = dayOf(end);
+    const lo = sig((tL - tc) / scale);
+    const hi = sig((te - tc) / scale);
+    return (t) => {
+      if (t <= tL) return interp(obsF, t);
+      const tt = Math.min(t, te);
+      return fL + (terminal - fL) * ((sig((tt - tc) / scale) - lo) / (hi - lo));
+    };
   };
-  // Queue under the Cody scenario: reserve release ramps in linearly between
-  // the last observation and Jul 15, plus 1 seat per opt-out beyond that
-  // (the 3.7× observed ratio already embeds reserve/downgrades, so the
-  // explicit reserve term replaces it rather than stacking on top).
-  const reserveSeats = Math.round((cody.reserveRemainingM * 1e6 * cody.releaseShare) / cody.blendedCost);
-  const reserveRamp = (t) => Math.min(Math.max((t - tL) / (tHard - tL), 0), 1);
-  const codyReleases = (t) => reserveSeats * reserveRamp(t) + (codyFn(t) - yL);
-  const t2Cody = (t) => Math.max(0, t2Last.y - codyReleases(t));
-  let codyT2ClearDay = null, codyBandCrossDay = null, codyBandFullDay = null;
-  for (let t = tL; t <= tEnd; t++) {
-    if (codyT2ClearDay === null && codyReleases(t) >= t2Last.y) codyT2ClearDay = t;
-    if (codyBandCrossDay === null && codyReleases(t) >= t2Last.y + T3_BAND_START) codyBandCrossDay = t;
-    if (codyBandFullDay === null && codyReleases(t) >= t2Last.y + T3_BAND_END) codyBandFullDay = t;
-  }
+
+  // Best guess: most of the climb at the Jul 15 cascade, settling on offer depth
+  // by mid-August. Cody: earlier, steeper, deeper, all done by Jul 31.
+  const bestGuess = makeLine({ terminal: BG_OFFER, center: '2026-07-19', scale: 7, end: win.end });
+  const codyFn = makeLine({ terminal: codyTerminal, center: '2026-07-16', scale: 4, end: '2026-07-31' });
+
+  const crossTs = (fn, level) => {
+    for (let t = tL; t <= tEnd; t++) if (fn(t) >= level) return t0 + t * DAY;
+    return null;
+  };
 
   const series = [];
-  for (let t = tChartStart; t <= tEnd; t++) {
+  for (let t = dayOf(win.chartStart); t <= tEnd; t++) {
     const row = { ts: t0 + t * DAY };
-    const od = obs.find((o) => o.t === t);
-    if (od) row.observed = od.y;
-    const t2d = t2Obs.find((o) => o.t === t);
-    if (t2d) row.t2Observed = t2d.y;
-    if (t >= 0 && t <= tL) row.observedLine = interp(obs, t);
-    if (t >= t2Obs[0].t && t <= t2Last.t) row.t2ObservedLine = interp(t2Obs, t);
+    const od = obsF.find((o) => o.t === t);
+    if (od) row.observed = od.f;
+    if (t <= tL) row.observedLine = Math.round(interp(obsF, t));
     if (t >= tL) {
-      row.pace = Math.round(yL + m * (t - tL));
-      for (const sc of terminals) row[sc.key] = Math.round(cum(t, sc.T));
+      row.bestGuess = Math.round(bestGuess(t));
       row.cody = Math.round(codyFn(t));
-      row.t2Cons = Math.round(t2Cons(t));
-      row.t2Pace = Math.round(t2Pace(t));
-      row.t2Cody = Math.round(t2Cody(t));
     }
     series.push(row);
   }
 
-  const jul15 = Object.fromEntries(terminals.map((sc) => [sc.key, Math.round(cum(tHard, sc.T))]));
-  const paceWindows = fitPts.map((o, i) => {
-    const prev = i === 0 ? { t: 0, y: 0 } : fitPts[i - 1];
-    return (o.y - prev.y) / (o.t - prev.t);
-  });
-  const t2ClearOptOuts = yL + t2Last.y; // cumulative opt-outs at which T2 clears, 1:1
-  const t2ClearDayAtPace = t2Last.t + t2Last.y / releaseRate;
   const kpis = {
-    asOf: observations[observations.length - 1].date,
-    observedToDate: yL,
-    dailyPaceFit: m,
-    paceByWindow: paceWindows,
-    paceAtJul15: Math.round(yL + m * (tHard - tL)),
-    jul15,
-    terminals: Object.fromEntries(terminals.map((sc) => [sc.key, sc.T])),
-    t2Remaining: t2Last.y,
-    t2ClearOptOuts,
-    t2ClearRate: t2ClearOptOuts / awardedBase,
-    releaseRate,
-    t2ClearTsAtPace: t0 + t2ClearDayAtPace * DAY,
-    cascadeRatio: (T2_AT_LOTTERY - t2Last.y) / yL, // observed cumulative releases per opt-out ≈ 3.7
-    tHardTs: t0 + tHard * DAY,
-    codyTerminal: codyT,
-    codyReserveSeats: reserveSeats,
-    codyT2ClearTs: codyT2ClearDay === null ? null : t0 + codyT2ClearDay * DAY,
-    codyBandCrossTs: codyBandCrossDay === null ? null : t0 + codyBandCrossDay * DAY,
-    codyAtBandCross: codyBandCrossDay === null ? null : Math.round(codyFn(codyBandCrossDay)),
-    codyBandFullTs: codyBandFullDay === null ? null : t0 + codyBandFullDay * DAY,
+    asOf: t2Observations[t2Observations.length - 1].date,
+    frontierNow: fL,
+    t2Remaining: T2_AT_LOTTERY - fL,
+    optOutsSoFar,
+    bgFunded: BG_FUNDED,
+    bgOffer: BG_OFFER,
+    bgTier3Ts: crossTs(bestGuess, T3_START),
+    bgBandLoTs: crossTs(bestGuess, BAND_LO),
+    codyTerminal,
+    codyReserveSeats: cody.reserveSeats,
+    codyTier3Ts: crossTs(codyFn, T3_START),
+    codyBandLoTs: crossTs(codyFn, BAND_LO),
+    codyBandHiTs: crossTs(codyFn, BAND_HI),
   };
   return { series, kpis };
 }
 
-const OPTOUT_TRAJECTORY = buildOptOutTrajectory();
-const OPTOUT_KPIS = OPTOUT_TRAJECTORY.kpis;
+const CASCADE = buildCascadeProjection();
+const CASCADE_KPIS = CASCADE.kpis;
+const FRONTIER_Y_MAX = Math.ceil(Math.max(BAND_HI, CASCADE_KPIS.codyTerminal) * 1.05 / 1000) * 1000;
 
 const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const fmtChartDate = (ts) => {
+  if (ts == null) return '—';
   const d = new Date(ts);
   return `${MONTHS_SHORT[d.getUTCMonth()]} ${d.getUTCDate()}`;
 };
-const OPTOUT_TICKS = ['2026-05-04', '2026-06-01', '2026-07-01', '2026-07-15', '2026-08-01', '2026-08-15'].map(Date.parse);
+const FRONTIER_TICKS = ['2026-05-04', '2026-06-01', '2026-07-01', '2026-07-15', '2026-08-01', '2026-08-15'].map(Date.parse);
 
-// Tier thresholds expressed on the opt-out axis (1 release per opt-out).
-// Tier 3 funding starts when cumulative opt-outs clear the T2 queue; our band
-// sits T3_BAND_START positions deeper. Cascade awards above 1:1 (observed
-// ~3.7×) effectively lower both thresholds.
-const T3_STARTS_OPTOUTS = OPTOUT_KPIS.t2ClearOptOuts; // 2,000 so far + 12,966 queue = 14,966
-const BAND_REACH_OPTOUTS = T3_STARTS_OPTOUTS + T3_BAND_START; // ≈ 24,584
-const OPTOUT_Y_MAX = Math.ceil(Math.max(BAND_REACH_OPTOUTS * 1.05, OPTOUT_KPIS.codyTerminal * 1.04) / 1000) * 1000;
+// Plain-language likelihood of the cascade reaching each global waitlist band,
+// drawn from the published bands analysis. ourBand flags the family's bucket.
+const BAND_OUTLOOK = [
+  {
+    band: 'Tier 2 clears',
+    scope: 'positions 1 – 20,383',
+    call: 'Expected',
+    tone: 'good',
+    note: 'Every seat freed so far has gone to Tier 2. At the current pace the remaining ~13k clears mid-to-late July — and this has to finish before any Tier 3 offer goes out at all.',
+  },
+  {
+    band: '20,384 – 25,000',
+    scope: 'early Tier 3',
+    call: 'Likely',
+    tone: 'good',
+    note: 'Inside the best-guess funded depth (~27,500). This is where the first real Tier 3 movement lands, just after the Jul 15 cascade.',
+  },
+  {
+    band: '25,001 – 30,000',
+    scope: 'mid Tier 3',
+    call: 'Possible',
+    tone: 'mid',
+    note: 'Inside best-guess offer depth; turning that offer into a funded seat across the band needs ~+$20M more of the appeals reserve. Possible in July.',
+  },
+  {
+    band: '30,001 – 50,000',
+    scope: 'YOUR BAND',
+    call: 'Bottom edge possible · rest unlikely in Year 1',
+    tone: 'mid',
+    ourBand: true,
+    note: 'Only the first ~1,400 positions (to ~31,400) sit at the edge of best-guess offer depth — possible. Deeper in is upside-only: rank ~35k needs +$20M reserve, ~40k needs +$50M, the top (50k) nearly the whole pool. The Cody line is the bet the July cascade + reserve release pushes all the way through.',
+  },
+  {
+    band: '50,001 +',
+    scope: 'deep Tier 3 / Tier 4',
+    call: 'Not expected',
+    tone: 'bad',
+    note: 'Requires decline rates well outside the historical 14–34% range plus nearly the entire reserve. Tier 4 does not move in Year 1 at all.',
+  },
+];
 
-// Plain-language tooltip. Whitelisting by dataKey also drops the raw `ts`
-// entries the Scatter series would otherwise inject into the default tooltip.
-const TRAJECTORY_SERIES = {
-  observedLine:   { label: 'Observed so far (published)',  group: 'opt' },
-  pace:           { label: 'Current pace, no deadline wave', group: 'opt' },
-  low:            { label: 'If 8% eventually opt out',     group: 'opt' },
-  central:        { label: 'If 15% opt out — central',     group: 'opt' },
-  high:           { label: 'If 25% opt out — high',        group: 'opt' },
-  cody:           { label: 'Cody line — 50% by Jul 31',    group: 'opt' },
-  t2ObservedLine: { label: 'Observed (published)',         group: 't2' },
-  t2Cons:         { label: 'If only opt-outs free seats',  group: 't2' },
-  t2Pace:         { label: 'At current cascade speed',     group: 't2' },
-  t2Cody:         { label: 'Cody — reserve + wave',        group: 't2' },
+const TONE_STYLE = {
+  good: { chip: 'bg-tefa-green/15 text-tefa-green', dot: 'bg-tefa-green' },
+  mid: { chip: 'bg-amber-100 text-amber-800', dot: 'bg-tefa-gold' },
+  bad: { chip: 'bg-gray-100 text-tefa-body/50', dot: 'bg-gray-300' },
 };
 
-const TrajectoryTooltip = ({ active, payload, label }) => {
+// Plain-language tooltip for the frontier chart. Whitelisting by dataKey also
+// drops the raw `ts` the Scatter series would otherwise inject.
+const FRONTIER_SERIES = {
+  observedLine: 'Funded so far (published)',
+  bestGuess: 'Best guess',
+  cody: 'Cody line',
+};
+
+const FrontierTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
-  const rows = payload.filter((p) => TRAJECTORY_SERIES[p.dataKey] && p.value != null);
+  const rows = payload.filter((p) => FRONTIER_SERIES[p.dataKey] && p.value != null);
   if (!rows.length) return null;
-  const groups = [
-    ['opt', 'Opt-outs so far (left axis)'],
-    ['t2', 'Tier 2 families still ahead of us (right axis)'],
-  ];
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3 text-xs max-w-[260px]">
       <div className="font-bold text-tefa-navy">{fmtChartDate(label)}</div>
-      {groups.map(([g, title]) => {
-        const rs = rows.filter((r) => TRAJECTORY_SERIES[r.dataKey].group === g);
-        if (!rs.length) return null;
-        return (
-          <div key={g} className="mt-2">
-            <div className="text-[10px] uppercase tracking-wide text-tefa-body/40 mb-0.5">{title}</div>
-            {rs.map((r) => (
-              <div key={r.dataKey} className="flex justify-between gap-4">
-                <span style={{ color: r.color || r.stroke }}>{TRAJECTORY_SERIES[r.dataKey].label}</span>
-                <span className="font-semibold tabular-nums text-tefa-body">{Math.round(r.value).toLocaleString()}</span>
-              </div>
-            ))}
-          </div>
-        );
-      })}
+      <div className="text-[10px] uppercase tracking-wide text-tefa-body/40 mb-1">Waitlist position reached</div>
+      {rows.map((r) => (
+        <div key={r.dataKey} className="flex justify-between gap-4">
+          <span style={{ color: r.color || r.stroke }}>{FRONTIER_SERIES[r.dataKey]}</span>
+          <span className="font-semibold tabular-nums text-tefa-body">{Math.round(r.value).toLocaleString()}</span>
+        </div>
+      ))}
     </div>
   );
 };
@@ -831,122 +770,128 @@ const TimelineView = () => {
 };
 
 // ---------------------------------------------------------------------------
-// TEFA — observed opt-out trajectory vs. modeled expectations
+// TEFA — likelihood the cascade reaches each band, and two projections
 // ---------------------------------------------------------------------------
 const TefaView = () => {
-  const k = OPTOUT_KPIS;
+  const k = CASCADE_KPIS;
   const todayTs = Math.min(
-    Math.max(Date.now(), Date.parse(OPTOUT_WINDOW.chartStart)),
-    Date.parse(OPTOUT_WINDOW.end)
+    Math.max(Date.now(), Date.parse(FRONTIER_WINDOW.chartStart)),
+    Date.parse(FRONTIER_WINDOW.end)
   );
 
   return (
     <div className="space-y-6">
+      {/* The plain-language answer: how likely is each band to be reached? */}
       <section className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
         <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2 mb-2">
-          <Activity size={20} /> Opt-out trajectory — why the trickle isn't the wave
+          <Layers size={20} /> Will an offer reach us? Likelihood by band
         </h2>
         <p className="text-sm text-tefa-body/80 mb-4">
-          The pre-deadline trickle is <strong>decelerating</strong> ({Math.round(k.paceByWindow[0])}/day May 11–29
-          → {Math.round(k.paceByWindow[1])}/day since) — at the fitted ~{Math.round(k.dailyPaceFit)}/day it reaches
-          only <strong>~{k.paceAtJul15.toLocaleString()} by Jul 15</strong>, far short of the{' '}
-          {k.terminals.central.toLocaleString()} central case. The wave is back-loaded to the July deadlines by
-          program design. Meanwhile the cascade is running{' '}
-          <strong>~{k.cascadeRatio.toFixed(1)} Tier 2 awards per opt-out</strong> (appeals reserve + homeschool
-          downgrades) — which is why the queue ahead of us is shrinking faster than opt-outs alone would allow.
+          Awards cascade down <strong>one</strong> tier-ordered waitlist. Tier 3 doesn't start until the{' '}
+          <strong>{k.t2Remaining.toLocaleString()}</strong> Tier 2 families still ahead of us are cleared. Here's
+          how likely the cascade is to reach each band this year — our family sits in{' '}
+          <strong>{TEFA.band}</strong>.
         </p>
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-sm mb-4">
+        <div className="space-y-2">
+          {BAND_OUTLOOK.map((b) => {
+            const s = TONE_STYLE[b.tone];
+            return (
+              <div
+                key={b.band}
+                className={`rounded-lg border p-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 ${
+                  b.ourBand ? 'border-tefa-navy/40 bg-tefa-light ring-1 ring-tefa-sky/40' : 'border-gray-200'
+                }`}
+              >
+                <div className="sm:w-44 shrink-0">
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2.5 h-2.5 rounded-full ${s.dot}`} />
+                    <span className="font-bold text-tefa-navy text-sm">{b.band}</span>
+                  </div>
+                  <div className="text-[11px] text-tefa-body/50 ml-4.5 pl-0.5">
+                    {b.ourBand ? <strong className="text-tefa-navy">{b.scope}</strong> : b.scope}
+                  </div>
+                </div>
+                <div className="sm:w-40 shrink-0">
+                  <span className={`inline-block text-[11px] font-bold px-2 py-1 rounded ${s.chip}`}>{b.call}</span>
+                </div>
+                <p className="text-xs text-tefa-body/70 flex-1">{b.note}</p>
+              </div>
+            );
+          })}
+        </div>
+        <p className="text-xs text-tefa-body/50 mt-3">
+          <strong>Bottom line:</strong> Tier 3 is expected to start in mid-to-late July, but our band sits at the far
+          edge of even the best guess — only its very bottom (to ~{k.bgOffer.toLocaleString()}) is in reach, and a
+          funded seat there isn't. Treat TEFA as a bonus, never as money you're counting on.
+        </p>
+      </section>
+
+      {/* The two projections, on the metric that matters: cascade depth. */}
+      <section className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+        <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2 mb-2">
+          <Activity size={20} /> How far the line reaches — two projections
+        </h2>
+        <p className="text-sm text-tefa-body/80 mb-4">
+          The chart tracks the <strong>cascade frontier</strong>: how far down the waitlist awards have reached.
+          We show just two lines — the grounded <strong>best guess</strong> and the <strong>Cody line</strong>{' '}
+          (Cody's own, more aggressive bet). When a line crosses a band's threshold, the cascade has reached that
+          band.
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm mb-4">
           <div className="rounded-lg bg-tefa-light border border-gray-200 p-3 text-center">
-            <div className="text-xs text-tefa-body/50 font-medium">Opted Out So Far</div>
-            <div className="font-bold text-tefa-navy text-lg">{k.observedToDate.toLocaleString()}</div>
-            <div className="text-[10px] text-tefa-body/40">of {AWARDED_BASE.toLocaleString()} awarded · as of {fmtChartDate(Date.parse(k.asOf))}</div>
+            <div className="text-xs text-tefa-body/50 font-medium">Funded So Far</div>
+            <div className="font-bold text-tefa-navy text-lg">{k.frontierNow.toLocaleString()}</div>
+            <div className="text-[10px] text-tefa-body/40">all Tier 2 · Tier 3 starts at {T3_START.toLocaleString()} · as of {fmtChartDate(Date.parse(k.asOf))}</div>
           </div>
           <div className="rounded-lg bg-tefa-light border border-gray-200 p-3 text-center">
-            <div className="text-xs text-tefa-body/50 font-medium">Tier 2 Queue Ahead of Us</div>
+            <div className="text-xs text-tefa-body/50 font-medium">Tier 2 Still Ahead</div>
             <div className="font-bold text-tefa-gold text-lg">{k.t2Remaining.toLocaleString()}</div>
-            <div className="text-[10px] text-tefa-body/40">families funded before any Tier 3 award · shrinking ~{Math.round(k.releaseRate)}/day</div>
+            <div className="text-[10px] text-tefa-body/40">must clear before any Tier 3 offer · {k.optOutsSoFar.toLocaleString()} opt-outs so far</div>
           </div>
-          <div className="rounded-lg bg-tefa-light border border-gray-200 p-3 text-center">
-            <div className="text-xs text-tefa-body/50 font-medium">Opt-Outs for Tier 3 to Start</div>
-            <div className="font-bold text-tefa-navy text-lg">{k.t2ClearOptOuts.toLocaleString()}</div>
-            <div className="text-[10px] text-tefa-body/40">{(k.t2ClearRate * 100).toFixed(1)}% of awarded — or ~{fmtChartDate(k.t2ClearTsAtPace)} if the cascade keeps its current speed</div>
-          </div>
-          <div className="rounded-lg bg-tefa-light border border-tefa-red/20 p-3 text-center">
-            <div className="text-xs text-tefa-red/70 font-medium">Opt-Outs to Reach Our Band</div>
-            <div className="font-bold text-tefa-red text-lg">~{BAND_REACH_OPTOUTS.toLocaleString()}</div>
-            <div className="text-[10px] text-tefa-body/40">more than even the 25% scenario ({k.terminals.high.toLocaleString()}) at 1:1 — needs the {k.cascadeRatio.toFixed(1)}× cascade to hold</div>
+          <div className="rounded-lg bg-tefa-light border border-tefa-navy/20 p-3 text-center">
+            <div className="text-xs text-tefa-navy/70 font-medium">Best Guess Reaches</div>
+            <div className="font-bold text-tefa-navy text-lg">~{k.bgOffer.toLocaleString()}</div>
+            <div className="text-[10px] text-tefa-body/40">offer depth (funded ~{k.bgFunded.toLocaleString()}) · only the bottom edge of our band ({BAND_LO.toLocaleString()})</div>
           </div>
           <div className="rounded-lg bg-tefa-light border border-tefa-red/30 p-3 text-center">
-            <div className="text-xs text-tefa-red/70 font-medium">Cody Line by Jul 31</div>
+            <div className="text-xs text-tefa-red/70 font-medium">Cody Line Reaches</div>
             <div className="font-bold text-tefa-red text-lg">~{k.codyTerminal.toLocaleString()}</div>
-            <div className="text-[10px] text-tefa-body/40">trickle to Jul 15 + ~{(Math.round(k.codyReserveSeats / 100) / 10).toFixed(1)}k reserve seats, then 25%→50% wave · band reached ~{fmtChartDate(k.codyBandCrossTs)} · vs model central {k.terminals.central.toLocaleString()}</div>
+            <div className="text-[10px] text-tefa-body/40">through our whole band by ~{fmtChartDate(k.codyBandHiTs)} · assumes 50% opt-out (above history)</div>
           </div>
         </div>
-        <p className="text-xs text-tefa-body/60 mb-2">
-          <strong>How to read the chart:</strong> rising lines (left axis) are cumulative opt-outs; falling gold
-          lines (right axis) are the Tier 2 queue still ahead of us. Tier 3 funding starts when the gold queue hits
-          zero — equivalently, when an opt-out curve crosses the gold dashed threshold. Our band is the red dashed
-          threshold above it. The bold red dashed curve is the <strong>Cody line</strong> — our own expectation:
-          current pace until Jul 15 (with ~{k.codyReserveSeats.toLocaleString()} reserve-funded seats opening the
-          queue as appeal windows close), then an intense acceptance-shakeout wave to 50% by Jul 31.
-        </p>
         <div className="h-[340px]">
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={OPTOUT_TRAJECTORY.series} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+            <ComposedChart data={CASCADE.series} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
               <XAxis type="number" dataKey="ts" scale="time" domain={['dataMin', 'dataMax']}
-                     ticks={OPTOUT_TICKS} tickFormatter={fmtChartDate} tick={{ fontSize: 11 }} />
-              <YAxis yAxisId="optouts" domain={[0, OPTOUT_Y_MAX]} tickFormatter={(v) => `${Math.round(v / 1000)}k`} tick={{ fontSize: 11 }}
-                     label={{ value: 'Cumulative opt-outs', angle: -90, position: 'insideLeft', fontSize: 11 }} />
-              <YAxis yAxisId="t2" orientation="right" domain={[0, 20383]} tickFormatter={(v) => `${Math.round(v / 1000)}k`}
-                     tick={{ fontSize: 11 }} label={{ value: 'Tier 2 queue ahead of us', angle: 90, position: 'insideRight', fontSize: 11 }} />
-              <ChartTooltip content={<TrajectoryTooltip />} />
+                     ticks={FRONTIER_TICKS} tickFormatter={fmtChartDate} tick={{ fontSize: 11 }} />
+              <YAxis domain={[0, FRONTIER_Y_MAX]} tickFormatter={(v) => `${Math.round(v / 1000)}k`} tick={{ fontSize: 11 }}
+                     label={{ value: 'Waitlist position reached', angle: -90, position: 'insideLeft', fontSize: 11 }} />
+              <ChartTooltip content={<FrontierTooltip />} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              {OPTOUT_TRIGGERS.filter((g) => g.label).map((g, i) => (
-                <ReferenceLine key={g.date} yAxisId="optouts" x={Date.parse(g.date)}
-                    stroke={g.emphasized ? '#aa2142' : 'rgba(32,37,98,0.25)'} strokeWidth={g.emphasized ? 1.5 : 1}
-                    label={{ value: g.label, position: g.date === '2026-07-31' ? 'insideTopRight' : 'insideTop', dy: i % 2 ? 14 : 2, fontSize: 9, fontWeight: g.emphasized ? 700 : 400, fill: g.emphasized ? '#aa2142' : 'rgba(32,37,98,0.55)' }} />
-              ))}
-              <ReferenceLine yAxisId="optouts" x={todayTs} stroke="#aa2142" strokeDasharray="2 2"
-                  label={{ value: 'Today', fontSize: 10, fill: '#aa2142', position: 'insideBottomLeft' }} />
-              <ReferenceLine yAxisId="optouts" y={T3_STARTS_OPTOUTS} stroke="#b08a3e" strokeDasharray="8 4"
-                  label={{ value: `Tier 3 starts — ${T3_STARTS_OPTOUTS.toLocaleString()} opt-outs (1:1)`, position: 'insideBottomLeft', fontSize: 9, fontWeight: 600, fill: '#b08a3e' }} />
-              <ReferenceLine yAxisId="optouts" y={BAND_REACH_OPTOUTS} stroke="#aa2142" strokeDasharray="8 4"
-                  label={{ value: `Our band — ~${BAND_REACH_OPTOUTS.toLocaleString()} opt-outs (1:1)`, position: 'insideBottomLeft', fontSize: 9, fontWeight: 600, fill: '#aa2142' }} />
-              <Line yAxisId="optouts" dataKey="observedLine" name="Observed opt-outs" stroke="#aa2142" strokeWidth={2} dot={false} legendType="none" />
-              <Line yAxisId="optouts" dataKey="pace" name="Pace only (no deadline wave)" stroke="#94a3b8" strokeDasharray="6 4" dot={false} />
-              <Line yAxisId="optouts" dataKey="low" name="8% opt out" stroke="#9ad5ed" dot={false} />
-              <Line yAxisId="optouts" dataKey="central" name="15% opt out (central)" stroke="#202562" strokeWidth={2.5} dot={false} />
-              <Line yAxisId="optouts" dataKey="high" name="25% opt out" stroke="#13612e" dot={false} />
-              <Line yAxisId="optouts" dataKey="cody" name="Cody line (50% by Jul 31)" stroke="#aa2142" strokeWidth={2.5} strokeDasharray="8 3" dot={false} />
-              <Line yAxisId="t2" dataKey="t2ObservedLine" name="T2 queue (observed)" stroke="#d8ab61" strokeWidth={2} dot={false} legendType="none" />
-              <Line yAxisId="t2" dataKey="t2Cons" name="T2 queue — opt-outs only" stroke="#d8ab61" dot={false} />
-              <Line yAxisId="t2" dataKey="t2Pace" name="T2 queue — cascade speed" stroke="#d8ab61" strokeDasharray="5 3" dot={false} />
-              <Line yAxisId="t2" dataKey="t2Cody" name="T2 queue — Cody" stroke="#b08a3e" strokeDasharray="2 3" strokeWidth={1.5} dot={false} />
-              {k.codyBandCrossTs && (
-                <ReferenceDot yAxisId="optouts" x={k.codyBandCrossTs} y={k.codyAtBandCross} r={5} fill="#aa2142" stroke="#fff"
-                    label={{ value: `Our band reached ~${fmtChartDate(k.codyBandCrossTs)} (Cody)`, position: 'left', fontSize: 9, fontWeight: 700, fill: '#aa2142' }} />
-              )}
-              <Scatter yAxisId="optouts" dataKey="observed" name="Published opt-outs" fill="#aa2142" />
-              <Scatter yAxisId="t2" dataKey="t2Observed" name="Published T2 queue" fill="#d8ab61" />
+              <ReferenceLine x={Date.parse(FRONTIER_WINDOW.jul15)} stroke="#aa2142" strokeWidth={1.5}
+                  label={{ value: 'Jul 15 deadline', position: 'insideTop', fontSize: 9, fontWeight: 700, fill: '#aa2142' }} />
+              <ReferenceLine x={todayTs} stroke="#94a3b8" strokeDasharray="2 2"
+                  label={{ value: 'Today', fontSize: 10, fill: '#64748b', position: 'insideBottomLeft' }} />
+              <ReferenceLine y={T3_START} stroke="#b08a3e" strokeDasharray="8 4"
+                  label={{ value: `Tier 3 starts — ${T3_START.toLocaleString()}`, position: 'insideBottomLeft', fontSize: 9, fontWeight: 600, fill: '#b08a3e' }} />
+              <ReferenceLine y={BAND_LO} stroke="#aa2142" strokeDasharray="8 4"
+                  label={{ value: `Our band starts — ${BAND_LO.toLocaleString()}`, position: 'insideTopLeft', fontSize: 9, fontWeight: 600, fill: '#aa2142' }} />
+              <ReferenceLine y={BAND_HI} stroke="#aa2142" strokeDasharray="8 4"
+                  label={{ value: `Our band ends — ${BAND_HI.toLocaleString()}`, position: 'insideTopLeft', fontSize: 9, fontWeight: 600, fill: '#aa2142' }} />
+              <Line dataKey="observedLine" name="Funded so far (published)" stroke="#202562" strokeWidth={2.5} dot={false} legendType="none" />
+              <Line dataKey="bestGuess" name="Best guess" stroke="#202562" strokeWidth={2.5} dot={false} />
+              <Line dataKey="cody" name="Cody line (aggressive)" stroke="#aa2142" strokeWidth={2.5} strokeDasharray="8 3" dot={false} />
+              <Scatter dataKey="observed" name="Published data" fill="#202562" />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
         <div className="text-[11px] text-tefa-body/60 bg-tefa-light rounded p-3 mt-3 space-y-1">
-          <div><strong>Assumptions.</strong> Scenario terminals = rate × {AWARDED_BASE.toLocaleString()} initially awarded. Trickle = least-squares fit through every published count (May 29: ~1,400 · Jun 10: ~2,000); it re-fits automatically as new posts are appended to <code>OPTOUT_OBSERVATIONS</code>.</div>
-          <div>Deadline pulse weights — Jun 15: 10% · Jul 1: 20% · <strong>Jul 15: 55%</strong> · Jul 31 reconciliation tail: 15% — each ramp <em>starts at its deadline</em> (opt-outs are revealed once a deadline passes, not before). Curves pass exactly through the last observation and land exactly on their terminals at Aug 15.</div>
-          <div>T2 depletion is shown as bounds: <em>opt-outs only</em> (1 release per opt-out — a floor) vs. <em>observed cascade pace</em> (~{Math.round(k.releaseRate)}/day, budget/reserve-driven — a ceiling on speed; that fuel is finite). Observed cumulative ratio: ~{k.cascadeRatio.toFixed(1)} releases per opt-out, because homeschool/other downgrades free $8,474 of each $10,474 award and appeals-reserve awards need no opt-out at all.</div>
-          <div>Horizontal thresholds translate opt-outs into tier outcomes at 1:1: Tier 3 funding starts at {T3_STARTS_OPTOUTS.toLocaleString()} cumulative opt-outs ({k.observedToDate.toLocaleString()} so far + the {k.t2Remaining.toLocaleString()} queue); our band, {T3_BAND_START.toLocaleString()} positions into Tier 3, needs ~{BAND_REACH_OPTOUTS.toLocaleString()}. Every cascade award above 1:1 effectively lowers both lines.</div>
-          <div><strong>Cody line.</strong> Two mechanisms, modeled separately: (1) queue-side, half of the inferred remaining appeals reserve (midpoint ~${CODY_SCENARIO.reserveRemainingM}M of the $47–90M back-calculation → ~{k.codyReserveSeats.toLocaleString()} blended seats) reaches the queue between Jun 10 and Jul 15 as the 30-day appeal windows close; (2) opt-out-side, the fitted trickle until Jul 15, then a Tier 2 acceptance-shakeout wave passing the 25% mark ({k.terminals.high.toLocaleString()}) mid-wave and landing on 50% ({k.codyTerminal.toLocaleString()}) by Jul 31. Queue math beyond the reserve is 1 seat per opt-out. Under these assumptions T2 clears ~{fmtChartDate(k.codyT2ClearTs)}, our band is reached ~{fmtChartDate(k.codyBandCrossTs)}, and the entire band (through T3 position {T3_BAND_END.toLocaleString()}) funds by ~{fmtChartDate(k.codyBandFullTs)}.</div>
-          <div><strong>Watch — appeals-reserve release (~mid-June).</strong> Appeals must be filed within 30 days of notice (T1 notices Apr 22–24 → closed ~May 24 · T2 awards May 4 → ~Jun 3 · waitlist notices May 13 → ~Jun 12), and unused reserve cascades to the waitlist (Apr 28 PDF item 5). As the last windows close, the Comptroller knows its maximum remaining appeal liability — a reserve release could fuel a cascade wave independent of opt-outs. The dashed gold "cascade speed" line is the bound that would benefit.</div>
-          <div>Cascade recipients ({JUNE10_CASCADE.grossAwardedApprox.toLocaleString()} gross awarded) can themselves opt out; excluded to keep the base consistent.</div>
+          <div><strong>What's plotted.</strong> The frontier is derived from the published Tier 2 backlog (frontier = {T2_AT_LOTTERY.toLocaleString()} at-lottery − Tier 2 still queued): 0 on May 4 → {k.frontierNow.toLocaleString()} on {fmtChartDate(Date.parse(k.asOf))}. The line ahead clears at roughly <strong>3.7 seats per opt-out</strong> — homeschool/other downgrades free $8,474 of each $10,474 award, and appeals-reserve awards free seats with no opt-out at all — so we measure progress in seats reached, not raw opt-outs.</div>
+          <div><strong>Best guess (grounded).</strong> A blended 15/18/35% non-participation plus ~$25M of the inferred $100M+ appeals reserve. Tier 2 clears ~{fmtChartDate(k.bgTier3Ts)}, and the cascade settles around offer depth ~{k.bgOffer.toLocaleString()} (funded ~{k.bgFunded.toLocaleString()}) — just reaching the bottom edge of our band ~{fmtChartDate(k.bgBandLoTs)}.</div>
+          <div><strong>Cody line (aggressive upper edge — not a forecast).</strong> Cody's own bet: the fitted opt-out trickle until Jul 15, then a Tier 2 acceptance-shakeout wave landing on <strong>50% of the awarded base</strong> by Jul 31, plus ~{k.codyReserveSeats.toLocaleString()} reserve-funded seats as the 30-day appeal windows close. That 50% sits <em>above</em> the 14–34% range seen in D.C., Milwaukee and Virginia, so it's the optimistic ceiling, not the expectation. Under it the cascade clears our whole band by ~{fmtChartDate(k.codyBandHiTs)}.</div>
+          <div><strong>Watch — appeals-reserve release (~mid-June).</strong> Appeals are filed within 30 days of notice (T1 ~closed May 24 · T2 ~Jun 3 · waitlist ~Jun 12); unused reserve cascades to the waitlist. As the last windows close, a reserve release could move the line independent of opt-outs — the main thing that could push the real outcome toward the Cody line.</div>
         </div>
-        <p className="text-xs text-tefa-body/50 mt-3">
-          Bottom line, unchanged: even the 25% curve only reaches ~{(k.terminals.high - k.t2ClearOptOuts).toLocaleString()} into
-          Tier 3 at one release per opt-out — short of our band at {T3_BAND_START.toLocaleString()}. The observed{' '}
-          {k.cascadeRatio.toFixed(1)}× amplification is the genuine upside lever, but it depends on finite reserve fuel.
-          Treat TEFA as a bonus; don't budget around it.
-        </p>
       </section>
     </div>
   );
