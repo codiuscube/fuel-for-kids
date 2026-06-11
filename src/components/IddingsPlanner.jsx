@@ -109,11 +109,14 @@ const T2_OBSERVATIONS = [
 // The two projections the page now shows — nothing else.
 //   bestGuess: the grounded model above. Terminal = offer depth (~31,400);
 //              the bulk of movement lands at the Jul 15 deadline cascade.
-//   cody:      the aggressive-churn scenario, STAGED: current observed trend
-//              until Jul 15 → the deadline shakeout lands 25% cumulative
-//              opt-outs (+ half the reserve) by Jul 25 → the full 50% wave
-//              (+ the rest of the reserve) from Jul 25 through Jul 31. The
-//              reserve leg is $50M of the inferred ~$100M appeals pool
+//   cody:      the aggressive-churn scenario, STAGED in three legs:
+//                1. current observed trend, with a $50M reserve release flowing
+//                   ON TOP of it Jun 15 → Jul 15 (the line reads as
+//                   "trend + reserve" through that window);
+//                2. the deadline shakeout landing 25% cumulative opt-outs by
+//                   Jul 25;
+//                3. the full 50% wave from Jul 25 through Jul 31.
+//              The reserve leg is $50M of the inferred ~$100M appeals pool
 //              (~5,865 blended seats). That 50% sits ABOVE the 14–34%
 //              historical range (D.C./Milwaukee/Virginia), so it is the
 //              aggressive upper edge, not a forecast — labeled as such.
@@ -121,6 +124,8 @@ const CODY = {
   wave1Rate: 0.25,                // cumulative opt-out share by Jul 25 — the deadline wave
   optOutRate: 0.50,               // cumulative share from Jul 25 onwards, landing by Jul 31
   reserveSeats: 5865,             // $50M toward the waitlist at ~$8,525 blended/seat
+  reserveStart: '2026-06-15',     // appeals processed → reserve starts cascading
+  reserveEnd: '2026-07-15',       // fully released by the opt-in/opt-out deadline
 };
 
 // Chart window: from the lottery (frontier 0) to mid-August, by which point the
@@ -179,10 +184,28 @@ function buildCascadeProjection({
   };
 
   // Best guess: most of the climb at the Jul 15 cascade, settling on offer depth
-  // by mid-August. Aggressive churn: trickle until Jul 15, then the last-minute
-  // opt-out wave + reserve release surging through the last week of July.
+  // by mid-August.
   const bestGuess = makeLine({ terminal: BG_OFFER, center: '2026-07-19', scale: 7, end: win.end });
-  const codyFn = makeLine({ terminal: codyTerminal, center: '2026-07-21', scale: 3, end: '2026-07-31' });
+
+  // Aggressive churn: staged waypoints, not a logistic. Current trend (last
+  // observed segment's pace) carries forward; the $50M reserve flows on top of
+  // it Jun 15 → Jul 15; the deadline shakeout lands 25% cumulative opt-outs by
+  // Jul 25; the full 50% wave completes Jul 31. Waypoints are clamped monotone
+  // so new observations re-anchor without producing a dip.
+  const trendRate = (fL - obsF[obsF.length - 2].f) / (tL - obsF[obsF.length - 2].t);
+  const codyEnd = dayOf('2026-07-31');
+  const codyRaw = [
+    { t: dayOf(cody.reserveStart), f: fL + trendRate * (dayOf(cody.reserveStart) - tL) },
+    { t: dayOf(cody.reserveEnd), f: fL + trendRate * (dayOf(cody.reserveEnd) - tL) + cody.reserveSeats },
+    { t: dayOf('2026-07-25'), f: fL + (cody.wave1Rate * awardedBase - optOutsSoFar) + cody.reserveSeats },
+    { t: codyEnd, f: codyTerminal },
+  ];
+  const codyPts = [{ t: tL, f: fL }];
+  for (const p of codyRaw) {
+    if (p.t <= tL) continue;
+    codyPts.push({ t: p.t, f: Math.round(Math.max(p.f, codyPts[codyPts.length - 1].f)) });
+  }
+  const codyFn = (t) => (t <= tL ? interp(obsF, t) : interp(codyPts, Math.min(t, codyEnd)));
 
   const crossTs = (fn, level) => {
     for (let t = tL; t <= tEnd; t++) if (fn(t) >= level) return t0 + t * DAY;
