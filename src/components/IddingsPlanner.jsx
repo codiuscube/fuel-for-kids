@@ -109,15 +109,18 @@ const T2_OBSERVATIONS = [
 // The two projections the page now shows — nothing else.
 //   bestGuess: the grounded model above. Terminal = offer depth (~31,400);
 //              the bulk of movement lands at the Jul 15 deadline cascade.
-//   cody:      Cody's own line. Keeps his stated logic — fitted trickle until
-//              Jul 15, then a Tier 2 acceptance-shakeout wave landing on 50% of
-//              the awarded base by Jul 31, PLUS ~4,000 reserve-funded seats as
-//              the 30-day appeal windows close. That 50% sits ABOVE the 14–34%
+//   cody:      the aggressive-churn scenario, STAGED: current observed trend
+//              until Jul 15 → the deadline shakeout lands 25% cumulative
+//              opt-outs (+ half the reserve) by Jul 25 → the full 50% wave
+//              (+ the rest of the reserve) from Jul 25 through Jul 31. The
+//              reserve leg is $50M of the inferred ~$100M appeals pool
+//              (~5,865 blended seats). That 50% sits ABOVE the 14–34%
 //              historical range (D.C./Milwaukee/Virginia), so it is the
 //              aggressive upper edge, not a forecast — labeled as such.
 const CODY = {
-  optOutRate: 0.50,               // 50% of the awarded base by Jul 31 — Cody's bet
-  reserveSeats: 4000,             // ~half of the inferred ~$68M remaining reserve at ~$8,525/seat
+  wave1Rate: 0.25,                // cumulative opt-out share by Jul 25 — the deadline wave
+  optOutRate: 0.50,               // cumulative share from Jul 25 onwards, landing by Jul 31
+  reserveSeats: 5865,             // $50M toward the waitlist at ~$8,525 blended/seat
 };
 
 // Chart window: from the lottery (frontier 0) to mid-August, by which point the
@@ -176,9 +179,10 @@ function buildCascadeProjection({
   };
 
   // Best guess: most of the climb at the Jul 15 cascade, settling on offer depth
-  // by mid-August. Cody: earlier, steeper, deeper, all done by Jul 31.
+  // by mid-August. Aggressive churn: trickle until Jul 15, then the last-minute
+  // opt-out wave + reserve release surging through the last week of July.
   const bestGuess = makeLine({ terminal: BG_OFFER, center: '2026-07-19', scale: 7, end: win.end });
-  const codyFn = makeLine({ terminal: codyTerminal, center: '2026-07-16', scale: 4, end: '2026-07-31' });
+  const codyFn = makeLine({ terminal: codyTerminal, center: '2026-07-21', scale: 3, end: '2026-07-31' });
 
   const crossTs = (fn, level) => {
     for (let t = tL; t <= tEnd; t++) if (fn(t) >= level) return t0 + t * DAY;
@@ -856,7 +860,7 @@ const TefaView = () => {
           <div className="rounded-lg bg-tefa-light border border-tefa-red/30 p-3 text-center">
             <div className="text-xs text-tefa-red/70 font-medium">Aggressive Churn Reaches</div>
             <div className="font-bold text-tefa-red text-lg">~{k.codyTerminal.toLocaleString()}</div>
-            <div className="text-[10px] text-tefa-body/40">through our whole band by ~{fmtChartDate(k.codyBandHiTs)} · assumes 50% opt-out (above history)</div>
+            <div className="text-[10px] text-tefa-body/40">through our whole band by ~{fmtChartDate(k.codyBandHiTs)} · assumes 50% opt-out (above history) + $50M reserve</div>
           </div>
         </div>
         <div className="h-[340px]">
@@ -889,7 +893,7 @@ const TefaView = () => {
         <div className="text-[11px] text-tefa-body/60 bg-tefa-light rounded p-3 mt-3 space-y-1">
           <div><strong>What's plotted.</strong> The frontier is derived from the published Tier 2 backlog (frontier = {T2_AT_LOTTERY.toLocaleString()} at-lottery − Tier 2 still queued): 0 on May 4 → {k.frontierNow.toLocaleString()} on {fmtChartDate(Date.parse(k.asOf))}. The line ahead clears at roughly <strong>3.7 seats per opt-out</strong> — homeschool/other downgrades free $8,474 of each $10,474 award, and appeals-reserve awards free seats with no opt-out at all — so we measure progress in seats reached, not raw opt-outs.</div>
           <div><strong>Best guess (grounded).</strong> A blended 15/18/35% non-participation plus ~$25M of the inferred $100M+ appeals reserve. Tier 2 clears ~{fmtChartDate(k.bgTier3Ts)}, and the cascade settles around offer depth ~{k.bgOffer.toLocaleString()} (funded ~{k.bgFunded.toLocaleString()}) — just reaching the bottom edge of our band ~{fmtChartDate(k.bgBandLoTs)}.</div>
-          <div><strong>Aggressive churn (aggressive upper edge — not a forecast).</strong> The optimistic bet: the fitted opt-out trickle until Jul 15, then a Tier 2 acceptance-shakeout wave landing on <strong>50% of the awarded base</strong> by Jul 31, plus ~{k.codyReserveSeats.toLocaleString()} reserve-funded seats as the 30-day appeal windows close. That 50% sits <em>above</em> the 14–34% range seen in D.C., Milwaukee and Virginia, so it's the optimistic ceiling, not the expectation. Under it the cascade clears our whole band by ~{fmtChartDate(k.codyBandHiTs)}.</div>
+          <div><strong>Aggressive churn (aggressive upper edge — not a forecast).</strong> The optimistic bet: the fitted opt-out trickle until Jul 15, then a last-minute shakeout wave landing on <strong>50% of the awarded base</strong> — its cascade surging through the last week of July — plus <strong>$50M of the inferred ~$100M appeals reserve</strong> (~{k.codyReserveSeats.toLocaleString()} blended seats) flowing to the waitlist as the 30-day appeal windows close. That 50% sits <em>above</em> the 14–34% range seen in D.C., Milwaukee and Virginia, so it's the optimistic ceiling, not the expectation. Under it the cascade clears our whole band by ~{fmtChartDate(k.codyBandHiTs)}.</div>
           <div><strong>Watch — appeals-reserve release (~mid-June).</strong> Appeals are filed within 30 days of notice (T1 ~closed May 24 · T2 ~Jun 3 · waitlist ~Jun 12); unused reserve cascades to the waitlist. As the last windows close, a reserve release could move the line independent of opt-outs — the main thing that could push the real outcome toward the aggressive-churn ceiling.</div>
         </div>
       </section>
