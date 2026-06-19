@@ -25,6 +25,23 @@ All figures below are statutory (SB 2) or drawn from the Texas Comptroller's off
 
 > The Apr 8 PDF reported 274,183 / 247,032; the Apr 28 PDF refined this again; the revised May 7 PDF now supplies the exact operating counts. Use the May 7 figures.
 
+### 1.1b District × grade application breakdown (`Apps-by-District-by-Grade-30.xlsx`, downloaded Jun 19, 2026)
+
+Comptroller export, sheet "ISD x Grade" — applications per Texas ISD by grade. **Confirms §1.1; changes nothing in the model.**
+
+- **274,087** total applications — matches the §1.1 figure of 274,036 (Δ51, immaterial snapshot revision). Use **274,036** (May 7 PDF) as the operating figure; this file is corroboration.
+- ⚠️ **Double-count trap:** the file's own "Grand Total" row (274,087) is embedded *inside* the district list at row 185 (it sorts alphabetically after "GRAND SALINE ISD"). Summing the Total column blind yields **542,939** — wrong. The 486 real districts sum to **268,852**; the **5,235** gap = districts with <30 total students that were removed.
+- **It is APPLICATIONS, not awards** — despite the file's note saying "students awarded" (boilerplate). 274,087 ≈ the application pool; only ~102k have been awarded. Do not treat 542,939 or 274,087 as an award count.
+- Suppression: districts <30 total, and grade cells <30 within a district, are removed; per-district totals remain accurate (file note, rows 489–490).
+- **No new dimensions.** No homeschool/private setting split, no SPED/IEP, no eligibility — those stay as §1.1 (77/23 private/homeschool, 8,618 IEP, 248,636 eligible) and are unaffected.
+- Bonus check: Pre-K apps here = **36,634** ≈ the Apr 8 PDF's **36,666** behind the Pre-K ineligibility math (18,677/36,666) — supports it.
+
+Application grade distribution (Grand Total row), new reference data (repo previously had only the *awards* grade breakdown, where 12th is anomalously high — opposite of this monotonic decline):
+
+| PreK | K | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | Total |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 36,634 | 25,909 | 22,395 | 21,511 | 21,505 | 20,880 | 20,740 | 20,655 | 18,366 | 16,437 | 15,573 | 13,237 | 11,244 | 9,001 | 274,087 |
+
 ### 1.1a Award counts (May 7 revised Lottery Update PDF — empirical)
 
 - **44,753 T1-family students** are awarded: **28,233 Tier 1 students** plus **16,520 T1 siblings** pulled in by the sibling rule.
