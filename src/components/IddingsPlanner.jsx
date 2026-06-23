@@ -209,6 +209,35 @@ function buildCascadeProjection({
     return pts[pts.length - 1].f;
   };
 
+  // Monotone cubic (Fritsch–Carlson) interpolation through waypoints — gives each
+  // line a smooth curve through its staged waypoints WITHOUT overshooting, so the
+  // bows can't push a line into a false dip or above its scenario's terminal.
+  // (Recharts' own curve types can't help here: the series is sampled daily along
+  // straight segments, so the points are colinear and there's nothing to round.)
+  const monoSpline = (pts) => {
+    const n = pts.length;
+    if (n < 2) return () => (n ? pts[0].f : 0);
+    const xs = pts.map((p) => p.t), ys = pts.map((p) => p.f);
+    const dx = [], sl = [];
+    for (let i = 0; i < n - 1; i++) { dx[i] = xs[i + 1] - xs[i]; sl[i] = (ys[i + 1] - ys[i]) / dx[i]; }
+    const m = new Array(n);
+    m[0] = sl[0]; m[n - 1] = sl[n - 2];
+    for (let i = 1; i < n - 1; i++) m[i] = sl[i - 1] * sl[i] <= 0 ? 0 : (sl[i - 1] + sl[i]) / 2;
+    for (let i = 0; i < n - 1; i++) {
+      if (sl[i] === 0) { m[i] = 0; m[i + 1] = 0; continue; }
+      const a = m[i] / sl[i], b = m[i + 1] / sl[i], h = Math.hypot(a, b);
+      if (h > 3) { const tau = 3 / h; m[i] = tau * a * sl[i]; m[i + 1] = tau * b * sl[i]; }
+    }
+    return (x) => {
+      if (x <= xs[0]) return ys[0];
+      if (x >= xs[n - 1]) return ys[n - 1];
+      let i = 0; while (x > xs[i + 1]) i++;
+      const h = dx[i], t = (x - xs[i]) / h, t2 = t * t, t3 = t2 * t;
+      return (2 * t3 - 3 * t2 + 1) * ys[i] + (t3 - 2 * t2 + t) * h * m[i] +
+             (-2 * t3 + 3 * t2) * ys[i + 1] + (t3 - t2) * h * m[i + 1];
+    };
+  };
+
   const optOutsSoFar = optOuts[optOuts.length - 1].cumOptOuts;
 
   // Pessimistic guess (grounded; the `bestGuess` series), built piecewise so the steep part sits AFTER Jul 15,
@@ -226,10 +255,11 @@ function buildCascadeProjection({
     { t: dayOf('2026-07-15'), f: 13500 },      // gentle pre-deadline lull
     { t: bgEnd, f: BG_OFFER },                 // Jul 15 → Aug 1 deadline cascade
   ];
+  const bgSpline = monoSpline(bgWaypoints);
   const bestGuess = (t) =>
     t <= tL
       ? interp(obsF, t)
-      : interp(bgWaypoints, Math.min(t, bgEnd)) + Math.max(0, t - bgEnd) * RECON_DRIFT;
+      : bgSpline(Math.min(t, bgEnd)) + Math.max(0, t - bgEnd) * RECON_DRIFT;
 
   // Aggressive churn: staged waypoints, not a logistic. Current trend (last
   // observed segment's pace) carries forward; the reserve flows on top of it
@@ -259,10 +289,11 @@ function buildCascadeProjection({
       if (q.t <= tL) continue;
       pts.push({ t: q.t, f: Math.round(Math.max(q.f, pts[pts.length - 1].f)) });
     }
+    const spline = monoSpline(pts);
     const fn = (t) =>
       t <= tL
         ? interp(obsF, t)
-        : interp(pts, Math.min(t, codyEnd)) + Math.max(0, t - codyEnd) * RECON_DRIFT;
+        : spline(Math.min(t, codyEnd)) + Math.max(0, t - codyEnd) * RECON_DRIFT;
     return { fn, terminal };
   };
   const { fn: codyFn, terminal: codyTerminal } = buildStaged(cody);
@@ -281,8 +312,10 @@ function buildCascadeProjection({
     if (t <= tL) row.observedLine = Math.round(interp(obsF, t));
     if (t >= tL) {
       row.bestGuess = Math.round(bestGuess(t));
-      row.cody = Math.round(codyFn(t));
-      row.codyPlus = Math.round(codyPlusFn(t));
+      // Enforce the definitional ordering pessimistic ≤ churn ≤ churn+; the smooth
+      // spline can otherwise introduce sub-100-seat crossings between the lines.
+      row.cody = Math.max(Math.round(codyFn(t)), row.bestGuess);
+      row.codyPlus = Math.max(Math.round(codyPlusFn(t)), row.cody);
     }
     series.push(row);
   }
