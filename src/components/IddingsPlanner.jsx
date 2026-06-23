@@ -77,6 +77,18 @@ const BAND_HI = TEFA.bandHi;      // 50,000 — bottom of our family's band
 // each projection line at the date it reaches this rank (within our band).
 const USER_POS = 40000;
 
+// UNOFFICIAL estimate of where the cascade frontier actually sits "today"
+// (Jun 22). Last official number is Jun 10 = 7,417. Basis is a DOCUMENTED
+// frontline case (screenshots of Odyssey support emails), not just trend: one
+// Tier 2 family's waitlist range went 5,001–10,000 (4:01pm) → 4,001–5,000
+// (8:52pm) the SAME day, and ~15–20k → 4–5k overall. "Waitlist range" = people
+// still ahead of you in the queue, so that's ~13,000 positions cleared from
+// ahead of one person → frontier ~11,000–15,000. We plot the ~13,000 midpoint
+// (also right on the aggressive-churn line for this date). Still UNOFFICIAL —
+// one self-reported case, and some movement may be waitlist attrition rather
+// than funding — so always asterisked.
+const EST_FRONTIER_TODAY = 13000;
+
 // Best-guess (grounded) model from the published bands analysis: a blended
 // 15%/18%/35% non-participation plus ~$25M of the inferred $100M+ appeals
 // reserve. Under it Tier 2 fully clears and the cascade reaches roughly these
@@ -932,7 +944,7 @@ const TefaView = () => {
           <div className="rounded-lg bg-tefa-light border border-gray-200 p-3 text-center">
             <div className="text-xs text-tefa-body/50 font-medium">Funded So Far</div>
             <div className="font-bold text-tefa-navy text-lg">{k.frontierNow.toLocaleString()}</div>
-            <div className="text-[10px] text-tefa-body/40">all Tier 2 · Tier 3 starts at {T3_START.toLocaleString()} · as of {fmtChartDate(Date.parse(k.asOf))}</div>
+            <div className="text-[10px] text-tefa-body/40">all Tier 2 · official as of {fmtChartDate(Date.parse(k.asOf))} · <span className="text-tefa-body/60 font-semibold">~{EST_FRONTIER_TODAY.toLocaleString()}* est. today</span></div>
           </div>
           <div className="rounded-lg bg-tefa-light border border-gray-200 p-3 text-center">
             <div className="text-xs text-tefa-body/50 font-medium">Tier 2 Still Ahead</div>
@@ -950,6 +962,15 @@ const TefaView = () => {
             <div className="text-[10px] text-tefa-body/40">through our whole band by ~{fmtChartDate(k.codyBandHiTs)} · assumes 50% opt-out (above history) + $50M reserve</div>
           </div>
         </div>
+        <p className="text-[10px] text-tefa-body/50 mb-3 -mt-2">
+          <strong>*</strong> Unofficial estimate of where the frontier sits today ({fmtChartDate(todayTs)}). Documented
+          Odyssey support emails (Jun 22) show one Tier 2 family's waitlist range moving 5,001–10,000 → 4,001–5,000 in a
+          single afternoon (and ~15–20k → 4–5k overall) — ~13,000 cleared from ahead of them. Movement is bursty, not
+          steady: Odyssey appears to work the waitlist ~2 days/week, with thousands clearing on an active day, so a jump
+          this far past the Jun 10 official count (7,417) fits. The dashed dot marks the ~13,000 midpoint of a
+          ~11,000–15,000 range. Not a published figure — some movement may be waitlist attrition rather than funding; the
+          official number updates with the next Comptroller release.
+        </p>
         <div className="h-[340px]">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={CASCADE.series} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -977,6 +998,9 @@ const TefaView = () => {
               <Line dataKey="cody" name="Aggressive churn" stroke="#aa2142" strokeWidth={2.5} strokeDasharray="8 3" dot={false} />
               <Line dataKey="codyPlus" name="Aggressive+ (upper edge)" stroke="#e8889b" strokeWidth={2} strokeDasharray="2 3" dot={false} />
               <Scatter dataKey="observed" name="Published data" fill="#202562" />
+              {/* Unofficial estimate of today's frontier — hollow dashed dot on the Today line. */}
+              <ReferenceDot x={todayTs} y={EST_FRONTIER_TODAY} r={5} fill="#fff" stroke="#475569" strokeWidth={2} strokeDasharray="2 1.5"
+                  label={{ value: `est. ~${(EST_FRONTIER_TODAY / 1000).toFixed(0)}k*`, position: 'right', fontSize: 9, fontWeight: 700, fill: '#475569' }} />
               {/* Where each line reaches position 40,000 (best guess never does). */}
               {k.codyPlusUserTs && (
                 <ReferenceDot x={k.codyPlusUserTs} y={USER_POS} r={5} fill="#e8889b" stroke="#fff" strokeWidth={1.5}
