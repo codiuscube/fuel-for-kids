@@ -30,7 +30,7 @@ import {
 // shows is derived from the data in this block — update here if a figure changes.
 // ---------------------------------------------------------------------------
 
-const TODAY = '2026-06-10';
+const TODAY = '2026-06-22';
 
 // Per-child 2026-27 gross tuition and the NBCA financial aid already granted.
 const STUDENTS = [
@@ -106,7 +106,7 @@ const T2_OBSERVATIONS = [
   { date: '2026-06-10', t2Remaining: 12966 }, // after 4,100 more cascade awards
 ];
 
-// The two projections the page now shows — nothing else.
+// The three projections the page now shows — nothing else.
 //   bestGuess: the grounded model above. Terminal = offer depth (~31,400);
 //              the bulk of movement lands at the Jul 15 deadline cascade.
 //   cody:      the aggressive-churn scenario, STAGED in three legs:
@@ -120,12 +120,33 @@ const T2_OBSERVATIONS = [
 //              (~5,865 blended seats). That 50% sits ABOVE the 14–34%
 //              historical range (D.C./Milwaukee/Virginia), so it is the
 //              aggressive upper edge, not a forecast — labeled as such.
+//   codyPlus:  same staging, nudged a little hotter — a touch higher opt-out
+//              share, a slightly larger reserve draw ($55M), and the reserve
+//              landing a few days sooner. This is the OUTER edge of the fan
+//              (light-red dotted), drawn to bracket the upside if the Jun 22
+//              anecdotes (reserve rolling now) prove out. Not a forecast.
 const CODY = {
   wave1Rate: 0.25,                // cumulative opt-out share by Jul 25 — the deadline wave
   optOutRate: 0.50,               // cumulative share from Jul 25 onwards, landing by Jul 31
   reserveSeats: 5865,             // $50M toward the waitlist at ~$8,525 blended/seat
   reserveStart: '2026-06-15',     // appeals processed → reserve starts cascading
   reserveEnd: '2026-07-15',       // fully released by the opt-in/opt-out deadline
+  // ANECDOTAL EARLY-CATALYST (not confirmed, Jun 22): frontline + support reports
+  // suggest the appeals reserve is rolling through now and "Tier 2 funded by end
+  // of month." If an OFFICIAL Comptroller number confirms frontier ~20,383 by
+  // ~Jun 30, switch reserveEnd to '2026-06-30' (clears Tier 2 ~end of June) and
+  // re-center bgRamp earlier (see note at its definition). Until then, keep above.
+};
+
+// Slightly-more-aggressive variant of CODY — the outer edge of the fan. Same
+// staged mechanism, pushed up: 55% opt-out (vs 50%), ~$55M reserve (vs $50M),
+// and the reserve fully released by Jul 10 (vs Jul 15). Reaches ~64.6k vs ~59k.
+const CODY_PLUS = {
+  wave1Rate: 0.28,                // cumulative opt-out share by Jul 25 (vs 0.25)
+  optOutRate: 0.55,               // cumulative share landing by Jul 31 (vs 0.50)
+  reserveSeats: 6450,             // ~$55M toward the waitlist at ~$8,525 blended/seat
+  reserveStart: '2026-06-15',
+  reserveEnd: '2026-07-10',       // reserve fully released a few days sooner
 };
 
 // Chart window: from the lottery (frontier 0) through end-August. The main
@@ -133,7 +154,10 @@ const CODY = {
 // students who never actually enroll (no-shows) and other recovered funds keep
 // reconciling through Aug–Sep, so both lines carry a slow steady drift after
 // their main waves complete.
-const FRONTIER_WINDOW = { chartStart: '2026-05-04', jul15: '2026-07-15', end: '2026-08-31' };
+// `today` anchors the "Today" marker to a fixed date so a screenshot of the
+// chart reads the same for everyone (the artifact gets posted/shared) — bump it
+// as the analysis is refreshed, rather than letting it drift with the viewer's clock.
+const FRONTIER_WINDOW = { chartStart: '2026-05-04', today: '2026-06-22', jul15: '2026-07-15', end: '2026-08-31' };
 const RECON_DRIFT = 125;          // seats/day of post-wave reconciliation (~5% no-shows recovering over Aug–Sep)
 
 // Cascade-frontier model. Two projections only. Each is a logistic ramp anchored
@@ -143,6 +167,7 @@ function buildCascadeProjection({
   t2Observations = T2_OBSERVATIONS,
   optOuts = OPTOUT_OBSERVATIONS,
   cody = CODY,
+  codyPlus = CODY_PLUS,
   awardedBase = AWARDED_BASE,
   window: win = FRONTIER_WINDOW,
 } = {}) {
@@ -168,10 +193,7 @@ function buildCascadeProjection({
     return pts[pts.length - 1].f;
   };
 
-  // Cody's terminal frontier, from his own logic: reserve seats + (his 50%
-  // opt-out target beyond what has already opted out), one freed seat each.
   const optOutsSoFar = optOuts[optOuts.length - 1].cumOptOuts;
-  const codyTerminal = Math.round(fL + cody.reserveSeats + (cody.optOutRate * awardedBase - optOutsSoFar));
 
   // A logistic from the last observation to `terminal` at `end`, normalized to
   // pass exactly through (tL, fL) and reach `terminal` at the end date.
@@ -190,31 +212,41 @@ function buildCascadeProjection({
   // Best guess: most of the climb at the Jul 15 cascade, reaching offer depth
   // by Aug 1, then the slow reconciliation drift.
   const bgEnd = dayOf('2026-08-01');
+  // If the anecdotal early-catalyst (see CODY.reserveEnd note) is confirmed,
+  // re-center from '2026-07-19' to ~'2026-07-08'. Terminal/depth stay put — the
+  // reports tell us WHEN the reserve fires, not HOW BIG it is.
   const bgRamp = makeLine({ terminal: BG_OFFER, center: '2026-07-19', scale: 7, end: '2026-08-01' });
   const bestGuess = (t) => bgRamp(t) + Math.max(0, t - bgEnd) * RECON_DRIFT;
 
   // Aggressive churn: staged waypoints, not a logistic. Current trend (last
-  // observed segment's pace) carries forward; the $50M reserve flows on top of
-  // it Jun 15 → Jul 15; the deadline shakeout lands 25% cumulative opt-outs by
-  // Jul 25; the full 50% wave completes Jul 31. Waypoints are clamped monotone
-  // so new observations re-anchor without producing a dip.
+  // observed segment's pace) carries forward; the reserve flows on top of it
+  // across the reserveStart→reserveEnd window; the deadline shakeout lands
+  // wave1Rate cumulative opt-outs by Jul 25; the full optOutRate wave completes
+  // Jul 31. Waypoints are clamped monotone so new observations re-anchor without
+  // a dip. buildStaged builds one such line from a scenario (cody / codyPlus).
   const trendRate = (fL - obsF[obsF.length - 2].f) / (tL - obsF[obsF.length - 2].t);
   const codyEnd = dayOf('2026-07-31');
-  const codyRaw = [
-    { t: dayOf(cody.reserveStart), f: fL + trendRate * (dayOf(cody.reserveStart) - tL) },
-    { t: dayOf(cody.reserveEnd), f: fL + trendRate * (dayOf(cody.reserveEnd) - tL) + cody.reserveSeats },
-    { t: dayOf('2026-07-25'), f: fL + (cody.wave1Rate * awardedBase - optOutsSoFar) + cody.reserveSeats },
-    { t: codyEnd, f: codyTerminal },
-  ];
-  const codyPts = [{ t: tL, f: fL }];
-  for (const p of codyRaw) {
-    if (p.t <= tL) continue;
-    codyPts.push({ t: p.t, f: Math.round(Math.max(p.f, codyPts[codyPts.length - 1].f)) });
-  }
-  const codyFn = (t) =>
-    t <= tL
-      ? interp(obsF, t)
-      : interp(codyPts, Math.min(t, codyEnd)) + Math.max(0, t - codyEnd) * RECON_DRIFT;
+  const buildStaged = (p) => {
+    const terminal = Math.round(fL + p.reserveSeats + (p.optOutRate * awardedBase - optOutsSoFar));
+    const raw = [
+      { t: dayOf(p.reserveStart), f: fL + trendRate * (dayOf(p.reserveStart) - tL) },
+      { t: dayOf(p.reserveEnd), f: fL + trendRate * (dayOf(p.reserveEnd) - tL) + p.reserveSeats },
+      { t: dayOf('2026-07-25'), f: fL + (p.wave1Rate * awardedBase - optOutsSoFar) + p.reserveSeats },
+      { t: codyEnd, f: terminal },
+    ];
+    const pts = [{ t: tL, f: fL }];
+    for (const q of raw) {
+      if (q.t <= tL) continue;
+      pts.push({ t: q.t, f: Math.round(Math.max(q.f, pts[pts.length - 1].f)) });
+    }
+    const fn = (t) =>
+      t <= tL
+        ? interp(obsF, t)
+        : interp(pts, Math.min(t, codyEnd)) + Math.max(0, t - codyEnd) * RECON_DRIFT;
+    return { fn, terminal };
+  };
+  const { fn: codyFn, terminal: codyTerminal } = buildStaged(cody);
+  const { fn: codyPlusFn, terminal: codyPlusTerminal } = buildStaged(codyPlus);
 
   const crossTs = (fn, level) => {
     for (let t = tL; t <= tEnd; t++) if (fn(t) >= level) return t0 + t * DAY;
@@ -230,6 +262,7 @@ function buildCascadeProjection({
     if (t >= tL) {
       row.bestGuess = Math.round(bestGuess(t));
       row.cody = Math.round(codyFn(t));
+      row.codyPlus = Math.round(codyPlusFn(t));
     }
     series.push(row);
   }
@@ -248,13 +281,15 @@ function buildCascadeProjection({
     codyTier3Ts: crossTs(codyFn, T3_START),
     codyBandLoTs: crossTs(codyFn, BAND_LO),
     codyBandHiTs: crossTs(codyFn, BAND_HI),
+    codyPlusTerminal,
+    codyPlusBandHiTs: crossTs(codyPlusFn, BAND_HI),
   };
   return { series, kpis };
 }
 
 const CASCADE = buildCascadeProjection();
 const CASCADE_KPIS = CASCADE.kpis;
-const FRONTIER_Y_MAX = Math.ceil(Math.max(BAND_HI, ...CASCADE.series.map((r) => r.cody ?? 0)) * 1.05 / 1000) * 1000;
+const FRONTIER_Y_MAX = Math.ceil(Math.max(BAND_HI, ...CASCADE.series.map((r) => Math.max(r.cody ?? 0, r.codyPlus ?? 0))) * 1.05 / 1000) * 1000;
 
 const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const fmtChartDate = (ts) => {
@@ -317,6 +352,7 @@ const FRONTIER_SERIES = {
   observedLine: 'Funded so far (published)',
   bestGuess: 'Best guess',
   cody: 'Aggressive churn',
+  codyPlus: 'Aggressive+ (upper edge)',
 };
 
 const FrontierTooltip = ({ active, payload, label }) => {
@@ -341,8 +377,8 @@ const FrontierTooltip = ({ active, payload, label }) => {
 const TIMELINE = [
   { date: 'Jun 15', iso: '2026-06-15', title: 'Accept NBCA scholarship', kind: 'do',
     detail: 'Reply to NBCA to lock in the $12,000 scholarship ($4,000 per child).' },
-  { date: 'End of June', iso: '2026-06-29', title: 'ACE scholarship decision', kind: 'wait',
-    detail: 'ACE said decisions arrive by the end of June. Any award lowers the balance further.' },
+  { date: 'Jun 22', iso: '2026-06-22', title: 'ACE scholarship — denied (all three)', kind: 'info',
+    detail: 'Decision arrived early: Cassius, Dorothy, and Sebastian were all denied for "Scholarship funds unavailable" — the applications were complete, on time, and income-eligible, but ACE ran out of funding before reaching them. This does not change the balance; no ACE award was ever built into it, and the NBCA scholarship still stands. Questions go to ACE at (985) 800-3950 or support@acescholarships.org.' },
   { date: 'End of June', iso: '2026-06-29', title: 'Decide: all three at NBCA, or just Cassius?', kind: 'decide',
     detail: 'Nanette confirmed the full $12,000 scholarship can go to one child instead of $4,000 three ways. Settle whether to enroll all three or send only Cassius (with the whole scholarship, covering his tuition) while Dorothy and Sebastian stay at the School of Science and Technology. The trade-off is cost vs. a two-school commute. Reply to Nanette and decide alongside the June 30 withdrawal deadline.' },
   { date: 'Jun 30', iso: '2026-06-30', title: 'Penalty-free withdrawal deadline', kind: 'decide',
@@ -477,7 +513,7 @@ const IddingsPlanner = () => {
 const NowView = ({ balanceDue, perStudent, setTab }) => {
   const actions = [
     { date: 'By Jun 15', text: 'Accept the NBCA scholarship ($12,000) by replying to Nanette.', done: false },
-    { date: 'End of June', text: 'Watch for the ACE scholarship decision — it could lower the bill.', done: false },
+    { date: 'Resolved', text: 'ACE scholarship came back denied for all three (funds unavailable) — no ACE money is coming, so budget for the full balance below.', done: true },
     { date: 'By Jun 30', text: 'Decide: withdraw penalty-free, or commit and pay tuition.', done: false },
   ];
 
@@ -811,7 +847,7 @@ const TimelineView = () => {
 const TefaView = () => {
   const k = CASCADE_KPIS;
   const todayTs = Math.min(
-    Math.max(Date.now(), Date.parse(FRONTIER_WINDOW.chartStart)),
+    Math.max(Date.parse(FRONTIER_WINDOW.today), Date.parse(FRONTIER_WINDOW.chartStart)),
     Date.parse(FRONTIER_WINDOW.end)
   );
 
@@ -865,13 +901,14 @@ const TefaView = () => {
       {/* The two projections, on the metric that matters: cascade depth. */}
       <section className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
         <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2 mb-2">
-          <Activity size={20} /> How far the line reaches — two projections
+          <Activity size={20} /> How far the line reaches — three projections
         </h2>
         <p className="text-sm text-tefa-body/80 mb-4">
           The chart tracks the <strong>cascade frontier</strong>: how far down the waitlist awards have reached.
-          We show just two lines — the grounded <strong>best guess</strong> and an <strong>aggressive churn</strong>{' '}
-          scenario (a more optimistic opt-out bet). When a line crosses a band's threshold, the cascade has reached that
-          band.
+          We show three lines — the grounded <strong>best guess</strong>, an <strong>aggressive churn</strong>{' '}
+          scenario (a more optimistic opt-out bet), and a slightly-hotter <strong>aggressive+ upper edge</strong> that
+          brackets the upside if the appeals reserve is releasing now. When a line crosses a band's threshold, the
+          cascade has reached that band.
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm mb-4">
           <div className="rounded-lg bg-tefa-light border border-gray-200 p-3 text-center">
@@ -918,6 +955,7 @@ const TefaView = () => {
               <Line dataKey="observedLine" name="Funded so far (published)" stroke="#202562" strokeWidth={2.5} dot={false} legendType="none" />
               <Line dataKey="bestGuess" name="Best guess" stroke="#202562" strokeWidth={2.5} dot={false} />
               <Line dataKey="cody" name="Aggressive churn" stroke="#aa2142" strokeWidth={2.5} strokeDasharray="8 3" dot={false} />
+              <Line dataKey="codyPlus" name="Aggressive+ (upper edge)" stroke="#e8889b" strokeWidth={2} strokeDasharray="2 3" dot={false} />
               <Scatter dataKey="observed" name="Published data" fill="#202562" />
             </ComposedChart>
           </ResponsiveContainer>
