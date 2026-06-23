@@ -43,6 +43,17 @@ const STUDENTS = [
 const SIBLING_DISCOUNT = 1518.5;   // FACTS applies the family sibling discount to Sebastian's account.
 const ENROLLMENT_FEE_PAID = 690;   // ($175 + $55) x 3 — paid Apr 2, non-refundable.
 
+const usd = (n) => `$${n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+const usd2 = (n) => `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+// Withdrawal penalty once the Jun 30 penalty-free deadline passes: 10% if we
+// withdraw in July, 20% in August. ASSUMPTION pending the enrollment contract's
+// exact wording ("x% of annual tuition"): the percentage is assessed on the NET
+// tuition we actually owe — the FACTS balance, i.e. tuition after NBCA aid, the
+// sibling discount and the scholarship ($18,306.50) — NOT gross sticker tuition.
+const PENALTY_BASE = STUDENTS.reduce((a, s) => a + s.tuition - s.nbcaAid - s.scholarship, 0) - SIBLING_DISCOUNT;
+const WITHDRAWAL_PENALTY = { july: PENALTY_BASE * 0.1, august: PENALTY_BASE * 0.2 };
+
 // TEFA waitlist status — the bucket the Comptroller texted us on May 13.
 const TEFA = {
   tier: 'Tier 3 (200–500% FPL)',
@@ -435,7 +446,7 @@ const TIMELINE = [
   { date: 'End of June', iso: '2026-06-29', title: 'Decide: all three at NBCA, or just Cassius?', kind: 'decide',
     detail: 'Nanette confirmed the full $12,000 scholarship can go to one child instead of $4,000 three ways. Settle whether to enroll all three or send only Cassius (with the whole scholarship, covering his tuition) while Dorothy and Sebastian stay at the School of Science and Technology. The trade-off is cost vs. a two-school commute. Reply to Nanette and decide alongside the June 30 withdrawal deadline.' },
   { date: 'Jun 30', iso: '2026-06-30', title: 'Penalty-free withdrawal deadline', kind: 'decide',
-    detail: 'Last day to withdraw from NBCA losing only the $690 enrollment fee. After this: 10% penalty ($4,802.50) in July, 20% ($9,605) in August.' },
+    detail: `Last day to withdraw from NBCA losing only the $690 enrollment fee. After this: 10% of tuition owed (${usd2(WITHDRAWAL_PENALTY.july)}) in July, 20% (${usd2(WITHDRAWAL_PENALTY.august)}) in August.` },
   { date: 'Jul 6', iso: '2026-07-06', title: 'First FACTS tuition draft', kind: 'pay',
     detail: 'First scheduled payment. Use checking/savings ACH to avoid the card fee. See the Money tab for the full schedule.' },
   { date: 'Jul 15', iso: '2026-07-15', title: 'TEFA opt-in / opt-out deadline', kind: 'info',
@@ -471,9 +482,6 @@ const PAYMENT_PLANS = {
 
 const VALID_TABS = ['now', 'money', 'timeline', 'tefa'];
 const TAB_LABELS = { now: 'Now', money: 'Money', timeline: 'Timeline', tefa: 'TEFA' };
-
-const usd = (n) => `$${n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-const usd2 = (n) => `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 const IddingsPlanner = () => {
   const { tab } = useParams();
@@ -598,7 +606,7 @@ const NowView = ({ balanceDue, perStudent, setTab }) => {
           <div className="rounded-lg border border-tefa-red/30 bg-tefa-red/5 p-4">
             <div className="font-bold text-tefa-red mb-1">Commit past June 30</div>
             <p className="text-tefa-body/70 text-xs">
-              Tuition is owed and penalties bind: 10% ($4,802.50) in July, 20% ($9,605) in August.
+              Tuition is owed and penalties bind: 10% of tuition owed ({usd2(WITHDRAWAL_PENALTY.july)}) in July, 20% ({usd2(WITHDRAWAL_PENALTY.august)}) in August.
             </p>
           </div>
         </div>
