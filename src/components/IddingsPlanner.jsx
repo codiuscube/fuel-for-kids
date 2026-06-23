@@ -227,10 +227,13 @@ function buildCascadeProjection({
   // Best guess: most of the climb at the Jul 15 cascade, reaching offer depth
   // by Aug 1, then the slow reconciliation drift.
   const bgEnd = dayOf('2026-08-01');
-  // If the anecdotal early-catalyst (see CODY.reserveEnd note) is confirmed,
-  // re-center from '2026-07-19' to ~'2026-07-08'. Terminal/depth stay put — the
-  // reports tell us WHEN the reserve fires, not HOW BIG it is.
-  const bgRamp = makeLine({ terminal: BG_OFFER, center: '2026-07-19', scale: 7, end: '2026-08-01' });
+  // Re-centered '2026-07-19' → '2026-07-05' so best guess passes through ~10,100
+  // on Jun 22 — the documented FLOOR from Yaritza's Odyssey emails (frontier was
+  // ≥ ~10k today: original waitlist range 15–20k → current 4–5k = at least 10k
+  // cleared ahead of her). A grounded line can't sit below documented evidence.
+  // Terminal/depth unchanged (~31,400) — the post pins where the frontier is NOW,
+  // not where the season ends.
+  const bgRamp = makeLine({ terminal: BG_OFFER, center: '2026-07-05', scale: 7, end: '2026-08-01' });
   const bestGuess = (t) => bgRamp(t) + Math.max(0, t - bgEnd) * RECON_DRIFT;
 
   // Aggressive churn: staged waypoints, not a logistic. Current trend (last
