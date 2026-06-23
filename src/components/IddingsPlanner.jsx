@@ -444,7 +444,7 @@ const TIMELINE = [
   { date: 'Jun 22', iso: '2026-06-22', title: 'ACE scholarship — denied (all three)', kind: 'info',
     detail: 'Decision arrived early: Cassius, Dorothy, and Sebastian were all denied for "Scholarship funds unavailable" — the applications were complete, on time, and income-eligible, but ACE ran out of funding before reaching them. This does not change the balance; no ACE award was ever built into it, and the NBCA scholarship still stands. Questions go to ACE at (985) 800-3950 or support@acescholarships.org.' },
   { date: 'End of June', iso: '2026-06-29', title: 'Decide: all three at NBCA, or just Cassius?', kind: 'decide',
-    detail: 'Nanette confirmed the full $12,000 scholarship can go to one child instead of $4,000 three ways. Settle whether to enroll all three or send only Cassius (with the whole scholarship, covering his tuition) while Dorothy and Sebastian stay at the School of Science and Technology. The trade-off is cost vs. a two-school commute. Reply to Nanette and decide alongside the June 30 withdrawal deadline.' },
+    detail: 'The scholarship is $4,000 per child and can\'t be combined — each child keeps only their own award, and only if they enroll. Settle whether to enroll all three (each keeping their $4,000) or send only Cassius, which forfeits Dorothy\'s and Sebastian\'s $8,000 in scholarship plus their NBCA aid while they stay at the School of Science and Technology. There\'s no money to gain by concentrating the award, so the trade-off is cost vs. a two-school commute. Reply to Nanette and decide alongside the June 30 withdrawal deadline.' },
   { date: 'Jun 30', iso: '2026-06-30', title: 'Penalty-free withdrawal deadline', kind: 'decide',
     detail: `Last day to withdraw from NBCA losing only the $690 enrollment fee. After this: 10% of tuition owed (${usd2(WITHDRAWAL_PENALTY.july)}) in July, 20% (${usd2(WITHDRAWAL_PENALTY.august)}) in August.` },
   { date: 'Jul 6', iso: '2026-07-06', title: 'First FACTS tuition draft', kind: 'pay',
@@ -579,11 +579,12 @@ const NowView = ({ balanceDue, perStudent, setTab }) => {
   ];
 
   const cassius = perStudent.find((s) => s.name === 'Cassius');
-  // Nanette confirmed the full scholarship can be concentrated on one child
-  // instead of being split $4,000 three ways.
+  // The scholarship is $4,000 PER CHILD and can't be pooled — each child keeps
+  // only their own award, and only if they enroll. Sending Cassius alone keeps
+  // his $4,000; Dorothy's and Sebastian's $4,000 each is simply forfeited.
   const scholarshipPool = perStudent.reduce((a, s) => a + s.scholarship, 0);
-  const cassiusPostAid = cassius.tuition - cassius.nbcaAid;
-  const cassiusSoloBalance = Math.max(0, cassiusPostAid - scholarshipPool);
+  const cassiusSoloBalance = cassius.balance;                          // his own $4,000 only
+  const forfeitedScholarship = scholarshipPool - cassius.scholarship;  // Dorothy + Sebastian
 
   return (
     <div className="space-y-6">
@@ -618,35 +619,37 @@ const NowView = ({ balanceDue, perStudent, setTab }) => {
           <Users size={20} /> Open question: all three at NBCA, or just Cassius?
         </h2>
         <p className="text-sm text-tefa-body/80 mb-4">
-          Nanette confirmed we can put the <strong>full {usd(scholarshipPool)} scholarship behind one child</strong>{' '}
-          instead of splitting it {usd(scholarshipPool / 3)} three ways. So one option is to send{' '}
-          <strong>Cassius</strong> to NBCA with the entire scholarship and keep <strong>Dorothy</strong> and{' '}
-          <strong>Sebastian</strong> at the School of Science and Technology. The money case is strong — it more
-          than covers his tuition — but it means a two-school morning, and the drop-off and pick-up logistics
-          of running two campuses are the real sticking point. Worth settling{' '}
-          <strong>by the end of June</strong>, alongside the withdrawal decision.
+          The scholarship is <strong>{usd(cassius.scholarship)} per child and can't be combined</strong> — each child
+          keeps only their own award, and only if they enroll. So sending <strong>Cassius</strong> alone keeps his{' '}
+          {usd(cassius.scholarship)} (his balance is <strong>{usd2(cassiusSoloBalance)}</strong>), but it means{' '}
+          <strong>Dorothy</strong> and <strong>Sebastian</strong> forfeit their {usd(forfeitedScholarship)} in
+          scholarship — plus their NBCA aid — by staying at the School of Science and Technology. There's{' '}
+          <strong>no money to gain</strong> by concentrating the award, so the only reason to send Cassius alone is
+          if NBCA is right for him but not (yet) for the other two. Weigh that against a two-school morning. Worth
+          settling <strong>by the end of June</strong>, alongside the withdrawal decision.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
           <div className="rounded-lg border border-tefa-navy/20 bg-tefa-light p-4">
             <div className="font-bold text-tefa-navy mb-1">All three at NBCA</div>
             <p className="text-tefa-body/70 text-xs">
-              Balance of {usd2(balanceDue)} with the {usd(scholarshipPool)} split {usd(scholarshipPool / 3)} per
-              child — but one school run, everyone on the same schedule.
+              Balance of {usd2(balanceDue)} — each child keeps their own {usd(cassius.scholarship)} scholarship, one
+              school run, everyone on the same schedule.
             </p>
           </div>
           <div className="rounded-lg border border-tefa-navy/20 bg-tefa-light p-4">
             <div className="font-bold text-tefa-navy mb-1">Just Cassius at NBCA</div>
             <p className="text-tefa-body/70 text-xs">
-              The full {usd(scholarshipPool)} covers his {usd(cassiusPostAid)} post-aid tuition, so his balance is
-              essentially <strong>{usd2(cassiusSoloBalance)}</strong> — but it adds a second daily drive, and
-              Dorothy and Sebastian stay at the School of Science and Technology.
+              His balance is <strong>{usd2(cassiusSoloBalance)}</strong> (his own {usd(cassius.scholarship)} scholarship —
+              it can't absorb the others'). Dorothy and Sebastian give up {usd(forfeitedScholarship)} in scholarship plus
+              their NBCA aid and stay at the School of Science and Technology — and it adds a second daily drive.
             </p>
           </div>
         </div>
         <p className="text-xs text-tefa-body/50 mt-3">
-          Reply to Nanette with how we want the {usd(scholarshipPool)} applied. Note that keeping Dorothy and
-          Sebastian out this year means their NBCA aid doesn't carry over — worth confirming whether comparable
-          awards would be available if they enroll in a later year.
+          Reply to Nanette to confirm the plan. The {usd(cassius.scholarship)}-per-child award can't be reassigned, and
+          keeping Dorothy and Sebastian out this year means their {usd(forfeitedScholarship)} in scholarship and their
+          NBCA aid don't carry over — worth confirming whether comparable awards would be available if they enroll in a
+          later year.
         </p>
       </section>
 
