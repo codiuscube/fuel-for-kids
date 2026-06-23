@@ -148,7 +148,7 @@ const CODY = {
   // suggest the appeals reserve is rolling through now and "Tier 2 funded by end
   // of month." If an OFFICIAL Comptroller number confirms frontier ~20,383 by
   // ~Jun 30, switch reserveEnd to '2026-06-30' (clears Tier 2 ~end of June) and
-  // re-center bgRamp earlier (see note at its definition). Until then, keep above.
+  // pull the best-guess bgWaypoints earlier to match. Until then, keep above.
 };
 
 // Slightly-more-aggressive variant of CODY — the outer edge of the fan. Same
@@ -175,9 +175,10 @@ const CODY_PLUS = {
 const FRONTIER_WINDOW = { chartStart: '2026-05-04', today: '2026-06-22', jul15: '2026-07-15', end: '2026-08-31' };
 const RECON_DRIFT = 125;          // seats/day of post-wave reconciliation (~5% no-shows recovering over Aug–Sep)
 
-// Cascade-frontier model. Two projections only. Each is a logistic ramp anchored
-// exactly on the last published frontier point and landing on its terminal at a
-// stated end date (flat after) — with the bulk of motion at the July deadlines.
+// Cascade-frontier model. Three projections, all anchored on the last published
+// frontier point and landing on a terminal by a stated end date (flat/drift
+// after). Each is piecewise/staged so the steep cascade sits at/after the Jul 15
+// deadline, not before it — with the bulk of motion at that deadline wave.
 function buildCascadeProjection({
   t2Observations = T2_OBSERVATIONS,
   optOuts = OPTOUT_OBSERVATIONS,
@@ -189,7 +190,6 @@ function buildCascadeProjection({
   const DAY = 86_400_000;
   const t0 = Date.parse(win.chartStart);
   const dayOf = (d) => Math.round((Date.parse(d) - t0) / DAY);
-  const sig = (x) => 1 / (1 + Math.exp(-x));
 
   // Observed frontier = how deep the cascade has reached down the global list.
   const obsF = t2Observations.map((o) => ({ t: dayOf(o.date), f: T2_AT_LOTTERY - o.t2Remaining }));
@@ -210,31 +210,25 @@ function buildCascadeProjection({
 
   const optOutsSoFar = optOuts[optOuts.length - 1].cumOptOuts;
 
-  // A logistic from the last observation to `terminal` at `end`, normalized to
-  // pass exactly through (tL, fL) and reach `terminal` at the end date.
-  const makeLine = ({ terminal, center, scale, end }) => {
-    const tc = dayOf(center);
-    const te = dayOf(end);
-    const lo = sig((tL - tc) / scale);
-    const hi = sig((te - tc) / scale);
-    return (t) => {
-      if (t <= tL) return interp(obsF, t);
-      const tt = Math.min(t, te);
-      return fL + (terminal - fL) * ((sig((tt - tc) / scale) - lo) / (hi - lo));
-    };
-  };
-
-  // Best guess: most of the climb at the Jul 15 cascade, reaching offer depth
-  // by Aug 1, then the slow reconciliation drift.
+  // Best guess (grounded), built piecewise so the steep part sits AFTER Jul 15,
+  // not before it: an early burst lifts the frontier to the documented Jun-22
+  // floor (~10k, from Yaritza's Odyssey emails — original waitlist range 15–20k →
+  // 4–5k = at least 10k cleared ahead of her), then it climbs only GENTLY
+  // (~150/day) through the lull to Jul 15, and the bulk of the cascade lands at
+  // the Jul 15 deadline wave, ramping (~1,050/day) to offer depth (~31,400) by
+  // Aug 1, then slow drift. A single logistic can't both hold the floor early and
+  // stay flat to Jul 15, hence waypoints. Terminal/depth unchanged (~31,400).
   const bgEnd = dayOf('2026-08-01');
-  // Re-centered '2026-07-19' → '2026-07-05' so best guess passes through ~10,100
-  // on Jun 22 — the documented FLOOR from Yaritza's Odyssey emails (frontier was
-  // ≥ ~10k today: original waitlist range 15–20k → current 4–5k = at least 10k
-  // cleared ahead of her). A grounded line can't sit below documented evidence.
-  // Terminal/depth unchanged (~31,400) — the post pins where the frontier is NOW,
-  // not where the season ends.
-  const bgRamp = makeLine({ terminal: BG_OFFER, center: '2026-07-05', scale: 7, end: '2026-08-01' });
-  const bestGuess = (t) => bgRamp(t) + Math.max(0, t - bgEnd) * RECON_DRIFT;
+  const bgWaypoints = [
+    { t: tL, f: fL },                          // Jun 10 official anchor (7,417)
+    { t: dayOf('2026-06-22'), f: 10000 },      // documented Jun-22 floor
+    { t: dayOf('2026-07-15'), f: 13500 },      // gentle pre-deadline lull
+    { t: bgEnd, f: BG_OFFER },                 // Jul 15 → Aug 1 deadline cascade
+  ];
+  const bestGuess = (t) =>
+    t <= tL
+      ? interp(obsF, t)
+      : interp(bgWaypoints, Math.min(t, bgEnd)) + Math.max(0, t - bgEnd) * RECON_DRIFT;
 
   // Aggressive churn: staged waypoints, not a logistic. Current trend (last
   // observed segment's pace) carries forward; the reserve flows on top of it
@@ -332,7 +326,7 @@ const BAND_OUTLOOK = [
     scope: 'positions 1 – 20,383',
     call: 'Expected',
     tone: 'good',
-    note: 'Every seat freed so far has gone to Tier 2. At the current pace the remaining backlog clears early-to-mid July — and this has to finish before any Tier 3 offer goes out at all.',
+    note: 'Every seat freed so far has gone to Tier 2. At the current pace the remaining backlog clears mid-to-late July — and this has to finish before any Tier 3 offer goes out at all.',
   },
   {
     band: '20,384 – 25,000',
@@ -917,7 +911,7 @@ const TefaView = () => {
           })}
         </div>
         <p className="text-xs text-tefa-body/50 mt-3">
-          <strong>Bottom line:</strong> Tier 3 is expected to start in early-to-mid July, but our band sits at the far
+          <strong>Bottom line:</strong> Tier 3 is expected to start in mid-to-late July, but our band sits at the far
           edge of even the best guess — only its very bottom (to ~{k.bgOffer.toLocaleString()}) is in reach, and a
           funded seat there isn't. Treat TEFA as a bonus, never as money you're counting on.
         </p>
