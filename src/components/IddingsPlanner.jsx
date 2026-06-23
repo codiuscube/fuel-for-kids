@@ -151,13 +151,14 @@ const CODY = {
   // pull the best-guess bgWaypoints earlier to match. Until then, keep above.
 };
 
-// Slightly-more-aggressive variant of CODY — the outer edge of the fan. Same
-// staged mechanism, pushed up: 55% opt-out (vs 50%), ~$55M reserve (vs $50M),
-// and the reserve fully released by Jul 10 (vs Jul 15). Reaches ~64.6k vs ~59k.
+// Slightly-more-aggressive variant of CODY — the outer edge of the fan, lifted
+// toward the documented upper limit (~16k on Jun 22) so it keeps clear daylight
+// from the aggressive-churn line. Same staged mechanism, pushed up: 57% opt-out
+// (vs 50%), ~$66M reserve (vs $50M), reserve fully landed by Jun 28. ~67.9k vs ~59k.
 const CODY_PLUS = {
-  wave1Rate: 0.28,                // cumulative opt-out share by Jul 25 (vs 0.25)
-  optOutRate: 0.55,               // cumulative share landing by Jul 31 (vs 0.50)
-  reserveSeats: 6450,             // ~$55M toward the waitlist at ~$8,525 blended/seat
+  wave1Rate: 0.30,                // cumulative opt-out share by Jul 25 (vs 0.25)
+  optOutRate: 0.57,               // cumulative share landing by Jul 31 (vs 0.50)
+  reserveSeats: 7800,             // ~$66M toward the waitlist at ~$8,525 blended/seat
   reserveStart: '2026-06-15',
   reserveEnd: '2026-06-28',       // reserve fully landed before month-end → embodies the
                                   // (still anecdotal) "Tier 2 funded by end of month" reports;
@@ -980,10 +981,10 @@ const TefaView = () => {
                   label={{ value: `T3 Middle band starts — ${BAND_LO.toLocaleString()}`, position: 'insideTopLeft', fontSize: 9, fontWeight: 600, fill: '#aa2142' }} />
               <ReferenceLine y={BAND_HI} stroke="#aa2142" strokeDasharray="8 4"
                   label={{ value: `T3 Middle band ends — ${BAND_HI.toLocaleString()}`, position: 'insideTopLeft', fontSize: 9, fontWeight: 600, fill: '#aa2142' }} />
-              <Line dataKey="observedLine" name="Funded so far (published)" stroke="#202562" strokeWidth={2.5} dot={false} legendType="none" />
-              <Line dataKey="bestGuess" name="Pessimistic guess" stroke="#202562" strokeWidth={2.5} dot={false} />
-              <Line dataKey="cody" name="Aggressive churn" stroke="#aa2142" strokeWidth={2.5} strokeDasharray="8 3" dot={false} />
-              <Line dataKey="codyPlus" name="Aggressive+ (upper edge)" stroke="#e8889b" strokeWidth={2} strokeDasharray="2 3" dot={false} />
+              <Line type="monotone" dataKey="observedLine" name="Funded so far (published)" stroke="#202562" strokeWidth={2.5} dot={false} legendType="none" />
+              <Line type="monotone" dataKey="bestGuess" name="Pessimistic guess" stroke="#202562" strokeWidth={2.5} dot={false} />
+              <Line type="monotone" dataKey="cody" name="Aggressive churn" stroke="#aa2142" strokeWidth={2.5} strokeDasharray="8 3" dot={false} />
+              <Line type="monotone" dataKey="codyPlus" name="Aggressive+ (upper edge)" stroke="#e8889b" strokeWidth={2} strokeDasharray="2 3" dot={false} />
               <Scatter dataKey="observed" name="Published data" fill="#202562" />
               {/* Unofficial estimate of today's frontier — hollow dashed dot on the Today line. */}
               <ReferenceDot x={todayTs} y={EST_FRONTIER_TODAY} r={5} fill="#fff" stroke="#475569" strokeWidth={2} strokeDasharray="2 1.5"
