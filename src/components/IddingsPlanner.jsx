@@ -332,7 +332,7 @@ const BAND_OUTLOOK = [
     scope: 'positions 1 – 20,383',
     call: 'Expected',
     tone: 'good',
-    note: 'Every seat freed so far has gone to Tier 2. At the current pace the remaining ~13k clears mid-to-late July — and this has to finish before any Tier 3 offer goes out at all.',
+    note: 'Every seat freed so far has gone to Tier 2. At the current pace the remaining backlog clears early-to-mid July — and this has to finish before any Tier 3 offer goes out at all.',
   },
   {
     band: '20,384 – 25,000',
@@ -917,7 +917,7 @@ const TefaView = () => {
           })}
         </div>
         <p className="text-xs text-tefa-body/50 mt-3">
-          <strong>Bottom line:</strong> Tier 3 is expected to start in mid-to-late July, but our band sits at the far
+          <strong>Bottom line:</strong> Tier 3 is expected to start in early-to-mid July, but our band sits at the far
           edge of even the best guess — only its very bottom (to ~{k.bgOffer.toLocaleString()}) is in reach, and a
           funded seat there isn't. Treat TEFA as a bonus, never as money you're counting on.
         </p>
