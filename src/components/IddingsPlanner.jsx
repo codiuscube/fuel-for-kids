@@ -85,7 +85,7 @@ const BAND_HI = TEFA.bandHi;      // 50,000 — bottom of our family's band
 // than funding — so always asterisked.
 const EST_FRONTIER_TODAY = 13000;
 
-// Best-guess (grounded) model from the published bands analysis: a blended
+// Pessimistic-guess (grounded; the `bestGuess` series) model from the published bands analysis: a blended
 // 15%/18%/35% non-participation plus ~$25M of the inferred $100M+ appeals
 // reserve. Under it Tier 2 fully clears and the cascade reaches roughly these
 // global cut-offs. This already bakes in the 3.7× amplification.
@@ -210,7 +210,7 @@ function buildCascadeProjection({
 
   const optOutsSoFar = optOuts[optOuts.length - 1].cumOptOuts;
 
-  // Best guess (grounded), built piecewise so the steep part sits AFTER Jul 15,
+  // Pessimistic guess (grounded; the `bestGuess` series), built piecewise so the steep part sits AFTER Jul 15,
   // not before it: an early burst lifts the frontier to the documented Jun-22
   // floor (~10k, from Yaritza's Odyssey emails — original waitlist range 15–20k →
   // 4–5k = at least 10k cleared ahead of her), then it climbs only GENTLY
@@ -333,14 +333,14 @@ const BAND_OUTLOOK = [
     scope: 'early Tier 3',
     call: 'Likely',
     tone: 'good',
-    note: 'Inside the best-guess funded depth (~27,500). This is where the first real Tier 3 movement lands, just after the Jul 15 cascade.',
+    note: 'Inside the pessimistic-guess funded depth (~27,500). This is where the first real Tier 3 movement lands, just after the Jul 15 cascade.',
   },
   {
     band: '25,001 – 30,000',
     scope: 'mid Tier 3',
     call: 'Possible',
     tone: 'mid',
-    note: 'Inside best-guess offer depth; turning that offer into a funded seat across the band needs ~+$20M more of the appeals reserve. Possible in July.',
+    note: 'Inside pessimistic-guess offer depth; turning that offer into a funded seat across the band needs ~+$20M more of the appeals reserve. Possible in July.',
   },
   {
     band: '30,001 – 50,000',
@@ -348,7 +348,7 @@ const BAND_OUTLOOK = [
     call: 'Bottom edge possible · rest unlikely in Year 1',
     tone: 'mid',
     ourBand: true,
-    note: 'Only the first ~1,400 positions (to ~31,400) sit at the edge of best-guess offer depth — possible. Deeper in is upside-only: rank ~35k needs +$20M reserve, ~40k needs +$50M, the top (50k) nearly the whole pool. The aggressive-churn scenario is the bet the July cascade + reserve release pushes all the way through.',
+    note: 'Only the first ~1,400 positions (to ~31,400) sit at the edge of pessimistic-guess offer depth — possible. Deeper in is upside-only: rank ~35k needs +$20M reserve, ~40k needs +$50M, the top (50k) nearly the whole pool. The aggressive-churn scenario is the bet the July cascade + reserve release pushes all the way through.',
   },
   {
     band: '50,001 +',
@@ -369,7 +369,7 @@ const TONE_STYLE = {
 // drops the raw `ts` the Scatter series would otherwise inject.
 const FRONTIER_SERIES = {
   observedLine: 'Funded so far (published)',
-  bestGuess: 'Best guess',
+  bestGuess: 'Pessimistic guess',
   cody: 'Aggressive churn',
   codyPlus: 'Aggressive+ (upper edge)',
 };
@@ -912,7 +912,7 @@ const TefaView = () => {
         </div>
         <p className="text-xs text-tefa-body/50 mt-3">
           <strong>Bottom line:</strong> Tier 3 is expected to start in mid-to-late July, but our band sits at the far
-          edge of even the best guess — only its very bottom (to ~{k.bgOffer.toLocaleString()}) is in reach, and a
+          edge of even the pessimistic guess — only its very bottom (to ~{k.bgOffer.toLocaleString()}) is in reach, and a
           funded seat there isn't. Treat TEFA as a bonus, never as money you're counting on.
         </p>
       </section>
@@ -924,7 +924,7 @@ const TefaView = () => {
         </h2>
         <p className="text-sm text-tefa-body/80 mb-4">
           The chart tracks the <strong>cascade frontier</strong>: how far down the waitlist awards have reached.
-          We show three lines — the grounded <strong>best guess</strong>, an <strong>aggressive churn</strong>{' '}
+          We show three lines — the grounded <strong>pessimistic guess</strong>, an <strong>aggressive churn</strong>{' '}
           scenario (a more optimistic opt-out bet), and a slightly-hotter <strong>aggressive+ upper edge</strong> that
           brackets the upside if the appeals reserve is releasing now. When a line crosses a band's threshold, the
           cascade has reached that band.
@@ -941,7 +941,7 @@ const TefaView = () => {
             <div className="text-[10px] text-tefa-body/40">must clear before any Tier 3 offer · {k.optOutsSoFar.toLocaleString()} opt-outs so far</div>
           </div>
           <div className="rounded-lg bg-tefa-light border border-tefa-navy/20 p-3 text-center">
-            <div className="text-xs text-tefa-navy/70 font-medium">Best Guess Reaches</div>
+            <div className="text-xs text-tefa-navy/70 font-medium">Pessimistic Guess Reaches</div>
             <div className="font-bold text-tefa-navy text-lg">~{k.bgOffer.toLocaleString()}</div>
             <div className="text-[10px] text-tefa-body/40">offer depth (funded ~{k.bgFunded.toLocaleString()}) · only the bottom edge of our band ({BAND_LO.toLocaleString()})</div>
           </div>
@@ -981,7 +981,7 @@ const TefaView = () => {
               <ReferenceLine y={BAND_HI} stroke="#aa2142" strokeDasharray="8 4"
                   label={{ value: `T3 Middle band ends — ${BAND_HI.toLocaleString()}`, position: 'insideTopLeft', fontSize: 9, fontWeight: 600, fill: '#aa2142' }} />
               <Line dataKey="observedLine" name="Funded so far (published)" stroke="#202562" strokeWidth={2.5} dot={false} legendType="none" />
-              <Line dataKey="bestGuess" name="Best guess" stroke="#202562" strokeWidth={2.5} dot={false} />
+              <Line dataKey="bestGuess" name="Pessimistic guess" stroke="#202562" strokeWidth={2.5} dot={false} />
               <Line dataKey="cody" name="Aggressive churn" stroke="#aa2142" strokeWidth={2.5} strokeDasharray="8 3" dot={false} />
               <Line dataKey="codyPlus" name="Aggressive+ (upper edge)" stroke="#e8889b" strokeWidth={2} strokeDasharray="2 3" dot={false} />
               <Scatter dataKey="observed" name="Published data" fill="#202562" />
@@ -993,7 +993,7 @@ const TefaView = () => {
         </div>
         <div className="text-[11px] text-tefa-body/60 bg-tefa-light rounded p-3 mt-3 space-y-1">
           <div><strong>What's plotted.</strong> The frontier is derived from the published Tier 2 backlog (frontier = {T2_AT_LOTTERY.toLocaleString()} at-lottery − Tier 2 still queued): 0 on May 4 → {k.frontierNow.toLocaleString()} on {fmtChartDate(Date.parse(k.asOf))}. The line ahead clears at roughly <strong>3.7 seats per opt-out</strong> — homeschool/other downgrades free $8,474 of each $10,474 award, and appeals-reserve awards free seats with no opt-out at all — so we measure progress in seats reached, not raw opt-outs.</div>
-          <div><strong>Best guess (grounded).</strong> A blended 15/18/35% non-participation plus ~$25M of the inferred $100M+ appeals reserve. Tier 2 clears ~{fmtChartDate(k.bgTier3Ts)}, and the cascade settles around offer depth ~{k.bgOffer.toLocaleString()} (funded ~{k.bgFunded.toLocaleString()}) — just reaching the bottom edge of our band ~{fmtChartDate(k.bgBandLoTs)}.</div>
+          <div><strong>Pessimistic guess (grounded).</strong> A blended 15/18/35% non-participation plus ~$25M of the inferred $100M+ appeals reserve. Tier 2 clears ~{fmtChartDate(k.bgTier3Ts)}, and the cascade settles around offer depth ~{k.bgOffer.toLocaleString()} (funded ~{k.bgFunded.toLocaleString()}) — just reaching the bottom edge of our band ~{fmtChartDate(k.bgBandLoTs)}.</div>
           <div><strong>Aggressive churn (staged — the upper edge, not a forecast).</strong> Three legs. First, the current pace continues, with <strong>$50M of the inferred ~$100M appeals reserve</strong> (~{k.codyReserveSeats.toLocaleString()} blended seats) flowing on top of it <strong>Jun 15 – Jul 15</strong> as appeals resolve — that stretch reads as "trend + reserve." Then the deadline shakeout lands <strong>25% cumulative opt-outs by Jul 25</strong>, and the wave completes at <strong>50% of the awarded base by Jul 31</strong>. That 50% sits <em>above</em> the 14–34% range seen in D.C., Milwaukee and Virginia, so it's the optimistic ceiling, not the expectation. Under it Tier 3 offers start ~{fmtChartDate(k.codyTier3Ts)} and the cascade clears our whole band by ~{fmtChartDate(k.codyBandHiTs)}.</div>
           <div><strong>After Aug 1 — the lines don't stop cold.</strong> Some share of confirmed students never actually enroll (historically ~5% no-show in comparable programs), and those seats — plus other recovered funds — reconcile through August and September. Both lines carry a steady ~{RECON_DRIFT}/day drift after their main waves complete, so the curve keeps creeping rather than going flat.</div>
           <div><strong>Watch — appeals-reserve release (~mid-June).</strong> Appeals are filed within 30 days of notice (T1 ~closed May 24 · T2 ~Jun 3 · waitlist ~Jun 12); unused reserve cascades to the waitlist. As the last windows close, a reserve release could move the line independent of opt-outs — the main thing that could push the real outcome toward the aggressive-churn ceiling.</div>
