@@ -146,7 +146,9 @@ const CODY_PLUS = {
   optOutRate: 0.55,               // cumulative share landing by Jul 31 (vs 0.50)
   reserveSeats: 6450,             // ~$55M toward the waitlist at ~$8,525 blended/seat
   reserveStart: '2026-06-15',
-  reserveEnd: '2026-07-10',       // reserve fully released a few days sooner
+  reserveEnd: '2026-06-28',       // reserve fully landed before month-end → embodies the
+                                  // (still anecdotal) "Tier 2 funded by end of month" reports;
+                                  // pulls this upper-edge line's Tier 3 crossing to ~Jul 1
 };
 
 // Chart window: from the lottery (frontier 0) through end-August. The main
