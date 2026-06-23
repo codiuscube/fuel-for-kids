@@ -31,7 +31,7 @@ import {
 // shows is derived from the data in this block — update here if a figure changes.
 // ---------------------------------------------------------------------------
 
-const TODAY = '2026-06-22';
+const TODAY = '2026-06-23';
 
 // Per-child 2026-27 gross tuition and the NBCA financial aid already granted.
 const STUDENTS = [
@@ -85,16 +85,19 @@ const BAND_LO = TEFA.bandLo;      // 30,001 — top of our family's band
 const BAND_HI = TEFA.bandHi;      // 50,000 — bottom of our family's band
 
 // UNOFFICIAL estimate of where the cascade frontier actually sits "today"
-// (Jun 22). Last official number is Jun 10 = 7,417. Basis is a DOCUMENTED
-// frontline case (screenshots of Odyssey support emails), not just trend: one
-// Tier 2 family's waitlist range went 5,001–10,000 (4:01pm) → 4,001–5,000
-// (8:52pm) the SAME day, and ~15–20k → 4–5k overall. "Waitlist range" = people
-// still ahead of you in the queue, so that's ~13,000 positions cleared from
-// ahead of one person → frontier ~11,000–15,000. We plot the ~13,000 midpoint
-// (also right on the aggressive-churn line for this date). Still UNOFFICIAL —
-// one self-reported case, and some movement may be waitlist attrition rather
-// than funding — so always asterisked.
-const EST_FRONTIER_TODAY = 13000;
+// (Jun 23). Last official number is Jun 10 = 7,417. Basis is DOCUMENTED
+// frontline cases (screenshots of Odyssey notifications), not just trend.
+// "Waitlist range" = people still ahead of you in the queue.
+//   Jun 22 (prior plot, 13,000): one Tier 2 family went 5,001–10,000 (4:01pm)
+//     → 4,001–5,000 (8:52pm) the SAME day, ~15–20k → 4–5k overall = ~13,000
+//     cleared from ahead of one person → frontier ~11,000–15,000, midpoint 13k.
+//   Jun 23 (new): two more Tier 2 cases. "ElegantTurkey" 10–15k → 2–3k then
+//     FUNDED this morning (confirmed crossing). "Ty Hope" 15,001–20,000 → 1–1k,
+//     still waiting = ~17,000 cleared ahead of one person. Strongest point implies
+//     ~17k; we plot the conservative ~15,000 midpoint (documented upper edge ~17k),
+//     since Ty is still waiting so part of her movement may be attrition, not funding.
+// Still UNOFFICIAL — self-reported cases — so always asterisked.
+const EST_FRONTIER_TODAY = 15000;
 
 // Pessimistic-guess (grounded; the `bestGuess` series) model from the published bands analysis: a blended
 // 15%/18%/35% non-participation plus ~$25M of the inferred $100M+ appeals
@@ -184,7 +187,7 @@ const CODY_PLUS = {
 // `today` anchors the "Today" marker to a fixed date so a screenshot of the
 // chart reads the same for everyone (the artifact gets posted/shared) — bump it
 // as the analysis is refreshed, rather than letting it drift with the viewer's clock.
-const FRONTIER_WINDOW = { chartStart: '2026-05-04', today: '2026-06-22', jul15: '2026-07-15', end: '2026-08-31' };
+const FRONTIER_WINDOW = { chartStart: '2026-05-04', today: '2026-06-23', jul15: '2026-07-15', end: '2026-08-31' };
 const RECON_DRIFT = 125;          // seats/day of post-wave reconciliation (~5% no-shows recovering over Aug–Sep)
 
 // Cascade-frontier model. Three projections, all anchored on the last published
