@@ -235,12 +235,19 @@ function buildCascadeProjection({
   const codyEnd = dayOf('2026-07-31');
   const buildStaged = (p) => {
     const terminal = Math.round(fL + p.reserveSeats + (p.optOutRate * awardedBase - optOutsSoFar));
+    // Post-reserve, pre-deadline lull: once the reserve has fully landed, growth
+    // wanes back to the background trend until the Jul-deadline wave kicks in. For
+    // a line whose reserve lands early (aggressive+), this restores the flat-then-
+    // spike shape instead of one straight diagonal; for one whose reserve runs to
+    // Jul 15 (aggressive churn) it sits inside the reserve leg and barely shows.
+    const lull = dayOf('2026-07-14');
     const raw = [
       { t: dayOf(p.reserveStart), f: fL + trendRate * (dayOf(p.reserveStart) - tL) },
       { t: dayOf(p.reserveEnd), f: fL + trendRate * (dayOf(p.reserveEnd) - tL) + p.reserveSeats },
+      { t: lull, f: fL + trendRate * (lull - tL) + p.reserveSeats },
       { t: dayOf('2026-07-25'), f: fL + (p.wave1Rate * awardedBase - optOutsSoFar) + p.reserveSeats },
       { t: codyEnd, f: terminal },
-    ];
+    ].sort((a, b) => a.t - b.t);
     const pts = [{ t: tL, f: fL }];
     for (const q of raw) {
       if (q.t <= tL) continue;
