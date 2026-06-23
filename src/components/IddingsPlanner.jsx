@@ -23,6 +23,7 @@ import {
   Tooltip as ChartTooltip,
   Legend,
   ReferenceLine,
+  ReferenceDot,
 } from 'recharts';
 
 // ---------------------------------------------------------------------------
@@ -71,6 +72,10 @@ const T2_AT_LOTTERY = 20383;      // Tier 2 waitlisted ahead of Tier 3 at lotter
 const T3_START = T2_AT_LOTTERY;   // the cascade frontier at which the FIRST Tier 3 offer goes out
 const BAND_LO = TEFA.bandLo;      // 30,001 — top of our family's band
 const BAND_HI = TEFA.bandHi;      // 50,000 — bottom of our family's band
+
+// A specific hypothetical waitlist position to mark on the chart, with a dot on
+// each projection line at the date it reaches this rank (within our band).
+const USER_POS = 40000;
 
 // Best-guess (grounded) model from the published bands analysis: a blended
 // 15%/18%/35% non-participation plus ~$25M of the inferred $100M+ appeals
@@ -285,6 +290,10 @@ function buildCascadeProjection({
     codyBandHiTs: crossTs(codyFn, BAND_HI),
     codyPlusTerminal,
     codyPlusBandHiTs: crossTs(codyPlusFn, BAND_HI),
+    userPos: USER_POS,
+    bgUserTs: crossTs(bestGuess, USER_POS),
+    codyUserTs: crossTs(codyFn, USER_POS),
+    codyPlusUserTs: crossTs(codyPlusFn, USER_POS),
   };
   return { series, kpis };
 }
@@ -954,11 +963,22 @@ const TefaView = () => {
                   label={{ value: `T3 Middle band starts — ${BAND_LO.toLocaleString()}`, position: 'insideTopLeft', fontSize: 9, fontWeight: 600, fill: '#aa2142' }} />
               <ReferenceLine y={BAND_HI} stroke="#aa2142" strokeDasharray="8 4"
                   label={{ value: `T3 Middle band ends — ${BAND_HI.toLocaleString()}`, position: 'insideTopLeft', fontSize: 9, fontWeight: 600, fill: '#aa2142' }} />
+              <ReferenceLine y={USER_POS} stroke="#111827" strokeWidth={1.5} strokeDasharray="5 3"
+                  label={{ value: `You — ${USER_POS.toLocaleString()}`, position: 'insideTopRight', fontSize: 9, fontWeight: 700, fill: '#111827' }} />
               <Line dataKey="observedLine" name="Funded so far (published)" stroke="#202562" strokeWidth={2.5} dot={false} legendType="none" />
               <Line dataKey="bestGuess" name="Best guess" stroke="#202562" strokeWidth={2.5} dot={false} />
               <Line dataKey="cody" name="Aggressive churn" stroke="#aa2142" strokeWidth={2.5} strokeDasharray="8 3" dot={false} />
               <Line dataKey="codyPlus" name="Aggressive+ (upper edge)" stroke="#e8889b" strokeWidth={2} strokeDasharray="2 3" dot={false} />
               <Scatter dataKey="observed" name="Published data" fill="#202562" />
+              {/* Where each line reaches position 40,000 (best guess never does). */}
+              {k.codyPlusUserTs && (
+                <ReferenceDot x={k.codyPlusUserTs} y={USER_POS} r={5} fill="#e8889b" stroke="#fff" strokeWidth={1.5}
+                    label={{ value: `Agg+ ${fmtChartDate(k.codyPlusUserTs)}`, position: 'top', fontSize: 9, fontWeight: 700, fill: '#c2607a' }} />
+              )}
+              {k.codyUserTs && (
+                <ReferenceDot x={k.codyUserTs} y={USER_POS} r={5} fill="#aa2142" stroke="#fff" strokeWidth={1.5}
+                    label={{ value: `Agg ${fmtChartDate(k.codyUserTs)}`, position: 'bottom', fontSize: 9, fontWeight: 700, fill: '#aa2142' }} />
+              )}
             </ComposedChart>
           </ResponsiveContainer>
         </div>
@@ -966,6 +986,7 @@ const TefaView = () => {
           <div><strong>What's plotted.</strong> The frontier is derived from the published Tier 2 backlog (frontier = {T2_AT_LOTTERY.toLocaleString()} at-lottery − Tier 2 still queued): 0 on May 4 → {k.frontierNow.toLocaleString()} on {fmtChartDate(Date.parse(k.asOf))}. The line ahead clears at roughly <strong>3.7 seats per opt-out</strong> — homeschool/other downgrades free $8,474 of each $10,474 award, and appeals-reserve awards free seats with no opt-out at all — so we measure progress in seats reached, not raw opt-outs.</div>
           <div><strong>Best guess (grounded).</strong> A blended 15/18/35% non-participation plus ~$25M of the inferred $100M+ appeals reserve. Tier 2 clears ~{fmtChartDate(k.bgTier3Ts)}, and the cascade settles around offer depth ~{k.bgOffer.toLocaleString()} (funded ~{k.bgFunded.toLocaleString()}) — just reaching the bottom edge of our band ~{fmtChartDate(k.bgBandLoTs)}.</div>
           <div><strong>Aggressive churn (staged — the upper edge, not a forecast).</strong> Three legs. First, the current pace continues, with <strong>$50M of the inferred ~$100M appeals reserve</strong> (~{k.codyReserveSeats.toLocaleString()} blended seats) flowing on top of it <strong>Jun 15 – Jul 15</strong> as appeals resolve — that stretch reads as "trend + reserve." Then the deadline shakeout lands <strong>25% cumulative opt-outs by Jul 25</strong>, and the wave completes at <strong>50% of the awarded base by Jul 31</strong>. That 50% sits <em>above</em> the 14–34% range seen in D.C., Milwaukee and Virginia, so it's the optimistic ceiling, not the expectation. Under it Tier 3 offers start ~{fmtChartDate(k.codyTier3Ts)} and the cascade clears our whole band by ~{fmtChartDate(k.codyBandHiTs)}.</div>
+          <div><strong>Your spot — position {USER_POS.toLocaleString()}.</strong> The dotted black line marks rank {USER_POS.toLocaleString()}, and each dot is where a projection reaches it: aggressive+ ~{fmtChartDate(k.codyPlusUserTs)}, aggressive churn ~{fmtChartDate(k.codyUserTs)}. The <strong>best guess never reaches {USER_POS.toLocaleString()}</strong> — it settles near offer depth ~{k.bgOffer.toLocaleString()}, well short — so a seat here is upside-only, riding on the July churn + reserve going the optimistic way.</div>
           <div><strong>After Aug 1 — the lines don't stop cold.</strong> Some share of confirmed students never actually enroll (historically ~5% no-show in comparable programs), and those seats — plus other recovered funds — reconcile through August and September. Both lines carry a steady ~{RECON_DRIFT}/day drift after their main waves complete, so the curve keeps creeping rather than going flat.</div>
           <div><strong>Watch — appeals-reserve release (~mid-June).</strong> Appeals are filed within 30 days of notice (T1 ~closed May 24 · T2 ~Jun 3 · waitlist ~Jun 12); unused reserve cascades to the waitlist. As the last windows close, a reserve release could move the line independent of opt-outs — the main thing that could push the real outcome toward the aggressive-churn ceiling.</div>
         </div>
