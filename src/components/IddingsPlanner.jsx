@@ -23,7 +23,6 @@ import {
   Tooltip as ChartTooltip,
   Legend,
   ReferenceLine,
-  ReferenceDot,
 } from 'recharts';
 
 // ---------------------------------------------------------------------------
@@ -84,20 +83,10 @@ const T3_START = T2_AT_LOTTERY;   // the cascade frontier at which the FIRST Tie
 const BAND_LO = TEFA.bandLo;      // 30,001 — top of our family's band
 const BAND_HI = TEFA.bandHi;      // 50,000 — bottom of our family's band
 
-// UNOFFICIAL estimate of where the cascade frontier actually sits "today"
-// (Jun 23). Last official number is Jun 10 = 7,417. Basis is DOCUMENTED
-// frontline cases (screenshots of Odyssey notifications), not just trend.
-// "Waitlist range" = people still ahead of you in the queue.
-//   Jun 22 (prior plot, 13,000): one Tier 2 family went 5,001–10,000 (4:01pm)
-//     → 4,001–5,000 (8:52pm) the SAME day, ~15–20k → 4–5k overall = ~13,000
-//     cleared from ahead of one person → frontier ~11,000–15,000, midpoint 13k.
-//   Jun 23 (new): two more Tier 2 cases. "ElegantTurkey" 10–15k → 2–3k then
-//     FUNDED this morning (confirmed crossing). "Ty Hope" 15,001–20,000 → 1–1k,
-//     still waiting = ~17,000 cleared ahead of one person. Strongest point implies
-//     ~17k; we plot the conservative ~15,000 midpoint (documented upper edge ~17k),
-//     since Ty is still waiting so part of her movement may be attrition, not funding.
-// Still UNOFFICIAL — self-reported cases — so always asterisked.
-const EST_FRONTIER_TODAY = 15000;
+// As of the Jun 23, 2026 Comptroller News & Updates, the frontier "today" is now
+// an OFFICIAL figure (12,916 — see T2_OBSERVATIONS), so the prior unofficial
+// estimate (~15,000, from documented Odyssey frontline cases on Jun 22–23) has
+// been retired: the published number landed slightly below the anecdotal estimate.
 
 // Pessimistic-guess (grounded; the `bestGuess` series) model from the published bands analysis: a blended
 // 15%/18%/35% non-participation plus ~$25M of the inferred $100M+ appeals
@@ -115,12 +104,25 @@ const JUNE10_CASCADE = {
   t2RemainingAfterCascade: 12966,
 };
 
+// Jun 23, 2026 Comptroller News & Updates ("More than 5,000 new awards issued to
+// waitlisted TEFA students"). 5,499 newly awarded, all Tier 2 — so the frontier
+// advances 1:1 to 7,417 + 5,499 = 12,916 (Tier 2 backlog 12,966 → 7,467).
+const JUNE23_CASCADE = {
+  asOf: '2026-06-23',
+  t2Cascaded: 5499,               // "5,499 waitlisted students" newly awarded, all Tier 2
+  optOuts: 3000,                  // "nearly 3,000" cumulative opt-outs
+  grossAwardedApprox: 109327,     // "nearly 110,000" awarded so far
+  activeAwardsApprox: 106327,     // "nearly 107,000" active after opt-outs
+  t2RemainingAfterCascade: 7467,
+};
+
 // Published cumulative opt-out counts — kept as supporting context (the headline
 // "X have opted out so far" stat), not as a chart axis.
 const OPTOUT_OBSERVATIONS = [
   { date: '2026-05-11', cumOptOuts: 0 },    // opt-in portal opens — baseline
   { date: '2026-05-29', cumOptOuts: 1400 }, // May 29 News & Updates (~1,400)
   { date: '2026-06-10', cumOptOuts: 2000 }, // Jun 10 press release (~2,000)
+  { date: '2026-06-23', cumOptOuts: 3000 }, // Jun 23 News & Updates ("nearly 3,000")
 ];
 
 // Observed Tier 2 backlog still ahead of Tier 3 (from the cascade posts). The
@@ -131,6 +133,7 @@ const T2_OBSERVATIONS = [
   { date: '2026-05-04', t2Remaining: 20383 }, // Tier 2 award batch — backlog established (frontier 0)
   { date: '2026-05-29', t2Remaining: 17066 }, // after 3,317 cascade awards
   { date: '2026-06-10', t2Remaining: 12966 }, // after 4,100 more cascade awards
+  { date: '2026-06-23', t2Remaining: 7467 },  // after 5,499 more cascade awards (Jun 23 update) → frontier 12,916
 ];
 
 // The three projections the page now shows — nothing else.
@@ -255,18 +258,15 @@ function buildCascadeProjection({
   const optOutsSoFar = optOuts[optOuts.length - 1].cumOptOuts;
 
   // Pessimistic guess (grounded; the `bestGuess` series), built piecewise so the steep part sits AFTER Jul 15,
-  // not before it: an early burst lifts the frontier to the documented Jun-22
-  // floor (~10k, from Yaritza's Odyssey emails — original waitlist range 15–20k →
-  // 4–5k = at least 10k cleared ahead of her), then it climbs only GENTLY
+  // not before it: from the Jun-23 official anchor (12,916) it climbs only GENTLY
   // (~150/day) through the lull to Jul 15, and the bulk of the cascade lands at
-  // the Jul 15 deadline wave, ramping (~1,050/day) to offer depth (~31,400) by
-  // Aug 1, then slow drift. A single logistic can't both hold the floor early and
-  // stay flat to Jul 15, hence waypoints. Terminal/depth unchanged (~31,400).
+  // the Jul 15 deadline wave, ramping to offer depth (~31,400) by Aug 1, then slow
+  // drift. A single logistic can't both hold the line early and stay flat to
+  // Jul 15, hence waypoints. Terminal/depth unchanged (~31,400).
   const bgEnd = dayOf('2026-08-01');
   const bgWaypoints = [
-    { t: tL, f: fL },                          // Jun 10 official anchor (7,417)
-    { t: dayOf('2026-06-22'), f: 10000 },      // documented Jun-22 floor
-    { t: dayOf('2026-07-15'), f: 13500 },      // gentle pre-deadline lull
+    { t: tL, f: fL },                          // Jun 23 official anchor (12,916)
+    { t: dayOf('2026-07-15'), f: 16200 },      // gentle pre-deadline lull (~150/day)
     { t: bgEnd, f: BG_OFFER },                 // Jul 15 → Aug 1 deadline cascade
   ];
   const bgSpline = monoSpline(bgWaypoints);
@@ -978,7 +978,7 @@ const TefaView = () => {
           <div className="rounded-lg bg-tefa-light border border-gray-200 p-3 text-center">
             <div className="text-xs text-tefa-body/50 font-medium">Funded So Far</div>
             <div className="font-bold text-tefa-navy text-lg">{k.frontierNow.toLocaleString()}</div>
-            <div className="text-[10px] text-tefa-body/40">all Tier 2 · official as of {fmtChartDate(Date.parse(k.asOf))} · <span className="text-tefa-body/60 font-semibold">~{EST_FRONTIER_TODAY.toLocaleString()}* est. today</span></div>
+            <div className="text-[10px] text-tefa-body/40">all Tier 2 · official as of {fmtChartDate(Date.parse(k.asOf))} ({JUNE23_CASCADE.t2Cascaded.toLocaleString()} newly awarded this week)</div>
           </div>
           <div className="rounded-lg bg-tefa-light border border-gray-200 p-3 text-center">
             <div className="text-xs text-tefa-body/50 font-medium">Tier 2 Still Ahead</div>
@@ -997,13 +997,12 @@ const TefaView = () => {
           </div>
         </div>
         <p className="text-[10px] text-tefa-body/50 mb-3 -mt-2">
-          <strong>*</strong> Unofficial estimate of where the frontier sits today ({fmtChartDate(todayTs)}). Documented
-          Odyssey support emails (Jun 22) show one Tier 2 family's waitlist range moving 5,001–10,000 → 4,001–5,000 in a
-          single afternoon (and ~15–20k → 4–5k overall) — ~13,000 cleared from ahead of them. Movement is bursty, not
-          steady: Odyssey appears to work the waitlist ~2 days/week, with thousands clearing on an active day, so a jump
-          this far past the Jun 10 official count (7,417) fits. The dashed dot marks the ~13,000 midpoint of a
-          ~11,000–15,000 range. Not a published figure — some movement may be waitlist attrition rather than funding; the
-          official number updates with the next Comptroller release.
+          <strong>Update — Jun 23, 2026.</strong> The Comptroller's office confirmed <strong>{JUNE23_CASCADE.t2Cascaded.toLocaleString()} more
+          waitlisted students</strong> were awarded this week, all Tier 2 — funded by opt-outs and homeschool/other downgrades
+          (which cut each award to $2,000). That advances the official frontier to <strong>{k.frontierNow.toLocaleString()}</strong>
+          {' '}(from 7,417 on Jun 10) and brings the program to <strong>nearly 110,000 awarded</strong>, with{' '}
+          <strong>~{JUNE23_CASCADE.optOuts.toLocaleString()} opt-outs</strong> leaving nearly 107,000 active awards. The official figure landed
+          slightly below the ~15,000 we had estimated from Jun 22 frontline reports, so that unofficial estimate has been retired.
         </p>
         <div className="h-[340px]">
           <ResponsiveContainer width="100%" height="100%">
@@ -1030,9 +1029,6 @@ const TefaView = () => {
               <Line type="monotone" dataKey="cody" name="Aggressive churn" stroke="#aa2142" strokeWidth={2.5} strokeDasharray="8 3" dot={false} />
               <Line type="monotone" dataKey="codyPlus" name="Aggressive+ (upper edge)" stroke="#e8889b" strokeWidth={2} strokeDasharray="2 3" dot={false} />
               <Scatter dataKey="observed" name="Published data" fill="#202562" />
-              {/* Unofficial estimate of today's frontier — hollow dashed dot on the Today line. */}
-              <ReferenceDot x={todayTs} y={EST_FRONTIER_TODAY} r={5} fill="#fff" stroke="#475569" strokeWidth={2} strokeDasharray="2 1.5"
-                  label={{ value: `est. ~${(EST_FRONTIER_TODAY / 1000).toFixed(0)}k*`, position: 'right', fontSize: 9, fontWeight: 700, fill: '#475569' }} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
