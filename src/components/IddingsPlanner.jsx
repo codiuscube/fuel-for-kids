@@ -23,6 +23,7 @@ import {
   Tooltip as ChartTooltip,
   Legend,
   ReferenceLine,
+  ReferenceDot,
 } from 'recharts';
 
 // ---------------------------------------------------------------------------
@@ -83,10 +84,19 @@ const T3_START = T2_AT_LOTTERY;   // the cascade frontier at which the FIRST Tie
 const BAND_LO = TEFA.bandLo;      // 30,001 — top of our family's band
 const BAND_HI = TEFA.bandHi;      // 50,000 — bottom of our family's band
 
-// As of the Jun 23, 2026 Comptroller News & Updates, the frontier "today" is now
-// an OFFICIAL figure (12,916 — see T2_OBSERVATIONS), so the prior unofficial
-// estimate (~15,000, from documented Odyssey frontline cases on Jun 22–23) has
-// been retired: the published number landed slightly below the anecdotal estimate.
+// ANECDOTAL upper-edge reading of the frontier "today" (Jun 23), from documented
+// Odyssey frontline cases — the evidence behind the AGGRESSIVE+ scenario.
+// The official Jun 23 frontier is 12,916 (see T2_OBSERVATIONS); these self-reported
+// cases run hotter, implying the reserve may be releasing faster than the published
+// count reflects:
+//   Jun 22: one Tier 2 family went 5,001–10,000 (4:01pm) → 4,001–5,000 (8:52pm) the
+//     SAME day (and ~15–20k → 4–5k overall) — ~13,000 cleared from ahead of them.
+//   Jun 23: "ElegantTurkey" 10–15k → 2–3k then FUNDED (confirmed crossing). "Ty Hope"
+//     15,001–20,000 → 1–1k, still waiting = ~17,000 cleared ahead of one person.
+// Strongest point implies ~17k; we plot the conservative ~15,000 midpoint. This sits
+// ABOVE the official line, so it brackets the aggressive+ upside, not the base case.
+// Still UNOFFICIAL — self-reported cases — so always asterisked.
+const EST_FRONTIER_TODAY = 15000;
 
 // Pessimistic-guess (grounded; the `bestGuess` series) model from the published bands analysis: a blended
 // 15%/18%/35% non-participation plus ~$25M of the inferred $100M+ appeals
@@ -1001,8 +1011,14 @@ const TefaView = () => {
           waitlisted students</strong> were awarded this week, all Tier 2 — funded by opt-outs and homeschool/other downgrades
           (which cut each award to $2,000). That advances the official frontier to <strong>{k.frontierNow.toLocaleString()}</strong>
           {' '}(from 7,417 on Jun 10) and brings the program to <strong>nearly 110,000 awarded</strong>, with{' '}
-          <strong>~{JUNE23_CASCADE.optOuts.toLocaleString()} opt-outs</strong> leaving nearly 107,000 active awards. The official figure landed
-          slightly below the ~15,000 we had estimated from Jun 22 frontline reports, so that unofficial estimate has been retired.
+          <strong>~{JUNE23_CASCADE.optOuts.toLocaleString()} opt-outs</strong> leaving nearly 107,000 active awards.
+        </p>
+        <p className="text-[10px] text-tefa-body/50 mb-3 -mt-1">
+          <strong>*</strong> The hollow pink dot marks the <strong>anecdotal ~{(EST_FRONTIER_TODAY / 1000).toFixed(0)}k</strong> frontline
+          reading (documented Odyssey support cases, Jun 22–23 — one Tier 2 family's waitlist range moved ~15–20k → 4–5k in a single
+          afternoon; another, ~17k cleared ahead of them). It runs <em>above</em> the official {k.frontierNow.toLocaleString()}, so it isn't the
+          base case — it's the evidence behind the <span className="text-tefa-red font-semibold">aggressive+ upper edge</span>: if the appeals
+          reserve really is releasing this fast, the frontier is ahead of the published count. Still unofficial (self-reported), so asterisked.
         </p>
         <div className="h-[340px]">
           <ResponsiveContainer width="100%" height="100%">
@@ -1029,6 +1045,9 @@ const TefaView = () => {
               <Line type="monotone" dataKey="cody" name="Aggressive churn" stroke="#aa2142" strokeWidth={2.5} strokeDasharray="8 3" dot={false} />
               <Line type="monotone" dataKey="codyPlus" name="Aggressive+ (upper edge)" stroke="#e8889b" strokeWidth={2} strokeDasharray="2 3" dot={false} />
               <Scatter dataKey="observed" name="Published data" fill="#202562" />
+              {/* Anecdotal frontline reading — hollow dot above the official line, supporting the aggressive+ path. */}
+              <ReferenceDot x={todayTs} y={EST_FRONTIER_TODAY} r={5} fill="#fff" stroke="#e8889b" strokeWidth={2} strokeDasharray="2 1.5"
+                  label={{ value: `anecdotal ~${(EST_FRONTIER_TODAY / 1000).toFixed(0)}k*`, position: 'right', fontSize: 9, fontWeight: 700, fill: '#aa2142' }} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
