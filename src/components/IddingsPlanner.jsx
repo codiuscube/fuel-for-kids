@@ -31,7 +31,7 @@ import {
 // shows is derived from the data in this block — update here if a figure changes.
 // ---------------------------------------------------------------------------
 
-const TODAY = '2026-06-23';
+const TODAY = '2026-06-25';
 
 // Per-child 2026-27 gross tuition and the NBCA financial aid already granted.
 const STUDENTS = [
@@ -64,7 +64,38 @@ const TEFA = {
 };
 
 // ---------------------------------------------------------------------------
-// TEFA cascade frontier — how deep the waitlist has been funded, vs. two
+// Confirmed program budget — Travis Pillow (Comptroller spokesperson),
+// answering directly in the TEFA Facebook group on Jun 25, 2026:
+//   • ~$910M to award this year, after admin, startup, and TEA transfers
+//     (~$90M comes off the $1B biennium cap).
+//   • ~$890M already funded in ACTIVE awards. They hold to that $890M by
+//     funding additional batches to backfill as families opt out or bump down
+//     to homeschool/other ($2,000).
+//   • ~$20M reserve remains for outstanding appeals. Once the appeal window
+//     closes, they award that down to the waitlist while continuing to backfill.
+//
+// This REPLACES the earlier inferred ~$100M reserve. The reserve is $20M — so
+// the big "reserve release" upside is off the table. Forward motion now comes
+// almost entirely from BACKFILL CHURN: the program is essentially fully
+// deployed ($890M active + $20M reserve = $910M), so the waitlist advances only
+// as awarded families leave (opt out, bump to $2,000, or miss the Jul 15
+// deadline), each departure recycling ~one new blended seat down the list.
+// ---------------------------------------------------------------------------
+
+const TEFA_BUDGET = {
+  awardable: 910_000_000,    // after admin/startup/TEA (~$90M off the $1B)
+  fundedActive: 890_000_000, // active awards, held here via backfill
+  reserve: 20_000_000,       // remaining, for appeals; cascades to waitlist after appeal window
+  blendedCost: 8525,         // T2/T3 blended seat cost (77/23 private/homeschool mix)
+  source: 'Travis Pillow, Comptroller spokesperson — Jun 25, 2026',
+};
+// Seats the remaining reserve can fund once appeals close (~$20M ÷ ~$8,525).
+const RESERVE_SEATS = Math.round(TEFA_BUDGET.reserve / TEFA_BUDGET.blendedCost); // ~2,346
+// Active awards that can churn — the population that frees seats when it leaves.
+const ACTIVE_AWARDS = 107000; // "nearly 107,000 active" (Jun 23 update)
+
+// ---------------------------------------------------------------------------
+// TEFA cascade frontier — how deep the waitlist has been funded, vs. three
 // projections. Feeds the TEFA tab. All published (empirical) numbers live in
 // the *_OBSERVATIONS arrays; everything else is derived.
 //
@@ -72,10 +103,9 @@ const TEFA = {
 // FRONTIER: how far down the single, tier-ordered global waitlist awards have
 // reached. Tier 3 begins at position 20,383 (everyone ahead is Tier 2); our
 // family band is global positions 30,001–50,000. We deliberately do NOT chart
-// raw opt-out counts: the line ahead clears at ~3.7 seats per opt-out
-// (homeschool downgrades free $8,474 of each $10,474 award; appeals-reserve
-// awards free seats with no opt-out at all), so an opt-out count plotted 1:1
-// against the thresholds badly understates real progress.
+// raw opt-out counts: each departure recycles ~one new blended seat (a private
+// opt-out frees $10,474 → ~1.2 seats; a homeschool downgrade frees $8,474 → ~1
+// seat), so progress is measured in seats reached, not raw opt-outs.
 // ---------------------------------------------------------------------------
 
 const AWARDED_BASE = 95934;       // initially awarded (44,753 T1-family + 51,181 T2)
@@ -87,8 +117,9 @@ const BAND_HI = TEFA.bandHi;      // 50,000 — bottom of our family's band
 // ANECDOTAL upper-edge reading of the frontier "today" (Jun 23), from documented
 // Odyssey frontline cases — the evidence behind the AGGRESSIVE+ scenario.
 // The official Jun 23 frontier is 12,916 (see T2_OBSERVATIONS); these self-reported
-// cases run hotter, implying the reserve may be releasing faster than the published
-// count reflects:
+// cases run hotter, implying backfill is moving faster than the published count
+// reflects (NOT a reserve release — the reserve is only $20M and lands after the
+// appeal window per Travis Pillow, Jun 25):
 //   Jun 22: one Tier 2 family went 5,001–10,000 (4:01pm) → 4,001–5,000 (8:52pm) the
 //     SAME day (and ~15–20k → 4–5k overall) — ~13,000 cleared from ahead of them.
 //   Jun 23: "ElegantTurkey" 10–15k → 2–3k then FUNDED (confirmed crossing). "Ty Hope"
@@ -98,12 +129,12 @@ const BAND_HI = TEFA.bandHi;      // 50,000 — bottom of our family's band
 // Still UNOFFICIAL — self-reported cases — so always asterisked.
 const EST_FRONTIER_TODAY = 15000;
 
-// Pessimistic-guess (grounded; the `bestGuess` series) model from the published bands analysis: a blended
-// 15%/18%/35% non-participation plus ~$25M of the inferred $100M+ appeals
-// reserve. Under it Tier 2 fully clears and the cascade reaches roughly these
-// global cut-offs. This already bakes in the 3.7× amplification.
-const BG_FUNDED = 27500;          // best-guess funded depth (a seat actually paid)
-const BG_OFFER = 31400;           // best-guess offer depth (an offer reaches this rank)
+// Pessimistic-guess (grounded; the `bestGuess` series): Tier 2 fully clears via
+// backfill, the confirmed ~$20M reserve (~2,346 seats) lands after appeals, and a
+// moderate ~15% of active awards churn at/after the Jul 15 deadline. Under it the
+// cascade reaches roughly these global cut-offs — just the bottom edge of our band.
+const BG_FUNDED = 26000;          // best-guess funded depth (a seat actually paid)
+const BG_OFFER = 30200;           // best-guess offer depth (an offer reaches this rank)
 
 // Jun 10, 2026 Comptroller press release ("TEFA Pass 100,000-Student Milestone").
 const JUNE10_CASCADE = {
@@ -146,50 +177,42 @@ const T2_OBSERVATIONS = [
   { date: '2026-06-23', t2Remaining: 7467 },  // after 5,499 more cascade awards (Jun 23 update) → frontier 12,916
 ];
 
-// The three projections the page now shows — nothing else.
-//   bestGuess: the grounded model above. Terminal = offer depth (~31,400);
-//              the bulk of movement lands at the Jul 15 deadline cascade.
-//   cody:      the aggressive-churn scenario, STAGED in three legs:
-//                1. current observed trend, with a $50M reserve release flowing
-//                   ON TOP of it Jun 15 → Jul 15 (the line reads as
-//                   "trend + reserve" through that window);
-//                2. the deadline shakeout landing 25% cumulative opt-outs by
-//                   Jul 25;
-//                3. the full 50% wave from Jul 25 through Jul 31.
-//              The reserve leg is $50M of the inferred ~$100M appeals pool
-//              (~5,865 blended seats). That 50% sits ABOVE the 14–34%
-//              historical range (D.C./Milwaukee/Virginia), so it is the
-//              aggressive upper edge, not a forecast — labeled as such.
-//   codyPlus:  same staging, nudged a little hotter — a touch higher opt-out
-//              share, a slightly larger reserve draw ($55M), and the reserve
-//              landing a few days sooner. This is the OUTER edge of the fan
-//              (light-red dotted), drawn to bracket the upside if the Jun 22
-//              anecdotes (reserve rolling now) prove out. Not a forecast.
+// The three projections the page now shows — nothing else. All share the SAME
+// confirmed $20M reserve (~2,346 seats); they differ only in how much of the
+// active-award base churns at/after the Jul 15 deadline. With the reserve fixed
+// and small, the July attrition rate is the only real swing variable.
+//   bestGuess: the grounded model above (~15% churn). Terminal = offer depth
+//              (~30,000); the bulk of movement lands at the Jul 15 deadline.
+//   cody:      the aggressive-churn scenario (~20% churn), STAGED in three legs:
+//                1. current observed trend continues;
+//                2. the confirmed ~$20M reserve lands after the appeal window
+//                   (~Jul 12 → Jul 25);
+//                3. the deadline shakeout: ~13% cumulative departures by Jul 25,
+//                   completing at ~20% of the active base by Jul 31.
+//              20% sits at the upper-middle of the 14–34% historical range
+//              (D.C./Milwaukee/Virginia), so it's an optimistic case, not a
+//              forecast. Reaches the bottom third of our band.
+//   codyPlus:  same staging, pushed to ~27% churn — the OUTER edge of the fan
+//              (light-red dotted). Reaches mid-band. Requires near-record Year-1
+//              attrition; not a forecast.
 const CODY = {
-  wave1Rate: 0.25,                // cumulative opt-out share by Jul 25 — the deadline wave
-  optOutRate: 0.50,               // cumulative share from Jul 25 onwards, landing by Jul 31
-  reserveSeats: 5865,             // $50M toward the waitlist at ~$8,525 blended/seat
-  reserveStart: '2026-06-15',     // appeals processed → reserve starts cascading
-  reserveEnd: '2026-07-15',       // fully released by the opt-in/opt-out deadline
-  // ANECDOTAL EARLY-CATALYST (not confirmed, Jun 22): frontline + support reports
-  // suggest the appeals reserve is rolling through now and "Tier 2 funded by end
-  // of month." If an OFFICIAL Comptroller number confirms frontier ~20,383 by
-  // ~Jun 30, switch reserveEnd to '2026-06-30' (clears Tier 2 ~end of June) and
-  // pull the best-guess bgWaypoints earlier to match. Until then, keep above.
+  wave1Rate: 0.13,                // cumulative departure share by Jul 25 — the deadline wave
+  optOutRate: 0.20,               // cumulative share from Jul 25 onwards, landing by Jul 31
+  reserveSeats: RESERVE_SEATS,    // confirmed ~$20M reserve at ~$8,525 blended/seat (~2,346)
+  reserveStart: '2026-07-12',     // appeal window closes → reserve starts cascading
+  reserveEnd: '2026-07-25',       // reserve awarded down after appeals finalize
 };
 
-// Slightly-more-aggressive variant of CODY — the outer edge of the fan, lifted
-// toward the documented upper limit (~16k on Jun 22) so it keeps clear daylight
-// from the aggressive-churn line. Same staged mechanism, pushed up: 57% opt-out
-// (vs 50%), ~$66M reserve (vs $50M), reserve fully landed by Jun 28. ~67.9k vs ~59k.
+// Slightly-more-aggressive variant of CODY — the outer edge of the fan. Same
+// staged mechanism and same $20M reserve, pushed to ~27% churn (vs ~20%) to
+// bracket the upside if the Jul 15 shakeout runs near the top of the historical
+// range. Reaches mid-band (~41k). Not a forecast.
 const CODY_PLUS = {
-  wave1Rate: 0.30,                // cumulative opt-out share by Jul 25 (vs 0.25)
-  optOutRate: 0.57,               // cumulative share landing by Jul 31 (vs 0.50)
-  reserveSeats: 7800,             // ~$66M toward the waitlist at ~$8,525 blended/seat
-  reserveStart: '2026-06-15',
-  reserveEnd: '2026-06-28',       // reserve fully landed before month-end → embodies the
-                                  // (still anecdotal) "Tier 2 funded by end of month" reports;
-                                  // pulls this upper-edge line's Tier 3 crossing to ~Jul 1
+  wave1Rate: 0.17,                // cumulative departure share by Jul 25 (vs 0.13)
+  optOutRate: 0.27,               // cumulative share landing by Jul 31 (vs 0.20)
+  reserveSeats: RESERVE_SEATS,    // same confirmed ~$20M reserve (no bigger pool exists)
+  reserveStart: '2026-07-12',
+  reserveEnd: '2026-07-25',
 };
 
 // Chart window: from the lottery (frontier 0) through end-August. The main
@@ -200,7 +223,7 @@ const CODY_PLUS = {
 // `today` anchors the "Today" marker to a fixed date so a screenshot of the
 // chart reads the same for everyone (the artifact gets posted/shared) — bump it
 // as the analysis is refreshed, rather than letting it drift with the viewer's clock.
-const FRONTIER_WINDOW = { chartStart: '2026-05-04', today: '2026-06-23', jul15: '2026-07-15', end: '2026-08-31' };
+const FRONTIER_WINDOW = { chartStart: '2026-05-04', today: '2026-06-25', jul15: '2026-07-15', end: '2026-08-31' };
 const RECON_DRIFT = 125;          // seats/day of post-wave reconciliation (~5% no-shows recovering over Aug–Sep)
 
 // Cascade-frontier model. Three projections, all anchored on the last published
@@ -212,7 +235,7 @@ function buildCascadeProjection({
   optOuts = OPTOUT_OBSERVATIONS,
   cody = CODY,
   codyPlus = CODY_PLUS,
-  awardedBase = AWARDED_BASE,
+  awardedBase = ACTIVE_AWARDS,
   window: win = FRONTIER_WINDOW,
 } = {}) {
   const DAY = 86_400_000;
@@ -270,9 +293,9 @@ function buildCascadeProjection({
   // Pessimistic guess (grounded; the `bestGuess` series), built piecewise so the steep part sits AFTER Jul 15,
   // not before it: from the Jun-23 official anchor (12,916) it climbs only GENTLY
   // (~150/day) through the lull to Jul 15, and the bulk of the cascade lands at
-  // the Jul 15 deadline wave, ramping to offer depth (~31,400) by Aug 1, then slow
+  // the Jul 15 deadline wave, ramping to offer depth (~30,200) by Aug 1, then slow
   // drift. A single logistic can't both hold the line early and stay flat to
-  // Jul 15, hence waypoints. Terminal/depth unchanged (~31,400).
+  // Jul 15, hence waypoints. Depth = T2 clear + $20M reserve + ~15% churn (~30,200).
   const bgEnd = dayOf('2026-08-01');
   const bgWaypoints = [
     { t: tL, f: fL },                          // Jun 23 official anchor (12,916)
@@ -286,11 +309,12 @@ function buildCascadeProjection({
       : bgSpline(Math.min(t, bgEnd)) + Math.max(0, t - bgEnd) * RECON_DRIFT;
 
   // Aggressive churn: staged waypoints, not a logistic. Current trend (last
-  // observed segment's pace) carries forward; the reserve flows on top of it
-  // across the reserveStart→reserveEnd window; the deadline shakeout lands
-  // wave1Rate cumulative opt-outs by Jul 25; the full optOutRate wave completes
-  // Jul 31. Waypoints are clamped monotone so new observations re-anchor without
-  // a dip. buildStaged builds one such line from a scenario (cody / codyPlus).
+  // observed segment's pace) carries forward; the confirmed $20M reserve flows on
+  // top of it across the reserveStart→reserveEnd window (after the appeal window);
+  // the deadline shakeout lands wave1Rate cumulative departures by Jul 25; the full
+  // optOutRate wave completes Jul 31. Waypoints are clamped monotone so new
+  // observations re-anchor without a dip. buildStaged builds one such line from a
+  // scenario (cody / codyPlus).
   const trendRate = (fL - obsF[obsF.length - 2].f) / (tL - obsF[obsF.length - 2].t);
   const codyEnd = dayOf('2026-07-31');
   const buildStaged = (p) => {
@@ -391,29 +415,29 @@ const BAND_OUTLOOK = [
     scope: 'early Tier 3',
     call: 'Likely',
     tone: 'good',
-    note: 'Inside the pessimistic-guess funded depth (~27,500). This is where the first real Tier 3 movement lands, just after the Jul 15 cascade.',
+    note: 'Reached once Tier 2 clears and the confirmed $20M reserve (~2,346 seats) is awarded after the appeal window. This is where the first real Tier 3 movement lands, around the Jul 15 cascade.',
   },
   {
     band: '25,001 – 30,000',
     scope: 'mid Tier 3',
     call: 'Possible',
     tone: 'mid',
-    note: 'Inside pessimistic-guess offer depth; turning that offer into a funded seat across the band needs ~+$20M more of the appeals reserve. Possible in July.',
+    note: 'Past the $20M reserve — getting here needs backfill churn, i.e. ~12–15% of active awards opting out / bumping to $2,000 / missing the Jul 15 deadline. Possible in July at moderate attrition.',
   },
   {
     band: '30,001 – 50,000',
     scope: 'YOUR BAND',
-    call: 'Bottom edge possible · rest unlikely in Year 1',
+    call: 'Bottom edge possible · rest needs high attrition',
     tone: 'mid',
     ourBand: true,
-    note: 'Only the first ~1,400 positions (to ~31,400) sit at the edge of pessimistic-guess offer depth — possible. Deeper in is upside-only: rank ~35k needs +$20M reserve, ~40k needs +$50M, the top (50k) nearly the whole pool. The aggressive-churn scenario is the bet the July cascade + reserve release pushes all the way through.',
+    note: 'With the reserve now confirmed at just $20M, depth here comes from churn, not a reserve windfall. The bottom edge (~30–31k) is in reach at ~15–17% July attrition; ~35k needs ~20%; mid-band (~40k) needs ~27% — the top of the historical 14–34% range. The whole band requires near-record Year-1 attrition.',
   },
   {
     band: '50,001 +',
     scope: 'deep Tier 3 / Tier 4',
     call: 'Not expected',
     tone: 'bad',
-    note: 'Requires decline rates well outside the historical 14–34% range plus nearly the entire reserve. Tier 4 does not move in Year 1 at all.',
+    note: 'Requires decline rates beyond the historical 14–34% range — the $20M reserve barely moves the line, so there is no pool large enough to reach here. Tier 4 does not move in Year 1 at all.',
   },
 ];
 
@@ -966,9 +990,10 @@ const TefaView = () => {
           })}
         </div>
         <p className="text-xs text-tefa-body/50 mt-3">
-          <strong>Bottom line:</strong> Tier 3 is expected to start in mid-to-late July, but our band sits at the far
-          edge of even the pessimistic guess — only its very bottom (to ~{k.bgOffer.toLocaleString()}) is in reach, and a
-          funded seat there isn't. Treat TEFA as a bonus, never as money you're counting on.
+          <strong>Bottom line:</strong> Tier 3 is expected to start around mid-July. The Comptroller has now confirmed the
+          appeals reserve is only <strong>~$20M</strong> (~2,346 seats) — so reaching our band depends on July <em>attrition</em>,
+          not a reserve windfall. Only the bottom edge (~{k.bgOffer.toLocaleString()}) is in reach at moderate churn; the
+          rest of the band needs near-record opt-out rates. Treat TEFA as a bonus, never as money you're counting on.
         </p>
       </section>
 
@@ -979,10 +1004,10 @@ const TefaView = () => {
         </h2>
         <p className="text-sm text-tefa-body/80 mb-4">
           The chart tracks the <strong>cascade frontier</strong>: how far down the waitlist awards have reached.
-          We show three lines — the grounded <strong>pessimistic guess</strong>, an <strong>aggressive churn</strong>{' '}
-          scenario (a more optimistic opt-out bet), and a slightly-hotter <strong>aggressive+ upper edge</strong> that
-          brackets the upside if the appeals reserve is releasing now. When a line crosses a band's threshold, the
-          cascade has reached that band.
+          We show three lines — all sharing the confirmed <strong>$20M reserve</strong>, differing only in July attrition:
+          the grounded <strong>pessimistic guess</strong> (~15% churn), an <strong>aggressive churn</strong> scenario
+          (~20%), and a slightly-hotter <strong>aggressive+ upper edge</strong> (~27%). When a line crosses a band's
+          threshold, the cascade has reached that band.
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm mb-4">
           <div className="rounded-lg bg-tefa-light border border-gray-200 p-3 text-center">
@@ -1003,10 +1028,18 @@ const TefaView = () => {
           <div className="rounded-lg bg-tefa-light border border-tefa-red/30 p-3 text-center">
             <div className="text-xs text-tefa-red/70 font-medium">Aggressive Churn Reaches</div>
             <div className="font-bold text-tefa-red text-lg">~{k.codyTerminal.toLocaleString()}</div>
-            <div className="text-[10px] text-tefa-body/40">through our whole band by ~{fmtChartDate(k.codyBandHiTs)} · assumes 50% opt-out (above history) + $50M reserve</div>
+            <div className="text-[10px] text-tefa-body/40">into our band's bottom third by ~{fmtChartDate(k.codyBandLoTs)} · assumes ~20% July attrition + the $20M reserve</div>
           </div>
         </div>
         <p className="text-[10px] text-tefa-body/50 mb-3 -mt-2">
+          <strong>Update — Jun 25, 2026 (budget confirmed).</strong> Comptroller spokesperson Travis Pillow answered directly
+          in the TEFA Facebook group with round numbers: <strong>~$910M to award this year</strong> (after ~$90M of admin,
+          startup and TEA transfers), <strong>~$890M already funded</strong> in active awards, and a <strong>~$20M reserve</strong>{' '}
+          remaining for outstanding appeals — awarded down to the waitlist once the appeal window closes. They hold active awards
+          at $890M by <strong>backfilling</strong> new batches as families opt out or bump to $2,000. This replaces our earlier
+          inferred ~$100M reserve: the reserve is small, so reaching our band now depends on July attrition, not a reserve release.
+        </p>
+        <p className="text-[10px] text-tefa-body/50 mb-3 -mt-1">
           <strong>Update — Jun 23, 2026.</strong> The Comptroller's office confirmed <strong>{JUNE23_CASCADE.t2Cascaded.toLocaleString()} more
           waitlisted students</strong> were awarded this week, all Tier 2 — funded by opt-outs and homeschool/other downgrades
           (which cut each award to $2,000). That advances the official frontier to <strong>{k.frontierNow.toLocaleString()}</strong>
@@ -1017,8 +1050,8 @@ const TefaView = () => {
           <strong>*</strong> The hollow pink dot marks the <strong>anecdotal ~{(EST_FRONTIER_TODAY / 1000).toFixed(0)}k</strong> frontline
           reading (documented Odyssey support cases, Jun 22–23 — one Tier 2 family's waitlist range moved ~15–20k → 4–5k in a single
           afternoon; another, ~17k cleared ahead of them). It runs <em>above</em> the official {k.frontierNow.toLocaleString()}, so it isn't the
-          base case — it's the evidence behind the <span className="text-tefa-red font-semibold">aggressive+ upper edge</span>: if the appeals
-          reserve really is releasing this fast, the frontier is ahead of the published count. Still unofficial (self-reported), so asterisked.
+          base case — it's the evidence behind the <span className="text-tefa-red font-semibold">aggressive+ upper edge</span>: if backfill
+          is moving this fast, the frontier is ahead of the published count. Still unofficial (self-reported), so asterisked.
         </p>
         <div className="h-[340px]">
           <ResponsiveContainer width="100%" height="100%">
@@ -1052,11 +1085,11 @@ const TefaView = () => {
           </ResponsiveContainer>
         </div>
         <div className="text-[11px] text-tefa-body/60 bg-tefa-light rounded p-3 mt-3 space-y-1">
-          <div><strong>What's plotted.</strong> The frontier is derived from the published Tier 2 backlog (frontier = {T2_AT_LOTTERY.toLocaleString()} at-lottery − Tier 2 still queued): 0 on May 4 → {k.frontierNow.toLocaleString()} on {fmtChartDate(Date.parse(k.asOf))}. The line ahead clears at roughly <strong>3.7 seats per opt-out</strong> — homeschool/other downgrades free $8,474 of each $10,474 award, and appeals-reserve awards free seats with no opt-out at all — so we measure progress in seats reached, not raw opt-outs.</div>
-          <div><strong>Pessimistic guess (grounded).</strong> A blended 15/18/35% non-participation plus ~$25M of the inferred $100M+ appeals reserve. Tier 2 clears ~{fmtChartDate(k.bgTier3Ts)}, and the cascade settles around offer depth ~{k.bgOffer.toLocaleString()} (funded ~{k.bgFunded.toLocaleString()}) — just reaching the bottom edge of our band ~{fmtChartDate(k.bgBandLoTs)}.</div>
-          <div><strong>Aggressive churn (staged — the upper edge, not a forecast).</strong> Three legs. First, the current pace continues, with <strong>$50M of the inferred ~$100M appeals reserve</strong> (~{k.codyReserveSeats.toLocaleString()} blended seats) flowing on top of it <strong>Jun 15 – Jul 15</strong> as appeals resolve — that stretch reads as "trend + reserve." Then the deadline shakeout lands <strong>25% cumulative opt-outs by Jul 25</strong>, and the wave completes at <strong>50% of the awarded base by Jul 31</strong>. That 50% sits <em>above</em> the 14–34% range seen in D.C., Milwaukee and Virginia, so it's the optimistic ceiling, not the expectation. Under it Tier 3 offers start ~{fmtChartDate(k.codyTier3Ts)} and the cascade clears our whole band by ~{fmtChartDate(k.codyBandHiTs)}.</div>
+          <div><strong>What's plotted.</strong> The frontier is derived from the published Tier 2 backlog (frontier = {T2_AT_LOTTERY.toLocaleString()} at-lottery − Tier 2 still queued): 0 on May 4 → {k.frontierNow.toLocaleString()} on {fmtChartDate(Date.parse(k.asOf))}. With the program fully deployed at $890M, the line ahead now advances by <strong>backfill</strong> — each opt-out or homeschool downgrade recycles roughly <strong>one new blended seat</strong> (a private opt-out frees $10,474 → ~1.2 seats; a downgrade frees $8,474 → ~1 seat), per the Comptroller holding active awards at $890M — so we measure progress in seats reached, not raw opt-outs.</div>
+          <div><strong>Pessimistic guess (grounded).</strong> Tier 2 clears via backfill, the confirmed <strong>~$20M reserve</strong> (~{RESERVE_SEATS.toLocaleString()} seats) is awarded after appeals, and a moderate <strong>~15% of active awards</strong> churn around the Jul 15 deadline. Tier 2 clears ~{fmtChartDate(k.bgTier3Ts)}, and the cascade settles around offer depth ~{k.bgOffer.toLocaleString()} (funded ~{k.bgFunded.toLocaleString()}) — just reaching the bottom edge of our band ~{fmtChartDate(k.bgBandLoTs)}.</div>
+          <div><strong>Aggressive churn (staged — the upper edge, not a forecast).</strong> Same confirmed <strong>$20M reserve</strong> (~{k.codyReserveSeats.toLocaleString()} seats), landing after the appeal window (~Jul 12–25). The difference is attrition: the deadline shakeout lands <strong>~13% cumulative departures by Jul 25</strong>, completing at <strong>~20% of the active base by Jul 31</strong>. 20% sits in the upper half of the 14–34% range seen in D.C., Milwaukee and Virginia, so it's an optimistic case, not the expectation. Under it Tier 3 offers start ~{fmtChartDate(k.codyTier3Ts)} and the cascade reaches our band's bottom third by ~{fmtChartDate(k.codyBandLoTs)}. The aggressive+ line pushes the same mechanism to ~27% (mid-band, ~{k.codyPlusTerminal.toLocaleString()}).</div>
           <div><strong>After Aug 1 — the lines don't stop cold.</strong> Some share of confirmed students never actually enroll (historically ~5% no-show in comparable programs), and those seats — plus other recovered funds — reconcile through August and September. Both lines carry a steady ~{RECON_DRIFT}/day drift after their main waves complete, so the curve keeps creeping rather than going flat.</div>
-          <div><strong>Watch — appeals-reserve release (~mid-June).</strong> Appeals are filed within 30 days of notice (T1 ~closed May 24 · T2 ~Jun 3 · waitlist ~Jun 12); unused reserve cascades to the waitlist. As the last windows close, a reserve release could move the line independent of opt-outs — the main thing that could push the real outcome toward the aggressive-churn ceiling.</div>
+          <div><strong>Watch — the Jul 15 deadline + reserve release.</strong> Families awarded in early rounds who don't opt in by Jul 15 are "moved aside to allow other families to come off the waitlist" (Travis Pillow). That deadline shakeout — plus the ~$20M reserve awarded once appeals finalize — is the single event that decides whether the cascade reaches our band. It lands <em>after</em> the Jun 30 penalty-free withdrawal deadline.</div>
         </div>
       </section>
     </div>
