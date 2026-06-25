@@ -114,21 +114,19 @@ const T3_START = T2_AT_LOTTERY;   // the cascade frontier at which the FIRST Tie
 const BAND_LO = TEFA.bandLo;      // 30,001 — top of our family's band
 const BAND_HI = TEFA.bandHi;      // 50,000 — bottom of our family's band
 
-// ANECDOTAL reading of the frontier "today" (Jun 23), from documented Odyssey
-// frontline cases — evidence the cascade may be running ahead of the published
-// count, i.e. support for the AGGRESSIVE scenario.
-// The official Jun 23 frontier is 12,916 (see T2_OBSERVATIONS); these self-reported
-// cases run hotter, implying backfill is moving faster than the published count
-// reflects (NOT a reserve release — the reserve is only $20M and lands after the
-// appeal window per Travis Pillow, Jun 25):
-//   Jun 22: one Tier 2 family went 5,001–10,000 (4:01pm) → 4,001–5,000 (8:52pm) the
-//     SAME day (and ~15–20k → 4–5k overall) — ~13,000 cleared from ahead of them.
-//   Jun 23: "ElegantTurkey" 10–15k → 2–3k then FUNDED (confirmed crossing). "Ty Hope"
-//     15,001–20,000 → 1–1k, still waiting = ~17,000 cleared ahead of one person.
-// Strongest point implies ~17k; we plot the conservative ~15,000 midpoint. This sits
-// ABOVE the official line, so it isn't the base case — it brackets the aggressive
-// upside. Still UNOFFICIAL — self-reported cases — so always asterisked.
-const EST_FRONTIER_TODAY = 15000;
+// ANECDOTAL reading of the frontier "today" (Jun 25) — evidence the cascade is
+// running well ahead of the published count, and the anchor for the AGGRESSIVE line.
+// The official Jun 23 frontier is only 12,916 (see T2_OBSERVATIONS), but frontline
+// reports run far hotter:
+//   Jun 22–23: one Tier 2 family went ~15–20k → 4–5k in a single afternoon;
+//     "ElegantTurkey" 10–15k → FUNDED; "Ty Hope" ~17k cleared ahead of them.
+//   Jun 25: a Tier 3 family reports being APPROVED — which can only happen once the
+//     frontier has passed Tier 3's start (20,383). That's the strongest signal yet
+//     that the real frontier is already ~20k+, ~7k ahead of the published count.
+// We plot the Tier 3 reach (20,383) as the anecdotal marker. Still UNOFFICIAL —
+// self-reported — and could include an appeal/SPED/sibling out-of-order case, so
+// always asterisked; but it's what the aggressive line follows.
+const EST_FRONTIER_TODAY = T2_AT_LOTTERY; // 20,383 — anecdotal Tier 3 reach, Jun 25
 
 // How the cascade frontier maps to "fuel": the frontier advances ~1 seat per family
 // that LEAVES an active award (opt-out or homeschool/$2,000 downgrade), plus the
@@ -184,14 +182,14 @@ const T2_OBSERVATIONS = [
 // seats), released at the Jul 15 deadline; they differ in how high total attrition
 // climbs and in SHAPE.
 //   REALISTIC: other-state Year-1 attrition (mid of the 14–34% range ≈ 24% of the
-//     active base). A simple taper — the cascade eases as Tier 2 finishes, the
-//     reserve drops in the week after the Jul 15 deadline, and a moderate shakeout
-//     follows. Terminal ≈ 24% × 107k + reserve ≈ 28,000 — just BELOW our band.
-//   AGGRESSIVE: a Texas-specific accelerant. Awarded PreK and K families often
-//     can't find a participating school with open seats at that grade, so they opt
-//     out / bump to $2,000 at elevated rates — producing an end-of-June SPIKE that
-//     clears Tier 2 in a burst, then a heavy Jul 15 deadline shakeout. ~35% total
-//     churn (top of the historical range) + reserve ≈ 40,000 — mid-band.
+//     active base). Quiet through the Jul 1–15 lull, a sharp SPIKE at the Jul 15
+//     deadline (reserve drops the same week), aggressive churn Jul 15–31, then a
+//     taper Aug 1–15. Terminal ≈ 24% × 107k + reserve ≈ 28,000 — just BELOW our band.
+//   AGGRESSIVE: follows the frontline "we got funded" reports — a Tier 3 family was
+//     already approved Jun 25, so this line hits Tier 3 (20,383) TODAY. Quiet Jul
+//     1–15, a hard SPIKE at the Jul 15 deadline, then VERY aggressive churn Jul
+//     15–31 as PreK/K families who can't find participating seats bail, tapering Aug
+//     1–15. ~35% total churn (top of the range) + reserve ≈ 40,000 — mid-band.
 // Both are SCENARIOS, not forecasts. After Aug 15 the big waves are done and each
 // line just drifts on small residual attrition.
 const REALISTIC = {
@@ -301,30 +299,35 @@ function buildCascadeProjection({
               : spline(Math.min(t, endT)) + Math.max(0, t - endT) * POST_DRIFT;
   };
 
-  // REALISTIC — a simple taper. The cascade eases as Tier 2 finishes (~420/day early,
-  // slowing into the deadline), the $20M reserve drops in the week after Jul 15, and a
-  // moderate shakeout follows. Terminal = churnRate × base + reserve (~28k, just
-  // below our band).
+  const today = dayOf(win.today);
+
+  // REALISTIC — quiet through the deadline, then the spike. Tier 2 finishes through
+  // early July, Jul 1–15 is a lull, then the Jul 15 deadline + reserve drive a sharp
+  // step, aggressive churn runs Jul 15–31, and it tapers Aug 1–15. Terminal =
+  // churnRate × base + reserve (~28k, just below our band).
   const realTerminal = Math.round(realistic.churnRate * awardedBase + realistic.reserveSeats);
   const realFn = buildLine([
     { t: tL, f: fL },                              // Jun 23 anchor (12,916)
-    { t: dayOf('2026-07-01'), f: 16800 },          // Tier 2 still clearing
-    { t: jul15, f: 20600 },                        // tapered — just crosses Tier 3 start
-    { t: dayOf('2026-07-22'), f: 20600 + realistic.reserveSeats }, // reserve lands the week after the deadline
-    { t: wavesEnd, f: realTerminal },              // moderate shakeout → just below our band
+    { t: dayOf('2026-07-01'), f: 16500 },          // Tier 2 still clearing
+    { t: jul15, f: 18800 },                        // QUIET Jul 1–15 lull (~165/day)
+    { t: dayOf('2026-07-17'), f: 18800 + realistic.reserveSeats }, // SPIKE: reserve + deadline shakeout
+    { t: dayOf('2026-07-31'), f: 26500 },          // aggressive churn Jul 15–31
+    { t: wavesEnd, f: realTerminal },              // taper Aug 1–15 → just below our band
   ], wavesEnd);
 
-  // AGGRESSIVE — end-of-June SPIKE: PreK/K awarded families can't find a
-  // participating seat at that grade, so they opt out / bump to $2,000 in a burst
-  // that clears Tier 2; then a heavy Jul 15 deadline shakeout. Terminal = churnRate ×
-  // base + reserve (~40k, mid-band).
+  // AGGRESSIVE — tracks the frontline "we got funded" reports: a Tier 3 family was
+  // already approved Jun 25, so this line jumps to Tier 3 (20,383) TODAY, runs QUIET
+  // through Jul 1–15, then SPIKES at the Jul 15 deadline (+reserve), with very
+  // aggressive churn Jul 15–31 (PreK/K families who can't find seats bail), tapering
+  // Aug 1–15. Terminal = churnRate × base + reserve (~40k, mid-band).
   const aggTerminal = Math.round(aggressive.churnRate * awardedBase + aggressive.reserveSeats);
   const aggFn = buildLine([
-    { t: tL, f: fL },
-    { t: dayOf('2026-06-30'), f: 20800 },          // end-June spike clears Tier 2
-    { t: jul15, f: 24500 },                         // continued PreK/K churn into the deadline
-    { t: dayOf('2026-07-22'), f: 24500 + aggressive.reserveSeats }, // reserve the week after the deadline
-    { t: wavesEnd, f: aggTerminal },                // heavy shakeout → mid-band
+    { t: tL, f: fL },                              // Jun 23 official anchor (12,916)
+    { t: today, f: T3_START },                     // hits Tier 3 TODAY (Jun 25) — frontline reports
+    { t: jul15, f: 22800 },                         // QUIET Jul 1–15 lull
+    { t: dayOf('2026-07-17'), f: 22800 + aggressive.reserveSeats }, // SPIKE: reserve + deadline shakeout
+    { t: dayOf('2026-07-31'), f: 37500 },          // VERY aggressive churn Jul 15–31
+    { t: wavesEnd, f: aggTerminal },                // taper Aug 1–15 → mid-band
   ], wavesEnd);
 
   const crossTs = (fn, level) => {
@@ -978,11 +981,12 @@ const TefaView = () => {
         </h2>
         <p className="text-sm text-tefa-body/80 mb-4">
           The chart tracks the <strong>cascade frontier</strong>: how far down the waitlist awards have reached.
-          We show two scenarios — both sharing the confirmed <strong>$20M reserve</strong>: a{' '}
-          <strong>realistic</strong> line built on other states' Year-1 attrition (~24%), which tapers through the
-          deadline and stops just short of our band; and an <strong>aggressive</strong> line (~35%) that assumes
-          awarded PreK/K families can't find seats and bail — spiking the cascade at the end of June and reaching
-          mid-band. When a line crosses a band's threshold, the cascade has reached that band.
+          We show two scenarios — both sharing the confirmed <strong>$20M reserve</strong> and the same shape
+          (quiet Jul 1–15, a sharp spike at the Jul 15 deadline, hard churn Jul 15–31, taper after): a{' '}
+          <strong>realistic</strong> line built on other states' Year-1 attrition (~24%), which stops just short
+          of our band; and an <strong>aggressive</strong> line (~35%) that follows the frontline reports — already
+          at Tier 3 today — and reaches mid-band if awarded PreK/K families can't find seats and bail. When a line
+          crosses a band's threshold, the cascade has reached that band.
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm mb-4">
           <div className="rounded-lg bg-tefa-light border border-gray-200 p-3 text-center">
@@ -1022,11 +1026,12 @@ const TefaView = () => {
           <strong>~{JUNE23_CASCADE.optOuts.toLocaleString()} opt-outs</strong> leaving nearly 107,000 active awards.
         </p>
         <p className="text-[10px] text-tefa-body/50 mb-3 -mt-1">
-          <strong>*</strong> The hollow pink dot marks the <strong>anecdotal ~{(EST_FRONTIER_TODAY / 1000).toFixed(0)}k</strong> frontline
-          reading (documented Odyssey support cases, Jun 22–23 — one Tier 2 family's waitlist range moved ~15–20k → 4–5k in a single
-          afternoon; another, ~17k cleared ahead of them). It runs <em>above</em> the official {k.frontierNow.toLocaleString()}, so it isn't the
-          base case — it's the evidence behind the <span className="text-tefa-red font-semibold">aggressive line</span>: if backfill
-          is moving this fast, the frontier is ahead of the published count. Still unofficial (self-reported), so asterisked.
+          <strong>*</strong> The hollow pink dot marks an <strong>anecdotal Tier 3 reach</strong> ({EST_FRONTIER_TODAY.toLocaleString()}):
+          a Tier 3 family reports being <strong>approved Jun 25</strong>, which can only happen once the frontier passes Tier 3's start —
+          corroborated by Jun 22–23 frontline cases (one family's range moved ~15–20k → 4–5k in an afternoon; ~17k cleared ahead of another).
+          It sits well <em>above</em> the official {k.frontierNow.toLocaleString()}, so it isn't the base case — it's what the{' '}
+          <span className="text-tefa-red font-semibold">aggressive line</span> follows. Still unofficial (self-reported), and could be an
+          appeal/SPED/sibling out-of-order case, so asterisked.
         </p>
         <div className="h-[340px]">
           <ResponsiveContainer width="100%" height="100%">
