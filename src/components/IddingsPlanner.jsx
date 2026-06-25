@@ -24,6 +24,7 @@ import {
   Legend,
   ReferenceLine,
   ReferenceDot,
+  ReferenceArea,
 } from 'recharts';
 
 // ---------------------------------------------------------------------------
@@ -62,6 +63,10 @@ const TEFA = {
   bandHi: 50000,
   notifiedOn: '2026-05-13',
 };
+
+// Cody's own original lottery position within that band — the deep end (the chart's
+// y-axis is original position, so the frontier must reach THIS to fund us).
+const YOUR_POS = { lo: 45000, hi: 50000 };
 
 // ---------------------------------------------------------------------------
 // Confirmed program budget — Travis Pillow (Comptroller spokesperson),
@@ -366,6 +371,8 @@ function buildCascadeProjection({
     aggressiveTier3Ts: crossTs(aggFn, T3_START),
     aggressiveBandLoTs: crossTs(aggFn, BAND_LO),
     aggressiveBandHiTs: crossTs(aggFn, BAND_HI),
+    realisticYourPosTs: crossTs(realFn, YOUR_POS.lo),
+    aggressiveYourPosTs: crossTs(aggFn, YOUR_POS.lo),
   };
   return { series, kpis };
 }
@@ -408,11 +415,11 @@ const BAND_OUTLOOK = [
   },
   {
     band: '30,001 – 50,000',
-    scope: 'YOUR BAND',
-    call: 'Bottom edge possible · rest needs high attrition',
-    tone: 'mid',
+    scope: 'YOUR BAND · you sit at 45–50k',
+    call: 'Unlikely — needs record attrition',
+    tone: 'bad',
     ourBand: true,
-    note: 'With the reserve now confirmed at just $20M, depth here comes from churn, not a reserve windfall. The bottom edge (~30–31k) is in reach at ~15–17% July attrition; ~35k needs ~20%; mid-band (~40k) needs ~27% — the top of the historical 14–34% range. The whole band requires near-record Year-1 attrition.',
+    note: 'Our original lottery position is the DEEP end (45–50k), and the chart plots original position — so the frontier has to climb all the way there to fund us. Reaching 45k needs ~40% of all awards given up; 50k needs ~45% — both ABOVE any first-year program (history is 14–34%). Realistic attrition stops ~28k, nowhere close; only an extreme Jul 15 opt-in collapse grazes 45–48k, and 50k is effectively unreachable. Plan on no voucher.',
   },
   {
     band: '50,001 +',
@@ -971,10 +978,10 @@ const TefaView = () => {
           })}
         </div>
         <p className="text-xs text-tefa-body/50 mt-3">
-          <strong>Bottom line:</strong> Tier 3 is expected to start around mid-July. The Comptroller has now confirmed the
-          appeals reserve is only <strong>~$20M</strong> (~2,346 seats) — so reaching our band depends on July <em>attrition</em>,
-          not a reserve windfall. On realistic other-state attrition the cascade stops ~{k.realisticTerminal.toLocaleString()}, just <em>short</em>
-          of our band; only an aggressive case (awarded PreK/K families unable to find seats) carries it into the band. Treat TEFA as a bonus, never as money you're counting on.
+          <strong>Bottom line:</strong> our original lottery position is the <strong>deep end (45–50k)</strong>, and the chart plots
+          original position — so the frontier must reach 45–50k to fund us. That needs <strong>~40–45% of all awards abandoned</strong>,
+          above any first-year program (history is 14–34%). Realistic attrition stops ~{k.realisticTerminal.toLocaleString()} — nowhere
+          near; even an extreme Jul 15 opt-in collapse only grazes 45–48k, and 50k is effectively unreachable. <strong>Plan on no voucher this year</strong>; treat any offer as a pure surprise.
         </p>
       </section>
 
@@ -1052,6 +1059,8 @@ const TefaView = () => {
                   label={{ value: 'Jul 15 deadline', position: 'insideTop', fontSize: 9, fontWeight: 700, fill: '#aa2142' }} />
               <ReferenceLine x={todayTs} stroke="#94a3b8" strokeDasharray="2 2"
                   label={{ value: 'Today', fontSize: 10, fill: '#64748b', position: 'insideBottomLeft' }} />
+              <ReferenceArea y1={YOUR_POS.lo} y2={YOUR_POS.hi} fill="#aa2142" fillOpacity={0.10}
+                  label={{ value: `Your original position (${(YOUR_POS.lo/1000)}–${(YOUR_POS.hi/1000)}k)`, position: 'insideTopRight', fontSize: 9, fontWeight: 700, fill: '#aa2142' }} />
               <ReferenceLine y={T3_START} stroke="#b08a3e" strokeDasharray="8 4"
                   label={{ value: `Tier 3 starts — ${T3_START.toLocaleString()}`, position: 'insideBottomLeft', fontSize: 9, fontWeight: 600, fill: '#b08a3e' }} />
               <ReferenceLine y={BAND_LO} stroke="#aa2142" strokeDasharray="8 4"
