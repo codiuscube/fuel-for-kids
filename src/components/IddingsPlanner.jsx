@@ -279,69 +279,53 @@ function buildCascadeProjection({
 
   const optOutsSoFar = optOuts[optOuts.length - 1].cumOptOuts;
 
-  // Pessimistic guess (grounded; the `bestGuess` series), built piecewise so the steep part sits AFTER Jul 15,
-  // not before it: from the Jun-23 official anchor (12,916) it climbs only GENTLY
-  // (~150/day) through the lull to Jul 15, and the bulk of the cascade lands at
-  // the Jul 15 deadline wave, ramping to offer depth (~30,200) by Aug 1, then slow
-  // drift. A single logistic can't both hold the line early and stay flat to
-  // Jul 15, hence waypoints. Depth = T2 clear + $20M reserve + ~15% churn (~30,200).
-  const bgEnd = dayOf('2026-08-01');
-  const bgWaypoints = [
-    { t: tL, f: fL },                          // Jun 23 official anchor (12,916)
-    { t: dayOf('2026-07-15'), f: 16200 },      // gentle pre-deadline lull (~150/day)
-    { t: bgEnd, f: BG_OFFER },                 // Jul 15 → Aug 1 deadline cascade
-  ];
-  const bgSpline = monoSpline(bgWaypoints);
-  const bestGuess = (t) =>
-    t <= tL
-      ? interp(obsF, t)
-      : bgSpline(Math.min(t, bgEnd)) + Math.max(0, t - bgEnd) * RECON_DRIFT;
+  const wavesEnd = dayOf(WAVES_END);
+  const jul15 = dayOf('2026-07-15');
 
-  // Aggressive churn: staged waypoints, not a logistic. Current trend (last
-  // observed segment's pace) carries forward; the confirmed $20M reserve flows on
-  // top of it across the reserveStart→reserveEnd window (after the appeal window);
-  // the deadline shakeout lands wave1Rate cumulative departures by Jul 25; the full
-  // optOutRate wave completes Jul 31. Waypoints are clamped monotone so new
-  // observations re-anchor without a dip. buildStaged builds one such line from a
-  // scenario (cody / codyPlus).
-  const trendRate = (fL - obsF[obsF.length - 2].f) / (tL - obsF[obsF.length - 2].t);
-  const codyEnd = dayOf('2026-07-31');
-  const buildStaged = (p) => {
-    const terminal = Math.round(fL + p.reserveSeats + (p.optOutRate * awardedBase - optOutsSoFar));
-    // Post-reserve, pre-deadline lull: once the reserve has fully landed, growth
-    // wanes back to the background trend until the Jul-deadline wave kicks in. For
-    // a line whose reserve lands early (aggressive+), this restores the flat-then-
-    // spike shape instead of one straight diagonal; for one whose reserve runs to
-    // Jul 15 (aggressive churn) it sits inside the reserve leg and barely shows.
-    const lull = dayOf('2026-07-14');
-    const raw = [
-      { t: dayOf(p.reserveStart), f: fL + trendRate * (dayOf(p.reserveStart) - tL) },
-      { t: dayOf(p.reserveEnd), f: fL + trendRate * (dayOf(p.reserveEnd) - tL) + p.reserveSeats },
-      { t: lull, f: fL + trendRate * (lull - tL) + p.reserveSeats },
-      { t: dayOf('2026-07-25'), f: fL + (p.wave1Rate * awardedBase - optOutsSoFar) + p.reserveSeats },
-      { t: codyEnd, f: terminal },
-    ].sort((a, b) => a.t - b.t);
+  // Build a scenario line from monotone waypoints: observed up to the anchor, the
+  // spline through the waypoints to Aug 15, then small residual drift after.
+  const buildLine = (waypoints, endT) => {
     const pts = [{ t: tL, f: fL }];
-    for (const q of raw) {
+    for (const q of waypoints) {
       if (q.t <= tL) continue;
       const prev = pts[pts.length - 1];
-      const f = Math.round(Math.max(q.f, prev.f));
-      // Merge waypoints that land on the SAME day (e.g. reserveEnd colliding with
-      // the hardcoded Jul-25 deadline-wave point). A duplicate x makes dx=0 in
-      // monoSpline → a NaN tangent that blanks the rest of the line. Keep the
-      // higher (monotone) f instead of pushing a second point at the same x.
+      const f = Math.round(Math.max(q.f, prev.f));   // clamp monotone — never dips
+      // Merge any same-day waypoints; a duplicate x makes dx=0 in monoSpline → a NaN
+      // tangent that would blank the rest of the line.
       if (q.t === prev.t) prev.f = f;
       else pts.push({ t: q.t, f });
     }
     const spline = monoSpline(pts);
-    const fn = (t) =>
-      t <= tL
-        ? interp(obsF, t)
-        : spline(Math.min(t, codyEnd)) + Math.max(0, t - codyEnd) * RECON_DRIFT;
-    return { fn, terminal };
+    return (t) =>
+      t <= tL ? interp(obsF, t)
+              : spline(Math.min(t, endT)) + Math.max(0, t - endT) * POST_DRIFT;
   };
-  const { fn: codyFn, terminal: codyTerminal } = buildStaged(cody);
-  const { fn: codyPlusFn, terminal: codyPlusTerminal } = buildStaged(codyPlus);
+
+  // REALISTIC — a simple taper. The cascade eases as Tier 2 finishes (~420/day early,
+  // slowing into the deadline), the $20M reserve drops in the week after Jul 15, and a
+  // moderate shakeout follows. Terminal = churnRate × base + reserve (~28k, just
+  // below our band).
+  const realTerminal = Math.round(realistic.churnRate * awardedBase + realistic.reserveSeats);
+  const realFn = buildLine([
+    { t: tL, f: fL },                              // Jun 23 anchor (12,916)
+    { t: dayOf('2026-07-01'), f: 16800 },          // Tier 2 still clearing
+    { t: jul15, f: 20600 },                        // tapered — just crosses Tier 3 start
+    { t: dayOf('2026-07-22'), f: 20600 + realistic.reserveSeats }, // reserve lands the week after the deadline
+    { t: wavesEnd, f: realTerminal },              // moderate shakeout → just below our band
+  ], wavesEnd);
+
+  // AGGRESSIVE — end-of-June SPIKE: PreK/K awarded families can't find a
+  // participating seat at that grade, so they opt out / bump to $2,000 in a burst
+  // that clears Tier 2; then a heavy Jul 15 deadline shakeout. Terminal = churnRate ×
+  // base + reserve (~40k, mid-band).
+  const aggTerminal = Math.round(aggressive.churnRate * awardedBase + aggressive.reserveSeats);
+  const aggFn = buildLine([
+    { t: tL, f: fL },
+    { t: dayOf('2026-06-30'), f: 20800 },          // end-June spike clears Tier 2
+    { t: jul15, f: 24500 },                         // continued PreK/K churn into the deadline
+    { t: dayOf('2026-07-22'), f: 24500 + aggressive.reserveSeats }, // reserve the week after the deadline
+    { t: wavesEnd, f: aggTerminal },                // heavy shakeout → mid-band
+  ], wavesEnd);
 
   const crossTs = (fn, level) => {
     for (let t = tL; t <= tEnd; t++) if (fn(t) >= level) return t0 + t * DAY;
@@ -355,11 +339,9 @@ function buildCascadeProjection({
     if (od) row.observed = od.f;
     if (t <= tL) row.observedLine = Math.round(interp(obsF, t));
     if (t >= tL) {
-      row.bestGuess = Math.round(bestGuess(t));
-      // Enforce the definitional ordering pessimistic ≤ churn ≤ churn+; the smooth
-      // spline can otherwise introduce sub-100-seat crossings between the lines.
-      row.cody = Math.max(Math.round(codyFn(t)), row.bestGuess);
-      row.codyPlus = Math.max(Math.round(codyPlusFn(t)), row.cody);
+      row.realistic = Math.round(realFn(t));
+      // Aggressive is by definition ≥ realistic; clamp away sub-100-seat spline crossings.
+      row.aggressive = Math.max(Math.round(aggFn(t)), row.realistic);
     }
     series.push(row);
   }
@@ -369,24 +351,21 @@ function buildCascadeProjection({
     frontierNow: fL,
     t2Remaining: T2_AT_LOTTERY - fL,
     optOutsSoFar,
-    bgFunded: BG_FUNDED,
-    bgOffer: BG_OFFER,
-    bgTier3Ts: crossTs(bestGuess, T3_START),
-    bgBandLoTs: crossTs(bestGuess, BAND_LO),
-    codyTerminal,
-    codyReserveSeats: cody.reserveSeats,
-    codyTier3Ts: crossTs(codyFn, T3_START),
-    codyBandLoTs: crossTs(codyFn, BAND_LO),
-    codyBandHiTs: crossTs(codyFn, BAND_HI),
-    codyPlusTerminal,
-    codyPlusBandHiTs: crossTs(codyPlusFn, BAND_HI),
+    reserveSeats: realistic.reserveSeats,
+    realisticTerminal: realTerminal,
+    realisticTier3Ts: crossTs(realFn, T3_START),
+    realisticBandLoTs: crossTs(realFn, BAND_LO),
+    aggressiveTerminal: aggTerminal,
+    aggressiveTier3Ts: crossTs(aggFn, T3_START),
+    aggressiveBandLoTs: crossTs(aggFn, BAND_LO),
+    aggressiveBandHiTs: crossTs(aggFn, BAND_HI),
   };
   return { series, kpis };
 }
 
 const CASCADE = buildCascadeProjection();
 const CASCADE_KPIS = CASCADE.kpis;
-const FRONTIER_Y_MAX = Math.ceil(Math.max(BAND_HI, ...CASCADE.series.map((r) => Math.max(r.cody ?? 0, r.codyPlus ?? 0))) * 1.05 / 1000) * 1000;
+const FRONTIER_Y_MAX = Math.ceil(Math.max(BAND_HI, ...CASCADE.series.map((r) => Math.max(r.realistic ?? 0, r.aggressive ?? 0))) * 1.05 / 1000) * 1000;
 
 const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const fmtChartDate = (ts) => {
@@ -447,9 +426,8 @@ const TONE_STYLE = {
 // drops the raw `ts` the Scatter series would otherwise inject.
 const FRONTIER_SERIES = {
   observedLine: 'Funded so far (published)',
-  bestGuess: 'Pessimistic guess',
-  cody: 'Aggressive churn',
-  codyPlus: 'Aggressive+ (upper edge)',
+  realistic: 'Realistic (other-state attrition)',
+  aggressive: 'Aggressive (PreK/K shortage)',
 };
 
 const FrontierTooltip = ({ active, payload, label }) => {
@@ -1070,9 +1048,8 @@ const TefaView = () => {
               <ReferenceLine y={BAND_HI} stroke="#aa2142" strokeDasharray="8 4"
                   label={{ value: `T3 Middle band ends — ${BAND_HI.toLocaleString()}`, position: 'insideTopLeft', fontSize: 9, fontWeight: 600, fill: '#aa2142' }} />
               <Line type="monotone" dataKey="observedLine" name="Funded so far (published)" stroke="#202562" strokeWidth={2.5} dot={false} legendType="none" />
-              <Line type="monotone" dataKey="bestGuess" name="Pessimistic guess" stroke="#202562" strokeWidth={2.5} dot={false} />
-              <Line type="monotone" dataKey="cody" name="Aggressive churn" stroke="#aa2142" strokeWidth={2.5} strokeDasharray="8 3" dot={false} />
-              <Line type="monotone" dataKey="codyPlus" name="Aggressive+ (upper edge)" stroke="#e8889b" strokeWidth={2} strokeDasharray="2 3" dot={false} />
+              <Line type="monotone" dataKey="realistic" name="Realistic (other-state attrition)" stroke="#202562" strokeWidth={2.5} dot={false} />
+              <Line type="monotone" dataKey="aggressive" name="Aggressive (PreK/K shortage)" stroke="#aa2142" strokeWidth={2.5} strokeDasharray="8 3" dot={false} />
               <Scatter dataKey="observed" name="Published data" fill="#202562" />
               {/* Anecdotal frontline reading — hollow dot above the official line, supporting the aggressive+ path. */}
               <ReferenceDot x={todayTs} y={EST_FRONTIER_TODAY} r={5} fill="#fff" stroke="#e8889b" strokeWidth={2} strokeDasharray="2 1.5"
