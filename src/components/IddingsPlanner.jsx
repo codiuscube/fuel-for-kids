@@ -995,14 +995,14 @@ const TefaView = () => {
             <div className="text-[10px] text-tefa-body/40">must clear before any Tier 3 offer · {k.optOutsSoFar.toLocaleString()} opt-outs so far</div>
           </div>
           <div className="rounded-lg bg-tefa-light border border-tefa-navy/20 p-3 text-center">
-            <div className="text-xs text-tefa-navy/70 font-medium">Pessimistic Guess Reaches</div>
-            <div className="font-bold text-tefa-navy text-lg">~{k.bgOffer.toLocaleString()}</div>
-            <div className="text-[10px] text-tefa-body/40">offer depth (funded ~{k.bgFunded.toLocaleString()}) · only the bottom edge of our band ({BAND_LO.toLocaleString()})</div>
+            <div className="text-xs text-tefa-navy/70 font-medium">Realistic Reaches</div>
+            <div className="font-bold text-tefa-navy text-lg">~{k.realisticTerminal.toLocaleString()}</div>
+            <div className="text-[10px] text-tefa-body/40">~24% attrition (other states) + $20M reserve · stops just short of our band ({BAND_LO.toLocaleString()})</div>
           </div>
           <div className="rounded-lg bg-tefa-light border border-tefa-red/30 p-3 text-center">
-            <div className="text-xs text-tefa-red/70 font-medium">Aggressive Churn Reaches</div>
-            <div className="font-bold text-tefa-red text-lg">~{k.codyTerminal.toLocaleString()}</div>
-            <div className="text-[10px] text-tefa-body/40">into our band's bottom third by ~{fmtChartDate(k.codyBandLoTs)} · assumes ~20% July attrition + the $20M reserve</div>
+            <div className="text-xs text-tefa-red/70 font-medium">Aggressive Reaches</div>
+            <div className="font-bold text-tefa-red text-lg">~{k.aggressiveTerminal.toLocaleString()}</div>
+            <div className="text-[10px] text-tefa-body/40">into our band by ~{fmtChartDate(k.aggressiveBandLoTs)} · ~35% attrition if PreK/K families can't find seats + reserve</div>
           </div>
         </div>
         <p className="text-[10px] text-tefa-body/50 mb-3 -mt-2">
@@ -1024,7 +1024,7 @@ const TefaView = () => {
           <strong>*</strong> The hollow pink dot marks the <strong>anecdotal ~{(EST_FRONTIER_TODAY / 1000).toFixed(0)}k</strong> frontline
           reading (documented Odyssey support cases, Jun 22–23 — one Tier 2 family's waitlist range moved ~15–20k → 4–5k in a single
           afternoon; another, ~17k cleared ahead of them). It runs <em>above</em> the official {k.frontierNow.toLocaleString()}, so it isn't the
-          base case — it's the evidence behind the <span className="text-tefa-red font-semibold">aggressive+ upper edge</span>: if backfill
+          base case — it's the evidence behind the <span className="text-tefa-red font-semibold">aggressive line</span>: if backfill
           is moving this fast, the frontier is ahead of the published count. Still unofficial (self-reported), so asterisked.
         </p>
         <div className="h-[340px]">
@@ -1059,9 +1059,9 @@ const TefaView = () => {
         </div>
         <div className="text-[11px] text-tefa-body/60 bg-tefa-light rounded p-3 mt-3 space-y-1">
           <div><strong>What's plotted.</strong> The frontier is derived from the published Tier 2 backlog (frontier = {T2_AT_LOTTERY.toLocaleString()} at-lottery − Tier 2 still queued): 0 on May 4 → {k.frontierNow.toLocaleString()} on {fmtChartDate(Date.parse(k.asOf))}. With the program fully deployed at $890M, the line ahead now advances by <strong>backfill</strong> — each opt-out or homeschool downgrade recycles roughly <strong>one new blended seat</strong> (a private opt-out frees $10,474 → ~1.2 seats; a downgrade frees $8,474 → ~1 seat), per the Comptroller holding active awards at $890M — so we measure progress in seats reached, not raw opt-outs.</div>
-          <div><strong>Pessimistic guess (grounded).</strong> Tier 2 clears via backfill, the confirmed <strong>~$20M reserve</strong> (~{RESERVE_SEATS.toLocaleString()} seats) is awarded after appeals, and a moderate <strong>~15% of active awards</strong> churn around the Jul 15 deadline. Tier 2 clears ~{fmtChartDate(k.bgTier3Ts)}, and the cascade settles around offer depth ~{k.bgOffer.toLocaleString()} (funded ~{k.bgFunded.toLocaleString()}) — just reaching the bottom edge of our band ~{fmtChartDate(k.bgBandLoTs)}.</div>
-          <div><strong>Aggressive churn (staged — the upper edge, not a forecast).</strong> Same confirmed <strong>$20M reserve</strong> (~{k.codyReserveSeats.toLocaleString()} seats), landing after the appeal window (~Jul 12–25). The difference is attrition: the deadline shakeout lands <strong>~13% cumulative departures by Jul 25</strong>, completing at <strong>~20% of the active base by Jul 31</strong>. 20% sits in the upper half of the 14–34% range seen in D.C., Milwaukee and Virginia, so it's an optimistic case, not the expectation. Under it Tier 3 offers start ~{fmtChartDate(k.codyTier3Ts)} and the cascade reaches our band's bottom third by ~{fmtChartDate(k.codyBandLoTs)}. The aggressive+ line pushes the same mechanism to ~27% (mid-band, ~{k.codyPlusTerminal.toLocaleString()}).</div>
-          <div><strong>After Aug 1 — the lines don't stop cold.</strong> Some share of confirmed students never actually enroll (historically ~5% no-show in comparable programs), and those seats — plus other recovered funds — reconcile through August and September. Both lines carry a steady ~{RECON_DRIFT}/day drift after their main waves complete, so the curve keeps creeping rather than going flat.</div>
+          <div><strong>Realistic (other-state attrition).</strong> A simple taper: the cascade eases as Tier 2 finishes (clearing ~{fmtChartDate(k.realisticTier3Ts)}), the confirmed <strong>~$20M reserve</strong> (~{RESERVE_SEATS.toLocaleString()} seats) drops in the week after the Jul 15 deadline, and a moderate shakeout follows — <strong>~24% total attrition</strong> (opt-outs + downgrades), the middle of the 14–34% Year-1 range seen in D.C., Milwaukee and Virginia. It settles around <strong>~{k.realisticTerminal.toLocaleString()}</strong> — just <em>short</em> of our band's bottom edge ({BAND_LO.toLocaleString()}).</div>
+          <div><strong>Aggressive (PreK/K seat shortage — a scenario, not a forecast).</strong> Awarded PreK and K families often can't find a participating school with open seats at that grade, so they opt out / bump to $2,000 at elevated rates. That drives an <strong>end-of-June spike</strong> that clears Tier 2 in a burst, then a heavy Jul 15 deadline shakeout — <strong>~35% total attrition</strong>, the top of the historical range. Under it Tier 3 offers start ~{fmtChartDate(k.aggressiveTier3Ts)} and the cascade reaches our band by ~{fmtChartDate(k.aggressiveBandLoTs)}, settling mid-band around <strong>~{k.aggressiveTerminal.toLocaleString()}</strong>.</div>
+          <div><strong>After Aug 15 — small attrition only.</strong> The big mechanisms (Tier 2 clear, reserve, the Jul 15 shakeout) are done by mid-August. After that both lines carry only a slow ~{POST_DRIFT}/day residual trickle as a few more families drop — not another wave.</div>
           <div><strong>Watch — the Jul 15 deadline + reserve release.</strong> Families awarded in early rounds who don't opt in by Jul 15 are "moved aside to allow other families to come off the waitlist" (Travis Pillow). That deadline shakeout — plus the ~$20M reserve awarded once appeals finalize — is the single event that decides whether the cascade reaches our band. It lands <em>after</em> the Jun 30 penalty-free withdrawal deadline.</div>
         </div>
       </section>
