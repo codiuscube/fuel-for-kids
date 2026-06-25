@@ -114,8 +114,9 @@ const T3_START = T2_AT_LOTTERY;   // the cascade frontier at which the FIRST Tie
 const BAND_LO = TEFA.bandLo;      // 30,001 — top of our family's band
 const BAND_HI = TEFA.bandHi;      // 50,000 — bottom of our family's band
 
-// ANECDOTAL upper-edge reading of the frontier "today" (Jun 23), from documented
-// Odyssey frontline cases — the evidence behind the AGGRESSIVE+ scenario.
+// ANECDOTAL reading of the frontier "today" (Jun 23), from documented Odyssey
+// frontline cases — evidence the cascade may be running ahead of the published
+// count, i.e. support for the AGGRESSIVE scenario.
 // The official Jun 23 frontier is 12,916 (see T2_OBSERVATIONS); these self-reported
 // cases run hotter, implying backfill is moving faster than the published count
 // reflects (NOT a reserve release — the reserve is only $20M and lands after the
@@ -125,16 +126,18 @@ const BAND_HI = TEFA.bandHi;      // 50,000 — bottom of our family's band
 //   Jun 23: "ElegantTurkey" 10–15k → 2–3k then FUNDED (confirmed crossing). "Ty Hope"
 //     15,001–20,000 → 1–1k, still waiting = ~17,000 cleared ahead of one person.
 // Strongest point implies ~17k; we plot the conservative ~15,000 midpoint. This sits
-// ABOVE the official line, so it brackets the aggressive+ upside, not the base case.
-// Still UNOFFICIAL — self-reported cases — so always asterisked.
+// ABOVE the official line, so it isn't the base case — it brackets the aggressive
+// upside. Still UNOFFICIAL — self-reported cases — so always asterisked.
 const EST_FRONTIER_TODAY = 15000;
 
-// Pessimistic-guess (grounded; the `bestGuess` series): Tier 2 fully clears via
-// backfill, the confirmed ~$20M reserve (~2,346 seats) lands after appeals, and a
-// moderate ~15% of active awards churn at/after the Jul 15 deadline. Under it the
-// cascade reaches roughly these global cut-offs — just the bottom edge of our band.
-const BG_FUNDED = 26000;          // best-guess funded depth (a seat actually paid)
-const BG_OFFER = 30200;           // best-guess offer depth (an offer reaches this rank)
+// How the cascade frontier maps to "fuel": the frontier advances ~1 seat per family
+// that LEAVES an active award (opt-out or homeschool/$2,000 downgrade), plus the
+// one-time reserve when it releases. So a scenario's terminal frontier ≈
+//   churnRate × active-award base  +  reserve seats.
+// The published frontier (12,916 on ~107k active) already implies ~12% have left in
+// the first 7 weeks — mostly UNPUBLISHED downgrades (opt-outs alone are only ~3,000).
+// That observed pace is the anchor; the two scenarios below differ only in how high
+// total attrition climbs through the Jul 15 deadline.
 
 // Jun 10, 2026 Comptroller press release ("TEFA Pass 100,000-Student Milestone").
 const JUNE10_CASCADE = {
@@ -177,64 +180,50 @@ const T2_OBSERVATIONS = [
   { date: '2026-06-23', t2Remaining: 7467 },  // after 5,499 more cascade awards (Jun 23 update) → frontier 12,916
 ];
 
-// The three projections the page now shows — nothing else. All share the SAME
-// confirmed $20M reserve (~2,346 seats); they differ only in how much of the
-// active-award base churns at/after the Jul 15 deadline. With the reserve fixed
-// and small, the July attrition rate is the only real swing variable.
-//   bestGuess: the grounded model above (~15% churn). Terminal = offer depth
-//              (~30,000); the bulk of movement lands at the Jul 15 deadline.
-//   cody:      the aggressive-churn scenario (~20% churn), STAGED in three legs:
-//                1. current observed trend continues;
-//                2. the confirmed ~$20M reserve lands after the appeal window
-//                   (~Jul 12 → Jul 25);
-//                3. the deadline shakeout: ~13% cumulative departures by Jul 25,
-//                   completing at ~20% of the active base by Jul 31.
-//              20% sits at the upper-middle of the 14–34% historical range
-//              (D.C./Milwaukee/Virginia), so it's an optimistic case, not a
-//              forecast. Reaches the bottom third of our band.
-//   codyPlus:  same staging, pushed to ~27% churn — the OUTER edge of the fan
-//              (light-red dotted). Reaches mid-band. Requires near-record Year-1
-//              attrition; not a forecast.
-const CODY = {
-  wave1Rate: 0.13,                // cumulative departure share by Jul 25 — the deadline wave
-  optOutRate: 0.20,               // cumulative share from Jul 25 onwards, landing by Jul 31
-  reserveSeats: RESERVE_SEATS,    // confirmed ~$20M reserve at ~$8,525 blended/seat (~2,346)
-  reserveStart: '2026-07-12',     // appeal window closes → reserve starts cascading
-  reserveEnd: '2026-07-25',       // reserve awarded down after appeals finalize
+// Two scenarios — nothing else. Both share the confirmed $20M reserve (~2,346
+// seats), released at the Jul 15 deadline; they differ in how high total attrition
+// climbs and in SHAPE.
+//   REALISTIC: other-state Year-1 attrition (mid of the 14–34% range ≈ 24% of the
+//     active base). A simple taper — the cascade eases as Tier 2 finishes, the
+//     reserve drops in the week after the Jul 15 deadline, and a moderate shakeout
+//     follows. Terminal ≈ 24% × 107k + reserve ≈ 28,000 — just BELOW our band.
+//   AGGRESSIVE: a Texas-specific accelerant. Awarded PreK and K families often
+//     can't find a participating school with open seats at that grade, so they opt
+//     out / bump to $2,000 at elevated rates — producing an end-of-June SPIKE that
+//     clears Tier 2 in a burst, then a heavy Jul 15 deadline shakeout. ~35% total
+//     churn (top of the historical range) + reserve ≈ 40,000 — mid-band.
+// Both are SCENARIOS, not forecasts. After Aug 15 the big waves are done and each
+// line just drifts on small residual attrition.
+const REALISTIC = {
+  churnRate: 0.24,                // total departures (opt-outs + downgrades), mid of 14–34%
+  reserveSeats: RESERVE_SEATS,    // confirmed ~$20M reserve (~2,346 seats)
 };
 
-// Slightly-more-aggressive variant of CODY — the outer edge of the fan. Same
-// staged mechanism and same $20M reserve, pushed to ~27% churn (vs ~20%) to
-// bracket the upside if the Jul 15 shakeout runs near the top of the historical
-// range. Reaches mid-band (~41k). Not a forecast.
-const CODY_PLUS = {
-  wave1Rate: 0.17,                // cumulative departure share by Jul 25 (vs 0.13)
-  optOutRate: 0.27,               // cumulative share landing by Jul 31 (vs 0.20)
-  reserveSeats: RESERVE_SEATS,    // same confirmed ~$20M reserve (no bigger pool exists)
-  reserveStart: '2026-07-12',
-  reserveEnd: '2026-07-25',
+const AGGRESSIVE = {
+  churnRate: 0.35,                // top of the historical range — PreK/K seat shortage forces extra exits
+  reserveSeats: RESERVE_SEATS,
 };
 
-// Chart window: from the lottery (frontier 0) through end-August. The main
-// mechanisms exhaust by ~Aug 1, but the line doesn't stop cold — confirmed
-// students who never actually enroll (no-shows) and other recovered funds keep
-// reconciling through Aug–Sep, so both lines carry a slow steady drift after
-// their main waves complete.
+// Chart window: from the lottery (frontier 0) through end-August. The big waves
+// (Tier 2 clear, reserve, the Jul 15 deadline shakeout) are done by ~Aug 15; after
+// that both lines carry only a small residual attrition drift, not another wave.
 // `today` anchors the "Today" marker to a fixed date so a screenshot of the
 // chart reads the same for everyone (the artifact gets posted/shared) — bump it
 // as the analysis is refreshed, rather than letting it drift with the viewer's clock.
 const FRONTIER_WINDOW = { chartStart: '2026-05-04', today: '2026-06-25', jul15: '2026-07-15', end: '2026-08-31' };
-const RECON_DRIFT = 125;          // seats/day of post-wave reconciliation (~5% no-shows recovering over Aug–Sep)
+const WAVES_END = '2026-08-15';   // after this the big mechanisms are exhausted
+const POST_DRIFT = 30;            // seats/day of small residual attrition after Aug 15 (realistic trickle)
 
-// Cascade-frontier model. Three projections, all anchored on the last published
-// frontier point and landing on a terminal by a stated end date (flat/drift
-// after). Each is piecewise/staged so the steep cascade sits at/after the Jul 15
-// deadline, not before it — with the bulk of motion at that deadline wave.
+// Cascade-frontier model. Two scenarios, both anchored on the last published
+// frontier point and landing on a terminal by Aug 15 (small drift after). Each is
+// a set of monotone waypoints: the REALISTIC line tapers through the Jul 15
+// deadline; the AGGRESSIVE line spikes at end-of-June (PreK/K seat shortage) then
+// runs hot through the deadline.
 function buildCascadeProjection({
   t2Observations = T2_OBSERVATIONS,
   optOuts = OPTOUT_OBSERVATIONS,
-  cody = CODY,
-  codyPlus = CODY_PLUS,
+  realistic = REALISTIC,
+  aggressive = AGGRESSIVE,
   awardedBase = ACTIVE_AWARDS,
   window: win = FRONTIER_WINDOW,
 } = {}) {
