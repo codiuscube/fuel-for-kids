@@ -335,7 +335,14 @@ function buildCascadeProjection({
     const pts = [{ t: tL, f: fL }];
     for (const q of raw) {
       if (q.t <= tL) continue;
-      pts.push({ t: q.t, f: Math.round(Math.max(q.f, pts[pts.length - 1].f)) });
+      const prev = pts[pts.length - 1];
+      const f = Math.round(Math.max(q.f, prev.f));
+      // Merge waypoints that land on the SAME day (e.g. reserveEnd colliding with
+      // the hardcoded Jul-25 deadline-wave point). A duplicate x makes dx=0 in
+      // monoSpline → a NaN tangent that blanks the rest of the line. Keep the
+      // higher (monotone) f instead of pushing a second point at the same x.
+      if (q.t === prev.t) prev.f = f;
+      else pts.push({ t: q.t, f });
     }
     const spline = monoSpline(pts);
     const fn = (t) =>
