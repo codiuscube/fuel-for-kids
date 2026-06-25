@@ -966,22 +966,23 @@ const TefaView = () => {
         <p className="text-xs text-tefa-body/50 mt-3">
           <strong>Bottom line:</strong> Tier 3 is expected to start around mid-July. The Comptroller has now confirmed the
           appeals reserve is only <strong>~$20M</strong> (~2,346 seats) — so reaching our band depends on July <em>attrition</em>,
-          not a reserve windfall. Only the bottom edge (~{k.bgOffer.toLocaleString()}) is in reach at moderate churn; the
-          rest of the band needs near-record opt-out rates. Treat TEFA as a bonus, never as money you're counting on.
+          not a reserve windfall. On realistic other-state attrition the cascade stops ~{k.realisticTerminal.toLocaleString()}, just <em>short</em>
+          of our band; only an aggressive case (awarded PreK/K families unable to find seats) carries it into the band. Treat TEFA as a bonus, never as money you're counting on.
         </p>
       </section>
 
       {/* The two projections, on the metric that matters: cascade depth. */}
       <section className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
         <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2 mb-2">
-          <Activity size={20} /> How far the line reaches — three projections
+          <Activity size={20} /> How far the line reaches — two scenarios
         </h2>
         <p className="text-sm text-tefa-body/80 mb-4">
           The chart tracks the <strong>cascade frontier</strong>: how far down the waitlist awards have reached.
-          We show three lines — all sharing the confirmed <strong>$20M reserve</strong>, differing only in July attrition:
-          the grounded <strong>pessimistic guess</strong> (~15% churn), an <strong>aggressive churn</strong> scenario
-          (~20%), and a slightly-hotter <strong>aggressive+ upper edge</strong> (~27%). When a line crosses a band's
-          threshold, the cascade has reached that band.
+          We show two scenarios — both sharing the confirmed <strong>$20M reserve</strong>: a{' '}
+          <strong>realistic</strong> line built on other states' Year-1 attrition (~24%), which tapers through the
+          deadline and stops just short of our band; and an <strong>aggressive</strong> line (~35%) that assumes
+          awarded PreK/K families can't find seats and bail — spiking the cascade at the end of June and reaching
+          mid-band. When a line crosses a band's threshold, the cascade has reached that band.
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm mb-4">
           <div className="rounded-lg bg-tefa-light border border-gray-200 p-3 text-center">
