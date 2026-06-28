@@ -1007,12 +1007,13 @@ const mcPert = (min, mode, max, lambda = 4) => {
 
 const CONSERVATIVE_CHURN = 24; // "likely" is pinned here — our Conservative central anchor
 
-const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax }) => {
-  const churnMode = CONSERVATIVE_CHURN; // fixed, not draggable — shared with the chart above
+const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, k, cascadeSeries, frontierYMax, todayTs }) => {
+  const churnMode = CONSERVATIVE_CHURN; // fixed, not draggable
   const [optMode, setOptMode] = useState(25); // % of churn that opts out (rest downgrade)
   const [holdFlat, setHoldFlat] = useState(true);
   const [trials, setTrials] = useState(10000);
   const [seed, setSeed] = useState(0); // bump to re-run with fresh draws
+  const [view, setView] = useState('lines'); // 'lines' (averages) | 'dist' (full simulation)
 
   const r = useMemo(() => {
     const arr = new Float64Array(trials);
@@ -1050,48 +1051,41 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax }) => {
 
   return (
     <section className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
-      <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2 mb-1">
-        <Activity size={20} /> Simulate it yourself — where does the line actually land?
+      <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2 mb-2">
+        <Activity size={20} /> How far the line reaches — and how likely
       </h2>
-      <p className="text-xs text-tefa-body/60 mb-3">
-        The same model as the chart above, run <strong>{trials.toLocaleString()} times</strong> with random draws — the bars show how often the
-        cascade stopped at each position. Drag the dials below; the line chart updates too.
+      <p className="text-sm text-tefa-body/80 mb-4">
+        One model, two views of the same thing. <strong>Lines</strong> is the average path at each churn level (the middle line is our
+        Conservative central). <strong>Distribution</strong> runs that model <strong>{trials.toLocaleString()} times</strong> and shows where the
+        cascade landed across all of them — <em>the lines are essentially the averages of that cloud</em>. Drag the dials and <strong>both</strong> update.
+        Our band is {BAND_LO.toLocaleString()}–{BAND_HI.toLocaleString()}; Tier 3 opens at {T3_START.toLocaleString()}.
       </p>
 
-      {/* histogram — placed first so it sits right under the line chart above */}
-      <div className="rounded-lg border border-gray-200 bg-tefa-light/40 p-3 mb-4">
-        <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label="Distribution of simulated frontier outcomes">
-          {r.hist.map((c, i) => {
-            const binStart = r.lo + i * r.w;
-            const h = r.maxBin ? (c / r.maxBin) * plotH : 0;
-            const inBand = binStart >= BAND_LO && binStart < BAND_HI;
-            const belowTier3 = binStart < T3_START;
-            const fill = inBand ? '#b08a3e' : belowTier3 ? '#cbd5e1' : '#202562';
-            return <rect key={i} x={padL + i * barW + 0.5} y={padT + plotH - h} width={Math.max(barW - 1, 0.5)} height={h} fill={fill} rx="1" />;
-          })}
-          {[
-            { v: T3_START, label: `Tier 3 · ${(T3_START / 1000).toFixed(0)}k`, color: '#b08a3e' },
-            { v: BAND_LO, label: `Band · ${(BAND_LO / 1000).toFixed(0)}k`, color: '#aa2142' },
-            { v: YOUR_POS.lo, label: `Us · ${(YOUR_POS.lo / 1000).toFixed(0)}k`, color: '#aa2142' },
-          ].map((ln) => (
-            <g key={ln.v}>
-              <line x1={xOf(ln.v)} y1={padT} x2={xOf(ln.v)} y2={padT + plotH} stroke={ln.color} strokeWidth="1.3" strokeDasharray="4 3" />
-              <text x={xOf(ln.v)} y={padT - 7} fill={ln.color} fontSize="10" textAnchor="middle" fontWeight="700">{ln.label}</text>
-            </g>
-          ))}
-          {[10000, 20000, 30000, 40000, 50000, 60000].map((t) => (
-            <text key={t} x={xOf(t)} y={H - 22} fill="#94a3b8" fontSize="10" textAnchor="middle">{t / 1000}k</text>
-          ))}
-          <text x={W / 2} y={H - 6} fill="#64748b" fontSize="11" textAnchor="middle">Terminal cascade frontier (waitlist position reached)</text>
-        </svg>
-        <div className="flex flex-wrap gap-4 text-[11px] text-tefa-body/60 mt-1 px-1">
-          <span className="inline-flex items-center gap-1.5"><span className="w-3 h-1.5 rounded-sm" style={{ background: '#cbd5e1' }} />Below Tier 3 (&lt;{T3_START.toLocaleString()})</span>
-          <span className="inline-flex items-center gap-1.5"><span className="w-3 h-1.5 rounded-sm" style={{ background: '#202562' }} />Tier 3, below our band</span>
-          <span className="inline-flex items-center gap-1.5"><span className="w-3 h-1.5 rounded-sm" style={{ background: '#b08a3e' }} />In our band (≥{BAND_LO.toLocaleString()})</span>
+      {/* context KPIs */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm mb-3">
+        <div className="rounded-lg bg-tefa-light border border-gray-200 p-3 text-center">
+          <div className="text-xs text-tefa-body/50 font-medium">Funded So Far</div>
+          <div className="font-bold text-tefa-navy text-lg">{k.frontierNow.toLocaleString()}</div>
+          <div className="text-[10px] text-tefa-body/40">all Tier 2 · official as of {fmtChartDate(Date.parse(k.asOf))}</div>
+        </div>
+        <div className="rounded-lg bg-tefa-light border border-gray-200 p-3 text-center">
+          <div className="text-xs text-tefa-body/50 font-medium">Tier 2 Still Ahead</div>
+          <div className="font-bold text-tefa-gold text-lg">{k.t2Remaining.toLocaleString()}</div>
+          <div className="text-[10px] text-tefa-body/40">must clear before any Tier 3 offer</div>
+        </div>
+        <div className="rounded-lg bg-tefa-light border border-tefa-navy/20 p-3 text-center">
+          <div className="text-xs text-tefa-navy/70 font-medium">Conservative Reaches</div>
+          <div className="font-bold text-tefa-navy text-lg">~{k.realisticTerminal.toLocaleString()}</div>
+          <div className="text-[10px] text-tefa-body/40">likely (~{k.realisticChurnPct}%) · just short of our band ({BAND_LO.toLocaleString()})</div>
+        </div>
+        <div className="rounded-lg bg-tefa-light border border-tefa-red/30 p-3 text-center">
+          <div className="text-xs text-tefa-red/70 font-medium">Aggressive Reaches</div>
+          <div className="font-bold text-tefa-red text-lg">~{k.aggressiveTerminal.toLocaleString()}</div>
+          <div className="text-[10px] text-tefa-body/40">max (~{k.aggressiveChurnPct}%) · only on a Jul 15 collapse</div>
         </div>
       </div>
 
-      {/* headline probabilities */}
+      {/* probability headline — straight from the simulation */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm mb-4">
         <div className="rounded-lg bg-tefa-light border border-tefa-navy/30 p-3 text-center ring-1 ring-tefa-gold/40">
           <div className="text-xs text-tefa-navy/70 font-medium">P(reach our band ≥ {BAND_LO.toLocaleString()})</div>
@@ -1109,6 +1103,101 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax }) => {
           <div className="text-[10px] text-tefa-body/40">our actual original lottery position</div>
         </div>
       </div>
+
+      {/* view toggle — same model, flip between the average lines and the full cloud */}
+      <div className="flex flex-wrap items-center gap-2 mb-3">
+        <div className="inline-flex rounded-lg border border-gray-200 bg-tefa-light p-0.5 text-xs font-semibold">
+          <button type="button" onClick={() => setView('lines')}
+            className={`px-3 py-1.5 rounded-md transition ${view === 'lines' ? 'bg-tefa-navy text-white' : 'text-tefa-body/70 hover:text-tefa-navy'}`}>
+            Lines (averages)
+          </button>
+          <button type="button" onClick={() => setView('dist')}
+            className={`px-3 py-1.5 rounded-md transition ${view === 'dist' ? 'bg-tefa-navy text-white' : 'text-tefa-body/70 hover:text-tefa-navy'}`}>
+            Distribution (all runs)
+          </button>
+        </div>
+        <span className="text-[11px] text-tefa-body/45">
+          {view === 'lines' ? 'Average path by churn level — drag the dials to reshape.' : `Where ${trials.toLocaleString()} runs landed — the lines are the averages of this.`}
+        </span>
+      </div>
+
+      {/* the active view */}
+      {view === 'lines' ? (
+        <>
+          <div className="h-[340px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={cascadeSeries} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis type="number" dataKey="ts" scale="time" domain={['dataMin', 'dataMax']}
+                       ticks={FRONTIER_TICKS} tickFormatter={fmtChartDate} tick={{ fontSize: 11 }} />
+                <YAxis domain={[0, frontierYMax]} tickFormatter={(v) => `${Math.round(v / 1000)}k`} tick={{ fontSize: 11 }}
+                       label={{ value: 'Waitlist position reached', angle: -90, position: 'insideLeft', fontSize: 11 }} />
+                <ChartTooltip content={<FrontierTooltip />} />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <ReferenceLine x={Date.parse(FRONTIER_WINDOW.jul15)} stroke="#aa2142" strokeWidth={1.5}
+                    label={{ value: 'Jul 15 deadline', position: 'insideTop', fontSize: 9, fontWeight: 700, fill: '#aa2142' }} />
+                <ReferenceLine x={todayTs} stroke="#94a3b8" strokeDasharray="2 2"
+                    label={{ value: 'Today', fontSize: 10, fill: '#64748b', position: 'insideBottomLeft' }} />
+                <ReferenceArea y1={YOUR_POS.lo} y2={YOUR_POS.hi} fill="#aa2142" fillOpacity={0.10}
+                    label={{ value: `Your original position (${(YOUR_POS.lo/1000)}–${(YOUR_POS.hi/1000)}k)`, position: 'insideTopRight', fontSize: 9, fontWeight: 700, fill: '#aa2142' }} />
+                <ReferenceLine y={T3_START} stroke="#b08a3e" strokeDasharray="8 4"
+                    label={{ value: `Tier 3 starts — ${T3_START.toLocaleString()}`, position: 'insideBottomLeft', fontSize: 9, fontWeight: 600, fill: '#b08a3e' }} />
+                <ReferenceLine y={BAND_LO} stroke="#aa2142" strokeDasharray="8 4"
+                    label={{ value: `T3 Middle band starts — ${BAND_LO.toLocaleString()}`, position: 'insideTopLeft', fontSize: 9, fontWeight: 600, fill: '#aa2142' }} />
+                <ReferenceLine y={BAND_HI} stroke="#aa2142" strokeDasharray="8 4"
+                    label={{ value: `T3 Middle band ends — ${BAND_HI.toLocaleString()}`, position: 'insideTopLeft', fontSize: 9, fontWeight: 600, fill: '#aa2142' }} />
+                <Line type="monotone" dataKey="observedLine" name="Funded so far (published)" stroke="#202562" strokeWidth={2.5} dot={false} legendType="none" />
+                <Line type="monotone" dataKey="research" name={`Low / optimistic (~${k.researchChurnPct}% churn)`} stroke="#2e7d5b" strokeWidth={2} strokeDasharray="3 3" dot={false} />
+                <Line type="monotone" dataKey="realistic" name={`Conservative — likely (~${k.realisticChurnPct}% churn)`} stroke="#202562" strokeWidth={2.5} dot={false} />
+                <Line type="monotone" dataKey="aggressive" name={`Aggressive / max (~${k.aggressiveChurnPct}% churn)`} stroke="#aa2142" strokeWidth={2.5} strokeDasharray="8 3" dot={false} />
+                <Scatter dataKey="observed" name="Published data" fill="#202562" />
+                {AGG_DOTS.map((d) => (
+                  <ReferenceDot key={d.date} x={Date.parse(d.date)} y={d.f} r={5} fill="#fff" stroke="#e8889b" strokeWidth={2} strokeDasharray="2 1.5"
+                      label={{ value: `~${(d.f / 1000).toFixed(0)}k*`, position: 'top', fontSize: 9, fontWeight: 700, fill: '#aa2142' }} />
+                ))}
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+          <p className="text-[10px] text-tefa-body/45 mt-1">
+            * Hollow dots are anecdotal frontline readings (~15k Jun 25, ~20k Jul 1); the aggressive line is drawn through them. When a line
+            crosses a band threshold, the cascade has reached that band.
+          </p>
+        </>
+      ) : (
+        <div className="rounded-lg border border-gray-200 bg-tefa-light/40 p-3">
+          <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label="Distribution of simulated frontier outcomes">
+            {r.hist.map((c, i) => {
+              const binStart = r.lo + i * r.w;
+              const h = r.maxBin ? (c / r.maxBin) * plotH : 0;
+              const inBand = binStart >= BAND_LO && binStart < BAND_HI;
+              const belowTier3 = binStart < T3_START;
+              const fill = inBand ? '#b08a3e' : belowTier3 ? '#cbd5e1' : '#202562';
+              return <rect key={i} x={padL + i * barW + 0.5} y={padT + plotH - h} width={Math.max(barW - 1, 0.5)} height={h} fill={fill} rx="1" />;
+            })}
+            {[
+              { v: T3_START, label: `Tier 3 · ${(T3_START / 1000).toFixed(0)}k`, color: '#b08a3e' },
+              { v: BAND_LO, label: `Band · ${(BAND_LO / 1000).toFixed(0)}k`, color: '#aa2142' },
+              { v: YOUR_POS.lo, label: `Us · ${(YOUR_POS.lo / 1000).toFixed(0)}k`, color: '#aa2142' },
+            ].map((ln) => (
+              <g key={ln.v}>
+                <line x1={xOf(ln.v)} y1={padT} x2={xOf(ln.v)} y2={padT + plotH} stroke={ln.color} strokeWidth="1.3" strokeDasharray="4 3" />
+                <text x={xOf(ln.v)} y={padT - 7} fill={ln.color} fontSize="10" textAnchor="middle" fontWeight="700">{ln.label}</text>
+              </g>
+            ))}
+            {[10000, 20000, 30000, 40000, 50000, 60000].map((t) => (
+              <text key={t} x={xOf(t)} y={H - 22} fill="#94a3b8" fontSize="10" textAnchor="middle">{t / 1000}k</text>
+            ))}
+            <text x={W / 2} y={H - 6} fill="#64748b" fontSize="11" textAnchor="middle">Terminal cascade frontier (waitlist position reached)</text>
+          </svg>
+          <div className="flex flex-wrap gap-4 text-[11px] text-tefa-body/60 mt-1 px-1">
+            <span className="inline-flex items-center gap-1.5"><span className="w-3 h-1.5 rounded-sm" style={{ background: '#cbd5e1' }} />Below Tier 3 (&lt;{T3_START.toLocaleString()})</span>
+            <span className="inline-flex items-center gap-1.5"><span className="w-3 h-1.5 rounded-sm" style={{ background: '#202562' }} />Tier 3, below our band</span>
+            <span className="inline-flex items-center gap-1.5"><span className="w-3 h-1.5 rounded-sm" style={{ background: '#b08a3e' }} />In our band (≥{BAND_LO.toLocaleString()})</span>
+          </div>
+        </div>
+      )}
+
+      <div className="mt-5" />
 
       {/* how to read the two inputs */}
       <div className="rounded-lg border border-tefa-navy/15 bg-tefa-light/60 p-4 mb-5 text-xs text-tefa-body/80 space-y-2.5">
@@ -1276,97 +1365,22 @@ const TefaView = () => {
         </p>
       </section>
 
-      {/* The two projections, on the metric that matters: cascade depth. */}
+      {/* Combined chart + simulator — one card; toggle between the average lines and the full distribution. */}
+      <TefaMonteCarlo churnMin={churnMin} setChurnMin={setChurnMin} churnMax={churnMax} setChurnMax={setChurnMax}
+        k={k} cascadeSeries={cascadeSeries} frontierYMax={frontierYMax} todayTs={todayTs} />
+
+      {/* Explanatory notes + projection table for the chart above. */}
       <section className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
         <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2 mb-2">
-          <Activity size={20} /> How far the line reaches — two scenarios
+          <Activity size={20} /> The scenarios behind the model, and the dates
         </h2>
-        <p className="text-sm text-tefa-body/80 mb-4">
-          The chart tracks the <strong>cascade frontier</strong>: how far down the waitlist awards have reached.
-          We show two scenarios — both sharing the confirmed <strong>$20M reserve</strong>: a{' '}
-          <strong>realistic</strong> line built on other states' Year-1 attrition (~24%), which stops just short
-          of our band; and an <strong>aggressive</strong> line drawn through the anecdotal frontline dots (~15k Jun 25, ~20k Jul 1) that
-          assumes the Jul 15 opt-in deadline becomes a <em>mass no-show</em> (~43% of all awards given
-          up — <strong>above any first-year program on record</strong>). That's the only path into the deep end of
-          our band (45–50k); treat it as a low-probability ceiling, not a forecast. When a line crosses a band's
-          threshold, the cascade has reached that band.
-        </p>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm mb-4">
-          <div className="rounded-lg bg-tefa-light border border-gray-200 p-3 text-center">
-            <div className="text-xs text-tefa-body/50 font-medium">Funded So Far</div>
-            <div className="font-bold text-tefa-navy text-lg">{k.frontierNow.toLocaleString()}</div>
-            <div className="text-[10px] text-tefa-body/40">all Tier 2 · official as of {fmtChartDate(Date.parse(k.asOf))} ({JUNE23_CASCADE.t2Cascaded.toLocaleString()} newly awarded this week)</div>
-          </div>
-          <div className="rounded-lg bg-tefa-light border border-gray-200 p-3 text-center">
-            <div className="text-xs text-tefa-body/50 font-medium">Tier 2 Still Ahead</div>
-            <div className="font-bold text-tefa-gold text-lg">{k.t2Remaining.toLocaleString()}</div>
-            <div className="text-[10px] text-tefa-body/40">must clear before any Tier 3 offer · {k.optOutsSoFar.toLocaleString()} opt-outs so far</div>
-          </div>
-          <div className="rounded-lg bg-tefa-light border border-tefa-navy/20 p-3 text-center">
-            <div className="text-xs text-tefa-navy/70 font-medium">Realistic Reaches</div>
-            <div className="font-bold text-tefa-navy text-lg">~{k.realisticTerminal.toLocaleString()}</div>
-            <div className="text-[10px] text-tefa-body/40">~24% attrition (other states), opt-outs ~{k.realisticOptOutPct}% + $20M reserve · stops just short of our band ({BAND_LO.toLocaleString()})</div>
-          </div>
-          <div className="rounded-lg bg-tefa-light border border-tefa-red/30 p-3 text-center">
-            <div className="text-xs text-tefa-red/70 font-medium">Aggressive Reaches</div>
-            <div className="font-bold text-tefa-red text-lg">~{k.aggressiveTerminal.toLocaleString()}</div>
-            <div className="text-[10px] text-tefa-body/40">deep band by ~{fmtChartDate(k.aggressiveBandLoTs)} · only if Jul 15 opt-in collapses (~{k.aggressiveChurnPct}%, opt-outs ~{k.aggressiveOptOutPct}% — above any precedent)</div>
-          </div>
-        </div>
-        <p className="text-[10px] text-tefa-body/50 mb-3 -mt-2">
+        <p className="text-[11px] text-tefa-body/55 mb-3">
           <strong>As of Jun 25, 2026.</strong> The Jun 23 Comptroller update added <strong>{JUNE23_CASCADE.t2Cascaded.toLocaleString()} more
           waitlisted students</strong> (all Tier 2), advancing the official frontier to <strong>{k.frontierNow.toLocaleString()}</strong> —
           nearly 110,000 awarded, ~{JUNE23_CASCADE.optOuts.toLocaleString()} opt-outs, ~107,000 active. Per spokesperson Travis Pillow
           (Jun 25), the program is essentially fully deployed — <strong>~$910M awardable, ~$890M already in active awards, ~$20M reserve</strong>{' '}
           for appeals — so the waitlist now advances by <strong>backfill churn</strong> as families leave, not a big reserve release.
         </p>
-        <p className="text-[10px] text-tefa-body/50 mb-3 -mt-1">
-          <strong>*</strong> The hollow dots are <strong>anecdotal frontline readings</strong> of the frontier — <strong>~15k around Jun 25</strong> and
-          <strong> ~20k by Jul 1</strong> — running hotter than the official {k.frontierNow.toLocaleString()} (still entirely Tier 2). They're unofficial,
-          so plotted hollow; the <strong>aggressive line is drawn through them</strong>.
-        </p>
-        <div className="h-[340px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={cascadeSeries} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis type="number" dataKey="ts" scale="time" domain={['dataMin', 'dataMax']}
-                     ticks={FRONTIER_TICKS} tickFormatter={fmtChartDate} tick={{ fontSize: 11 }} />
-              <YAxis domain={[0, frontierYMax]} tickFormatter={(v) => `${Math.round(v / 1000)}k`} tick={{ fontSize: 11 }}
-                     label={{ value: 'Waitlist position reached', angle: -90, position: 'insideLeft', fontSize: 11 }} />
-              <ChartTooltip content={<FrontierTooltip />} />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
-              <ReferenceLine x={Date.parse(FRONTIER_WINDOW.jul15)} stroke="#aa2142" strokeWidth={1.5}
-                  label={{ value: 'Jul 15 deadline', position: 'insideTop', fontSize: 9, fontWeight: 700, fill: '#aa2142' }} />
-              <ReferenceLine x={todayTs} stroke="#94a3b8" strokeDasharray="2 2"
-                  label={{ value: 'Today', fontSize: 10, fill: '#64748b', position: 'insideBottomLeft' }} />
-              <ReferenceArea y1={YOUR_POS.lo} y2={YOUR_POS.hi} fill="#aa2142" fillOpacity={0.10}
-                  label={{ value: `Your original position (${(YOUR_POS.lo/1000)}–${(YOUR_POS.hi/1000)}k)`, position: 'insideTopRight', fontSize: 9, fontWeight: 700, fill: '#aa2142' }} />
-              <ReferenceLine y={T3_START} stroke="#b08a3e" strokeDasharray="8 4"
-                  label={{ value: `Tier 3 starts — ${T3_START.toLocaleString()}`, position: 'insideBottomLeft', fontSize: 9, fontWeight: 600, fill: '#b08a3e' }} />
-              <ReferenceLine y={BAND_LO} stroke="#aa2142" strokeDasharray="8 4"
-                  label={{ value: `T3 Middle band starts — ${BAND_LO.toLocaleString()}`, position: 'insideTopLeft', fontSize: 9, fontWeight: 600, fill: '#aa2142' }} />
-              <ReferenceLine y={BAND_HI} stroke="#aa2142" strokeDasharray="8 4"
-                  label={{ value: `T3 Middle band ends — ${BAND_HI.toLocaleString()}`, position: 'insideTopLeft', fontSize: 9, fontWeight: 600, fill: '#aa2142' }} />
-              <Line type="monotone" dataKey="observedLine" name="Funded so far (published)" stroke="#202562" strokeWidth={2.5} dot={false} legendType="none" />
-              <Line type="monotone" dataKey="research" name={`Low / optimistic (~${k.researchChurnPct}% churn)`} stroke="#2e7d5b" strokeWidth={2} strokeDasharray="3 3" dot={false} />
-              <Line type="monotone" dataKey="realistic" name={`Conservative — likely (~${k.realisticChurnPct}% churn)`} stroke="#202562" strokeWidth={2.5} dot={false} />
-              <Line type="monotone" dataKey="aggressive" name={`Aggressive / max (~${k.aggressiveChurnPct}% churn)`} stroke="#aa2142" strokeWidth={2.5} strokeDasharray="8 3" dot={false} />
-              <Scatter dataKey="observed" name="Published data" fill="#202562" />
-              {/* Anecdotal frontline readings — hollow dots the aggressive line runs through. */}
-              {AGG_DOTS.map((d) => (
-                <ReferenceDot key={d.date} x={Date.parse(d.date)} y={d.f} r={5} fill="#fff" stroke="#e8889b" strokeWidth={2} strokeDasharray="2 1.5"
-                    label={{ value: `~${(d.f / 1000).toFixed(0)}k*`, position: 'top', fontSize: 9, fontWeight: 700, fill: '#aa2142' }} />
-              ))}
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
-      </section>
-
-      {/* Simulator sits directly under the chart so both graphs read together. */}
-      <TefaMonteCarlo churnMin={churnMin} setChurnMin={setChurnMin} churnMax={churnMax} setChurnMax={setChurnMax} />
-
-      {/* Explanatory notes + projection table for the chart above. */}
-      <section className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
         <div className="text-[11px] text-tefa-body/60 bg-tefa-light rounded p-3 space-y-1">
           <div><strong>Three scenarios.</strong> The frontier (= {T2_AT_LOTTERY.toLocaleString()} at-lottery − Tier 2 still queued) has reached {k.frontierNow.toLocaleString()}, advancing by <strong>backfill churn</strong> as awarded families leave. <strong>Research central</strong> applies the prior-research baseline (~{k.researchChurnPct}% attrition, D.C.'s 14.3% anchor) with no TEFA-specific adjustment, and settles ~<strong>{k.researchTerminal.toLocaleString()}</strong> — short of even fully clearing Tier 2, which shows the published cascade is <em>already</em> running hotter than pure research. <strong>Conservative</strong> uses ~{k.realisticChurnPct}% total attrition (mid of the 14–34% Year-1 range in D.C., Milwaukee and Virginia) and settles ~<strong>{k.realisticTerminal.toLocaleString()}</strong>, just short of our band ({BAND_LO.toLocaleString()}). <strong>Aggressive</strong> is a ceiling, not a forecast: only a Jul 15 opt-in collapse (~{k.aggressiveChurnPct}% attrition, above any first-year program) would reach the 45–50k end of our band, around ~{k.aggressiveTerminal.toLocaleString()}.</div>
           <div><strong>Watch — the Jul 15 deadline.</strong> Families who don't opt in by Jul 15 are "moved aside to allow other families to come off the waitlist" (Travis Pillow). That shakeout — plus the ~$20M reserve awarded once appeals finalize — is the single event that decides whether the cascade reaches our band, and it lands <em>after</em> the Jun 30 penalty-free withdrawal deadline.</div>
