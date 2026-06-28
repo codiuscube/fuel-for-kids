@@ -223,6 +223,19 @@ const AGGRESSIVE = {
   reserveSeats: RESERVE_SEATS,
 };
 
+// RESEARCH — purely the prior-research central, with NO TEFA-specific hot-pace
+// adjustment. Anchored on the gem doc's §2 benchmarks: D.C. Opportunity Scholarship
+// 14.3% (closest analog), inside the 8–34% range across D.C./Milwaukee/NYC/Virginia.
+// Shares the observed line through the anchor, then projects the conservative 15%
+// central. Notably this terminal (~18,800) doesn't even fully clear Tier 2 — i.e.
+// the published cascade is ALREADY running hotter than the pure-research baseline,
+// which is exactly why the Conservative/Aggressive lines sit above it.
+const RESEARCH = {
+  churnRate: 0.15,               // gem doc central (D.C. 14.3% anchor)
+  optOutRate: 0.04,              // opt-outs a small subset; rest is $2,000 downgrades
+  reserveSeats: RESERVE_SEATS,
+};
+
 // Chart window: from the lottery (frontier 0) through end-August. The big waves
 // (Tier 2 clear, reserve, the Jul 15 deadline shakeout) are done by ~Aug 15; after
 // that both lines carry only a small residual attrition drift, not another wave.
@@ -243,6 +256,7 @@ function buildCascadeProjection({
   optOuts = OPTOUT_OBSERVATIONS,
   realistic = REALISTIC,
   aggressive = AGGRESSIVE,
+  research = RESEARCH,
   awardedBase = ACTIVE_AWARDS,
   window: win = FRONTIER_WINDOW,
 } = {}) {
@@ -353,6 +367,20 @@ function buildCascadeProjection({
     { t: wavesEnd, f: aggTerminal },                // taper Aug 1–15 → deep band (~48k)
   ], wavesEnd);
 
+  // RESEARCH (pure prior-research central, ~15%) — quiet Tier-2 clearing, a modest
+  // Jul 15 reserve/deadline bump, then a gentle taper. Terminal ≈ 18,800 — it does
+  // not even fully clear Tier 2, illustrating that the published cascade is already
+  // running hotter than the conservative research baseline.
+  const researchTerminal = terminalSeats(research);
+  const researchFn = buildLine([
+    { t: tL, f: fL },                              // Jun 23 official anchor (12,916)
+    { t: dayOf('2026-07-01'), f: 14000 },          // slow Tier 2 clearing
+    { t: jul15, f: 15200 },                        // QUIET Jul 1–15 lull
+    { t: dayOf('2026-07-17'), f: 15200 + research.reserveSeats }, // reserve + small deadline bump
+    { t: dayOf('2026-07-31'), f: 18400 },          // modest churn Jul 15–31
+    { t: wavesEnd, f: researchTerminal },          // taper Aug 1–15 → ~18,800
+  ], wavesEnd);
+
   const crossTs = (fn, level) => {
     for (let t = tL; t <= tEnd; t++) if (fn(t) >= level) return t0 + t * DAY;
     return null;
@@ -365,12 +393,23 @@ function buildCascadeProjection({
     if (od) row.observed = od.f;
     if (t <= tL) row.observedLine = Math.round(interp(obsF, t));
     if (t >= tL) {
-      row.realistic = Math.round(realFn(t));
+      row.research = Math.round(researchFn(t));
+      row.realistic = Math.max(Math.round(realFn(t)), row.research);
       // Aggressive is by definition ≥ realistic; clamp away sub-100-seat spline crossings.
       row.aggressive = Math.max(Math.round(aggFn(t)), row.realistic);
     }
     series.push(row);
   }
+
+  // Frontier reached at the dates the table below the chart reports.
+  const TABLE_DATES = ['2026-07-01', '2026-07-15', '2026-07-20', '2026-07-31', '2026-08-15', '2026-08-31'];
+  const sampleAt = (fn) => TABLE_DATES.map((d) => Math.round(fn(dayOf(d))));
+  const projectionTable = {
+    dates: TABLE_DATES,
+    aggressive: sampleAt(aggFn),
+    conservative: sampleAt(realFn),
+    research: sampleAt(researchFn),
+  };
 
   const kpis = {
     asOf: t2Observations[t2Observations.length - 1].date,
@@ -378,9 +417,15 @@ function buildCascadeProjection({
     t2Remaining: T2_AT_LOTTERY - fL,
     optOutsSoFar,
     optOutPctNow: +(100 * optOutsSoFar / ACTIVE_AWARDS).toFixed(1), // ~2.8% (Jun 23)
+    researchOptOutPct: Math.round(research.optOutRate * 100),        // ~4% (research central)
     realisticOptOutPct: Math.round(realistic.optOutRate * 100),      // ~6% after Jul 15
     aggressiveOptOutPct: Math.round(aggressive.optOutRate * 100),    // ~22% after Jul 15
     reserveSeats: realistic.reserveSeats,
+    projectionTable,
+    researchTerminal,
+    researchChurnPct: Math.round(research.churnRate * 100),
+    realisticChurnPct: Math.round(realistic.churnRate * 100),
+    aggressiveChurnPct: Math.round(aggressive.churnRate * 100),
     realisticTerminal: realTerminal,
     realisticTier3Ts: crossTs(realFn, T3_START),
     realisticBandLoTs: crossTs(realFn, BAND_LO),
@@ -457,8 +502,9 @@ const TONE_STYLE = {
 // drops the raw `ts` the Scatter series would otherwise inject.
 const FRONTIER_SERIES = {
   observedLine: 'Funded so far (published)',
-  realistic: 'Realistic (other-state attrition)',
-  aggressive: 'Aggressive (Jul 15 opt-in collapse)',
+  research: 'Research central (~15%, D.C. anchor)',
+  realistic: 'Conservative (other-state attrition ~24%)',
+  aggressive: 'Aggressive (Jul 15 opt-in collapse ~43%)',
 };
 
 const FrontierTooltip = ({ active, payload, label }) => {
@@ -1041,8 +1087,9 @@ const TefaView = () => {
               <ReferenceLine y={BAND_HI} stroke="#aa2142" strokeDasharray="8 4"
                   label={{ value: `T3 Middle band ends — ${BAND_HI.toLocaleString()}`, position: 'insideTopLeft', fontSize: 9, fontWeight: 600, fill: '#aa2142' }} />
               <Line type="monotone" dataKey="observedLine" name="Funded so far (published)" stroke="#202562" strokeWidth={2.5} dot={false} legendType="none" />
-              <Line type="monotone" dataKey="realistic" name="Realistic (other-state attrition)" stroke="#202562" strokeWidth={2.5} dot={false} />
-              <Line type="monotone" dataKey="aggressive" name="Aggressive (Jul 15 opt-in collapse)" stroke="#aa2142" strokeWidth={2.5} strokeDasharray="8 3" dot={false} />
+              <Line type="monotone" dataKey="research" name="Research central (~15%, D.C. anchor)" stroke="#2e7d5b" strokeWidth={2} strokeDasharray="3 3" dot={false} />
+              <Line type="monotone" dataKey="realistic" name="Conservative (other-state attrition ~24%)" stroke="#202562" strokeWidth={2.5} dot={false} />
+              <Line type="monotone" dataKey="aggressive" name="Aggressive (Jul 15 opt-in collapse ~43%)" stroke="#aa2142" strokeWidth={2.5} strokeDasharray="8 3" dot={false} />
               <Scatter dataKey="observed" name="Published data" fill="#202562" />
               {/* Anecdotal frontline readings — hollow dots the aggressive line runs through. */}
               {AGG_DOTS.map((d) => (
@@ -1053,8 +1100,41 @@ const TefaView = () => {
           </ResponsiveContainer>
         </div>
         <div className="text-[11px] text-tefa-body/60 bg-tefa-light rounded p-3 mt-3 space-y-1">
-          <div><strong>Realistic vs. aggressive.</strong> The frontier (= {T2_AT_LOTTERY.toLocaleString()} at-lottery − Tier 2 still queued) has reached {k.frontierNow.toLocaleString()}, advancing by <strong>backfill churn</strong> as awarded families leave. The <strong>realistic</strong> line uses ~24% total attrition (mid of the 14–34% Year-1 range in D.C., Milwaukee and Virginia) and settles ~<strong>{k.realisticTerminal.toLocaleString()}</strong>, just short of our band ({BAND_LO.toLocaleString()}). The <strong>aggressive</strong> line is a ceiling, not a forecast: only a Jul 15 opt-in collapse (~43% attrition, above any first-year program) would reach the 45–50k end of our band, around ~{k.aggressiveTerminal.toLocaleString()}.</div>
+          <div><strong>Three scenarios.</strong> The frontier (= {T2_AT_LOTTERY.toLocaleString()} at-lottery − Tier 2 still queued) has reached {k.frontierNow.toLocaleString()}, advancing by <strong>backfill churn</strong> as awarded families leave. <strong>Research central</strong> applies the prior-research baseline (~{k.researchChurnPct}% attrition, D.C.'s 14.3% anchor) with no TEFA-specific adjustment, and settles ~<strong>{k.researchTerminal.toLocaleString()}</strong> — short of even fully clearing Tier 2, which shows the published cascade is <em>already</em> running hotter than pure research. <strong>Conservative</strong> uses ~{k.realisticChurnPct}% total attrition (mid of the 14–34% Year-1 range in D.C., Milwaukee and Virginia) and settles ~<strong>{k.realisticTerminal.toLocaleString()}</strong>, just short of our band ({BAND_LO.toLocaleString()}). <strong>Aggressive</strong> is a ceiling, not a forecast: only a Jul 15 opt-in collapse (~{k.aggressiveChurnPct}% attrition, above any first-year program) would reach the 45–50k end of our band, around ~{k.aggressiveTerminal.toLocaleString()}.</div>
           <div><strong>Watch — the Jul 15 deadline.</strong> Families who don't opt in by Jul 15 are "moved aside to allow other families to come off the waitlist" (Travis Pillow). That shakeout — plus the ~$20M reserve awarded once appeals finalize — is the single event that decides whether the cascade reaches our band, and it lands <em>after</em> the Jun 30 penalty-free withdrawal deadline.</div>
+        </div>
+
+        {/* Frontier position reached by each scenario, at the key cascade dates. */}
+        <div className="mt-4 overflow-x-auto">
+          <div className="text-xs font-bold text-tefa-navy mb-2">Projected waitlist position reached, by scenario &amp; date</div>
+          <table className="w-full text-xs border-collapse">
+            <thead>
+              <tr className="text-tefa-body/60 border-b border-gray-200">
+                <th className="text-left font-semibold py-2 pr-3">Scenario</th>
+                {k.projectionTable.dates.map((d) => (
+                  <th key={d} className="text-right font-semibold py-2 px-2 tabular-nums">{fmtChartDate(Date.parse(d))}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="tabular-nums">
+              {[
+                { key: 'aggressive', label: `Aggressive (~${k.aggressiveChurnPct}%)`, color: '#aa2142', vals: k.projectionTable.aggressive },
+                { key: 'conservative', label: `Conservative (~${k.realisticChurnPct}%)`, color: '#202562', vals: k.projectionTable.conservative },
+                { key: 'research', label: `Research central (~${k.researchChurnPct}%)`, color: '#2e7d5b', vals: k.projectionTable.research },
+              ].map((row) => (
+                <tr key={row.key} className="border-b border-gray-100">
+                  <td className="py-2 pr-3 font-semibold whitespace-nowrap" style={{ color: row.color }}>{row.label}</td>
+                  {row.vals.map((v, i) => (
+                    <td key={i} className="text-right py-2 px-2 text-tefa-body">{v.toLocaleString()}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="text-[10px] text-tefa-body/45 mt-2">
+            Values are the global waitlist position the cascade has funded down to. Tier 3 starts at {T3_START.toLocaleString()};
+            our band is {BAND_LO.toLocaleString()}–{BAND_HI.toLocaleString()}. All three share the published track through Jun 23 ({k.frontierNow.toLocaleString()}); they differ only in projected attrition after.
+          </p>
         </div>
       </section>
     </div>
