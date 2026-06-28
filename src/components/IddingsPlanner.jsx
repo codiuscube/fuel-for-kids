@@ -1050,38 +1050,16 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax }) => {
 
   return (
     <section className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
-      <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2 mb-2">
+      <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2 mb-1">
         <Activity size={20} /> Simulate it yourself — where does the line actually land?
       </h2>
-      <p className="text-sm text-tefa-body/80 mb-4">
-        The chart above shows three hand-drawn scenarios. This runs <strong>{trials.toLocaleString()} random rollouts</strong>: each draws a
-        total churn rate and an opt-out share <em>independently</em> from the assumptions below, runs them through the same terminal formula,
-        and records where the cascade stops. The bars show how often each outcome happened. Defaults reproduce the{' '}
-        <strong>Conservative</strong> scenario (median ~{fmt(r.p50)}). Our band is {BAND_LO.toLocaleString()}–{BAND_HI.toLocaleString()};
-        Tier 3 opens at {T3_START.toLocaleString()}.
+      <p className="text-xs text-tefa-body/60 mb-3">
+        The same model as the chart above, run <strong>{trials.toLocaleString()} times</strong> with random draws — the bars show how often the
+        cascade stopped at each position. Drag the dials below; the line chart updates too.
       </p>
 
-      {/* headline probabilities */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm mb-4">
-        <div className="rounded-lg bg-tefa-light border border-tefa-navy/30 p-3 text-center ring-1 ring-tefa-gold/40">
-          <div className="text-xs text-tefa-navy/70 font-medium">P(reach our band ≥ {BAND_LO.toLocaleString()})</div>
-          <div className="font-bold text-tefa-gold text-2xl">{pctFmt(r.pBand)}</div>
-          <div className="text-[10px] text-tefa-body/40">odds the cascade enters Tier 3 territory at all</div>
-        </div>
-        <div className="rounded-lg bg-tefa-light border border-gray-200 p-3 text-center">
-          <div className="text-xs text-tefa-body/50 font-medium">Median frontier</div>
-          <div className="font-bold text-tefa-navy text-2xl">{fmt(r.p50)}</div>
-          <div className="text-[10px] text-tefa-body/40">90% range: {fmt(r.p05)} – {fmt(r.p95)}</div>
-        </div>
-        <div className="rounded-lg bg-tefa-light border border-tefa-red/30 p-3 text-center">
-          <div className="text-xs text-tefa-red/70 font-medium">P(reach us ~{YOUR_POS.lo.toLocaleString()})</div>
-          <div className="font-bold text-tefa-red text-2xl">{pctFmt(r.pHouse)}</div>
-          <div className="text-[10px] text-tefa-body/40">our actual original lottery position</div>
-        </div>
-      </div>
-
-      {/* histogram */}
-      <div className="rounded-lg border border-gray-200 bg-tefa-light/40 p-3 mb-5">
+      {/* histogram — placed first so it sits right under the line chart above */}
+      <div className="rounded-lg border border-gray-200 bg-tefa-light/40 p-3 mb-4">
         <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label="Distribution of simulated frontier outcomes">
           {r.hist.map((c, i) => {
             const binStart = r.lo + i * r.w;
@@ -1110,6 +1088,25 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax }) => {
           <span className="inline-flex items-center gap-1.5"><span className="w-3 h-1.5 rounded-sm" style={{ background: '#cbd5e1' }} />Below Tier 3 (&lt;{T3_START.toLocaleString()})</span>
           <span className="inline-flex items-center gap-1.5"><span className="w-3 h-1.5 rounded-sm" style={{ background: '#202562' }} />Tier 3, below our band</span>
           <span className="inline-flex items-center gap-1.5"><span className="w-3 h-1.5 rounded-sm" style={{ background: '#b08a3e' }} />In our band (≥{BAND_LO.toLocaleString()})</span>
+        </div>
+      </div>
+
+      {/* headline probabilities */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm mb-4">
+        <div className="rounded-lg bg-tefa-light border border-tefa-navy/30 p-3 text-center ring-1 ring-tefa-gold/40">
+          <div className="text-xs text-tefa-navy/70 font-medium">P(reach our band ≥ {BAND_LO.toLocaleString()})</div>
+          <div className="font-bold text-tefa-gold text-2xl">{pctFmt(r.pBand)}</div>
+          <div className="text-[10px] text-tefa-body/40">odds the cascade enters Tier 3 territory at all</div>
+        </div>
+        <div className="rounded-lg bg-tefa-light border border-gray-200 p-3 text-center">
+          <div className="text-xs text-tefa-body/50 font-medium">Median frontier</div>
+          <div className="font-bold text-tefa-navy text-2xl">{fmt(r.p50)}</div>
+          <div className="text-[10px] text-tefa-body/40">90% range: {fmt(r.p05)} – {fmt(r.p95)}</div>
+        </div>
+        <div className="rounded-lg bg-tefa-light border border-tefa-red/30 p-3 text-center">
+          <div className="text-xs text-tefa-red/70 font-medium">P(reach us ~{YOUR_POS.lo.toLocaleString()})</div>
+          <div className="font-bold text-tefa-red text-2xl">{pctFmt(r.pHouse)}</div>
+          <div className="text-[10px] text-tefa-body/40">our actual original lottery position</div>
         </div>
       </div>
 
@@ -1363,7 +1360,14 @@ const TefaView = () => {
             </ComposedChart>
           </ResponsiveContainer>
         </div>
-        <div className="text-[11px] text-tefa-body/60 bg-tefa-light rounded p-3 mt-3 space-y-1">
+      </section>
+
+      {/* Simulator sits directly under the chart so both graphs read together. */}
+      <TefaMonteCarlo churnMin={churnMin} setChurnMin={setChurnMin} churnMax={churnMax} setChurnMax={setChurnMax} />
+
+      {/* Explanatory notes + projection table for the chart above. */}
+      <section className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+        <div className="text-[11px] text-tefa-body/60 bg-tefa-light rounded p-3 space-y-1">
           <div><strong>Three scenarios.</strong> The frontier (= {T2_AT_LOTTERY.toLocaleString()} at-lottery − Tier 2 still queued) has reached {k.frontierNow.toLocaleString()}, advancing by <strong>backfill churn</strong> as awarded families leave. <strong>Research central</strong> applies the prior-research baseline (~{k.researchChurnPct}% attrition, D.C.'s 14.3% anchor) with no TEFA-specific adjustment, and settles ~<strong>{k.researchTerminal.toLocaleString()}</strong> — short of even fully clearing Tier 2, which shows the published cascade is <em>already</em> running hotter than pure research. <strong>Conservative</strong> uses ~{k.realisticChurnPct}% total attrition (mid of the 14–34% Year-1 range in D.C., Milwaukee and Virginia) and settles ~<strong>{k.realisticTerminal.toLocaleString()}</strong>, just short of our band ({BAND_LO.toLocaleString()}). <strong>Aggressive</strong> is a ceiling, not a forecast: only a Jul 15 opt-in collapse (~{k.aggressiveChurnPct}% attrition, above any first-year program) would reach the 45–50k end of our band, around ~{k.aggressiveTerminal.toLocaleString()}.</div>
           <div><strong>Watch — the Jul 15 deadline.</strong> Families who don't opt in by Jul 15 are "moved aside to allow other families to come off the waitlist" (Travis Pillow). That shakeout — plus the ~$20M reserve awarded once appeals finalize — is the single event that decides whether the cascade reaches our band, and it lands <em>after</em> the Jun 30 penalty-free withdrawal deadline.</div>
         </div>
@@ -1401,9 +1405,6 @@ const TefaView = () => {
           </p>
         </div>
       </section>
-
-      {/* Interactive Monte Carlo — shares min/max churn with the chart above. */}
-      <TefaMonteCarlo churnMin={churnMin} setChurnMin={setChurnMin} churnMax={churnMax} setChurnMax={setChurnMax} />
     </div>
   );
 };
