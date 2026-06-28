@@ -1,3 +1,4 @@
+import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Activity,
@@ -956,6 +957,215 @@ const TimelineView = () => {
 };
 
 // ---------------------------------------------------------------------------
+// Monte Carlo simulator — distribution of terminal-frontier outcomes.
+// Reuses the model constants above (ACTIVE_AWARDS, seatsPerDeparture,
+// RESERVE_SEATS, T3_START, BAND_LO/HI, YOUR_POS). Churn and opt-out share are
+// drawn SEPARATELY each trial so attrition volume and its mix don't move in
+// lockstep. PERT draws via a Beta (two Gamma samples, Marsaglia–Tsang).
+// ---------------------------------------------------------------------------
+const mcGaussian = () => {
+  let u = 0, v = 0;
+  while (u === 0) u = Math.random();
+  while (v === 0) v = Math.random();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+};
+const mcGamma = (k) => {
+  if (k < 1) return mcGamma(1 + k) * Math.pow(Math.random(), 1 / k);
+  const d = k - 1 / 3, c = 1 / Math.sqrt(9 * d);
+  for (;;) {
+    let x, vv;
+    do { x = mcGaussian(); vv = 1 + c * x; } while (vv <= 0);
+    vv = vv * vv * vv;
+    const u = Math.random();
+    if (u < 1 - 0.0331 * x * x * x * x) return d * vv;
+    if (Math.log(u) < 0.5 * x * x + d * (1 - vv + Math.log(vv))) return d * vv;
+  }
+};
+const mcBeta = (a, b) => { const x = mcGamma(a), y = mcGamma(b); return x / (x + y); };
+const mcPert = (min, mode, max, lambda = 4) => {
+  if (max <= min) return min;
+  const a = 1 + (lambda * (mode - min)) / (max - min);
+  const b = 1 + (lambda * (max - mode)) / (max - min);
+  return min + mcBeta(a, b) * (max - min);
+};
+
+const TefaMonteCarlo = () => {
+  const [churnMin, setChurnMin] = useState(15);
+  const [churnMode, setChurnMode] = useState(24);
+  const [churnMax, setChurnMax] = useState(43);
+  const [optMode, setOptMode] = useState(25); // % of churn that opts out (rest downgrade)
+  const [holdFlat, setHoldFlat] = useState(true);
+  const [trials, setTrials] = useState(10000);
+  const [seed, setSeed] = useState(0); // bump to re-run with fresh draws
+
+  const r = useMemo(() => {
+    const arr = new Float64Array(trials);
+    for (let i = 0; i < trials; i++) {
+      const churn = mcPert(churnMin, churnMode, churnMax) / 100;
+      const share = mcPert(Math.max(0, optMode - 12), optMode, Math.min(100, optMode + 18)) / 100;
+      const optRate = churn * share, downRate = churn * (1 - share);
+      const spd = holdFlat || churn === 0 ? 1 : seatsPerDeparture(optRate, downRate);
+      arr[i] = churn * ACTIVE_AWARDS * spd + RESERVE_SEATS;
+    }
+    const sorted = Array.from(arr).sort((a, b) => a - b);
+    const pct = (p) => sorted[Math.floor(p * (sorted.length - 1))];
+    const frac = (thr) => { let n = 0; for (const v of arr) if (v >= thr) n++; return n / trials; };
+    const lo = 8000, hi = 60000, bins = 52, w = (hi - lo) / bins;
+    const hist = new Array(bins).fill(0);
+    for (const v of arr) {
+      let b = Math.floor((v - lo) / w);
+      if (b < 0) b = 0; if (b >= bins) b = bins - 1;
+      hist[b]++;
+    }
+    return {
+      p05: pct(0.05), p50: pct(0.5), p95: pct(0.95),
+      pBand: frac(BAND_LO), pTier3: frac(T3_START), pHouse: frac(YOUR_POS.lo),
+      hist, lo, hi, w, maxBin: Math.max(...hist),
+    };
+  }, [churnMin, churnMode, churnMax, optMode, holdFlat, trials, seed]);
+
+  const fmt = (n) => Math.round(n).toLocaleString();
+  const pctFmt = (p) => (p * 100).toFixed(1) + '%';
+
+  const W = 760, H = 280, padL = 8, padR = 8, padT = 22, padB = 40;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const xOf = (val) => padL + ((val - r.lo) / (r.hi - r.lo)) * plotW;
+  const barW = plotW / r.hist.length;
+
+  return (
+    <section className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+      <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2 mb-2">
+        <Activity size={20} /> Simulate it yourself — where does the line actually land?
+      </h2>
+      <p className="text-sm text-tefa-body/80 mb-4">
+        The chart above shows three hand-drawn scenarios. This runs <strong>{trials.toLocaleString()} random rollouts</strong>: each draws a
+        total churn rate and an opt-out share <em>independently</em> from the assumptions below, runs them through the same terminal formula,
+        and records where the cascade stops. The bars show how often each outcome happened. Defaults reproduce the{' '}
+        <strong>Conservative</strong> scenario (median ~{fmt(r.p50)}). Our band is {BAND_LO.toLocaleString()}–{BAND_HI.toLocaleString()};
+        Tier 3 opens at {T3_START.toLocaleString()}.
+      </p>
+
+      {/* headline probabilities */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm mb-4">
+        <div className="rounded-lg bg-tefa-light border border-tefa-navy/30 p-3 text-center ring-1 ring-tefa-gold/40">
+          <div className="text-xs text-tefa-navy/70 font-medium">P(reach our band ≥ {BAND_LO.toLocaleString()})</div>
+          <div className="font-bold text-tefa-gold text-2xl">{pctFmt(r.pBand)}</div>
+          <div className="text-[10px] text-tefa-body/40">odds the cascade enters Tier 3 territory at all</div>
+        </div>
+        <div className="rounded-lg bg-tefa-light border border-gray-200 p-3 text-center">
+          <div className="text-xs text-tefa-body/50 font-medium">Median frontier</div>
+          <div className="font-bold text-tefa-navy text-2xl">{fmt(r.p50)}</div>
+          <div className="text-[10px] text-tefa-body/40">90% range: {fmt(r.p05)} – {fmt(r.p95)}</div>
+        </div>
+        <div className="rounded-lg bg-tefa-light border border-tefa-red/30 p-3 text-center">
+          <div className="text-xs text-tefa-red/70 font-medium">P(reach us ~{YOUR_POS.lo.toLocaleString()})</div>
+          <div className="font-bold text-tefa-red text-2xl">{pctFmt(r.pHouse)}</div>
+          <div className="text-[10px] text-tefa-body/40">our actual original lottery position</div>
+        </div>
+      </div>
+
+      {/* histogram */}
+      <div className="rounded-lg border border-gray-200 bg-tefa-light/40 p-3 mb-5">
+        <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label="Distribution of simulated frontier outcomes">
+          {r.hist.map((c, i) => {
+            const binStart = r.lo + i * r.w;
+            const h = r.maxBin ? (c / r.maxBin) * plotH : 0;
+            const inBand = binStart >= BAND_LO && binStart < BAND_HI;
+            const belowTier3 = binStart < T3_START;
+            const fill = inBand ? '#b08a3e' : belowTier3 ? '#cbd5e1' : '#202562';
+            return <rect key={i} x={padL + i * barW + 0.5} y={padT + plotH - h} width={Math.max(barW - 1, 0.5)} height={h} fill={fill} rx="1" />;
+          })}
+          {[
+            { v: T3_START, label: `Tier 3 · ${(T3_START / 1000).toFixed(0)}k`, color: '#b08a3e' },
+            { v: BAND_LO, label: `Band · ${(BAND_LO / 1000).toFixed(0)}k`, color: '#aa2142' },
+            { v: YOUR_POS.lo, label: `Us · ${(YOUR_POS.lo / 1000).toFixed(0)}k`, color: '#aa2142' },
+          ].map((ln) => (
+            <g key={ln.v}>
+              <line x1={xOf(ln.v)} y1={padT} x2={xOf(ln.v)} y2={padT + plotH} stroke={ln.color} strokeWidth="1.3" strokeDasharray="4 3" />
+              <text x={xOf(ln.v)} y={padT - 7} fill={ln.color} fontSize="10" textAnchor="middle" fontWeight="700">{ln.label}</text>
+            </g>
+          ))}
+          {[10000, 20000, 30000, 40000, 50000, 60000].map((t) => (
+            <text key={t} x={xOf(t)} y={H - 22} fill="#94a3b8" fontSize="10" textAnchor="middle">{t / 1000}k</text>
+          ))}
+          <text x={W / 2} y={H - 6} fill="#64748b" fontSize="11" textAnchor="middle">Terminal cascade frontier (waitlist position reached)</text>
+        </svg>
+        <div className="flex flex-wrap gap-4 text-[11px] text-tefa-body/60 mt-1 px-1">
+          <span className="inline-flex items-center gap-1.5"><span className="w-3 h-1.5 rounded-sm" style={{ background: '#cbd5e1' }} />Below Tier 3 (&lt;{T3_START.toLocaleString()})</span>
+          <span className="inline-flex items-center gap-1.5"><span className="w-3 h-1.5 rounded-sm" style={{ background: '#202562' }} />Tier 3, below our band</span>
+          <span className="inline-flex items-center gap-1.5"><span className="w-3 h-1.5 rounded-sm" style={{ background: '#b08a3e' }} />In our band (≥{BAND_LO.toLocaleString()})</span>
+        </div>
+      </div>
+
+      {/* controls */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
+        <div>
+          <label className="block text-xs font-semibold text-tefa-body/80 mb-2">
+            Total churn — PERT min / likely / max <span className="font-mono text-tefa-gold ml-1">{churnMin} / {churnMode} / {churnMax}%</span>
+          </label>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="text-center">
+              <div className="text-[10px] uppercase tracking-wide text-tefa-body/40 mb-1">min</div>
+              <input type="range" min="5" max="40" value={churnMin} className="w-full accent-tefa-navy"
+                onChange={(e) => setChurnMin(Math.min(+e.target.value, churnMode - 1))} />
+            </div>
+            <div className="text-center">
+              <div className="text-[10px] uppercase tracking-wide text-tefa-body/40 mb-1">likely</div>
+              <input type="range" min="10" max="50" value={churnMode} className="w-full accent-tefa-navy"
+                onChange={(e) => setChurnMode(Math.max(churnMin + 1, Math.min(+e.target.value, churnMax - 1)))} />
+            </div>
+            <div className="text-center">
+              <div className="text-[10px] uppercase tracking-wide text-tefa-body/40 mb-1">max</div>
+              <input type="range" min="20" max="60" value={churnMax} className="w-full accent-tefa-navy"
+                onChange={(e) => setChurnMax(Math.max(+e.target.value, churnMode + 1))} />
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-tefa-body/80 mb-2">
+            Opt-out share of churn (likely) <span className="font-mono text-tefa-gold ml-1">{optMode}%</span>
+          </label>
+          <input type="range" min="5" max="60" value={optMode} className="w-full accent-tefa-navy"
+            onChange={(e) => setOptMode(+e.target.value)} />
+          <p className="text-[11px] text-tefa-body/45 mt-1.5">The rest are $2,000 homeschool downgrades. Drawn in a ±range around this. More opt-outs free more dollars per departure.</p>
+        </div>
+
+        <div>
+          <label className="flex items-center gap-2 text-xs font-semibold text-tefa-body/80 cursor-pointer">
+            <input type="checkbox" checked={holdFlat} className="w-4 h-4 accent-tefa-navy"
+              onChange={(e) => setHoldFlat(e.target.checked)} />
+            Hold seats-per-departure flat at 1.0 (friction discount)
+          </label>
+          <p className="text-[11px] text-tefa-body/45 mt-1.5">
+            On = the reviewers' fix: ignore the mix-driven lift, assume admin friction persists. Off = let the dollar mechanism scale seats up to
+            ~1.06 in opt-out-heavy draws. (Barely moves the odds either way.)
+          </p>
+        </div>
+
+        <div className="flex flex-col justify-end gap-2">
+          <label className="block text-xs font-semibold text-tefa-body/80">
+            Trials <span className="font-mono text-tefa-gold ml-1">{trials.toLocaleString()}</span>
+          </label>
+          <input type="range" min="1000" max="20000" step="1000" value={trials} className="w-full accent-tefa-navy"
+            onChange={(e) => setTrials(+e.target.value)} />
+          <button onClick={() => setSeed((s) => s + 1)}
+            className="self-start bg-tefa-navy text-white text-xs font-semibold px-4 py-2 rounded-lg hover:bg-tefa-navy/90 transition">
+            Re-run simulation
+          </button>
+        </div>
+      </div>
+
+      <p className="text-[10px] text-tefa-body/45 mt-4">
+        Defaults reproduce the model: churn PERT(15 / 24 / 43), opt-out share ~25% of churn, friction held flat — the median lands near the
+        Conservative point estimate (~{fmt(r.p50)}). The share of runs clearing {BAND_LO.toLocaleString()} is the probability the written reviews
+        kept asserting without computing. Drag the Jul-15 assumptions to stress-test. A planning tool, not a forecast.
+      </p>
+    </section>
+  );
+};
+
+// ---------------------------------------------------------------------------
 // TEFA — likelihood the cascade reaches each band, and two projections
 // ---------------------------------------------------------------------------
 const TefaView = () => {
@@ -1137,6 +1347,9 @@ const TefaView = () => {
           </p>
         </div>
       </section>
+
+      {/* Interactive Monte Carlo — turns the three point-scenarios into a distribution. */}
+      <TefaMonteCarlo />
     </div>
   );
 };
