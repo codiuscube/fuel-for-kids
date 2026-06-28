@@ -343,44 +343,63 @@ function buildCascadeProjection({
   // more $, so reach deeper) + the one-time reserve seats.
   const terminalSeats = (s) =>
     Math.round(s.churnRate * awardedBase * seatsPerDeparture(s.optOutRate, s.churnRate - s.optOutRate) + s.reserveSeats);
-  const realTerminal = terminalSeats(realistic);
-  const realFn = buildLine([
+
+  // Default-shape terminals from the module scenarios. The waypoint heights below are
+  // the hand-tuned DEFAULT curves (lull → Jul-15 step → taper). When a scenario's
+  // churn is changed by the simulator sliders, `fitLine` rescales the whole curve's
+  // height-above-the-anchor so it lands on the NEW terminal while keeping that shape.
+  const defResearchT = terminalSeats(RESEARCH);
+  const defRealT = terminalSeats(REALISTIC);
+  const defAggT = terminalSeats(AGGRESSIVE);
+
+  // Pin the Jun-23 anchor; scale each future waypoint's gap above it linearly so the
+  // line still hits `terminalSeats(scenario)`. scale = 1 at default churn (identical
+  // curve); a terminal below the current frontier clamps the line flat (can't rewind).
+  const fitLine = (waypoints, defTerminal, scenario) => {
+    const newTerminal = terminalSeats(scenario);
+    const denom = defTerminal - fL;
+    const scale = denom > 0 ? Math.max(0, (newTerminal - fL) / denom) : 1;
+    const scaled = waypoints.map((q) =>
+      q.t <= tL ? q : { t: q.t, f: fL + (q.f - fL) * scale });
+    return { fn: buildLine(scaled, wavesEnd), terminal: newTerminal };
+  };
+
+  // REALISTIC (the fixed "likely" anchor) — quiet through the deadline, then the spike.
+  const real_ = fitLine([
     { t: tL, f: fL },                              // Jun 23 anchor (12,916)
     { t: dayOf('2026-07-01'), f: 16500 },          // Tier 2 still clearing
     { t: jul15, f: 18800 },                        // QUIET Jul 1–15 lull (~165/day)
-    { t: dayOf('2026-07-17'), f: 18800 + realistic.reserveSeats }, // SPIKE: reserve + deadline shakeout
+    { t: dayOf('2026-07-17'), f: 18800 + RESERVE_SEATS }, // SPIKE: reserve + deadline shakeout
     { t: dayOf('2026-07-31'), f: 26500 },          // aggressive churn Jul 15–31
-    { t: wavesEnd, f: realTerminal },              // taper Aug 1–15 → just below our band
-  ], wavesEnd);
+    { t: wavesEnd, f: defRealT },                  // taper Aug 1–15 → just below our band
+  ], defRealT, realistic);
+  const realFn = real_.fn, realTerminal = real_.terminal;
 
-  // AGGRESSIVE (extreme / opt-in collapse) — drawn through the anecdotal frontline
-  // dots (~15k Jun 25, ~20k Jul 1), a lull to Jul 15, then a MASSIVE Jul 15–20 burst
-  // (the deadline mass no-show + reserve), high churn Jul 20–31, tapering Aug 1–15.
-  // Terminal = churnRate × base + reserve (~48k, deep band). Only if Jul 15 opt-in
-  // take-up collapses — a low-probability ceiling.
-  const aggTerminal = terminalSeats(aggressive);
-  const aggFn = buildLine([
+  // AGGRESSIVE (the "max" line) — drawn through the anecdotal frontline dots (~15k Jun
+  // 25, ~20k Jul 1), a lull to Jul 15, then a MASSIVE Jul 15–20 burst (the deadline
+  // mass no-show + reserve), high churn Jul 20–31, tapering Aug 1–15.
+  const agg_ = fitLine([
     { t: tL, f: fL },                              // Jun 23 official anchor (12,916)
-    ...AGG_DOTS.map((d) => ({ t: dayOf(d.date), f: d.f })), // anecdotal hollow-dot anchors (~15k Jun 25, ~20k Jul 1)
+    ...AGG_DOTS.map((d) => ({ t: dayOf(d.date), f: d.f })), // anecdotal hollow-dot anchors
     { t: jul15, f: 22000 },                        // QUIET Jul 1–15 lull
     { t: dayOf('2026-07-20'), f: 36000 },          // MASSIVE Jul 15–20 burst (deadline collapse + reserve)
     { t: dayOf('2026-07-31'), f: 46500 },          // high churn Jul 20–31
-    { t: wavesEnd, f: aggTerminal },                // taper Aug 1–15 → deep band (~48k)
-  ], wavesEnd);
+    { t: wavesEnd, f: defAggT },                   // taper Aug 1–15 → deep band
+  ], defAggT, aggressive);
+  const aggFn = agg_.fn, aggTerminal = agg_.terminal;
 
-  // RESEARCH (pure prior-research central, ~15%) — quiet Tier-2 clearing, a modest
-  // Jul 15 reserve/deadline bump, then a gentle taper. Terminal ≈ 18,800 — it does
-  // not even fully clear Tier 2, illustrating that the published cascade is already
-  // running hotter than the conservative research baseline.
-  const researchTerminal = terminalSeats(research);
-  const researchFn = buildLine([
+  // RESEARCH (the "min" line) — quiet Tier-2 clearing, a modest Jul 15 reserve/deadline
+  // bump, then a gentle taper. At default churn (~15%) it doesn't even clear Tier 2,
+  // showing the published cascade is already running hotter than the research baseline.
+  const research_ = fitLine([
     { t: tL, f: fL },                              // Jun 23 official anchor (12,916)
     { t: dayOf('2026-07-01'), f: 14000 },          // slow Tier 2 clearing
     { t: jul15, f: 15200 },                        // QUIET Jul 1–15 lull
-    { t: dayOf('2026-07-17'), f: 15200 + research.reserveSeats }, // reserve + small deadline bump
+    { t: dayOf('2026-07-17'), f: 15200 + RESERVE_SEATS }, // reserve + small deadline bump
     { t: dayOf('2026-07-31'), f: 18400 },          // modest churn Jul 15–31
-    { t: wavesEnd, f: researchTerminal },          // taper Aug 1–15 → ~18,800
-  ], wavesEnd);
+    { t: wavesEnd, f: defResearchT },              // taper Aug 1–15
+  ], defResearchT, research);
+  const researchFn = research_.fn, researchTerminal = research_.terminal;
 
   const crossTs = (fn, level) => {
     for (let t = tL; t <= tEnd; t++) if (fn(t) >= level) return t0 + t * DAY;
@@ -440,9 +459,6 @@ function buildCascadeProjection({
   return { series, kpis };
 }
 
-const CASCADE = buildCascadeProjection();
-const CASCADE_KPIS = CASCADE.kpis;
-const FRONTIER_Y_MAX = Math.ceil(Math.max(BAND_HI, ...CASCADE.series.map((r) => Math.max(r.realistic ?? 0, r.aggressive ?? 0))) * 1.05 / 1000) * 1000;
 
 const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const fmtChartDate = (ts) => {
@@ -503,9 +519,9 @@ const TONE_STYLE = {
 // drops the raw `ts` the Scatter series would otherwise inject.
 const FRONTIER_SERIES = {
   observedLine: 'Funded so far (published)',
-  research: 'Research central (~15%, D.C. anchor)',
-  realistic: 'Conservative (other-state attrition ~24%)',
-  aggressive: 'Aggressive (Jul 15 opt-in collapse ~43%)',
+  research: 'Low / optimistic churn',
+  realistic: 'Conservative (likely)',
+  aggressive: 'Aggressive / max churn',
 };
 
 const FrontierTooltip = ({ active, payload, label }) => {
@@ -989,10 +1005,10 @@ const mcPert = (min, mode, max, lambda = 4) => {
   return min + mcBeta(a, b) * (max - min);
 };
 
-const TefaMonteCarlo = () => {
-  const [churnMin, setChurnMin] = useState(15);
-  const [churnMode, setChurnMode] = useState(24);
-  const [churnMax, setChurnMax] = useState(43);
+const CONSERVATIVE_CHURN = 24; // "likely" is pinned here — our Conservative central anchor
+
+const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax }) => {
+  const churnMode = CONSERVATIVE_CHURN; // fixed, not draggable — shared with the chart above
   const [optMode, setOptMode] = useState(25); // % of churn that opts out (rest downgrade)
   const [holdFlat, setHoldFlat] = useState(true);
   const [trials, setTrials] = useState(10000);
@@ -1097,26 +1113,48 @@ const TefaMonteCarlo = () => {
         </div>
       </div>
 
+      {/* how to read the two inputs */}
+      <div className="rounded-lg border border-tefa-navy/15 bg-tefa-light/60 p-4 mb-5 text-xs text-tefa-body/80 space-y-2.5">
+        <div className="font-semibold text-tefa-navy text-[13px]">How to read the two dials</div>
+        <p>
+          <strong className="text-tefa-navy">Total churn (PERT min / likely / max)</strong> — your three-point guess for{' '}
+          <em>what % of all active awards leave their current award this year</em> (for any reason). It sets <strong>how many
+          seats free up</strong>. You give three numbers and the simulator draws thousands of values shaped like a hill peaked at{' '}
+          <em>likely</em>: most runs land near it, fewer trail out toward min and max.
+        </p>
+        <ul className="list-disc pl-5 space-y-1 text-tefa-body/70">
+          <li><strong>likely</strong> is <span className="font-mono text-tefa-gold">{CONSERVATIVE_CHURN}%</span> — pinned to our Conservative central and <strong>not draggable</strong>; it's the anchor everything bends around.</li>
+          <li><strong>min</strong> = best case (fewer families leave). <strong>max</strong> = worst case (a Jul-15 opt-in collapse). Drag these to set <em>how wide</em> the uncertainty is around the anchor.</li>
+        </ul>
+        <p>
+          <strong className="text-tefa-navy">Opt-out share of churn</strong> — a <em>different</em> thing: of the families who leave,
+          what fraction <strong>quit the program entirely</strong> (freeing the full $10,474) versus <strong>downgrade to the $2,000
+          homeschool tier</strong> (freeing only $8,474). It doesn't change <em>how many</em> leave — it changes <strong>how far each
+          departure pushes the frontier</strong>, because opt-outs free more dollars per seat.
+        </p>
+      </div>
+
       {/* controls */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
         <div>
           <label className="block text-xs font-semibold text-tefa-body/80 mb-2">
-            Total churn — PERT min / likely / max <span className="font-mono text-tefa-gold ml-1">{churnMin} / {churnMode} / {churnMax}%</span>
+            Total churn — min / <span className="text-tefa-body/50">likely (fixed)</span> / max{' '}
+            <span className="font-mono text-tefa-gold ml-1">{churnMin} / {churnMode} / {churnMax}%</span>
           </label>
           <div className="grid grid-cols-3 gap-3">
             <div className="text-center">
-              <div className="text-[10px] uppercase tracking-wide text-tefa-body/40 mb-1">min</div>
+              <div className="text-[10px] uppercase tracking-wide text-tefa-body/40 mb-1">min (best)</div>
               <input type="range" min="5" max="40" value={churnMin} className="w-full accent-tefa-navy"
                 onChange={(e) => setChurnMin(Math.min(+e.target.value, churnMode - 1))} />
             </div>
             <div className="text-center">
-              <div className="text-[10px] uppercase tracking-wide text-tefa-body/40 mb-1">likely</div>
-              <input type="range" min="10" max="50" value={churnMode} className="w-full accent-tefa-navy"
-                onChange={(e) => setChurnMode(Math.max(churnMin + 1, Math.min(+e.target.value, churnMax - 1)))} />
+              <div className="text-[10px] uppercase tracking-wide text-tefa-gold/80 mb-1">likely · locked</div>
+              <div className="flex items-center justify-center h-[18px] font-mono text-sm font-bold text-tefa-gold">{churnMode}%</div>
+              <div className="text-[9px] text-tefa-body/40">Conservative</div>
             </div>
             <div className="text-center">
-              <div className="text-[10px] uppercase tracking-wide text-tefa-body/40 mb-1">max</div>
-              <input type="range" min="20" max="60" value={churnMax} className="w-full accent-tefa-navy"
+              <div className="text-[10px] uppercase tracking-wide text-tefa-body/40 mb-1">max (worst)</div>
+              <input type="range" min="25" max="60" value={churnMax} className="w-full accent-tefa-navy"
                 onChange={(e) => setChurnMax(Math.max(+e.target.value, churnMode + 1))} />
             </div>
           </div>
@@ -1169,7 +1207,23 @@ const TefaMonteCarlo = () => {
 // TEFA — likelihood the cascade reaches each band, and two projections
 // ---------------------------------------------------------------------------
 const TefaView = () => {
-  const k = CASCADE_KPIS;
+  // min / max churn are shared with the simulator below; "likely" is fixed at the
+  // Conservative central. The three chart lines (research / conservative / aggressive)
+  // are min / likely / max, so dragging the sliders reshapes the chart live.
+  const [churnMin, setChurnMin] = useState(15);
+  const [churnMax, setChurnMax] = useState(43);
+  const { series: cascadeSeries, kpis: k } = useMemo(
+    () => buildCascadeProjection({
+      research: { ...RESEARCH, churnRate: churnMin / 100 },
+      realistic: { ...REALISTIC, churnRate: CONSERVATIVE_CHURN / 100 },
+      aggressive: { ...AGGRESSIVE, churnRate: churnMax / 100 },
+    }),
+    [churnMin, churnMax]
+  );
+  const frontierYMax = useMemo(
+    () => Math.ceil(Math.max(BAND_HI, ...cascadeSeries.map((row) => Math.max(row.realistic ?? 0, row.aggressive ?? 0))) * 1.05 / 1000) * 1000,
+    [cascadeSeries]
+  );
   const todayTs = Math.min(
     Math.max(Date.parse(FRONTIER_WINDOW.today), Date.parse(FRONTIER_WINDOW.chartStart)),
     Date.parse(FRONTIER_WINDOW.end)
@@ -1259,7 +1313,7 @@ const TefaView = () => {
           <div className="rounded-lg bg-tefa-light border border-tefa-red/30 p-3 text-center">
             <div className="text-xs text-tefa-red/70 font-medium">Aggressive Reaches</div>
             <div className="font-bold text-tefa-red text-lg">~{k.aggressiveTerminal.toLocaleString()}</div>
-            <div className="text-[10px] text-tefa-body/40">deep band by ~{fmtChartDate(k.aggressiveBandLoTs)} · only if Jul 15 opt-in collapses (~43%, opt-outs ~{k.aggressiveOptOutPct}% — above any precedent)</div>
+            <div className="text-[10px] text-tefa-body/40">deep band by ~{fmtChartDate(k.aggressiveBandLoTs)} · only if Jul 15 opt-in collapses (~{k.aggressiveChurnPct}%, opt-outs ~{k.aggressiveOptOutPct}% — above any precedent)</div>
           </div>
         </div>
         <p className="text-[10px] text-tefa-body/50 mb-3 -mt-2">
@@ -1276,11 +1330,11 @@ const TefaView = () => {
         </p>
         <div className="h-[340px]">
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={CASCADE.series} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+            <ComposedChart data={cascadeSeries} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
               <XAxis type="number" dataKey="ts" scale="time" domain={['dataMin', 'dataMax']}
                      ticks={FRONTIER_TICKS} tickFormatter={fmtChartDate} tick={{ fontSize: 11 }} />
-              <YAxis domain={[0, FRONTIER_Y_MAX]} tickFormatter={(v) => `${Math.round(v / 1000)}k`} tick={{ fontSize: 11 }}
+              <YAxis domain={[0, frontierYMax]} tickFormatter={(v) => `${Math.round(v / 1000)}k`} tick={{ fontSize: 11 }}
                      label={{ value: 'Waitlist position reached', angle: -90, position: 'insideLeft', fontSize: 11 }} />
               <ChartTooltip content={<FrontierTooltip />} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
@@ -1297,9 +1351,9 @@ const TefaView = () => {
               <ReferenceLine y={BAND_HI} stroke="#aa2142" strokeDasharray="8 4"
                   label={{ value: `T3 Middle band ends — ${BAND_HI.toLocaleString()}`, position: 'insideTopLeft', fontSize: 9, fontWeight: 600, fill: '#aa2142' }} />
               <Line type="monotone" dataKey="observedLine" name="Funded so far (published)" stroke="#202562" strokeWidth={2.5} dot={false} legendType="none" />
-              <Line type="monotone" dataKey="research" name="Research central (~15%, D.C. anchor)" stroke="#2e7d5b" strokeWidth={2} strokeDasharray="3 3" dot={false} />
-              <Line type="monotone" dataKey="realistic" name="Conservative (other-state attrition ~24%)" stroke="#202562" strokeWidth={2.5} dot={false} />
-              <Line type="monotone" dataKey="aggressive" name="Aggressive (Jul 15 opt-in collapse ~43%)" stroke="#aa2142" strokeWidth={2.5} strokeDasharray="8 3" dot={false} />
+              <Line type="monotone" dataKey="research" name={`Low / optimistic (~${k.researchChurnPct}% churn)`} stroke="#2e7d5b" strokeWidth={2} strokeDasharray="3 3" dot={false} />
+              <Line type="monotone" dataKey="realistic" name={`Conservative — likely (~${k.realisticChurnPct}% churn)`} stroke="#202562" strokeWidth={2.5} dot={false} />
+              <Line type="monotone" dataKey="aggressive" name={`Aggressive / max (~${k.aggressiveChurnPct}% churn)`} stroke="#aa2142" strokeWidth={2.5} strokeDasharray="8 3" dot={false} />
               <Scatter dataKey="observed" name="Published data" fill="#202562" />
               {/* Anecdotal frontline readings — hollow dots the aggressive line runs through. */}
               {AGG_DOTS.map((d) => (
@@ -1348,8 +1402,8 @@ const TefaView = () => {
         </div>
       </section>
 
-      {/* Interactive Monte Carlo — turns the three point-scenarios into a distribution. */}
-      <TefaMonteCarlo />
+      {/* Interactive Monte Carlo — shares min/max churn with the chart above. */}
+      <TefaMonteCarlo churnMin={churnMin} setChurnMin={setChurnMin} churnMax={churnMax} setChurnMax={setChurnMax} />
     </div>
   );
 };
