@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Activity,
@@ -23,6 +22,7 @@ import {
   Tooltip as ChartTooltip,
   Legend,
   ReferenceLine,
+  ReferenceDot,
   ReferenceArea,
 } from 'recharts';
 
@@ -116,6 +116,17 @@ const T2_AT_LOTTERY = 20383;      // Tier 2 waitlisted ahead of Tier 3 at lotter
 const T3_START = T2_AT_LOTTERY;   // the cascade frontier at which the FIRST Tier 3 offer goes out
 const BAND_LO = TEFA.bandLo;      // 30,001 — top of our family's band
 const BAND_HI = TEFA.bandHi;      // 50,000 — bottom of our family's band
+
+// ANECDOTAL frontline readings of the cascade frontier — hotter than the official
+// frontier (still 12,916 on Jun 23, entirely Tier 2). These are the hollow dots on
+// the chart AND the anchor points the AGGRESSIVE scenario is drawn through: ~15k
+// around Jun 25 (recent frontline reports) and ~20k by Jul 1 (near-term projection).
+// Both are UNOFFICIAL, so plotted hollow and asterisked. Edit here and both the dots
+// and the aggressive line move together.
+const AGG_DOTS = [
+  { date: '2026-06-25', f: 15000 },
+  { date: '2026-07-01', f: 20000 },
+];
 
 // How the cascade frontier maps to "fuel": the frontier advances ~1 seat per family
 // that LEAVES an active award (opt-out or homeschool/$2,000 downgrade), plus the
@@ -294,15 +305,16 @@ function buildCascadeProjection({
     { t: wavesEnd, f: realTerminal },              // taper Aug 1–15 → just below our band
   ], wavesEnd);
 
-  // AGGRESSIVE (extreme / opt-in collapse) — climbs gently through the Jul 1–15 lull,
-  // then a MASSIVE Jul 15–20 burst (the deadline mass no-show + reserve), high churn
-  // Jul 20–31, tapering Aug 1–15. Terminal = churnRate × base + reserve (~48k, deep
-  // band). Only if Jul 15 opt-in take-up collapses — a low-probability ceiling.
+  // AGGRESSIVE (extreme / opt-in collapse) — drawn through the anecdotal frontline
+  // dots (~15k Jun 25, ~20k Jul 1), a lull to Jul 15, then a MASSIVE Jul 15–20 burst
+  // (the deadline mass no-show + reserve), high churn Jul 20–31, tapering Aug 1–15.
+  // Terminal = churnRate × base + reserve (~48k, deep band). Only if Jul 15 opt-in
+  // take-up collapses — a low-probability ceiling.
   const aggTerminal = Math.round(aggressive.churnRate * awardedBase + aggressive.reserveSeats);
   const aggFn = buildLine([
     { t: tL, f: fL },                              // Jun 23 official anchor (12,916)
-    { t: dayOf('2026-07-01'), f: 17500 },          // still clearing Tier 2
-    { t: jul15, f: 19500 },                         // QUIET Jul 1–15 lull
+    ...AGG_DOTS.map((d) => ({ t: dayOf(d.date), f: d.f })), // anecdotal hollow-dot anchors (~15k Jun 25, ~20k Jul 1)
+    { t: jul15, f: 22000 },                        // QUIET Jul 1–15 lull
     { t: dayOf('2026-07-20'), f: 36000 },          // MASSIVE Jul 15–20 burst (deadline collapse + reserve)
     { t: dayOf('2026-07-31'), f: 46500 },          // high churn Jul 20–31
     { t: wavesEnd, f: aggTerminal },                // taper Aug 1–15 → deep band (~48k)
@@ -451,27 +463,13 @@ const TIMELINE = [
     detail: 'Final 50% of a TEFA award, if one ever arrives. Not expected in Year 1.' },
 ];
 
-// Payment plan options. Amounts are computed from the live balance below.
-const PAYMENT_PLANS = {
-  recommended: {
-    label: 'Recommended (TEFA families)',
-    note: 'Nanette\'s plan for TEFA families: five drafts starting in August. Shares: 15% / 15% / 15% / 15% / 40%.',
-    shares: [0.15, 0.15, 0.15, 0.15, 0.4],
-    dates: ['Aug 5, 2026', 'Oct 5, 2026', 'Dec 7, 2026', 'Feb 5, 2027', 'Apr 5, 2027'],
-  },
-  ten: {
-    label: '10 month (standard FACTS)',
-    note: 'Standard FACTS schedule: ten equal drafts starting July 6.',
-    shares: Array(10).fill(0.1),
-    dates: ['Jul 6, 2026', 'Aug 5, 2026', 'Sep 8, 2026', 'Oct 5, 2026', 'Nov 5, 2026',
-      'Dec 7, 2026', 'Jan 5, 2027', 'Feb 5, 2027', 'Mar 5, 2027', 'Apr 5, 2027'],
-  },
-  full: {
-    label: 'Pay in full',
-    note: 'One draft after the July 15 TEFA deadline.',
-    shares: [1],
-    dates: ['Aug 5, 2026'],
-  },
+// Confirmed payment plan: ten equal FACTS drafts starting July 6. Amounts are
+// computed from the live balance below.
+const PAYMENT_PLAN = {
+  note: 'Standard FACTS schedule: ten equal drafts starting July 6.',
+  shares: Array(10).fill(0.1),
+  dates: ['Jul 6, 2026', 'Aug 5, 2026', 'Sep 8, 2026', 'Oct 5, 2026', 'Nov 5, 2026',
+    'Dec 7, 2026', 'Jan 5, 2027', 'Feb 5, 2027', 'Mar 5, 2027', 'Apr 5, 2027'],
 };
 
 const VALID_TABS = ['now', 'money', 'timeline', 'tefa'];
@@ -482,8 +480,6 @@ const IddingsPlanner = () => {
   const navigate = useNavigate();
   const activeTab = VALID_TABS.includes(tab) ? tab : 'now';
   const setTab = (t) => navigate(`/${t}`);
-
-  const [planId, setPlanId] = useState('recommended');
 
   // --- Money: derive the family balance from the data above -----------------
   const perStudent = STUDENTS.map((s) => {
@@ -497,11 +493,10 @@ const IddingsPlanner = () => {
   const scholarship = STUDENTS.reduce((a, s) => a + s.scholarship, 0);
   const balanceDue = perStudent.reduce((a, s) => a + s.balance, 0);
 
-  const plan = PAYMENT_PLANS[planId];
-  const schedule = plan.dates.map((date, i) => ({
+  const schedule = PAYMENT_PLAN.dates.map((date, i) => ({
     number: i + 1,
     date,
-    amount: balanceDue * plan.shares[i],
+    amount: balanceDue * PAYMENT_PLAN.shares[i],
   }));
 
   return (
@@ -542,9 +537,6 @@ const IddingsPlanner = () => {
             scholarship={scholarship}
             balanceDue={balanceDue}
             perStudent={perStudent}
-            plan={plan}
-            planId={planId}
-            setPlanId={setPlanId}
             schedule={schedule}
           />
         )}
@@ -723,7 +715,7 @@ const NowView = ({ balanceDue, perStudent, setTab }) => {
 // ---------------------------------------------------------------------------
 // MONEY — the breakdown and the payment schedule
 // ---------------------------------------------------------------------------
-const MoneyView = ({ tuition, nbcaAid, scholarship, balanceDue, perStudent, plan, planId, setPlanId, schedule }) => {
+const MoneyView = ({ tuition, nbcaAid, scholarship, balanceDue, perStudent, schedule }) => {
   const lines = [
     { label: 'Tuition (3 kids)', amount: tuition, sign: '+' },
     { label: 'NBCA financial aid', amount: -nbcaAid, sign: '−' },
@@ -777,22 +769,7 @@ const MoneyView = ({ tuition, nbcaAid, scholarship, balanceDue, perStudent, plan
         <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2 mb-2">
           <Clock size={20} /> Payment schedule
         </h2>
-        <div className="flex flex-wrap gap-2 mb-3">
-          {Object.entries(PAYMENT_PLANS).map(([id, p]) => (
-            <button
-              key={id}
-              onClick={() => setPlanId(id)}
-              className={`px-3 py-1.5 rounded-full text-sm font-bold border transition ${
-                planId === id
-                  ? 'bg-tefa-green text-white border-tefa-green'
-                  : 'bg-white text-tefa-navy border-tefa-navy/20 hover:bg-tefa-navy/5'
-              }`}
-            >
-              {p.label}
-            </button>
-          ))}
-        </div>
-        <p className="text-sm text-tefa-body/70 mb-4">{plan.note}</p>
+        <p className="text-sm text-tefa-body/70 mb-4">{PAYMENT_PLAN.note}</p>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="text-xs uppercase text-tefa-body/50 bg-tefa-light">
@@ -963,7 +940,7 @@ const TefaView = () => {
           The chart tracks the <strong>cascade frontier</strong>: how far down the waitlist awards have reached.
           We show two scenarios — both sharing the confirmed <strong>$20M reserve</strong>: a{' '}
           <strong>realistic</strong> line built on other states' Year-1 attrition (~24%), which stops just short
-          of our band; and an <strong>aggressive</strong> line that
+          of our band; and an <strong>aggressive</strong> line drawn through the anecdotal frontline dots (~15k Jun 25, ~20k Jul 1) that
           assumes the Jul 15 opt-in deadline becomes a <em>mass no-show</em> (~43% of all awards given
           up — <strong>above any first-year program on record</strong>). That's the only path into the deep end of
           our band (45–50k); treat it as a low-probability ceiling, not a forecast. When a line crosses a band's
@@ -998,6 +975,11 @@ const TefaView = () => {
           (Jun 25), the program is essentially fully deployed — <strong>~$910M awardable, ~$890M already in active awards, ~$20M reserve</strong>{' '}
           for appeals — so the waitlist now advances by <strong>backfill churn</strong> as families leave, not a big reserve release.
         </p>
+        <p className="text-[10px] text-tefa-body/50 mb-3 -mt-1">
+          <strong>*</strong> The hollow dots are <strong>anecdotal frontline readings</strong> of the frontier — <strong>~15k around Jun 25</strong> and
+          <strong> ~20k by Jul 1</strong> — running hotter than the official {k.frontierNow.toLocaleString()} (still entirely Tier 2). They're unofficial,
+          so plotted hollow; the <strong>aggressive line is drawn through them</strong>.
+        </p>
         <div className="h-[340px]">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={CASCADE.series} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -1024,6 +1006,11 @@ const TefaView = () => {
               <Line type="monotone" dataKey="realistic" name="Realistic (other-state attrition)" stroke="#202562" strokeWidth={2.5} dot={false} />
               <Line type="monotone" dataKey="aggressive" name="Aggressive (Jul 15 opt-in collapse)" stroke="#aa2142" strokeWidth={2.5} strokeDasharray="8 3" dot={false} />
               <Scatter dataKey="observed" name="Published data" fill="#202562" />
+              {/* Anecdotal frontline readings — hollow dots the aggressive line runs through. */}
+              {AGG_DOTS.map((d) => (
+                <ReferenceDot key={d.date} x={Date.parse(d.date)} y={d.f} r={5} fill="#fff" stroke="#e8889b" strokeWidth={2} strokeDasharray="2 1.5"
+                    label={{ value: `~${(d.f / 1000).toFixed(0)}k*`, position: 'top', fontSize: 9, fontWeight: 700, fill: '#aa2142' }} />
+              ))}
             </ComposedChart>
           </ResponsiveContainer>
         </div>
