@@ -101,6 +101,27 @@ const RESERVE_SEATS = Math.round(TEFA_BUDGET.reserve / TEFA_BUDGET.blendedCost);
 const ACTIVE_AWARDS = 107000; // "nearly 107,000 active" (Jun 23 update)
 
 // ---------------------------------------------------------------------------
+// Seats per departure. Empirically the cascade has advanced ~1 seat per family
+// that leaves (12,916 frontier on ~12,900 Jun-23 departures ≈ 1:1). But the two
+// departure types free DIFFERENT amounts: a private opt-out frees its full ESA
+// (~$10,474); a downgrade to the $2,000 tier frees only the difference (~$8,474).
+// So a departure mix that skews toward OPT-OUTS recycles more dollars — hence more
+// seats — per departure. We scale each scenario's seats-per-departure by how much
+// its mix frees vs. the observed Jun-23 mix. The new-seat blended cost cancels in
+// the ratio, so this is driven purely by the opt-out : downgrade split, and stays
+// pinned to the observed ~1:1 at today's mix (no kink vs. the published anchor).
+const FREED_OPTOUT = 10474;       // private opt-out frees the full ESA
+const FREED_DOWNGRADE = 8474;     // bump to $2,000 frees the difference ($10,474 − $2,000)
+const OBS_OPTOUT_RATE = 0.028;    // ~3,000 opt-outs / ~107k active (Jun 23)
+const OBS_DOWNGRADE_RATE = 0.093; // ~9,900 downgrades / ~107k active (frontier − opt-outs)
+const avgFreedPerDeparture = (optOut, downgrade) =>
+  (optOut * FREED_OPTOUT + downgrade * FREED_DOWNGRADE) / (optOut + downgrade);
+const OBS_AVG_FREED = avgFreedPerDeparture(OBS_OPTOUT_RATE, OBS_DOWNGRADE_RATE);
+// Seats per departure, normalized to the observed ~1:1 baseline.
+const seatsPerDeparture = (optOut, downgrade) =>
+  avgFreedPerDeparture(optOut, downgrade) / OBS_AVG_FREED;
+
+// ---------------------------------------------------------------------------
 // TEFA cascade frontier — how deep the waitlist has been funded, vs. three
 // projections. Feeds the TEFA tab. All published (empirical) numbers live in
 // the *_OBSERVATIONS arrays; everything else is derived.
@@ -175,25 +196,30 @@ const T2_OBSERVATIONS = [
 // Two scenarios — nothing else. Both share the confirmed $20M reserve (~2,605
 // seats), released at the Jul 15 deadline; they differ in how high total attrition
 // climbs and in SHAPE.
+// Terminal = departures × seats-per-departure + reserve. Opt-outs hold ~3% through
+// Jul 15 in both; they diverge in how the deadline shakeout splits opt-outs vs.
+// downgrades (opt-outs free more $, so reach deeper per departure).
 //   REALISTIC: other-state Year-1 attrition (mid of the 14–34% range ≈ 24% of the
-//     active base). Quiet through the Jul 1–15 lull, a sharp SPIKE at the Jul 15
-//     deadline (reserve drops the same week), aggressive churn Jul 15–31, then a
-//     taper Aug 1–15. Terminal ≈ 24% × 107k + reserve ≈ 28,000 — just BELOW our band.
+//     active base), opt-outs settling ~6%. Quiet through the Jul 1–15 lull, a sharp
+//     SPIKE at the Jul 15 deadline (reserve drops the same week), aggressive churn
+//     Jul 15–31, then a taper Aug 1–15. Terminal ≈ 28,400 — just BELOW our band.
 //   AGGRESSIVE (extreme / opt-in collapse): climbs gently through the Jul 1–15 lull,
 //     then a MASSIVE Jul 15–20 burst IF the deadline reveals a mass no-show (lots of
 //     speculative awards never opted in / PreK/K families who can't find seats), high
-//     churn Jul 20–31, taper Aug 1–15. ~43% total churn — ABOVE any first-year program
-//     (historical range 14–34%) — + reserve ≈ 48,000, up into the deep end of our band.
-//     A low-probability CEILING, not a forecast.
+//     churn Jul 20–31, taper Aug 1–15. ~43% total churn with opt-outs spiking to ~22%
+//     — ABOVE any first-year program (historical range 14–34%). Terminal ≈ 51,500,
+//     into the deep end of our band (past 50k). A low-probability CEILING, not a forecast.
 // Both are SCENARIOS, not forecasts. After Aug 15 the big waves are done and each
 // line just drifts on small residual attrition.
 const REALISTIC = {
   churnRate: 0.24,                // total departures (opt-outs + downgrades), mid of 14–34%
+  optOutRate: 0.06,              // opt-outs hold ~3% through Jul 15, settle ~6% after a normal deadline shakeout
   reserveSeats: RESERVE_SEATS,    // confirmed ~$20M reserve (~2,605 seats)
 };
 
 const AGGRESSIVE = {
   churnRate: 0.43,                // EXTREME — above the 14–34% historical range; only if Jul 15 opt-in take-up collapses
+  optOutRate: 0.22,              // Jul 15 opt-in COLLAPSE — opt-outs spike from ~3% to ~22% (mass no-show)
   reserveSeats: RESERVE_SEATS,
 };
 
@@ -298,7 +324,11 @@ function buildCascadeProjection({
   // early July, Jul 1–15 is a lull, then the Jul 15 deadline + reserve drive a sharp
   // step, aggressive churn runs Jul 15–31, and it tapers Aug 1–15. Terminal =
   // churnRate × base + reserve (~28k, just below our band).
-  const realTerminal = Math.round(realistic.churnRate * awardedBase + realistic.reserveSeats);
+  // Terminal frontier = departures × seats-per-departure (opt-out-heavy mixes free
+  // more $, so reach deeper) + the one-time reserve seats.
+  const terminalSeats = (s) =>
+    Math.round(s.churnRate * awardedBase * seatsPerDeparture(s.optOutRate, s.churnRate - s.optOutRate) + s.reserveSeats);
+  const realTerminal = terminalSeats(realistic);
   const realFn = buildLine([
     { t: tL, f: fL },                              // Jun 23 anchor (12,916)
     { t: dayOf('2026-07-01'), f: 16500 },          // Tier 2 still clearing
@@ -313,7 +343,7 @@ function buildCascadeProjection({
   // (the deadline mass no-show + reserve), high churn Jul 20–31, tapering Aug 1–15.
   // Terminal = churnRate × base + reserve (~48k, deep band). Only if Jul 15 opt-in
   // take-up collapses — a low-probability ceiling.
-  const aggTerminal = Math.round(aggressive.churnRate * awardedBase + aggressive.reserveSeats);
+  const aggTerminal = terminalSeats(aggressive);
   const aggFn = buildLine([
     { t: tL, f: fL },                              // Jun 23 official anchor (12,916)
     ...AGG_DOTS.map((d) => ({ t: dayOf(d.date), f: d.f })), // anecdotal hollow-dot anchors (~15k Jun 25, ~20k Jul 1)
@@ -347,6 +377,9 @@ function buildCascadeProjection({
     frontierNow: fL,
     t2Remaining: T2_AT_LOTTERY - fL,
     optOutsSoFar,
+    optOutPctNow: +(100 * optOutsSoFar / ACTIVE_AWARDS).toFixed(1), // ~2.8% (Jun 23)
+    realisticOptOutPct: Math.round(realistic.optOutRate * 100),      // ~6% after Jul 15
+    aggressiveOptOutPct: Math.round(aggressive.optOutRate * 100),    // ~22% after Jul 15
     reserveSeats: realistic.reserveSeats,
     realisticTerminal: realTerminal,
     realisticTier3Ts: crossTs(realFn, T3_START),
@@ -403,14 +436,14 @@ const BAND_OUTLOOK = [
     call: 'Unlikely — needs record attrition',
     tone: 'bad',
     ourBand: true,
-    note: 'Our original lottery position is the DEEP end (45–50k), and the chart plots original position — so the frontier has to climb all the way there to fund us. Reaching 45k needs ~40% of all awards given up; 50k needs ~45% — both ABOVE any first-year program (history is 14–34%). Realistic attrition stops ~28k, nowhere close; only an extreme Jul 15 opt-in collapse grazes 45–48k, and 50k is effectively unreachable. Plan on no voucher.',
+    note: 'Our original lottery position is the DEEP end (45–50k), and the chart plots original position — so the frontier has to climb all the way there to fund us. Reaching 45k needs ~38% of all awards given up; 50k needs ~43% — both ABOVE any first-year program (history is 14–34%). Realistic attrition stops ~28k, nowhere close; only an extreme Jul 15 opt-in collapse (~43% attrition, opt-out-heavy) reaches into the 45–50k band. Plan on no voucher.',
   },
   {
     band: '50,001 +',
     scope: 'deep Tier 3 / Tier 4',
     call: 'Not expected',
     tone: 'bad',
-    note: 'Requires decline rates beyond the historical 14–34% range — the $20M reserve barely moves the line, so there is no pool large enough to reach here. Tier 4 does not move in Year 1 at all.',
+    note: 'Only the extreme opt-in-collapse ceiling (~51,500) grazes the very start of this band; short of that, reaching here requires decline rates beyond the historical 14–34% range. Tier 4 does not move in Year 1 at all.',
   },
 ];
 
@@ -929,8 +962,10 @@ const TefaView = () => {
         <p className="text-xs text-tefa-body/50 mt-3">
           <strong>Bottom line:</strong> our original lottery position is the <strong>deep end (45–50k)</strong>, and the chart plots
           original position — so the frontier must reach 45–50k to fund us. That needs <strong>~40–45% of all awards abandoned</strong>,
-          above any first-year program (history is 14–34%). Realistic attrition stops ~{k.realisticTerminal.toLocaleString()} — nowhere
-          near; even an extreme Jul 15 opt-in collapse only grazes 45–48k, and 50k is effectively unreachable. <strong>Plan on no voucher this year</strong>; treat any offer as a pure surprise.
+          above any first-year program (history is 14–34%). Realistic attrition stops ~{k.realisticTerminal.toLocaleString()} (opt-outs
+          ~{k.realisticOptOutPct}%) — nowhere near; only an extreme Jul 15 opt-in collapse (opt-outs spiking to ~{k.aggressiveOptOutPct}%)
+          reaches ~{k.aggressiveTerminal.toLocaleString()}, far enough to cover our 45–50k band — but that needs ~43% total attrition, above any
+          first-year program. <strong>Plan on no voucher this year</strong>; treat any offer as a pure surprise.
         </p>
       </section>
 
@@ -963,12 +998,12 @@ const TefaView = () => {
           <div className="rounded-lg bg-tefa-light border border-tefa-navy/20 p-3 text-center">
             <div className="text-xs text-tefa-navy/70 font-medium">Realistic Reaches</div>
             <div className="font-bold text-tefa-navy text-lg">~{k.realisticTerminal.toLocaleString()}</div>
-            <div className="text-[10px] text-tefa-body/40">~24% attrition (other states) + $20M reserve · stops just short of our band ({BAND_LO.toLocaleString()})</div>
+            <div className="text-[10px] text-tefa-body/40">~24% attrition (other states), opt-outs ~{k.realisticOptOutPct}% + $20M reserve · stops just short of our band ({BAND_LO.toLocaleString()})</div>
           </div>
           <div className="rounded-lg bg-tefa-light border border-tefa-red/30 p-3 text-center">
             <div className="text-xs text-tefa-red/70 font-medium">Aggressive Reaches</div>
             <div className="font-bold text-tefa-red text-lg">~{k.aggressiveTerminal.toLocaleString()}</div>
-            <div className="text-[10px] text-tefa-body/40">deep band by ~{fmtChartDate(k.aggressiveBandLoTs)} · only if Jul 15 opt-in collapses (~43% — above any precedent)</div>
+            <div className="text-[10px] text-tefa-body/40">deep band by ~{fmtChartDate(k.aggressiveBandLoTs)} · only if Jul 15 opt-in collapses (~43%, opt-outs ~{k.aggressiveOptOutPct}% — above any precedent)</div>
           </div>
         </div>
         <p className="text-[10px] text-tefa-body/50 mb-3 -mt-2">
