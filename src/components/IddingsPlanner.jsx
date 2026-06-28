@@ -89,11 +89,14 @@ const TEFA_BUDGET = {
   awardable: 910_000_000,    // after admin/startup/TEA (~$90M off the $1B)
   fundedActive: 890_000_000, // active awards, held here via backfill
   reserve: 20_000_000,       // remaining, for appeals; cascades to waitlist after appeal window
-  blendedCost: 8525,         // T2/T3 blended seat cost (77/23 private/homeschool mix)
+  // New T2/T3 seat = blend of private ESA (~$10,474) and homeschool/other ($2,000).
+  // Mix updated to 67/33 (was 77/23) — homeschool share has climbed 23%→~33% of
+  // active awards as private families bump down via the $2,000 downgrade.
+  blendedCost: Math.round(0.67 * 10474 + 0.33 * 2000), // ~7,678 (67/33 private/homeschool)
   source: 'Travis Pillow, Comptroller spokesperson — Jun 25, 2026',
 };
-// Seats the remaining reserve can fund once appeals close (~$20M ÷ ~$8,525).
-const RESERVE_SEATS = Math.round(TEFA_BUDGET.reserve / TEFA_BUDGET.blendedCost); // ~2,346
+// Seats the remaining reserve can fund once appeals close (~$20M ÷ ~$7,678).
+const RESERVE_SEATS = Math.round(TEFA_BUDGET.reserve / TEFA_BUDGET.blendedCost); // ~2,605
 // Active awards that can churn — the population that frees seats when it leaves.
 const ACTIVE_AWARDS = 107000; // "nearly 107,000 active" (Jun 23 update)
 
@@ -107,8 +110,8 @@ const ACTIVE_AWARDS = 107000; // "nearly 107,000 active" (Jun 23 update)
 // reached. Tier 3 begins at position 20,383 (everyone ahead is Tier 2); our
 // family band is global positions 30,001–50,000. We deliberately do NOT chart
 // raw opt-out counts: each departure recycles ~one new blended seat (a private
-// opt-out frees $10,474 → ~1.2 seats; a homeschool downgrade frees $8,474 → ~1
-// seat), so progress is measured in seats reached, not raw opt-outs.
+// opt-out frees $10,474 → ~1.4 seats; a homeschool downgrade frees $8,474 → ~1.1
+// seats), so progress is measured in seats reached, not raw opt-outs.
 // ---------------------------------------------------------------------------
 
 const AWARDED_BASE = 95934;       // initially awarded (44,753 T1-family + 51,181 T2)
@@ -169,7 +172,7 @@ const T2_OBSERVATIONS = [
   { date: '2026-06-23', t2Remaining: 7467 },  // after 5,499 more cascade awards (Jun 23 update) → frontier 12,916
 ];
 
-// Two scenarios — nothing else. Both share the confirmed $20M reserve (~2,346
+// Two scenarios — nothing else. Both share the confirmed $20M reserve (~2,605
 // seats), released at the Jul 15 deadline; they differ in how high total attrition
 // climbs and in SHAPE.
 //   REALISTIC: other-state Year-1 attrition (mid of the 14–34% range ≈ 24% of the
@@ -186,7 +189,7 @@ const T2_OBSERVATIONS = [
 // line just drifts on small residual attrition.
 const REALISTIC = {
   churnRate: 0.24,                // total departures (opt-outs + downgrades), mid of 14–34%
-  reserveSeats: RESERVE_SEATS,    // confirmed ~$20M reserve (~2,346 seats)
+  reserveSeats: RESERVE_SEATS,    // confirmed ~$20M reserve (~2,605 seats)
 };
 
 const AGGRESSIVE = {
@@ -385,7 +388,7 @@ const BAND_OUTLOOK = [
     scope: 'early Tier 3',
     call: 'Likely',
     tone: 'good',
-    note: 'Reached once Tier 2 clears and the confirmed $20M reserve (~2,346 seats) is awarded after the appeal window. This is where the first real Tier 3 movement lands, around the Jul 15 cascade.',
+    note: 'Reached once Tier 2 clears and the confirmed $20M reserve (~2,605 seats) is awarded after the appeal window. This is where the first real Tier 3 movement lands, around the Jul 15 cascade.',
   },
   {
     band: '25,001 – 30,000',
