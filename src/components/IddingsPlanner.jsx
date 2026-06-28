@@ -23,7 +23,6 @@ import {
   Tooltip as ChartTooltip,
   Legend,
   ReferenceLine,
-  ReferenceDot,
   ReferenceArea,
 } from 'recharts';
 
@@ -42,7 +41,6 @@ const STUDENTS = [
 ];
 
 const SIBLING_DISCOUNT = 1518.5;   // FACTS applies the family sibling discount to Sebastian's account.
-const ENROLLMENT_FEE_PAID = 690;   // ($175 + $55) x 3 — paid Apr 2, non-refundable.
 
 const usd = (n) => `$${n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 const usd2 = (n) => `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -119,20 +117,6 @@ const T3_START = T2_AT_LOTTERY;   // the cascade frontier at which the FIRST Tie
 const BAND_LO = TEFA.bandLo;      // 30,001 — top of our family's band
 const BAND_HI = TEFA.bandHi;      // 50,000 — bottom of our family's band
 
-// ANECDOTAL reading of the frontier "today" (Jun 25) — evidence the cascade is
-// running well ahead of the published count, and the anchor for the AGGRESSIVE line.
-// The official Jun 23 frontier is only 12,916 (see T2_OBSERVATIONS), but frontline
-// reports run far hotter:
-//   Jun 22–23: one Tier 2 family went ~15–20k → 4–5k in a single afternoon;
-//     "ElegantTurkey" 10–15k → FUNDED; "Ty Hope" ~17k cleared ahead of them.
-//   Jun 25: a Tier 3 family reports being APPROVED — which can only happen once the
-//     frontier has passed Tier 3's start (20,383). That's the strongest signal yet
-//     that the real frontier is already ~20k+, ~7k ahead of the published count.
-// We plot the Tier 3 reach (20,383) as the anecdotal marker. Still UNOFFICIAL —
-// self-reported — and could include an appeal/SPED/sibling out-of-order case, so
-// always asterisked; but it's what the aggressive line follows.
-const EST_FRONTIER_TODAY = T2_AT_LOTTERY; // 20,383 — anecdotal Tier 3 reach, Jun 25
-
 // How the cascade frontier maps to "fuel": the frontier advances ~1 seat per family
 // that LEAVES an active award (opt-out or homeschool/$2,000 downgrade), plus the
 // one-time reserve when it releases. So a scenario's terminal frontier ≈
@@ -141,15 +125,6 @@ const EST_FRONTIER_TODAY = T2_AT_LOTTERY; // 20,383 — anecdotal Tier 3 reach, 
 // the first 7 weeks — mostly UNPUBLISHED downgrades (opt-outs alone are only ~3,000).
 // That observed pace is the anchor; the two scenarios below differ only in how high
 // total attrition climbs through the Jul 15 deadline.
-
-// Jun 10, 2026 Comptroller press release ("TEFA Pass 100,000-Student Milestone").
-const JUNE10_CASCADE = {
-  asOf: '2026-06-10',
-  t2Cascaded: 4100,               // "more than 4,100" newly awarded, all Tier 2
-  optOuts: 2000,                  // "about 2,000" cumulative opt-outs to date
-  grossAwardedApprox: 103828,
-  t2RemainingAfterCascade: 12966,
-};
 
 // Jun 23, 2026 Comptroller News & Updates ("More than 5,000 new awards issued to
 // waitlisted TEFA students"). 5,499 newly awarded, all Tier 2 — so the frontier
@@ -190,14 +165,12 @@ const T2_OBSERVATIONS = [
 //     active base). Quiet through the Jul 1–15 lull, a sharp SPIKE at the Jul 15
 //     deadline (reserve drops the same week), aggressive churn Jul 15–31, then a
 //     taper Aug 1–15. Terminal ≈ 24% × 107k + reserve ≈ 28,000 — just BELOW our band.
-//   AGGRESSIVE (extreme / opt-in collapse): follows the frontline "we got funded"
-//     reports — a Tier 3 family was already approved Jun 25, so this line hits Tier 3
-//     (20,383) TODAY. Quiet Jul 1–15, then a MASSIVE Jul 15–20 burst if the deadline
-//     reveals a mass no-show (lots of speculative awards never opted in / PreK/K
-//     families who can't find seats), high churn Jul 20–31, taper Aug 1–15. ~43%
-//     total churn — ABOVE any first-year program (historical range 14–34%) — + reserve
-//     ≈ 48,000, up into the deep end of our band. This is a low-probability CEILING,
-//     not a forecast; it only happens if Jul 15 opt-in take-up is very low.
+//   AGGRESSIVE (extreme / opt-in collapse): climbs gently through the Jul 1–15 lull,
+//     then a MASSIVE Jul 15–20 burst IF the deadline reveals a mass no-show (lots of
+//     speculative awards never opted in / PreK/K families who can't find seats), high
+//     churn Jul 20–31, taper Aug 1–15. ~43% total churn — ABOVE any first-year program
+//     (historical range 14–34%) — + reserve ≈ 48,000, up into the deep end of our band.
+//     A low-probability CEILING, not a forecast.
 // Both are SCENARIOS, not forecasts. After Aug 15 the big waves are done and each
 // line just drifts on small residual attrition.
 const REALISTIC = {
@@ -307,8 +280,6 @@ function buildCascadeProjection({
               : spline(Math.min(t, endT)) + Math.max(0, t - endT) * POST_DRIFT;
   };
 
-  const today = dayOf(win.today);
-
   // REALISTIC — quiet through the deadline, then the spike. Tier 2 finishes through
   // early July, Jul 1–15 is a lull, then the Jul 15 deadline + reserve drive a sharp
   // step, aggressive churn runs Jul 15–31, and it tapers Aug 1–15. Terminal =
@@ -323,19 +294,17 @@ function buildCascadeProjection({
     { t: wavesEnd, f: realTerminal },              // taper Aug 1–15 → just below our band
   ], wavesEnd);
 
-  // AGGRESSIVE (extreme / opt-in collapse) — tracks the frontline "we got funded"
-  // reports: a Tier 3 family was approved Jun 25, so this line hits Tier 3 (20,383)
-  // TODAY. It runs QUIET through Jul 1–15 (~15% of departures), then a MASSIVE Jul
-  // 15–20 burst (~50% — the deadline mass no-show + reserve), high churn Jul 20–31
-  // (~35%), tapering Aug 1–15. Terminal = churnRate × base + reserve (~48k, deep band).
-  // Only happens if Jul 15 opt-in take-up collapses — a low-probability ceiling.
+  // AGGRESSIVE (extreme / opt-in collapse) — climbs gently through the Jul 1–15 lull,
+  // then a MASSIVE Jul 15–20 burst (the deadline mass no-show + reserve), high churn
+  // Jul 20–31, tapering Aug 1–15. Terminal = churnRate × base + reserve (~48k, deep
+  // band). Only if Jul 15 opt-in take-up collapses — a low-probability ceiling.
   const aggTerminal = Math.round(aggressive.churnRate * awardedBase + aggressive.reserveSeats);
   const aggFn = buildLine([
     { t: tL, f: fL },                              // Jun 23 official anchor (12,916)
-    { t: today, f: T3_START },                     // hits Tier 3 TODAY (Jun 25) — frontline reports
-    { t: jul15, f: 23000 },                         // QUIET Jul 1–15 lull (~15% of departures)
-    { t: dayOf('2026-07-20'), f: 38000 },          // MASSIVE Jul 15–20 burst (~50% — deadline collapse + reserve)
-    { t: dayOf('2026-07-31'), f: 46500 },          // high churn Jul 20–31 (~35%)
+    { t: dayOf('2026-07-01'), f: 17500 },          // still clearing Tier 2
+    { t: jul15, f: 19500 },                         // QUIET Jul 1–15 lull
+    { t: dayOf('2026-07-20'), f: 36000 },          // MASSIVE Jul 15–20 burst (deadline collapse + reserve)
+    { t: dayOf('2026-07-31'), f: 46500 },          // high churn Jul 20–31
     { t: wavesEnd, f: aggTerminal },                // taper Aug 1–15 → deep band (~48k)
   ], wavesEnd);
 
@@ -994,8 +963,8 @@ const TefaView = () => {
           The chart tracks the <strong>cascade frontier</strong>: how far down the waitlist awards have reached.
           We show two scenarios — both sharing the confirmed <strong>$20M reserve</strong>: a{' '}
           <strong>realistic</strong> line built on other states' Year-1 attrition (~24%), which stops just short
-          of our band; and an <strong>aggressive</strong> line that follows the frontline reports — already at Tier 3
-          today — and assumes the Jul 15 opt-in deadline becomes a <em>mass no-show</em> (~43% of all awards given
+          of our band; and an <strong>aggressive</strong> line that
+          assumes the Jul 15 opt-in deadline becomes a <em>mass no-show</em> (~43% of all awards given
           up — <strong>above any first-year program on record</strong>). That's the only path into the deep end of
           our band (45–50k); treat it as a low-probability ceiling, not a forecast. When a line crosses a band's
           threshold, the cascade has reached that band.
@@ -1023,27 +992,11 @@ const TefaView = () => {
           </div>
         </div>
         <p className="text-[10px] text-tefa-body/50 mb-3 -mt-2">
-          <strong>Update — Jun 25, 2026 (budget confirmed).</strong> Comptroller spokesperson Travis Pillow answered directly
-          in the TEFA Facebook group with round numbers: <strong>~$910M to award this year</strong> (after ~$90M of admin,
-          startup and TEA transfers), <strong>~$890M already funded</strong> in active awards, and a <strong>~$20M reserve</strong>{' '}
-          remaining for outstanding appeals — awarded down to the waitlist once the appeal window closes. They hold active awards
-          at $890M by <strong>backfilling</strong> new batches as families opt out or bump to $2,000. This replaces our earlier
-          inferred ~$100M reserve: the reserve is small, so reaching our band now depends on July attrition, not a reserve release.
-        </p>
-        <p className="text-[10px] text-tefa-body/50 mb-3 -mt-1">
-          <strong>Update — Jun 23, 2026.</strong> The Comptroller's office confirmed <strong>{JUNE23_CASCADE.t2Cascaded.toLocaleString()} more
-          waitlisted students</strong> were awarded this week, all Tier 2 — funded by opt-outs and homeschool/other downgrades
-          (which cut each award to $2,000). That advances the official frontier to <strong>{k.frontierNow.toLocaleString()}</strong>
-          {' '}(from 7,417 on Jun 10) and brings the program to <strong>nearly 110,000 awarded</strong>, with{' '}
-          <strong>~{JUNE23_CASCADE.optOuts.toLocaleString()} opt-outs</strong> leaving nearly 107,000 active awards.
-        </p>
-        <p className="text-[10px] text-tefa-body/50 mb-3 -mt-1">
-          <strong>*</strong> The hollow pink dot marks an <strong>anecdotal Tier 3 reach</strong> ({EST_FRONTIER_TODAY.toLocaleString()}):
-          a Tier 3 family reports being <strong>approved Jun 25</strong>, which can only happen once the frontier passes Tier 3's start —
-          corroborated by Jun 22–23 frontline cases (one family's range moved ~15–20k → 4–5k in an afternoon; ~17k cleared ahead of another).
-          It sits well <em>above</em> the official {k.frontierNow.toLocaleString()}, so it isn't the base case — it's what the{' '}
-          <span className="text-tefa-red font-semibold">aggressive line</span> follows. Still unofficial (self-reported), and could be an
-          appeal/SPED/sibling out-of-order case, so asterisked.
+          <strong>As of Jun 25, 2026.</strong> The Jun 23 Comptroller update added <strong>{JUNE23_CASCADE.t2Cascaded.toLocaleString()} more
+          waitlisted students</strong> (all Tier 2), advancing the official frontier to <strong>{k.frontierNow.toLocaleString()}</strong> —
+          nearly 110,000 awarded, ~{JUNE23_CASCADE.optOuts.toLocaleString()} opt-outs, ~107,000 active. Per spokesperson Travis Pillow
+          (Jun 25), the program is essentially fully deployed — <strong>~$910M awardable, ~$890M already in active awards, ~$20M reserve</strong>{' '}
+          for appeals — so the waitlist now advances by <strong>backfill churn</strong> as families leave, not a big reserve release.
         </p>
         <div className="h-[340px]">
           <ResponsiveContainer width="100%" height="100%">
@@ -1071,18 +1024,12 @@ const TefaView = () => {
               <Line type="monotone" dataKey="realistic" name="Realistic (other-state attrition)" stroke="#202562" strokeWidth={2.5} dot={false} />
               <Line type="monotone" dataKey="aggressive" name="Aggressive (Jul 15 opt-in collapse)" stroke="#aa2142" strokeWidth={2.5} strokeDasharray="8 3" dot={false} />
               <Scatter dataKey="observed" name="Published data" fill="#202562" />
-              {/* Anecdotal frontline reading — hollow dot above the official line, supporting the aggressive+ path. */}
-              <ReferenceDot x={todayTs} y={EST_FRONTIER_TODAY} r={5} fill="#fff" stroke="#e8889b" strokeWidth={2} strokeDasharray="2 1.5"
-                  label={{ value: `Tier 3 reached* (anecdotal, Jun 25)`, position: 'right', fontSize: 9, fontWeight: 700, fill: '#aa2142' }} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
         <div className="text-[11px] text-tefa-body/60 bg-tefa-light rounded p-3 mt-3 space-y-1">
-          <div><strong>What's plotted.</strong> The frontier is derived from the published Tier 2 backlog (frontier = {T2_AT_LOTTERY.toLocaleString()} at-lottery − Tier 2 still queued): 0 on May 4 → {k.frontierNow.toLocaleString()} on {fmtChartDate(Date.parse(k.asOf))}. With the program fully deployed at $890M, the line ahead now advances by <strong>backfill</strong> — each opt-out or homeschool downgrade recycles roughly <strong>one new blended seat</strong> (a private opt-out frees $10,474 → ~1.2 seats; a downgrade frees $8,474 → ~1 seat), per the Comptroller holding active awards at $890M — so we measure progress in seats reached, not raw opt-outs.</div>
-          <div><strong>Realistic (other-state attrition).</strong> Tier 2 finishes through early July, then Jul 1–15 is <strong>quiet</strong>; the Jul 15 deadline + the confirmed <strong>~$20M reserve</strong> (~{RESERVE_SEATS.toLocaleString()} seats) drive a <strong>sharp spike</strong>, aggressive churn runs Jul 15–31, and it tapers Aug 1–15 — <strong>~24% total attrition</strong> (opt-outs + downgrades), the middle of the 14–34% Year-1 range seen in D.C., Milwaukee and Virginia. It settles around <strong>~{k.realisticTerminal.toLocaleString()}</strong> — just <em>short</em> of our band's bottom edge ({BAND_LO.toLocaleString()}).</div>
-          <div><strong>Aggressive (extreme / Jul 15 opt-in collapse — a ceiling, not a forecast).</strong> Follows the "we got funded" cases: with a Tier 3 family reportedly approved Jun 25, this line is already at <strong>Tier 3 today</strong>. It stays quiet Jul 1–15, then takes a <strong>massive Jul 15–20 burst</strong> if the deadline reveals a mass no-show (speculative awards never opted in / PreK/K families who can't find seats), high churn Jul 20–31, tapering after. That's <strong>~43% total attrition — above any first-year program (the historical range is 14–34%)</strong>, so treat it as a low-probability ceiling. It would reach our band by ~{fmtChartDate(k.aggressiveBandLoTs)} and settle deep, around <strong>~{k.aggressiveTerminal.toLocaleString()}</strong> — the only way the cascade gets into the 45–50k end of our band.</div>
-          <div><strong>After Aug 15 — small attrition only.</strong> The big mechanisms (Tier 2 clear, the Jul 15 shakeout + reserve) are done by mid-August. After that both lines carry only a slow ~{POST_DRIFT}/day residual trickle as a few more families drop — not another wave.</div>
-          <div><strong>Watch — the Jul 15 deadline + reserve release.</strong> Families awarded in early rounds who don't opt in by Jul 15 are "moved aside to allow other families to come off the waitlist" (Travis Pillow). That deadline shakeout — plus the ~$20M reserve awarded once appeals finalize — is the single event that decides whether the cascade reaches our band. It lands <em>after</em> the Jun 30 penalty-free withdrawal deadline.</div>
+          <div><strong>Realistic vs. aggressive.</strong> The frontier (= {T2_AT_LOTTERY.toLocaleString()} at-lottery − Tier 2 still queued) has reached {k.frontierNow.toLocaleString()}, advancing by <strong>backfill churn</strong> as awarded families leave. The <strong>realistic</strong> line uses ~24% total attrition (mid of the 14–34% Year-1 range in D.C., Milwaukee and Virginia) and settles ~<strong>{k.realisticTerminal.toLocaleString()}</strong>, just short of our band ({BAND_LO.toLocaleString()}). The <strong>aggressive</strong> line is a ceiling, not a forecast: only a Jul 15 opt-in collapse (~43% attrition, above any first-year program) would reach the 45–50k end of our band, around ~{k.aggressiveTerminal.toLocaleString()}.</div>
+          <div><strong>Watch — the Jul 15 deadline.</strong> Families who don't opt in by Jul 15 are "moved aside to allow other families to come off the waitlist" (Travis Pillow). That shakeout — plus the ~$20M reserve awarded once appeals finalize — is the single event that decides whether the cascade reaches our band, and it lands <em>after</em> the Jun 30 penalty-free withdrawal deadline.</div>
         </div>
       </section>
     </div>
