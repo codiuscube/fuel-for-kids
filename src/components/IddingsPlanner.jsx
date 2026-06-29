@@ -89,38 +89,41 @@ const YOUR_POS = { lo: 45000, hi: 50000 };
 const TEFA_BUDGET = {
   awardable: 910_000_000,    // after admin/startup/TEA (~$90M off the $1B)
   fundedActive: 890_000_000, // active awards, held here via backfill
-  reserve: 20_000_000,       // remaining, for appeals; cascades to waitlist after appeal window
+  reserve: 20_000_000,       // total reserve pot (appeals + waitlist), one pot
+  reserveNet: 16_000_000,    // ~$16M left after appeals are mostly paid → cascades to waitlist
   // New T2/T3 seat = blend of private ESA (~$10,474) and homeschool/other ($2,000).
   // Mix updated to 67/33 (was 77/23) — homeschool share has climbed 23%→~33% of
   // active awards as private families bump down via the $2,000 downgrade.
   blendedCost: Math.round(0.67 * 10474 + 0.33 * 2000), // ~7,678 (67/33 private/homeschool)
   source: 'Travis Pillow, Comptroller spokesperson — Jun 25, 2026',
 };
-// Seats the remaining reserve can fund once appeals close (~$20M ÷ ~$7,678).
-const RESERVE_SEATS = Math.round(TEFA_BUDGET.reserve / TEFA_BUDGET.blendedCost); // ~2,605
+// Seats the reserve funds once appeals close — NET of appeals (~$16M ÷ ~$7,678).
+const RESERVE_SEATS = Math.round(TEFA_BUDGET.reserveNet / TEFA_BUDGET.blendedCost); // ~2,084
 // Active awards that can churn — the population that frees seats when it leaves.
 const ACTIVE_AWARDS = 107000; // "nearly 107,000 active" (Jun 23 update)
 
 // ---------------------------------------------------------------------------
-// Seats per departure. Empirically the cascade has advanced ~1 seat per family
-// that leaves (12,916 frontier on ~12,900 Jun-23 departures ≈ 1:1). But the two
-// departure types free DIFFERENT amounts: a private opt-out frees its full ESA
+// Funded seats per departure — the DOLLAR mechanics that turn an active family's
+// departure into a funded waitlist seat. A private opt-out frees its full ESA
 // (~$10,474); a downgrade to the $2,000 tier frees only the difference (~$8,474).
-// So a departure mix that skews toward OPT-OUTS recycles more dollars — hence more
-// seats — per departure. We scale each scenario's seats-per-departure by how much
-// its mix frees vs. the observed Jun-23 mix. The new-seat blended cost cancels in
-// the ratio, so this is driven purely by the opt-out : downgrade split, and stays
-// pinned to the observed ~1:1 at today's mix (no kink vs. the published anchor).
+// Each new funded seat costs the blended ~$7,678. So seats-per-departure =
+// dollars-freed ÷ blended-cost, and the opt-out : downgrade split is the lever:
+// the OBSERVED mix is downgrade-heavy (2.8% : 9.3% = 23.1% opt-out share) →
+// ~$8,937 freed ÷ $7,678 ≈ 1.16 seats/departure. An opt-out-heavy mix climbs toward
+// 1.36 (full ESA). We DEFAULT to the conservative observed split, exposed as a lever.
+// NOTE: never-activation does NOT appear here — a waitlist family declining frees NO
+// new dollars, it just passes the SAME dollars to the next person. That is a reach
+// STRETCH on the offer frontier (see NEVER_ACTIVATION), never a funding source.
 const FREED_OPTOUT = 10474;       // private opt-out frees the full ESA
 const FREED_DOWNGRADE = 8474;     // bump to $2,000 frees the difference ($10,474 − $2,000)
 const OBS_OPTOUT_RATE = 0.028;    // ~3,000 opt-outs / ~107k active (Jun 23)
 const OBS_DOWNGRADE_RATE = 0.093; // ~9,900 downgrades / ~107k active (frontier − opt-outs)
+const OBS_OPTOUT_SHARE = OBS_OPTOUT_RATE / (OBS_OPTOUT_RATE + OBS_DOWNGRADE_RATE); // 0.231
 const avgFreedPerDeparture = (optOut, downgrade) =>
   (optOut * FREED_OPTOUT + downgrade * FREED_DOWNGRADE) / (optOut + downgrade);
-const OBS_AVG_FREED = avgFreedPerDeparture(OBS_OPTOUT_RATE, OBS_DOWNGRADE_RATE);
-// Seats per departure, normalized to the observed ~1:1 baseline.
+// Funded seats per departure = dollars freed ÷ blended new-seat cost (~1.16 at obs mix).
 const seatsPerDeparture = (optOut, downgrade) =>
-  avgFreedPerDeparture(optOut, downgrade) / OBS_AVG_FREED;
+  avgFreedPerDeparture(optOut, downgrade) / TEFA_BUDGET.blendedCost;
 
 // ---------------------------------------------------------------------------
 // TEFA cascade frontier — how deep the waitlist has been funded, vs. three
@@ -194,52 +197,46 @@ const T2_OBSERVATIONS = [
   { date: '2026-06-23', t2Remaining: 7467 },  // after 5,499 more cascade awards (Jun 23 update) → frontier 12,916
 ];
 
-// Three scenarios, anchored on the DEFENSIBLE never-activation evidence (Jun 2026
-// research adjudication) STACKED with the separately-observed Texas churn. Two
-// distinct, non-overlapping mechanisms advance the waitlist, so they ADD:
-//   (1) NEVER-ACTIVATION — awarded families who never fund/activate. Primary-source
-//       range from the Florida Auditor General audits: Step Up FES-UA 16.05%
-//       never-disbursed (floor), AAA 25.68% (ceiling), NYC SCSF ~20% Year-1
-//       never-use at center. These free the FULL ESA (~$10,474).
-//   (2) DOWNGRADE / OPT-OUT — families who DID activate, then bump to $2,000 or
-//       leave. Directly MEASURED in the Texas cascade data: ~9.3% downgrades +
-//       ~2.8% opt-outs ≈ 12% already by Jun 23, the published frontier (12,916).
-// These don't overlap (downgraders activated; never-activators didn't), so total
-// Year-1 churn = never-activation + downgrade/opt-out ≈ 29–41%. This is NOT the
-// discarded Doc-3 28–37% (which mis-counted dollar-rollover as decline) — it's two
-// MEASURED mechanisms added. The reserve is the FULL $20M appeal+waitlist pot
-// (~2,605 seats), cascading to the waitlist once the appeal window closes.
-// seats-per-departure lifts only mildly (~1.08, NOT a 3–5× multiplier) because
-// never-activations free the full ESA — consistent with the confirmed ~1:1 cascade.
-//   RESEARCH (floor, ~29% = 16% never-activation + ~13% downgrade/opt-out):
-//     Terminal ≈ 35,900 — reaches the band start (30k), short of our 45k.
-//   REALISTIC / "likely" (central, ~34% = 20% + ~14%): a SPIKE at the Jul 15 deadline
-//     (reserve drops the same week), churn Jul 15–31, taper. Terminal ≈ 41,900 — ~3k
-//     short of our 45k seat.
-//   AGGRESSIVE (ceiling, ~41% = 25% + ~16%): deadline burst + reserve, taper.
-//     Terminal ≈ 50,200 — COVERS our 45–50k seat. A live high-end possibility.
-// All three are SCENARIOS, not forecasts; after Aug 15 each drifts on small residual
-// attrition. Reaching 45k needs ~36% total churn, 50k ~40% — now WITHIN the stacked
-// 29–41% range, so our seat is reachable at the upper end (no longer a long shot).
+// NEVER-ACTIVATION STRETCH. A waitlisted family that's awarded but never activates frees
+// NO new money — the same dollars pass to the next person. So never-activation does not
+// fund anyone; it only stretches how far OFFERS travel down the list:
+//   funded frontier = real fuel ÷ seat cost           (the hard money limit)
+//   offer  frontier = funded ÷ (1 − NEVER_ACTIVATION)  (the stretch — offers reach decliners too)
+// Florida Auditor General audits put waitlist never-activation at 16–25% (FES-UA 16%, AAA
+// 26%, NYC SCSF ~20% center). We fix it at 20% — a STRETCH factor, not a sampled source.
+// Your 45–50k seat needs the FUNDED line; an offer only helps if money is still there when
+// you accept, so the funded frontier is the real bound and the offer line is the optimistic edge.
+const NEVER_ACTIVATION = 0.20;    // 20% waitlist decline → offer frontier = funded ÷ 0.80 (×1.25 stretch)
+
+// Three scenarios, driven by the ONLY thing that actually funds seats: ACTIVE CHURN — the
+// rate at which already-active families opt out or downgrade to $2,000, freeing real dollars
+// (plus the net reserve). Never-activation is layered on top as the stretch above; it is NOT
+// a source. Observed active churn is ~12% at 7 weeks (2.8% opt-out + 9.3% downgrade), pre-cliff.
+//   RESEARCH (floor, 16% active churn): today's pace barely climbing. Funded ≈ 22,000.
+//   REALISTIC / "likely" (central, 25%): the Jul 15 cliff + reserve drive the bulk.
+//     Funded ≈ 33,200, offer ≈ 41,500 — both SHORT of our 45k.
+//   AGGRESSIVE (ceiling, 35%): the most active churn any first-year program has shown.
+//     Funded ≈ 45,700 — only here does FUNDED money reach our 45k seat.
+// optOutRate is held at the observed 23.1% share of churn (downgrade-heavy → ~1.16
+// seats/departure); a higher share lifts the funded line (the second lever). All three are
+// SCENARIOS, not forecasts; after Aug 15 each drifts on small residual churn.
 const REALISTIC = {
-  churnRate: 0.34,                // total = ~20% never-activation (central) + ~14% downgrade/opt-out
-  optOutRate: 0.20,              // full-ESA-freeing share ≈ the never-activation rate (Doc 4/5 central)
-  reserveSeats: RESERVE_SEATS,    // FULL $20M appeal+waitlist reserve (~2,605 seats)
+  churnRate: 0.25,                // ACTIVE churn (opt-out + downgrade) — central read
+  optOutRate: 0.058,             // 23.1% of churn opts out (observed split) → ~1.16 seats/departure
+  reserveSeats: RESERVE_SEATS,    // net $16M-after-appeals reserve (~2,084 seats)
 };
 
 const AGGRESSIVE = {
-  churnRate: 0.41,                // CEILING — ~25% never-activation (Florida AAA) + ~16% downgrade/opt-out
-  optOutRate: 0.25,              // full-ESA-freeing share ≈ Florida AAA never-disbursement
+  churnRate: 0.35,                // ACTIVE churn ceiling — beyond any first-year program on record
+  optOutRate: 0.081,             // 23.1% of churn (observed split)
   reserveSeats: RESERVE_SEATS,
 };
 
-// RESEARCH — the FLOOR: ~16% never-activation (Florida Step Up FES-UA, 15,513 of
-// 96,660) + ~13% observed downgrade/opt-out ≈ 29% total. Even this floor now reaches
-// the band start (~35,900), because the measured downgrade churn is STACKED on the
-// never-activation evidence rather than ignored.
+// RESEARCH — the FLOOR: 16% active churn (a little above today's ~12% pace). Funded ≈ 22,000,
+// far short of the band; the never-activation stretch lifts the offer to ~27,500, still short.
 const RESEARCH = {
-  churnRate: 0.29,               // total = ~16% never-activation (floor) + ~13% downgrade/opt-out
-  optOutRate: 0.16,              // full-ESA-freeing share ≈ the FES-UA never-disbursement floor
+  churnRate: 0.16,               // ACTIVE churn floor
+  optOutRate: 0.037,             // 23.1% of churn (observed split)
   reserveSeats: RESERVE_SEATS,
 };
 
@@ -341,14 +338,14 @@ function buildCascadeProjection({
               : spline(Math.min(t, endT)) + Math.max(0, t - endT) * POST_DRIFT;
   };
 
-  // REALISTIC — quiet through the deadline, then the spike. Tier 2 finishes through
-  // early July, Jul 1–15 is a lull, then the Jul 15 deadline + reserve drive a sharp
-  // step, aggressive churn runs Jul 15–31, and it tapers Aug 1–15. Terminal =
-  // churnRate × base + reserve (~28k, just below our band).
-  // Terminal frontier = departures × seats-per-departure (opt-out-heavy mixes free
-  // more $, so reach deeper) + the one-time reserve seats.
+  // FUNDED frontier — the hard money limit. = active-churn departures × seats-per-departure
+  // (dollars freed ÷ blended cost) + net reserve seats. The deepest waitlist position real
+  // money reaches. Never-activation does NOT enter here — decliners free no new money.
   const terminalSeats = (s) =>
     Math.round(s.churnRate * awardedBase * seatsPerDeparture(s.optOutRate, s.churnRate - s.optOutRate) + s.reserveSeats);
+  // OFFER frontier — the stretch. Offers pass decliners to the next person, reaching
+  // funded ÷ (1 − never-activation) deep. An offer only funds you if money survives to you.
+  const offerSeats = (s) => Math.round(terminalSeats(s) / (1 - NEVER_ACTIVATION));
 
   // Default-shape terminals from the module scenarios. The waypoint heights below are
   // the hand-tuned DEFAULT curves (lull → Jul-15 step → taper). When a scenario's
@@ -373,37 +370,37 @@ function buildCascadeProjection({
   // REALISTIC (the fixed "likely" anchor) — quiet through the deadline, then the spike.
   const real_ = fitLine([
     { t: tL, f: fL },                              // Jun 23 anchor (12,916)
-    { t: dayOf('2026-07-01'), f: 17000 },          // Tier 2 still clearing
-    { t: jul15, f: 21000 },                        // QUIET Jul 1–15 lull
-    { t: dayOf('2026-07-17'), f: 21000 + RESERVE_SEATS }, // SPIKE: reserve + deadline shakeout
-    { t: dayOf('2026-07-31'), f: 35500 },          // deadline churn Jul 15–31
-    { t: wavesEnd, f: defRealT },                  // taper Aug 1–15 → ~3k short of our 45k
+    { t: dayOf('2026-07-01'), f: 16000 },          // Tier 2 still clearing
+    { t: jul15, f: 19000 },                        // QUIET Jul 1–15 lull
+    { t: dayOf('2026-07-17'), f: 19000 + RESERVE_SEATS }, // SPIKE: net reserve + deadline shakeout
+    { t: dayOf('2026-07-31'), f: 30000 },          // deadline churn Jul 15–31
+    { t: wavesEnd, f: defRealT },                  // taper Aug 1–15 → central FUNDED ~33k, short of 45k
   ], defRealT, realistic);
   const realFn = real_.fn, realTerminal = real_.terminal;
 
-  // AGGRESSIVE (the "max" line, ~25% never-activation ceiling) — through the anecdotal
+  // AGGRESSIVE (the "max" funded line, 35% active churn ceiling) — through the anecdotal
   // frontline dots (~15k Jun 25, ~20k Jul 1), a lull to Jul 15, a Jul 15–20 deadline
-  // burst (no-show never-activations + reserve), churn Jul 20–31, tapering Aug 1–15.
+  // burst (active opt-outs/downgrades + reserve), churn Jul 20–31, tapering Aug 1–15.
   const agg_ = fitLine([
     { t: tL, f: fL },                              // Jun 23 official anchor (12,916)
     ...AGG_DOTS.map((d) => ({ t: dayOf(d.date), f: d.f })), // anecdotal hollow-dot anchors
     { t: jul15, f: 24000 },                        // QUIET Jul 1–15 lull
-    { t: dayOf('2026-07-20'), f: 37000 },          // Jul 15–20 deadline burst (no-shows + reserve)
-    { t: dayOf('2026-07-31'), f: 46500 },          // high churn Jul 20–31
-    { t: wavesEnd, f: defAggT },                   // taper Aug 1–15 → covers our 45–50k seat
+    { t: dayOf('2026-07-20'), f: 33000 },          // Jul 15–20 deadline burst (active churn + reserve)
+    { t: dayOf('2026-07-31'), f: 42000 },          // high churn Jul 20–31
+    { t: wavesEnd, f: defAggT },                   // taper Aug 1–15 → FUNDED just reaches our 45k
   ], defAggT, aggressive);
   const aggFn = agg_.fn, aggTerminal = agg_.terminal;
 
-  // RESEARCH (the "min" line, ~16% never-activation floor) — quiet Tier-2 clearing, a
-  // modest Jul 15 reserve/deadline bump, then a gentle taper. At ~16% it barely clears
-  // Tier 2 — the published cascade already sits near the low end of the defensible range.
+  // RESEARCH (the "min" funded line, 16% active churn floor) — quiet Tier-2 clearing, a
+  // modest Jul 15 reserve/deadline bump, then a gentle taper. At 16% active churn the
+  // funded frontier stalls ~22k, far short of the band.
   const research_ = fitLine([
     { t: tL, f: fL },                              // Jun 23 official anchor (12,916)
-    { t: dayOf('2026-07-01'), f: 16000 },          // slow Tier 2 clearing
-    { t: jul15, f: 19000 },                        // QUIET Jul 1–15 lull
-    { t: dayOf('2026-07-17'), f: 19000 + RESERVE_SEATS }, // reserve + small deadline bump
-    { t: dayOf('2026-07-31'), f: 30500 },          // modest churn Jul 15–31
-    { t: wavesEnd, f: defResearchT },              // taper Aug 1–15 → reaches band start
+    { t: dayOf('2026-07-01'), f: 14500 },          // slow Tier 2 clearing
+    { t: jul15, f: 16500 },                        // QUIET Jul 1–15 lull
+    { t: dayOf('2026-07-17'), f: 16500 + RESERVE_SEATS }, // net reserve + small deadline bump
+    { t: dayOf('2026-07-31'), f: 21000 },          // modest churn Jul 15–31
+    { t: wavesEnd, f: defResearchT },              // taper Aug 1–15 → funded stalls ~22k
   ], defResearchT, research);
   const researchFn = research_.fn, researchTerminal = research_.terminal;
 
@@ -423,6 +420,9 @@ function buildCascadeProjection({
       row.realistic = Math.max(Math.round(realFn(t)), row.research);
       // Aggressive is by definition ≥ realistic; clamp away sub-100-seat spline crossings.
       row.aggressive = Math.max(Math.round(aggFn(t)), row.realistic);
+      // OFFER frontiers — the stretch (÷(1−never-activation)); dashed companions to the funded lines.
+      row.realisticOffer = Math.round(row.realistic / (1 - NEVER_ACTIVATION));
+      row.aggressiveOffer = Math.round(row.aggressive / (1 - NEVER_ACTIVATION));
     }
     series.push(row);
   }
@@ -430,11 +430,14 @@ function buildCascadeProjection({
   // Frontier reached at the dates the table below the chart reports.
   const TABLE_DATES = ['2026-07-01', '2026-07-15', '2026-07-20', '2026-07-31', '2026-08-15', '2026-08-31'];
   const sampleAt = (fn) => TABLE_DATES.map((d) => Math.round(fn(dayOf(d))));
+  const offerAt = (fn) => TABLE_DATES.map((d) => Math.round(fn(dayOf(d)) / (1 - NEVER_ACTIVATION)));
   const projectionTable = {
     dates: TABLE_DATES,
     aggressive: sampleAt(aggFn),
     conservative: sampleAt(realFn),
     research: sampleAt(researchFn),
+    aggressiveOffer: offerAt(aggFn),
+    conservativeOffer: offerAt(realFn),
   };
 
   const kpis = {
@@ -461,6 +464,13 @@ function buildCascadeProjection({
     aggressiveBandHiTs: crossTs(aggFn, BAND_HI),
     realisticYourPosTs: crossTs(realFn, YOUR_POS.lo),
     aggressiveYourPosTs: crossTs(aggFn, YOUR_POS.lo),
+    realisticOfferYourPosTs: crossTs((t) => realFn(t) / (1 - NEVER_ACTIVATION), YOUR_POS.lo),
+    aggressiveOfferYourPosTs: crossTs((t) => aggFn(t) / (1 - NEVER_ACTIVATION), YOUR_POS.lo),
+    neverActivationPct: Math.round(NEVER_ACTIVATION * 100),
+    freedRatio: +seatsPerDeparture(realistic.optOutRate, realistic.churnRate - realistic.optOutRate).toFixed(2),
+    researchOffer: offerSeats(research),
+    realisticOffer: offerSeats(realistic),
+    aggressiveOffer: offerSeats(aggressive),
   };
   return { series, kpis };
 }
