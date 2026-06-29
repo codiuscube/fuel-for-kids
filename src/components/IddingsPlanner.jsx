@@ -194,49 +194,52 @@ const T2_OBSERVATIONS = [
   { date: '2026-06-23', t2Remaining: 7467 },  // after 5,499 more cascade awards (Jun 23 update) → frontier 12,916
 ];
 
-// Three scenarios, all re-anchored on the DEFENSIBLE never-activation evidence
-// (Jun 2026 research adjudication). The decline that advances the waitlist is a
-// Year-1 NEVER-ACTIVATION rate — awarded families who never fund/activate — NOT
-// multi-year enrolled-family attrition. The clean primary-source range is the
-// Florida Auditor General audits: Step Up FES-UA 16.05% never-disbursed (floor),
-// AAA 25.68% (ceiling), with NYC SCSF ~20% Year-1 never-use converging on the
-// center. This RETIRES the old D.C.-anchored 14–34% framing and the speculative
-// 43% "opt-in collapse" ceiling (the 38% figure traced to D.C. OSP multi-year
-// attrition — the wrong kind of number). Each scenario's seats-per-departure stays
-// pinned to the CONFIRMED ~1:1 cascade (Pillow Jun 25) — no 3–5× homeschool-mix
-// multiplier, which the observed data does not support. churnRate is taken as the
-// total Year-1 attrition BOUND from the never-activation evidence (downgrades are
-// not stacked on top — that is how the old model inflated to an indefensible 43%).
-//   RESEARCH (floor, ~16%): Florida FES-UA never-disbursement. Quiet Tier-2 clearing,
-//     a small Jul 15 reserve/deadline bump, gentle taper. Terminal ≈ 19,800.
-//   REALISTIC / "likely" (central, ~20%): the Doc 4/5 convergence (NYC SCSF Year-1
-//     never-use + Florida structure). Quiet Jul 1–15 lull, a SPIKE at the Jul 15
-//     deadline (reserve drops the same week), churn Jul 15–31, taper. Terminal ≈ 24,100.
-//   AGGRESSIVE (ceiling, ~25%): Florida AAA never-disbursement — the defensible upper
-//     bound, NOT a collapse scenario. Deadline burst + reserve, taper. Terminal ≈ 29,650.
-// NOTE: even the aggressive ceiling (~29,650) stops ~just shy of the band's top edge
-// (30,001) — ~15–20k short of our 45–50k position. Reaching us would require ~38–43%
-// attrition, well beyond the documented 16–25% never-activation range. All three are
-// SCENARIOS, not forecasts; after Aug 15 each drifts on small residual attrition.
+// Three scenarios, anchored on the DEFENSIBLE never-activation evidence (Jun 2026
+// research adjudication) STACKED with the separately-observed Texas churn. Two
+// distinct, non-overlapping mechanisms advance the waitlist, so they ADD:
+//   (1) NEVER-ACTIVATION — awarded families who never fund/activate. Primary-source
+//       range from the Florida Auditor General audits: Step Up FES-UA 16.05%
+//       never-disbursed (floor), AAA 25.68% (ceiling), NYC SCSF ~20% Year-1
+//       never-use at center. These free the FULL ESA (~$10,474).
+//   (2) DOWNGRADE / OPT-OUT — families who DID activate, then bump to $2,000 or
+//       leave. Directly MEASURED in the Texas cascade data: ~9.3% downgrades +
+//       ~2.8% opt-outs ≈ 12% already by Jun 23, the published frontier (12,916).
+// These don't overlap (downgraders activated; never-activators didn't), so total
+// Year-1 churn = never-activation + downgrade/opt-out ≈ 29–41%. This is NOT the
+// discarded Doc-3 28–37% (which mis-counted dollar-rollover as decline) — it's two
+// MEASURED mechanisms added. The reserve is the FULL $20M appeal+waitlist pot
+// (~2,605 seats), cascading to the waitlist once the appeal window closes.
+// seats-per-departure lifts only mildly (~1.08, NOT a 3–5× multiplier) because
+// never-activations free the full ESA — consistent with the confirmed ~1:1 cascade.
+//   RESEARCH (floor, ~29% = 16% never-activation + ~13% downgrade/opt-out):
+//     Terminal ≈ 35,900 — reaches the band start (30k), short of our 45k.
+//   REALISTIC / "likely" (central, ~34% = 20% + ~14%): a SPIKE at the Jul 15 deadline
+//     (reserve drops the same week), churn Jul 15–31, taper. Terminal ≈ 41,900 — ~3k
+//     short of our 45k seat.
+//   AGGRESSIVE (ceiling, ~41% = 25% + ~16%): deadline burst + reserve, taper.
+//     Terminal ≈ 50,200 — COVERS our 45–50k seat. A live high-end possibility.
+// All three are SCENARIOS, not forecasts; after Aug 15 each drifts on small residual
+// attrition. Reaching 45k needs ~36% total churn, 50k ~40% — now WITHIN the stacked
+// 29–41% range, so our seat is reachable at the upper end (no longer a long shot).
 const REALISTIC = {
-  churnRate: 0.20,                // central — Doc 4/5 convergence (NYC SCSF ~20% Year-1 never-use)
-  optOutRate: 0.05,              // never-activations free the full ESA (opt-out-like); rest bump to $2,000
-  reserveSeats: RESERVE_SEATS,    // confirmed ~$20M reserve (~2,605 seats)
+  churnRate: 0.34,                // total = ~20% never-activation (central) + ~14% downgrade/opt-out
+  optOutRate: 0.20,              // full-ESA-freeing share ≈ the never-activation rate (Doc 4/5 central)
+  reserveSeats: RESERVE_SEATS,    // FULL $20M appeal+waitlist reserve (~2,605 seats)
 };
 
 const AGGRESSIVE = {
-  churnRate: 0.25,                // defensible CEILING — Florida AAA 25.68% never-disbursed (NOT an opt-in collapse)
-  optOutRate: 0.07,              // slightly opt-out-heavier deadline shakeout
+  churnRate: 0.41,                // CEILING — ~25% never-activation (Florida AAA) + ~16% downgrade/opt-out
+  optOutRate: 0.25,              // full-ESA-freeing share ≈ Florida AAA never-disbursement
   reserveSeats: RESERVE_SEATS,
 };
 
-// RESEARCH — the never-activation FLOOR, Florida Step Up FES-UA 16.05% never-disbursed
-// (15,513 of 96,660). Quiet Tier-2 clearing, then a gentle taper. At ~16% it barely
-// clears Tier 2 — showing the published cascade already sits near the low end of the
-// defensible range, with little headroom below.
+// RESEARCH — the FLOOR: ~16% never-activation (Florida Step Up FES-UA, 15,513 of
+// 96,660) + ~13% observed downgrade/opt-out ≈ 29% total. Even this floor now reaches
+// the band start (~35,900), because the measured downgrade churn is STACKED on the
+// never-activation evidence rather than ignored.
 const RESEARCH = {
-  churnRate: 0.16,               // Florida FES-UA never-disbursement floor (audit)
-  optOutRate: 0.04,              // never-activations free full ESA; rest is $2,000 downgrades
+  churnRate: 0.29,               // total = ~16% never-activation (floor) + ~13% downgrade/opt-out
+  optOutRate: 0.16,              // full-ESA-freeing share ≈ the FES-UA never-disbursement floor
   reserveSeats: RESERVE_SEATS,
 };
 
@@ -370,11 +373,11 @@ function buildCascadeProjection({
   // REALISTIC (the fixed "likely" anchor) — quiet through the deadline, then the spike.
   const real_ = fitLine([
     { t: tL, f: fL },                              // Jun 23 anchor (12,916)
-    { t: dayOf('2026-07-01'), f: 16500 },          // Tier 2 still clearing
-    { t: jul15, f: 18800 },                        // QUIET Jul 1–15 lull (~165/day)
-    { t: dayOf('2026-07-17'), f: 18800 + RESERVE_SEATS }, // SPIKE: reserve + deadline shakeout
-    { t: dayOf('2026-07-31'), f: 23000 },          // deadline churn Jul 15–31
-    { t: wavesEnd, f: defRealT },                  // taper Aug 1–15 → just below our band
+    { t: dayOf('2026-07-01'), f: 17000 },          // Tier 2 still clearing
+    { t: jul15, f: 21000 },                        // QUIET Jul 1–15 lull
+    { t: dayOf('2026-07-17'), f: 21000 + RESERVE_SEATS }, // SPIKE: reserve + deadline shakeout
+    { t: dayOf('2026-07-31'), f: 35500 },          // deadline churn Jul 15–31
+    { t: wavesEnd, f: defRealT },                  // taper Aug 1–15 → ~3k short of our 45k
   ], defRealT, realistic);
   const realFn = real_.fn, realTerminal = real_.terminal;
 
@@ -384,10 +387,10 @@ function buildCascadeProjection({
   const agg_ = fitLine([
     { t: tL, f: fL },                              // Jun 23 official anchor (12,916)
     ...AGG_DOTS.map((d) => ({ t: dayOf(d.date), f: d.f })), // anecdotal hollow-dot anchors
-    { t: jul15, f: 22000 },                        // QUIET Jul 1–15 lull
-    { t: dayOf('2026-07-20'), f: 26000 },          // Jul 15–20 deadline burst (no-shows + reserve)
-    { t: dayOf('2026-07-31'), f: 28800 },          // high churn Jul 20–31
-    { t: wavesEnd, f: defAggT },                   // taper Aug 1–15 → band top edge
+    { t: jul15, f: 24000 },                        // QUIET Jul 1–15 lull
+    { t: dayOf('2026-07-20'), f: 37000 },          // Jul 15–20 deadline burst (no-shows + reserve)
+    { t: dayOf('2026-07-31'), f: 46500 },          // high churn Jul 20–31
+    { t: wavesEnd, f: defAggT },                   // taper Aug 1–15 → covers our 45–50k seat
   ], defAggT, aggressive);
   const aggFn = agg_.fn, aggTerminal = agg_.terminal;
 
@@ -396,11 +399,11 @@ function buildCascadeProjection({
   // Tier 2 — the published cascade already sits near the low end of the defensible range.
   const research_ = fitLine([
     { t: tL, f: fL },                              // Jun 23 official anchor (12,916)
-    { t: dayOf('2026-07-01'), f: 14000 },          // slow Tier 2 clearing
-    { t: jul15, f: 15200 },                        // QUIET Jul 1–15 lull
-    { t: dayOf('2026-07-17'), f: 15200 + RESERVE_SEATS }, // reserve + small deadline bump
-    { t: dayOf('2026-07-31'), f: 18400 },          // modest churn Jul 15–31
-    { t: wavesEnd, f: defResearchT },              // taper Aug 1–15
+    { t: dayOf('2026-07-01'), f: 16000 },          // slow Tier 2 clearing
+    { t: jul15, f: 19000 },                        // QUIET Jul 1–15 lull
+    { t: dayOf('2026-07-17'), f: 19000 + RESERVE_SEATS }, // reserve + small deadline bump
+    { t: dayOf('2026-07-31'), f: 30500 },          // modest churn Jul 15–31
+    { t: wavesEnd, f: defResearchT },              // taper Aug 1–15 → reaches band start
   ], defResearchT, research);
   const researchFn = research_.fn, researchTerminal = research_.terminal;
 
@@ -491,24 +494,24 @@ const BAND_OUTLOOK = [
   {
     band: '25,001 – 30,000',
     scope: 'mid Tier 3',
-    call: 'Possible',
-    tone: 'mid',
-    note: 'Past the $20M reserve — getting here needs ~21–25% never-activation, the central-to-ceiling of the defensible 16–25% range. The central scenario reaches ~24k and the ~25% ceiling ~29.6k, so this band is reachable but not assured.',
+    call: 'Likely',
+    tone: 'good',
+    note: 'Reached by all three scenarios — even the floor (~29% total churn) lands ~35.9k. Funded as never-activation (Jul 15 no-shows) plus the measured downgrade/opt-out churn recycles through Jul–Aug, on top of the $20M reserve.',
   },
   {
     band: '30,001 – 50,000',
     scope: 'YOUR BAND · you sit at 45–50k',
-    call: 'Unlikely — needs record attrition',
-    tone: 'bad',
+    call: 'Possible at the high end',
+    tone: 'mid',
     ourBand: true,
-    note: 'Our original lottery position is the DEEP end (45–50k), and the chart plots original position — so the frontier has to climb all the way there to fund us. Reaching 45k needs ~38% of all awards given up; 50k needs ~43% — well ABOVE the defensible Year-1 never-activation range (16–25%, Florida Auditor General audits). Central attrition stops ~24k and even the ~25% ceiling stops ~29.6k — short of the band\'s top edge (30,001), ~15–20k short of us. No scenario on the documented evidence reaches our seat in the Jul 15 wave; only continued multi-cycle churn could. Plan on no voucher.',
+    note: 'Our original lottery position is the DEEP end (45–50k), and the chart plots original position. Reaching 45k needs ~36% total churn, 50k ~40% — now WITHIN the stacked 29–41% range (never-activation 16–25% from the Florida audits, PLUS the measured Texas downgrade/opt-out churn ~12–16%). The central scenario reaches ~41.9k — ~3k short of our 45k — and the ~41% ceiling reaches ~50.2k, covering 45–50k. Our seat is a live possibility at the upper end, decided by the Jul 15 deadline shakeout. Real hope now, but still plan as if no voucher.',
   },
   {
     band: '50,001 +',
     scope: 'deep Tier 3 / Tier 4',
     call: 'Not expected',
     tone: 'bad',
-    note: 'No defensible scenario reaches here in Year 1 — even the ~25% never-activation ceiling stops ~29.6k. Reaching this band requires decline far beyond the documented 16–25% range. Tier 4 does not move in Year 1 at all.',
+    note: 'Only the ~41% ceiling grazes the very start (~50.2k); short of that, not reached. Tier 4 does not move in Year 1 at all.',
   },
 ];
 
@@ -1008,11 +1011,11 @@ const mcPert = (min, mode, max, lambda = 4) => {
   return min + mcBeta(a, b) * (max - min);
 };
 
-const CONSERVATIVE_CHURN = 20; // "likely" is pinned here — central never-activation (Doc 4/5 convergence)
+const CONSERVATIVE_CHURN = 34; // "likely" is pinned here — central TOTAL churn (20% never-activation + ~14% downgrade/opt-out)
 
 const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, k, cascadeSeries, frontierYMax, todayTs }) => {
   const churnMode = CONSERVATIVE_CHURN; // fixed, not draggable
-  const [optMode, setOptMode] = useState(25); // % of churn that opts out (rest downgrade)
+  const [optMode, setOptMode] = useState(59); // % of churn that frees full ESA (never-activation + opt-out); rest downgrade
   const [holdFlat, setHoldFlat] = useState(true);
   const [trials, setTrials] = useState(10000);
   const [seed, setSeed] = useState(0); // bump to re-run with fresh draws
@@ -1213,7 +1216,7 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, k, casca
         </p>
         <ul className="list-disc pl-5 space-y-1 text-tefa-body/70">
           <li><strong>likely</strong> is <span className="font-mono text-tefa-gold">{CONSERVATIVE_CHURN}%</span> — pinned to our Conservative central and <strong>not draggable</strong>; it's the anchor everything bends around.</li>
-          <li><strong>min</strong> = best case (~16% never-activation, Florida FES-UA floor). <strong>max</strong> = worst case (~25%, the Florida AAA ceiling — the defensible upper bound). Drag these to set <em>how wide</em> the uncertainty is around the anchor.</li>
+          <li><strong>min</strong> = best case (~29% total churn = 16% never-activation + measured downgrades). <strong>max</strong> = worst case (~41% = 25% never-activation ceiling + downgrades). Drag these to set <em>how wide</em> the uncertainty is around the anchor.</li>
         </ul>
         <p>
           <strong className="text-tefa-navy">Opt-out share of churn</strong> — a <em>different</em> thing: of the families who leave,
@@ -1253,7 +1256,7 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, k, casca
           <label className="block text-xs font-semibold text-tefa-body/80 mb-2">
             Opt-out share of churn (likely) <span className="font-mono text-tefa-gold ml-1">{optMode}%</span>
           </label>
-          <input type="range" min="5" max="60" value={optMode} className="w-full accent-tefa-navy"
+          <input type="range" min="5" max="80" value={optMode} className="w-full accent-tefa-navy"
             onChange={(e) => setOptMode(+e.target.value)} />
           <p className="text-[11px] text-tefa-body/45 mt-1.5">The rest are $2,000 homeschool downgrades. Drawn in a ±range around this. More opt-outs free more dollars per departure.</p>
         </div>
@@ -1284,7 +1287,7 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, k, casca
       </div>
 
       <p className="text-[10px] text-tefa-body/45 mt-4">
-        Defaults reproduce the model: churn PERT(15 / 24 / 43), opt-out share ~25% of churn, friction held flat — the median lands near the
+        Defaults reproduce the model: churn PERT(29 / 34 / 41), full-ESA-freeing share ~59% of churn, friction held flat — the median lands near the
         Conservative point estimate (~{fmt(r.p50)}). The share of runs clearing {BAND_LO.toLocaleString()} is the probability the written reviews
         kept asserting without computing. Drag the Jul-15 assumptions to stress-test. A planning tool, not a forecast.
       </p>
@@ -1299,8 +1302,8 @@ const TefaView = () => {
   // min / max churn are shared with the simulator below; "likely" is fixed at the
   // Conservative central. The three chart lines (research / conservative / aggressive)
   // are min / likely / max, so dragging the sliders reshapes the chart live.
-  const [churnMin, setChurnMin] = useState(16); // Florida FES-UA never-disbursement floor
-  const [churnMax, setChurnMax] = useState(25); // Florida AAA never-disbursement ceiling (defensible upper bound)
+  const [churnMin, setChurnMin] = useState(29); // floor: 16% never-activation + ~13% downgrade/opt-out
+  const [churnMax, setChurnMax] = useState(41); // ceiling: 25% never-activation + ~16% downgrade/opt-out
   const { series: cascadeSeries, kpis: k } = useMemo(
     () => buildCascadeProjection({
       research: { ...RESEARCH, churnRate: churnMin / 100 },
@@ -1360,11 +1363,10 @@ const TefaView = () => {
         </div>
         <p className="text-xs text-tefa-body/50 mt-3">
           <strong>Bottom line:</strong> our original lottery position is the <strong>deep end (45–50k)</strong>, and the chart plots
-          original position — so the frontier must reach 45–50k to fund us. That needs <strong>~38–43% of all awards abandoned</strong>,
-          well above the defensible Year-1 never-activation range (16–25%, Florida Auditor General audits). Central attrition stops
-          ~{k.realisticTerminal.toLocaleString()} and even the ~{k.aggressiveChurnPct}% ceiling stops ~{k.aggressiveTerminal.toLocaleString()} — short of
-          the band's top edge ({BAND_LO.toLocaleString()}), ~15–20k short of us. No scenario on the documented evidence reaches our seat in the
-          Jul 15 wave; only continued multi-cycle churn over later months could. <strong>Plan on no voucher this year</strong>; treat any offer as a pure surprise.
+          original position — so the frontier must reach 45–50k to fund us. That needs <strong>~36–40% total churn</strong>, now WITHIN the
+          stacked range (never-activation 16–25% from the Florida audits, PLUS the measured Texas downgrade/opt-out churn ~12–16%). Central attrition reaches
+          ~{k.realisticTerminal.toLocaleString()} — ~3k short of our 45k — and the ~{k.aggressiveChurnPct}% ceiling reaches ~{k.aggressiveTerminal.toLocaleString()}, far enough to
+          cover our 45–50k seat. Our seat is a <strong>live possibility at the upper end</strong>, decided by the Jul 15 deadline shakeout — but still plan as if no voucher.
         </p>
       </section>
 
@@ -1385,7 +1387,7 @@ const TefaView = () => {
           for appeals — so the waitlist now advances by <strong>backfill churn</strong> as families leave, not a big reserve release.
         </p>
         <div className="text-[11px] text-tefa-body/60 bg-tefa-light rounded p-3 space-y-1">
-          <div><strong>Three scenarios.</strong> The frontier (= {T2_AT_LOTTERY.toLocaleString()} at-lottery − Tier 2 still queued) has reached {k.frontierNow.toLocaleString()}, advancing by <strong>backfill churn</strong> as awarded families leave. All three are now anchored on the <strong>defensible Year-1 never-activation evidence</strong> (Florida Auditor General audits, 16–25% never-disbursed; NYC SCSF ~20% Year-1 never-use) — <em>not</em> the old D.C. multi-year attrition figure. <strong>Research (floor)</strong> applies ~{k.researchChurnPct}% (Florida FES-UA) and settles ~<strong>{k.researchTerminal.toLocaleString()}</strong> — barely clearing Tier 2. <strong>Conservative (central)</strong> uses ~{k.realisticChurnPct}% (the Doc 4/5 convergence) and settles ~<strong>{k.realisticTerminal.toLocaleString()}</strong>. <strong>Aggressive (ceiling)</strong> is the defensible upper bound, ~{k.aggressiveChurnPct}% (Florida AAA), settling ~<strong>{k.aggressiveTerminal.toLocaleString()}</strong> — still <em>short of the band's top edge</em> ({BAND_LO.toLocaleString()}) and ~15–20k short of our 45–50k seat. On the documented evidence, no scenario reaches us in the Jul 15 wave; only continued multi-cycle churn would.</div>
+          <div><strong>Three scenarios.</strong> The frontier (= {T2_AT_LOTTERY.toLocaleString()} at-lottery − Tier 2 still queued) has reached {k.frontierNow.toLocaleString()}, advancing by <strong>backfill churn</strong> as awarded families leave. Each stacks the <strong>Year-1 never-activation evidence</strong> (Florida Auditor General audits, 16–25% never-disbursed; NYC SCSF ~20% never-use) on the <strong>measured Texas downgrade/opt-out churn</strong> (~12% already), plus the full $20M appeal+waitlist reserve. <strong>Research (floor, ~{k.researchChurnPct}%)</strong> settles ~<strong>{k.researchTerminal.toLocaleString()}</strong> — reaching the band start. <strong>Conservative (central, ~{k.realisticChurnPct}%)</strong> settles ~<strong>{k.realisticTerminal.toLocaleString()}</strong>, ~3k short of our 45k. <strong>Aggressive (ceiling, ~{k.aggressiveChurnPct}%)</strong> settles ~<strong>{k.aggressiveTerminal.toLocaleString()}</strong> — <em>covering our 45–50k seat</em>. Our seat is a live possibility at the upper end, decided by the Jul 15 deadline.</div>
           <div><strong>Watch — the Jul 15 deadline.</strong> Families who don't opt in by Jul 15 are "moved aside to allow other families to come off the waitlist" (Travis Pillow). That shakeout — plus the ~$20M reserve awarded once appeals finalize — is the single event that decides whether the cascade reaches our band, and it lands <em>after</em> the Jun 30 penalty-free withdrawal deadline.</div>
         </div>
 
