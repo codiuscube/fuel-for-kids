@@ -23,7 +23,6 @@ import {
   Tooltip as ChartTooltip,
   Legend,
   ReferenceLine,
-  ReferenceDot,
   ReferenceArea,
 } from 'recharts';
 
@@ -103,6 +102,23 @@ const RESERVE_SEATS = Math.round(TEFA_BUDGET.reserveNet / TEFA_BUDGET.blendedCos
 const ACTIVE_AWARDS = 107000; // "nearly 107,000 active" (Jun 23 update)
 
 // ---------------------------------------------------------------------------
+// The Jul 1 activation cut — the number that pins how much fuel is actually left.
+// Jun 30 Comptroller release: "nearly 73,000" TEFA accounts receive INITIAL
+// funding July 1 — private families who opted in AND had enrollment confirmed,
+// plus homeschool/other who opted in by the deadline. So of the ~107,000 active
+// awards, ~73,000 have COMMITTED. The rest were awarded but have NOT yet opted in
+// / selected a school / confirmed — that ~34,000 "remainder" is the entire pool
+// that can still free a seat by being moved aside (opt out, drop to $2,000
+// homeschool, or miss the Jul 15 / Jul 31 confirmation deadlines).
+//
+// This bounds the cascade hard: the moved-aside count CANNOT exceed ~34,000,
+// because the other ~73,000 have already locked in. The only open question is
+// what SHARE of that remainder fails to confirm — realistically 30–50%.
+// ---------------------------------------------------------------------------
+const FUNDED_JULY1 = 73000;                       // "nearly 73,000" funded Jul 1 (Jun 30 release)
+const REMAINDER = ACTIVE_AWARDS - FUNDED_JULY1;   // ~34,000 awarded but NOT activated — the churn pool
+
+// ---------------------------------------------------------------------------
 // Funded seats per departure — the DOLLAR mechanics that turn an active family's
 // departure into a funded waitlist seat. A private opt-out frees its full ESA
 // (~$10,474); a downgrade to the $2,000 tier frees only the difference (~$8,474).
@@ -145,25 +161,15 @@ const T3_START = T2_AT_LOTTERY;   // the cascade frontier at which the FIRST Tie
 const BAND_LO = TEFA.bandLo;      // 30,001 — top of our family's band
 const BAND_HI = TEFA.bandHi;      // 50,000 — bottom of our family's band
 
-// ANECDOTAL frontline readings of the cascade frontier — hotter than the official
-// frontier (still 12,916 on Jun 23, entirely Tier 2). These are the hollow dots on
-// the chart AND the anchor points the AGGRESSIVE scenario is drawn through: ~15k
-// around Jun 25 (recent frontline reports) and ~20k by Jul 1 (near-term projection).
-// Both are UNOFFICIAL, so plotted hollow and asterisked. Edit here and both the dots
-// and the aggressive line move together.
-const AGG_DOTS = [
-  { date: '2026-06-25', f: 15000 },
-  { date: '2026-07-01', f: 20000 },
-];
-
 // How the cascade frontier maps to "fuel": the frontier advances ~1 seat per family
-// that LEAVES an active award (opt-out or homeschool/$2,000 downgrade), plus the
-// one-time reserve when it releases. So a scenario's terminal frontier ≈
-//   churnRate × active-award base  +  reserve seats.
-// The published frontier (12,916 on ~107k active) already implies ~12% have left in
-// the first 7 weeks — mostly UNPUBLISHED downgrades (opt-outs alone are only ~3,000).
-// That observed pace is the anchor; the two scenarios below differ only in how high
-// total attrition climbs through the Jul 15 deadline.
+// that LEAVES an award without taking a full private seat. With the Jul 1 activation
+// count in hand, the fuel is no longer a guessed rate on all 107k — it's a SHARE of
+// the ~34,000 remainder (awarded but not activated by Jul 1). So a scenario's terminal
+// frontier ≈
+//   frontier-now (12,916)  +  movedAsideShare × 34,000 × seats-per-departure  +  reserve seats.
+// Each moved-aside family frees a seat one of two ways, and BOTH are counted via the
+// opt-out:downgrade split in seatsPerDeparture: a full opt-out frees the whole award
+// (~$10,474), a drop to the $2,000 homeschool tier frees only the difference (~$8,474).
 
 // Jun 23, 2026 Comptroller News & Updates ("More than 5,000 new awards issued to
 // waitlisted TEFA students"). 5,499 newly awarded, all Tier 2 — so the frontier
@@ -197,46 +203,39 @@ const T2_OBSERVATIONS = [
   { date: '2026-06-23', t2Remaining: 7467 },  // after 5,499 more cascade awards (Jun 23 update) → frontier 12,916
 ];
 
-// NEVER-ACTIVATION STRETCH. A waitlisted family that's awarded but never activates frees
-// NO new money — the same dollars pass to the next person. So never-activation does not
-// fund anyone; it only stretches how far OFFERS travel down the list:
-//   funded frontier = real fuel ÷ seat cost           (the hard money limit)
-//   offer  frontier = funded ÷ (1 − NEVER_ACTIVATION)  (the stretch — offers reach decliners too)
-// Florida Auditor General audits put waitlist never-activation at 16–25% (FES-UA 16%, AAA
-// 26%, NYC SCSF ~20% center). We fix it at 20% — a STRETCH factor, not a sampled source.
-// Your 45–50k seat needs the FUNDED line; an offer only helps if money is still there when
-// you accept, so the funded frontier is the real bound and the offer line is the optimistic edge.
-const NEVER_ACTIVATION = 0.20;    // 20% waitlist decline → offer frontier = funded ÷ 0.80 (×1.25 stretch)
+// Frontier reached so far = how deep the cascade has funded down the global list.
+// Future advance is added ON TOP of this from the 34k remainder, so it's the base
+// the projection and the simulator both build from.
+const FRONTIER_NOW = T2_AT_LOTTERY - T2_OBSERVATIONS[T2_OBSERVATIONS.length - 1].t2Remaining; // 12,916
 
-// Three scenarios, driven by the ONLY thing that actually funds seats: ACTIVE CHURN — the
-// rate at which already-active families opt out or downgrade to $2,000, freeing real dollars
-// (plus the net reserve). Never-activation is layered on top as the stretch above; it is NOT
-// a source. Observed active churn is ~12% at 7 weeks (2.8% opt-out + 9.3% downgrade), pre-cliff.
-//   RESEARCH (floor, 16% active churn): today's pace barely climbing. Funded ≈ 22,000.
-//   REALISTIC / "likely" (central, 25%): the Jul 15 cliff + reserve drive the bulk.
-//     Funded ≈ 33,200, offer ≈ 41,500 — both SHORT of our 45k.
-//   AGGRESSIVE (ceiling, 35%): the most active churn any first-year program has shown.
-//     Funded ≈ 45,700 — only here does FUNDED money reach our 45k seat.
-// optOutRate is held at the observed 23.1% share of churn (downgrade-heavy → ~1.16
-// seats/departure); a higher share lifts the funded line (the second lever). All three are
-// SCENARIOS, not forecasts; after Aug 15 each drifts on small residual churn.
+// Three scenarios over ONE honest unknown: what SHARE of the ~34,000 remainder (awarded
+// but not activated by Jul 1) ends up moved aside — opting out or dropping to the $2,000
+// homeschool tier — instead of confirming a private seat. Realistic band is 30–50%:
+//   LOW   (30% of the remainder leaves)  → funded ≈ 26,800  (short of our band)
+//   LIKELY (40%, the central anchor)     → funded ≈ 30,800  (just into the band start)
+//   HIGH  (50%)                          → funded ≈ 34,700  (into the band, short of our 45k)
+// `share` is the moved-aside fraction; `optOutShare` is how that fraction splits between
+// full opt-outs (~$10,474 freed) and $2,000 homeschool downgrades (~$8,474) — held at the
+// observed 23% opt-out / 77% downgrade mix (→ ~1.16 seats/departure), exposed as a lever.
+// Each terminal = frontier-now + share × 34,000 × seats-per-departure + reserve. Scenarios,
+// not forecasts; after Aug 15 each drifts on small residual churn.
+const OBS_OPTOUT_SHARE_OF_CHURN = 0.231;   // observed 2.8% opt-out / 9.3% downgrade split
+
 const REALISTIC = {
-  churnRate: 0.25,                // ACTIVE churn (opt-out + downgrade) — central read
-  optOutRate: 0.058,             // 23.1% of churn opts out (observed split) → ~1.16 seats/departure
-  reserveSeats: RESERVE_SEATS,    // net $16M-after-appeals reserve (~2,084 seats)
+  share: 0.40,                              // LIKELY — 40% of the 34k remainder moved aside
+  optOutShare: OBS_OPTOUT_SHARE_OF_CHURN,   // 23% opt out fully, 77% drop to $2,000 → ~1.16 seats/departure
+  reserveSeats: RESERVE_SEATS,              // net $16M-after-appeals reserve (~2,084 seats)
 };
 
 const AGGRESSIVE = {
-  churnRate: 0.35,                // ACTIVE churn ceiling — beyond any first-year program on record
-  optOutRate: 0.081,             // 23.1% of churn (observed split)
+  share: 0.50,                              // HIGH — half the remainder fails to confirm
+  optOutShare: OBS_OPTOUT_SHARE_OF_CHURN,
   reserveSeats: RESERVE_SEATS,
 };
 
-// RESEARCH — the FLOOR: 16% active churn (a little above today's ~12% pace). Funded ≈ 22,000,
-// far short of the band; the never-activation stretch lifts the offer to ~27,500, still short.
 const RESEARCH = {
-  churnRate: 0.16,               // ACTIVE churn floor
-  optOutRate: 0.037,             // 23.1% of churn (observed split)
+  share: 0.30,                              // LOW — most of the remainder still confirms by Jul 15/31
+  optOutShare: OBS_OPTOUT_SHARE_OF_CHURN,
   reserveSeats: RESERVE_SEATS,
 };
 
@@ -261,7 +260,6 @@ function buildCascadeProjection({
   realistic = REALISTIC,
   aggressive = AGGRESSIVE,
   research = RESEARCH,
-  awardedBase = ACTIVE_AWARDS,
   window: win = FRONTIER_WINDOW,
 } = {}) {
   const DAY = 86_400_000;
@@ -338,15 +336,13 @@ function buildCascadeProjection({
               : spline(Math.min(t, endT)) + Math.max(0, t - endT) * POST_DRIFT;
   };
 
-  // FUNDED frontier — the hard money limit. = active-churn departures × seats-per-departure
-  // (dollars freed ÷ blended cost) + net reserve seats. The deepest waitlist position real
-  // money reaches. Never-activation does NOT enter here — decliners free no new money.
+  // FUNDED frontier — the hard money limit. = frontier-now + (share of the 34k remainder
+  // that's moved aside) × seats-per-departure (dollars freed ÷ blended cost) + net reserve
+  // seats. The deepest waitlist position real money reaches. Both fuel mechanisms count via
+  // the opt-out:downgrade split — a full opt-out frees the whole award, a $2,000 homeschool
+  // drop frees only the difference. Never-activation does NOT enter here.
   const terminalSeats = (s) =>
-    Math.round(s.churnRate * awardedBase * seatsPerDeparture(s.optOutRate, s.churnRate - s.optOutRate) + s.reserveSeats);
-  // OFFER frontier — the stretch. Offers pass decliners to the next person, reaching
-  // funded ÷ (1 − never-activation) deep. An offer only funds you if money survives to you.
-  const offerSeats = (s) => Math.round(terminalSeats(s) / (1 - NEVER_ACTIVATION));
-
+    Math.round(fL + s.share * REMAINDER * seatsPerDeparture(s.optOutShare, 1 - s.optOutShare) + s.reserveSeats);
   // Default-shape terminals from the module scenarios. The waypoint heights below are
   // the hand-tuned DEFAULT curves (lull → Jul-15 step → taper). When a scenario's
   // churn is changed by the simulator sliders, `fitLine` rescales the whole curve's
@@ -367,40 +363,41 @@ function buildCascadeProjection({
     return { fn: buildLine(scaled, wavesEnd), terminal: newTerminal };
   };
 
-  // REALISTIC (the fixed "likely" anchor) — quiet through the deadline, then the spike.
+  // All three share ONE shape: a quiet Jul 1–15 lull (the 34k remainder is still inside its
+  // confirmation window), then the SURGE Jul 15–31 as non-confirmers are moved aside and the
+  // reserve releases, tapering to the terminal by Aug 15. They differ only in how much of the
+  // remainder leaves (30 / 40 / 50%). fitLine pins each to its exact terminal.
+
+  // LIKELY — 40% of the remainder moved aside → ~30,800 (just into the band start).
   const real_ = fitLine([
     { t: tL, f: fL },                              // Jun 23 anchor (12,916)
-    { t: dayOf('2026-07-01'), f: 16000 },          // Tier 2 still clearing
-    { t: jul15, f: 19000 },                        // QUIET Jul 1–15 lull
-    { t: dayOf('2026-07-17'), f: 19000 + RESERVE_SEATS }, // SPIKE: net reserve + deadline shakeout
-    { t: dayOf('2026-07-31'), f: 30000 },          // deadline churn Jul 15–31
-    { t: wavesEnd, f: defRealT },                  // taper Aug 1–15 → central FUNDED ~33k, short of 45k
+    { t: dayOf('2026-07-01'), f: 14500 },          // Tier 2 tail clearing; remainder hasn't acted
+    { t: jul15, f: 16500 },                        // QUIET Jul 1–15 lull
+    { t: dayOf('2026-07-17'), f: 16500 + RESERVE_SEATS }, // reserve releases + deadline shakeout begins
+    { t: dayOf('2026-07-31'), f: 26000 },          // bulk of moved-aside seats cascade Jul 15–31
+    { t: wavesEnd, f: defRealT },                  // taper Aug 1–15 → ~30,800
   ], defRealT, realistic);
   const realFn = real_.fn, realTerminal = real_.terminal;
 
-  // AGGRESSIVE (the "max" funded line, 35% active churn ceiling) — through the anecdotal
-  // frontline dots (~15k Jun 25, ~20k Jul 1), a lull to Jul 15, a Jul 15–20 deadline
-  // burst (active opt-outs/downgrades + reserve), churn Jul 20–31, tapering Aug 1–15.
+  // HIGH — 50% of the remainder leaves → ~34,700 (into the band, still short of our 45k).
   const agg_ = fitLine([
-    { t: tL, f: fL },                              // Jun 23 official anchor (12,916)
-    ...AGG_DOTS.map((d) => ({ t: dayOf(d.date), f: d.f })), // anecdotal hollow-dot anchors
-    { t: jul15, f: 24000 },                        // QUIET Jul 1–15 lull
-    { t: dayOf('2026-07-20'), f: 33000 },          // Jul 15–20 deadline burst (active churn + reserve)
-    { t: dayOf('2026-07-31'), f: 42000 },          // high churn Jul 20–31
-    { t: wavesEnd, f: defAggT },                   // taper Aug 1–15 → FUNDED just reaches our 45k
+    { t: tL, f: fL },                              // Jun 23 anchor (12,916)
+    { t: dayOf('2026-07-01'), f: 15000 },          // Tier 2 tail clearing
+    { t: jul15, f: 17500 },                        // QUIET Jul 1–15 lull
+    { t: dayOf('2026-07-17'), f: 17500 + RESERVE_SEATS }, // reserve + heavier deadline shakeout
+    { t: dayOf('2026-07-31'), f: 29000 },          // heavy moved-aside cascade Jul 15–31
+    { t: wavesEnd, f: defAggT },                   // taper Aug 1–15 → ~34,700
   ], defAggT, aggressive);
   const aggFn = agg_.fn, aggTerminal = agg_.terminal;
 
-  // RESEARCH (the "min" funded line, 16% active churn floor) — quiet Tier-2 clearing, a
-  // modest Jul 15 reserve/deadline bump, then a gentle taper. At 16% active churn the
-  // funded frontier stalls ~22k, far short of the band.
+  // LOW — 30% of the remainder leaves → ~26,800 (most confirm; cascade stalls short of the band).
   const research_ = fitLine([
-    { t: tL, f: fL },                              // Jun 23 official anchor (12,916)
-    { t: dayOf('2026-07-01'), f: 14500 },          // slow Tier 2 clearing
-    { t: jul15, f: 16500 },                        // QUIET Jul 1–15 lull
-    { t: dayOf('2026-07-17'), f: 16500 + RESERVE_SEATS }, // net reserve + small deadline bump
-    { t: dayOf('2026-07-31'), f: 21000 },          // modest churn Jul 15–31
-    { t: wavesEnd, f: defResearchT },              // taper Aug 1–15 → funded stalls ~22k
+    { t: tL, f: fL },                              // Jun 23 anchor (12,916)
+    { t: dayOf('2026-07-01'), f: 14000 },          // slow Tier 2 clearing
+    { t: jul15, f: 16000 },                        // QUIET Jul 1–15 lull
+    { t: dayOf('2026-07-17'), f: 16000 + RESERVE_SEATS }, // reserve + small deadline bump
+    { t: dayOf('2026-07-31'), f: 23000 },          // modest moved-aside cascade Jul 15–31
+    { t: wavesEnd, f: defResearchT },              // taper Aug 1–15 → ~26,800
   ], defResearchT, research);
   const researchFn = research_.fn, researchTerminal = research_.terminal;
 
@@ -418,11 +415,8 @@ function buildCascadeProjection({
     if (t >= tL) {
       row.research = Math.round(researchFn(t));
       row.realistic = Math.max(Math.round(realFn(t)), row.research);
-      // Aggressive is by definition ≥ realistic; clamp away sub-100-seat spline crossings.
+      // High is by definition ≥ likely; clamp away sub-100-seat spline crossings.
       row.aggressive = Math.max(Math.round(aggFn(t)), row.realistic);
-      // OFFER frontiers — the stretch (÷(1−never-activation)); dashed companions to the funded lines.
-      row.realisticOffer = Math.round(row.realistic / (1 - NEVER_ACTIVATION));
-      row.aggressiveOffer = Math.round(row.aggressive / (1 - NEVER_ACTIVATION));
     }
     series.push(row);
   }
@@ -430,14 +424,11 @@ function buildCascadeProjection({
   // Frontier reached at the dates the table below the chart reports.
   const TABLE_DATES = ['2026-07-01', '2026-07-15', '2026-07-20', '2026-07-31', '2026-08-15', '2026-08-31'];
   const sampleAt = (fn) => TABLE_DATES.map((d) => Math.round(fn(dayOf(d))));
-  const offerAt = (fn) => TABLE_DATES.map((d) => Math.round(fn(dayOf(d)) / (1 - NEVER_ACTIVATION)));
   const projectionTable = {
     dates: TABLE_DATES,
     aggressive: sampleAt(aggFn),
     conservative: sampleAt(realFn),
     research: sampleAt(researchFn),
-    aggressiveOffer: offerAt(aggFn),
-    conservativeOffer: offerAt(realFn),
   };
 
   const kpis = {
@@ -446,15 +437,15 @@ function buildCascadeProjection({
     t2Remaining: T2_AT_LOTTERY - fL,
     optOutsSoFar,
     optOutPctNow: +(100 * optOutsSoFar / ACTIVE_AWARDS).toFixed(1), // ~2.8% (Jun 23)
-    researchOptOutPct: Math.round(research.optOutRate * 100),        // ~4% (research central)
-    realisticOptOutPct: Math.round(realistic.optOutRate * 100),      // ~6% after Jul 15
-    aggressiveOptOutPct: Math.round(aggressive.optOutRate * 100),    // ~22% after Jul 15
+    funded: FUNDED_JULY1,
+    remainder: REMAINDER,
     reserveSeats: realistic.reserveSeats,
     projectionTable,
     researchTerminal,
-    researchChurnPct: Math.round(research.churnRate * 100),
-    realisticChurnPct: Math.round(realistic.churnRate * 100),
-    aggressiveChurnPct: Math.round(aggressive.churnRate * 100),
+    // *ChurnPct now = the share of the 34k remainder that's moved aside (30 / 40 / 50%).
+    researchChurnPct: Math.round(research.share * 100),
+    realisticChurnPct: Math.round(realistic.share * 100),
+    aggressiveChurnPct: Math.round(aggressive.share * 100),
     realisticTerminal: realTerminal,
     realisticTier3Ts: crossTs(realFn, T3_START),
     realisticBandLoTs: crossTs(realFn, BAND_LO),
@@ -464,13 +455,7 @@ function buildCascadeProjection({
     aggressiveBandHiTs: crossTs(aggFn, BAND_HI),
     realisticYourPosTs: crossTs(realFn, YOUR_POS.lo),
     aggressiveYourPosTs: crossTs(aggFn, YOUR_POS.lo),
-    realisticOfferYourPosTs: crossTs((t) => realFn(t) / (1 - NEVER_ACTIVATION), YOUR_POS.lo),
-    aggressiveOfferYourPosTs: crossTs((t) => aggFn(t) / (1 - NEVER_ACTIVATION), YOUR_POS.lo),
-    neverActivationPct: Math.round(NEVER_ACTIVATION * 100),
-    freedRatio: +seatsPerDeparture(realistic.optOutRate, realistic.churnRate - realistic.optOutRate).toFixed(2),
-    researchOffer: offerSeats(research),
-    realisticOffer: offerSeats(realistic),
-    aggressiveOffer: offerSeats(aggressive),
+    freedRatio: +seatsPerDeparture(realistic.optOutShare, 1 - realistic.optOutShare).toFixed(2),
   };
   return { series, kpis };
 }
@@ -499,29 +484,29 @@ const BAND_OUTLOOK = [
     scope: 'early Tier 3',
     call: 'Likely',
     tone: 'good',
-    note: 'Reached once Tier 2 clears and the net ~$16M reserve (~2,084 seats) is awarded after appeals. The central case (~25% active churn) funds well past here; the 16% floor stalls ~22k, just inside this band.',
+    note: 'Reached once Tier 2 clears and the net ~$16M reserve (~2,084 seats) is awarded after appeals. Even the low case — 30% of the ~34k remainder moved aside (~26,800) — funds past here.',
   },
   {
     band: '25,001 – 30,000',
     scope: 'mid Tier 3',
     call: 'Possible',
     tone: 'mid',
-    note: 'FUNDED money reaches here in the central case (~33k) and above, but NOT the 16% floor (~22k). Needs active opt-out/downgrade churn climbing toward ~25%. This is the funded frontier (real dollars), not just an offer.',
+    note: 'The likely case — 40% of the remainder leaving (~30,800) — reaches just past here; the low 30% case (~26,800) lands inside this band. Needs the bulk of the Jul 15 shakeout to actually land.',
   },
   {
     band: '30,001 – 50,000',
     scope: 'YOUR BAND · you sit at 45–50k',
-    call: 'Funded only at the ceiling',
+    call: 'Only the band start, only at the high end',
     tone: 'mid',
     ourBand: true,
-    note: 'Our seat is the DEEP end (45–50k). Two frontiers matter: FUNDED (real money reaches you) and OFFER (the stretch, = funded ÷ 0.80 — offers pass decliners to the next person). Central (~25% active churn) funds ~33k, and even its OFFER reaches only ~42k — ~3k short of our 45k. FUNDED dollars reach 45k only in the 35% ceiling case (~46k), the most active churn any first-year program has shown. An offer can arrive earlier, but only helps if money survives to us. Plan as if no voucher — funding our seat needs ceiling-level active churn.',
+    note: 'Our seat is the DEEP end (45–50k). The high case — 50% of the ~34k remainder moved aside (~34,700) — crosses only the START of the band (30,001); the likely 40% case (~30,800) just touches it. None reach our 45k: that would take essentially the entire remainder collapsing, far beyond a 30–50% shakeout. Plan as if no voucher.',
   },
   {
     band: '50,001 +',
     scope: 'deep Tier 3 / Tier 4',
     call: 'Not expected',
     tone: 'bad',
-    note: 'FUNDED money never reaches here (the ceiling funds ~46k). Only the ceiling OFFER stretch (~57k) arrives — an offer with almost certainly no money behind it. Tier 4 does not move in Year 1 at all.',
+    note: 'Even 50% of the remainder leaving funds only ~34,700 — reaching 50k would need more departures than the entire ~34k remainder contains. Tier 4 does not move in Year 1 at all.',
   },
 ];
 
@@ -535,11 +520,9 @@ const TONE_STYLE = {
 // drops the raw `ts` the Scatter series would otherwise inject.
 const FRONTIER_SERIES = {
   observedLine: 'Funded so far (published)',
-  research: 'Funded — floor',
-  realistic: 'Funded — likely',
-  aggressive: 'Funded — ceiling',
-  realisticOffer: 'Offer reach — likely (stretch)',
-  aggressiveOffer: 'Offer reach — ceiling (stretch)',
+  research: 'Low — 30% of remainder leaves',
+  realistic: 'Likely — 40% of remainder leaves',
+  aggressive: 'High — 50% of remainder leaves',
 };
 
 const FrontierTooltip = ({ active, payload, label }) => {
@@ -1023,11 +1006,11 @@ const mcPert = (min, mode, max, lambda = 4) => {
   return min + mcBeta(a, b) * (max - min);
 };
 
-const CONSERVATIVE_CHURN = 25; // "likely" is pinned here — central ACTIVE churn (opt-out + downgrade; the funding fuel)
+const CONSERVATIVE_CHURN = 40; // "likely" is pinned here — central share of the 34k remainder moved aside (opt-out + $2,000 downgrade)
 
 const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, k, cascadeSeries, frontierYMax, todayTs }) => {
   const churnMode = CONSERVATIVE_CHURN; // fixed, not draggable
-  const [optMode, setOptMode] = useState(23); // opt-out share of active churn (observed 2.8/9.3 ≈ 23%); rest downgrade
+  const [optMode, setOptMode] = useState(23); // opt-out share of those leaving (observed 2.8/9.3 ≈ 23%); rest drop to $2,000
   const [holdFlat, setHoldFlat] = useState(true);
   const [trials, setTrials] = useState(10000);
   const [seed, setSeed] = useState(0); // bump to re-run with fresh draws
@@ -1036,18 +1019,17 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, k, casca
   const r = useMemo(() => {
     const arr = new Float64Array(trials);
     for (let i = 0; i < trials; i++) {
-      const churn = mcPert(churnMin, churnMode, churnMax) / 100;
-      const share = mcPert(Math.max(0, optMode - 12), optMode, Math.min(100, optMode + 18)) / 100;
-      const optRate = churn * share, downRate = churn * (1 - share);
-      // churn here is ACTIVE churn (the funding fuel). holdFlat pins seats/departure at the
-      // observed downgrade-heavy mix (~1.16); otherwise it varies with the sampled opt-out share.
-      const spd = holdFlat || churn === 0 ? seatsPerDeparture(OBS_OPTOUT_RATE, OBS_DOWNGRADE_RATE) : seatsPerDeparture(optRate, downRate);
-      arr[i] = churn * ACTIVE_AWARDS * spd + RESERVE_SEATS; // FUNDED frontier (offer = ÷(1−never-activation))
+      const moved = mcPert(churnMin, churnMode, churnMax) / 100;       // share of the 34k remainder moved aside
+      const optShare = mcPert(Math.max(0, optMode - 12), optMode, Math.min(100, optMode + 18)) / 100;
+      // holdFlat pins seats/departure at the observed downgrade-heavy mix (~1.16); otherwise it
+      // varies with the sampled opt-out share. Both exit routes (opt-out / $2,000) are in seatsPerDeparture.
+      const spd = holdFlat || moved === 0 ? seatsPerDeparture(OBS_OPTOUT_RATE, OBS_DOWNGRADE_RATE) : seatsPerDeparture(optShare, 1 - optShare);
+      arr[i] = FRONTIER_NOW + moved * REMAINDER * spd + RESERVE_SEATS; // FUNDED frontier reached
     }
     const sorted = Array.from(arr).sort((a, b) => a - b);
     const pct = (p) => sorted[Math.floor(p * (sorted.length - 1))];
     const frac = (thr) => { let n = 0; for (const v of arr) if (v >= thr) n++; return n / trials; };
-    const lo = 8000, hi = 60000, bins = 52, w = (hi - lo) / bins;
+    const lo = 10000, hi = 50000, bins = 52, w = (hi - lo) / bins;
     const hist = new Array(bins).fill(0);
     for (const v of arr) {
       let b = Math.floor((v - lo) / w);
@@ -1075,10 +1057,10 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, k, casca
         <Activity size={20} /> How far the line reaches — and how likely
       </h2>
       <p className="text-sm text-tefa-body/80 mb-4">
-        One model, two views of the same thing. <strong>Lines</strong> is the average path at each churn level (the middle line is our
-        Conservative central). <strong>Distribution</strong> runs that model <strong>{trials.toLocaleString()} times</strong> and shows where the
-        cascade landed across all of them — <em>the lines are essentially the averages of that cloud</em>. Drag the dials and <strong>both</strong> update.
-        Our band is {BAND_LO.toLocaleString()}–{BAND_HI.toLocaleString()}; Tier 3 opens at {T3_START.toLocaleString()}.
+        One model, two views of the same thing. <strong>Lines</strong> is the average path at each level — how much of the ~{k.remainder.toLocaleString()}{' '}
+        remainder (awarded but not funded Jul 1) gets moved aside (the middle line is our likely 40%). <strong>Distribution</strong> runs that model{' '}
+        <strong>{trials.toLocaleString()} times</strong> and shows where the cascade landed across all of them — <em>the lines are essentially the averages of that cloud</em>.
+        Drag the dials and <strong>both</strong> update. Our band is {BAND_LO.toLocaleString()}–{BAND_HI.toLocaleString()}; Tier 3 opens at {T3_START.toLocaleString()}.
       </p>
 
       {/* context KPIs */}
@@ -1094,14 +1076,14 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, k, casca
           <div className="text-[10px] text-tefa-body/40">must clear before any Tier 3 offer</div>
         </div>
         <div className="rounded-lg bg-tefa-light border border-tefa-navy/20 p-3 text-center">
-          <div className="text-xs text-tefa-navy/70 font-medium">Central FUNDED</div>
+          <div className="text-xs text-tefa-navy/70 font-medium">Likely FUNDED</div>
           <div className="font-bold text-tefa-navy text-lg">~{k.realisticTerminal.toLocaleString()}</div>
-          <div className="text-[10px] text-tefa-body/40">likely (~{k.realisticChurnPct}% active churn) · past band start, short of our 45k</div>
+          <div className="text-[10px] text-tefa-body/40">~{k.realisticChurnPct}% of remainder leaves · just into band start, short of our 45k</div>
         </div>
         <div className="rounded-lg bg-tefa-light border border-tefa-red/30 p-3 text-center">
-          <div className="text-xs text-tefa-red/70 font-medium">Ceiling FUNDED</div>
+          <div className="text-xs text-tefa-red/70 font-medium">High FUNDED</div>
           <div className="font-bold text-tefa-red text-lg">~{k.aggressiveTerminal.toLocaleString()}</div>
-          <div className="text-[10px] text-tefa-body/40">ceiling (~{k.aggressiveChurnPct}% active churn) · just funds our 45k</div>
+          <div className="text-[10px] text-tefa-body/40">~{k.aggressiveChurnPct}% of remainder leaves · crosses band start, still short of 45k</div>
         </div>
       </div>
 
@@ -1137,7 +1119,7 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, k, casca
           </button>
         </div>
         <span className="text-[11px] text-tefa-body/45">
-          {view === 'lines' ? 'Average path by churn level — drag the dials to reshape.' : `Where ${trials.toLocaleString()} runs landed — the lines are the averages of this.`}
+          {view === 'lines' ? 'Average path by how much of the remainder leaves — drag the dials to reshape.' : `Where ${trials.toLocaleString()} runs landed — the lines are the averages of this.`}
         </span>
       </div>
 
@@ -1167,22 +1149,16 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, k, casca
                 <ReferenceLine y={BAND_HI} stroke="#aa2142" strokeDasharray="8 4"
                     label={{ value: `T3 Middle band ends — ${BAND_HI.toLocaleString()}`, position: 'insideTopLeft', fontSize: 9, fontWeight: 600, fill: '#aa2142' }} />
                 <Line type="monotone" dataKey="observedLine" name="Funded so far (published)" stroke="#202562" strokeWidth={2.5} dot={false} legendType="none" />
-                <Line type="monotone" dataKey="research" name={`Funded — floor (~${k.researchChurnPct}% active churn)`} stroke="#2e7d5b" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="realistic" name={`Funded — likely (~${k.realisticChurnPct}% active churn)`} stroke="#202562" strokeWidth={2.5} dot={false} />
-                <Line type="monotone" dataKey="aggressive" name={`Funded — ceiling (~${k.aggressiveChurnPct}% active churn)`} stroke="#aa2142" strokeWidth={2.5} dot={false} />
-                <Line type="monotone" dataKey="realisticOffer" name="Offer reach — likely (stretch)" stroke="#202562" strokeWidth={1.5} strokeDasharray="5 4" strokeOpacity={0.5} dot={false} />
-                <Line type="monotone" dataKey="aggressiveOffer" name="Offer reach — ceiling (stretch)" stroke="#aa2142" strokeWidth={1.5} strokeDasharray="5 4" strokeOpacity={0.5} dot={false} />
+                <Line type="monotone" dataKey="research" name={`Low — ${k.researchChurnPct}% of the 34k remainder leaves`} stroke="#2e7d5b" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="realistic" name={`Likely — ${k.realisticChurnPct}% of the remainder leaves`} stroke="#202562" strokeWidth={2.5} dot={false} />
+                <Line type="monotone" dataKey="aggressive" name={`High — ${k.aggressiveChurnPct}% of the remainder leaves`} stroke="#aa2142" strokeWidth={2.5} dot={false} />
                 <Scatter dataKey="observed" name="Published data" fill="#202562" />
-                {AGG_DOTS.map((d) => (
-                  <ReferenceDot key={d.date} x={Date.parse(d.date)} y={d.f} r={5} fill="#fff" stroke="#e8889b" strokeWidth={2} strokeDasharray="2 1.5"
-                      label={{ value: `~${(d.f / 1000).toFixed(0)}k*`, position: 'top', fontSize: 9, fontWeight: 700, fill: '#aa2142' }} />
-                ))}
               </ComposedChart>
             </ResponsiveContainer>
           </div>
           <p className="text-[10px] text-tefa-body/45 mt-1">
-            * Hollow dots are anecdotal frontline readings (~15k Jun 25, ~20k Jul 1); the aggressive line is drawn through them. When a line
-            crosses a band threshold, the cascade has reached that band.
+            Each line is a share of the ~{REMAINDER.toLocaleString()} awarded families who hadn't activated by Jul 1 (107k active − 73k funded)
+            being moved aside — opting out or dropping to the $2,000 homeschool tier. When a line crosses a band threshold, the cascade has reached that band.
           </p>
         </>
       ) : (
@@ -1206,7 +1182,7 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, k, casca
                 <text x={xOf(ln.v)} y={padT - 7} fill={ln.color} fontSize="10" textAnchor="middle" fontWeight="700">{ln.label}</text>
               </g>
             ))}
-            {[10000, 20000, 30000, 40000, 50000, 60000].map((t) => (
+            {[10000, 20000, 30000, 40000, 50000].map((t) => (
               <text key={t} x={xOf(t)} y={H - 22} fill="#94a3b8" fontSize="10" textAnchor="middle">{t / 1000}k</text>
             ))}
             <text x={W / 2} y={H - 6} fill="#64748b" fontSize="11" textAnchor="middle">Terminal cascade frontier (waitlist position reached)</text>
@@ -1225,18 +1201,18 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, k, casca
       <div className="rounded-lg border border-tefa-navy/15 bg-tefa-light/60 p-4 mb-5 text-xs text-tefa-body/80 space-y-2.5">
         <div className="font-semibold text-tefa-navy text-[13px]">How to read the two dials</div>
         <p>
-          <strong className="text-tefa-navy">Total churn (PERT min / likely / max)</strong> — your three-point guess for{' '}
-          <em>what % of all active awards leave their current award this year</em> (for any reason). It sets <strong>how many
-          seats free up</strong>. You give three numbers and the simulator draws thousands of values shaped like a hill peaked at{' '}
-          <em>likely</em>: most runs land near it, fewer trail out toward min and max.
+          <strong className="text-tefa-navy">Share of remainder moved aside (PERT min / likely / max)</strong> — your three-point guess for{' '}
+          <em>what % of the ~{k.remainder.toLocaleString()} awarded-but-not-activated families leave</em> (opt out or drop to $2,000) rather than
+          confirm a seat by Jul 15/31. It sets <strong>how many seats free up</strong>. You give three numbers and the simulator draws thousands of
+          values shaped like a hill peaked at <em>likely</em>: most runs land near it, fewer trail out toward min and max.
         </p>
         <ul className="list-disc pl-5 space-y-1 text-tefa-body/70">
-          <li><strong>likely</strong> is <span className="font-mono text-tefa-gold">{CONSERVATIVE_CHURN}%</span> — pinned to our Conservative central and <strong>not draggable</strong>; it's the anchor everything bends around.</li>
-          <li><strong>min</strong> = best case (~16% active churn, today's pace barely climbing). <strong>max</strong> = worst case (~35% active churn — beyond any first-year program on record). This is ACTIVE opt-out/downgrade churn, the funding fuel — not never-activation. Drag to set <em>how wide</em> the uncertainty is around the anchor.</li>
+          <li><strong>likely</strong> is <span className="font-mono text-tefa-gold">{CONSERVATIVE_CHURN}%</span> — pinned to our central read and <strong>not draggable</strong>; it's the anchor everything bends around.</li>
+          <li><strong>min</strong> = best case (30% — most of the remainder still confirms). <strong>max</strong> = worst case (50% — half the remainder fails to confirm). Drag to set <em>how wide</em> the uncertainty is around the anchor.</li>
         </ul>
         <p>
-          <strong className="text-tefa-navy">Opt-out share of churn</strong> — a <em>different</em> thing: of the families who leave,
-          what fraction <strong>quit the program entirely</strong> (freeing the full $10,474) versus <strong>downgrade to the $2,000
+          <strong className="text-tefa-navy">Opt-out share of those leaving</strong> — a <em>different</em> thing: of the families who leave,
+          what fraction <strong>quit the program entirely</strong> (freeing the full $10,474) versus <strong>drop to the $2,000
           homeschool tier</strong> (freeing only $8,474). It doesn't change <em>how many</em> leave — it changes <strong>how far each
           departure pushes the frontier</strong>, because opt-outs free more dollars per seat.
         </p>
@@ -1246,23 +1222,23 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, k, casca
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
         <div>
           <label className="block text-xs font-semibold text-tefa-body/80 mb-2">
-            Total churn — min / <span className="text-tefa-body/50">likely (fixed)</span> / max{' '}
+            Share of remainder leaving — min / <span className="text-tefa-body/50">likely (fixed)</span> / max{' '}
             <span className="font-mono text-tefa-gold ml-1">{churnMin} / {churnMode} / {churnMax}%</span>
           </label>
           <div className="grid grid-cols-3 gap-3">
             <div className="text-center">
               <div className="text-[10px] uppercase tracking-wide text-tefa-body/40 mb-1">min (best)</div>
-              <input type="range" min="5" max="40" value={churnMin} className="w-full accent-tefa-navy"
+              <input type="range" min="15" max="39" value={churnMin} className="w-full accent-tefa-navy"
                 onChange={(e) => setChurnMin(Math.min(+e.target.value, churnMode - 1))} />
             </div>
             <div className="text-center">
               <div className="text-[10px] uppercase tracking-wide text-tefa-gold/80 mb-1">likely · locked</div>
               <div className="flex items-center justify-center h-[18px] font-mono text-sm font-bold text-tefa-gold">{churnMode}%</div>
-              <div className="text-[9px] text-tefa-body/40">Conservative</div>
+              <div className="text-[9px] text-tefa-body/40">central</div>
             </div>
             <div className="text-center">
               <div className="text-[10px] uppercase tracking-wide text-tefa-body/40 mb-1">max (worst)</div>
-              <input type="range" min="25" max="60" value={churnMax} className="w-full accent-tefa-navy"
+              <input type="range" min="41" max="75" value={churnMax} className="w-full accent-tefa-navy"
                 onChange={(e) => setChurnMax(Math.max(+e.target.value, churnMode + 1))} />
             </div>
           </div>
@@ -1303,9 +1279,9 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, k, casca
       </div>
 
       <p className="text-[10px] text-tefa-body/45 mt-4">
-        Defaults reproduce the model: active churn PERT(16 / 25 / 35), opt-out share ~23% of churn, freed-ratio held at the observed ~1.16 — the median lands near the
-        Conservative point estimate (~{fmt(r.p50)}). The share of runs clearing {BAND_LO.toLocaleString()} is the probability the written reviews
-        kept asserting without computing. Drag the Jul-15 assumptions to stress-test. A planning tool, not a forecast.
+        Defaults reproduce the model: moved-aside share PERT(30 / 40 / 50) of the ~{k.remainder.toLocaleString()} remainder, opt-out share ~23%,
+        freed-ratio held at the observed ~1.16 — the median lands near the central point estimate (~{fmt(r.p50)}). The share of runs clearing{' '}
+        {BAND_LO.toLocaleString()} is the probability the cascade enters our band at all. Drag the Jul-15 assumptions to stress-test. A planning tool, not a forecast.
       </p>
     </section>
   );
@@ -1315,16 +1291,16 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, k, casca
 // TEFA — likelihood the cascade reaches each band, and two projections
 // ---------------------------------------------------------------------------
 const TefaView = () => {
-  // min / max churn are shared with the simulator below; "likely" is fixed at the
-  // Conservative central. The three chart lines (research / conservative / aggressive)
-  // are min / likely / max, so dragging the sliders reshapes the chart live.
-  const [churnMin, setChurnMin] = useState(16); // floor: 16% ACTIVE churn (a little above today's ~12% pace)
-  const [churnMax, setChurnMax] = useState(35); // ceiling: 35% ACTIVE churn (beyond any first-year program on record)
+  // min / max are shared with the simulator below; "likely" is fixed at the central.
+  // The three chart lines (low / likely / high) are the share of the 34k remainder that's
+  // moved aside — min / likely / max — so dragging the sliders reshapes the chart live.
+  const [churnMin, setChurnMin] = useState(30); // low: 30% of the remainder leaves
+  const [churnMax, setChurnMax] = useState(50); // high: 50% of the remainder leaves
   const { series: cascadeSeries, kpis: k } = useMemo(
     () => buildCascadeProjection({
-      research: { ...RESEARCH, churnRate: churnMin / 100 },
-      realistic: { ...REALISTIC, churnRate: CONSERVATIVE_CHURN / 100 },
-      aggressive: { ...AGGRESSIVE, churnRate: churnMax / 100 },
+      research: { ...RESEARCH, share: churnMin / 100 },
+      realistic: { ...REALISTIC, share: CONSERVATIVE_CHURN / 100 },
+      aggressive: { ...AGGRESSIVE, share: churnMax / 100 },
     }),
     [churnMin, churnMax]
   );
@@ -1378,12 +1354,11 @@ const TefaView = () => {
           })}
         </div>
         <p className="text-xs text-tefa-body/50 mt-3">
-          <strong>Bottom line:</strong> our seat is the <strong>deep end (45–50k)</strong>, and two frontiers decide it. The <strong>funded</strong> line
-          (real money) is driven only by active opt-out/downgrade churn + the net reserve; the <strong>offer</strong> line is that, stretched by
-          ÷(1−{k.neverActivationPct}%) because a decline passes the same dollars to the next person (never-activation funds no one). Central
-          (~{k.realisticChurnPct}% active churn) funds ~{k.realisticTerminal.toLocaleString()}, and even its offer reaches only ~{k.realisticOffer.toLocaleString()} —
-          ~{Math.max(0, YOUR_POS.lo - k.realisticOffer).toLocaleString()} short of our 45k. FUNDED money reaches us only in the ~{k.aggressiveChurnPct}% ceiling case
-          (~{k.aggressiveTerminal.toLocaleString()}). <strong>Plan on no voucher this year</strong>; an offer is plausible at the high end, but the money behind it needs ceiling-level active churn.
+          <strong>Bottom line:</strong> of the ~107,000 active awards, <strong>~{k.funded.toLocaleString()} were funded on Jul 1</strong> — so the only fuel
+          left is the <strong>~{k.remainder.toLocaleString()} remainder</strong> that hadn't activated, leaving by opt-out or the $2,000 homeschool drop.
+          Realistically 30–50% of that remainder is moved aside, funding the cascade to <strong>~{k.researchTerminal.toLocaleString()}–{k.aggressiveTerminal.toLocaleString()}</strong>{' '}
+          (likely ~{k.realisticTerminal.toLocaleString()}). That just reaches the <strong>start</strong> of our band at the high end and never reaches our actual
+          45–50k position. <strong>Plan on no voucher this year</strong>; it would take essentially the entire remainder collapsing to get money to our seat.
         </p>
       </section>
 
@@ -1397,15 +1372,14 @@ const TefaView = () => {
           <Activity size={20} /> The scenarios behind the model, and the dates
         </h2>
         <p className="text-[11px] text-tefa-body/55 mb-3">
-          <strong>As of Jun 25, 2026.</strong> The Jun 23 Comptroller update added <strong>{JUNE23_CASCADE.t2Cascaded.toLocaleString()} more
-          waitlisted students</strong> (all Tier 2), advancing the official frontier to <strong>{k.frontierNow.toLocaleString()}</strong> —
-          nearly 110,000 awarded, ~{JUNE23_CASCADE.optOuts.toLocaleString()} opt-outs, ~107,000 active. Per spokesperson Travis Pillow
-          (Jun 25), the program is essentially fully deployed — <strong>~$910M awardable, ~$890M already in active awards, ~$20M reserve</strong>{' '}
-          for appeals (~$16M net of appeals → ~{RESERVE_SEATS.toLocaleString()} waitlist seats) — so the waitlist now advances by <strong>active churn</strong> as families leave, not a big reserve release.
+          <strong>As of Jun 30, 2026.</strong> The Jun 23 Comptroller update put the official frontier at <strong>{k.frontierNow.toLocaleString()}</strong> —
+          nearly 110,000 awarded, ~{JUNE23_CASCADE.optOuts.toLocaleString()} opt-outs, ~107,000 active. The Jun 30 release then pinned the activation:{' '}
+          <strong>~{k.funded.toLocaleString()} accounts are funded Jul 1</strong> (opted in + confirmed), leaving a <strong>~{k.remainder.toLocaleString()} remainder</strong>{' '}
+          that was awarded but hadn't activated. That remainder is the entire pool that can still free a seat — the cascade can't advance on anyone else.
         </p>
         <div className="text-[11px] text-tefa-body/60 bg-tefa-light rounded p-3 space-y-1">
-          <div><strong>Three scenarios — fuel vs. stretch.</strong> The frontier (= {T2_AT_LOTTERY.toLocaleString()} at-lottery − Tier 2 still queued) has reached {k.frontierNow.toLocaleString()}. Two separate things move it. The <strong>funded frontier</strong> = real fuel (active families opting out / downgrading + the net ~$16M reserve) ÷ blended seat cost — the hard money limit. The <strong>offer frontier</strong> = funded ÷ (1−{k.neverActivationPct}%), the stretch: a waitlist family that declines passes the same dollars to the next person, so offers travel further than money funds (never-activation reaches deeper, it does not fund). Driven by ACTIVE churn: <strong>floor ~{k.researchChurnPct}%</strong> funds ~<strong>{k.researchTerminal.toLocaleString()}</strong>; <strong>central ~{k.realisticChurnPct}%</strong> funds ~<strong>{k.realisticTerminal.toLocaleString()}</strong> (offer ~{k.realisticOffer.toLocaleString()}); <strong>ceiling ~{k.aggressiveChurnPct}%</strong> funds ~<strong>{k.aggressiveTerminal.toLocaleString()}</strong> (offer ~{k.aggressiveOffer.toLocaleString()}). Our 45k seat gets FUNDED money only at the ceiling; at central even the offer stops ~{Math.max(0, YOUR_POS.lo - k.realisticOffer).toLocaleString()} short. Freed-ratio {k.freedRatio} seats/departure (observed downgrade-heavy mix).</div>
-          <div><strong>Watch — the Jul 15 deadline.</strong> Families who don't opt in by Jul 15 are "moved aside to allow other families to come off the waitlist" (Travis Pillow). That shakeout — plus the ~$20M reserve awarded once appeals finalize — is the single event that decides whether the cascade reaches our band, and it lands <em>after</em> the Jun 30 penalty-free withdrawal deadline.</div>
+          <div><strong>One unknown, a 30–50% band.</strong> The frontier (= {T2_AT_LOTTERY.toLocaleString()} at-lottery − Tier 2 still queued) has reached {k.frontierNow.toLocaleString()}. Future advance = how much of the ~{k.remainder.toLocaleString()} remainder is moved aside × seats freed per departure + the net ~$16M reserve (~{RESERVE_SEATS.toLocaleString()} seats). Both exit routes count: a full <strong>opt-out</strong> frees the whole award (~$10,474), a drop to the <strong>$2,000 homeschool</strong> tier frees only the difference (~$8,474) — held at the observed ~23/77 mix → freed-ratio {k.freedRatio} seats/departure. <strong>Low ~{k.researchChurnPct}%</strong> → ~<strong>{k.researchTerminal.toLocaleString()}</strong>; <strong>likely ~{k.realisticChurnPct}%</strong> → ~<strong>{k.realisticTerminal.toLocaleString()}</strong>; <strong>high ~{k.aggressiveChurnPct}%</strong> → ~<strong>{k.aggressiveTerminal.toLocaleString()}</strong>. Only the high case crosses our band start ({BAND_LO.toLocaleString()}); none reach our 45k.</div>
+          <div><strong>Watch — the Jul 15 deadline.</strong> Families awarded before Jun 22 who don't select a school by Jul 15 (confirmed by Jul 31) are "moved aside to allow other families to come off the waitlist" (Travis Pillow). That shakeout of the remainder — plus the ~$20M reserve awarded once appeals finalize — is the single event that decides whether the cascade reaches our band, and it lands <em>after</em> the Jun 30 penalty-free withdrawal deadline.</div>
         </div>
 
         {/* Frontier position reached by each scenario, at the key cascade dates. */}
@@ -1422,13 +1396,11 @@ const TefaView = () => {
             </thead>
             <tbody className="tabular-nums">
               {[
-                { key: 'aggressive', label: `Funded — ceiling (~${k.aggressiveChurnPct}%)`, color: '#aa2142', vals: k.projectionTable.aggressive },
-                { key: 'aggressiveOffer', label: '↳ offer reach (stretch)', color: '#aa2142', vals: k.projectionTable.aggressiveOffer, dim: true },
-                { key: 'conservative', label: `Funded — likely (~${k.realisticChurnPct}%)`, color: '#202562', vals: k.projectionTable.conservative },
-                { key: 'conservativeOffer', label: '↳ offer reach (stretch)', color: '#202562', vals: k.projectionTable.conservativeOffer, dim: true },
-                { key: 'research', label: `Funded — floor (~${k.researchChurnPct}%)`, color: '#2e7d5b', vals: k.projectionTable.research },
+                { key: 'aggressive', label: `High — ${k.aggressiveChurnPct}% of remainder`, color: '#aa2142', vals: k.projectionTable.aggressive },
+                { key: 'conservative', label: `Likely — ${k.realisticChurnPct}% of remainder`, color: '#202562', vals: k.projectionTable.conservative },
+                { key: 'research', label: `Low — ${k.researchChurnPct}% of remainder`, color: '#2e7d5b', vals: k.projectionTable.research },
               ].map((row) => (
-                <tr key={row.key} className="border-b border-gray-100" style={{ opacity: row.dim ? 0.6 : 1 }}>
+                <tr key={row.key} className="border-b border-gray-100">
                   <td className="py-2 pr-3 font-semibold whitespace-nowrap" style={{ color: row.color }}>{row.label}</td>
                   {row.vals.map((v, i) => (
                     <td key={i} className="text-right py-2 px-2 text-tefa-body">{v.toLocaleString()}</td>
@@ -1438,8 +1410,9 @@ const TefaView = () => {
             </tbody>
           </table>
           <p className="text-[10px] text-tefa-body/45 mt-2">
-            Two lines per scenario: <strong>funded</strong> = the global waitlist position real money reaches; <strong>offer reach</strong> = funded ÷ (1−{k.neverActivationPct}%), how far offers travel as declines pass down. Tier 3 starts at {T3_START.toLocaleString()};
-            our band is {BAND_LO.toLocaleString()}–{BAND_HI.toLocaleString()}. All share the published track through Jun 23 ({k.frontierNow.toLocaleString()}); they differ only in projected active churn after.
+            Each row is the global waitlist position real money reaches if that share of the ~{REMAINDER.toLocaleString()} remainder is moved aside.
+            Tier 3 starts at {T3_START.toLocaleString()}; our band is {BAND_LO.toLocaleString()}–{BAND_HI.toLocaleString()}. All share the
+            published track through Jun 23 ({k.frontierNow.toLocaleString()}); they differ only in how much of the remainder leaves after.
           </p>
         </div>
       </section>
