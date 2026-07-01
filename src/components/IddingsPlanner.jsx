@@ -245,7 +245,7 @@ const RESEARCH = {
 // `today` anchors the "Today" marker to a fixed date so a screenshot of the
 // chart reads the same for everyone (the artifact gets posted/shared) — bump it
 // as the analysis is refreshed, rather than letting it drift with the viewer's clock.
-const FRONTIER_WINDOW = { chartStart: '2026-05-04', today: '2026-06-25', jul15: '2026-07-15', end: '2026-08-31' };
+const FRONTIER_WINDOW = { chartStart: '2026-05-04', today: '2026-06-30', jul15: '2026-07-15', end: '2026-08-31' };
 const WAVES_END = '2026-08-15';   // after this the big mechanisms are exhausted
 const POST_DRIFT = 30;            // seats/day of small residual attrition after Aug 15 (realistic trickle)
 
