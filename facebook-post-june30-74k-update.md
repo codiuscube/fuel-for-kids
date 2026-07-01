@@ -9,7 +9,9 @@ Here's my honest read on what that means:
 
 ✅ Tier 2 — yes. Under these numbers Tier 2 clears. If you're anywhere in the Tier 2 waitlist, you should expect an offer, with the biggest movement around the July 15 opt-in deadline.
 
-🟡 Waitlist positions ~20k–30k — likely. This band (the tail of Tier 2 into early Tier 3) looks reachable at $20M plus normal opt-out/downgrade attrition. Treat it as probable, not guaranteed, and watch the post-July 15 window.
+🟢 Positions ~20k–25k — likely. This is the tail of Tier 2 into early Tier 3, and it looks funded at $20M plus normal opt-out/downgrade attrition. Watch the post-July 15 window.
+
+🟡 Positions ~25k–30k — possible. At $20M you should expect an offer here, but turning it into a funded seat needs a bit more reserve or attrition to break your way. Hope for it, don't plan on it.
 
 🔻 Beyond ~30k — unlikely this year. Past that band the math needs attrition or reserve well above what we're seeing. If you're back there, please don't budget around TEFA arriving in Year 1 — if it reaches you, treat it as upside.
 
