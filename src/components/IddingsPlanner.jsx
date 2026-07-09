@@ -11,6 +11,12 @@ import {
   Scale,
   Users,
   Layers,
+  MapPin,
+  Phone,
+  Mail,
+  Shirt,
+  GraduationCap,
+  Backpack,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -592,8 +598,8 @@ const PAYMENT_PLAN = {
     'Dec 7, 2026', 'Jan 5, 2027', 'Feb 5, 2027', 'Mar 5, 2027', 'Apr 5, 2027'],
 };
 
-const VALID_TABS = ['now', 'money', 'timeline', 'tefa'];
-const TAB_LABELS = { now: 'Now', money: 'Money', timeline: 'Timeline', tefa: 'TEFA' };
+const VALID_TABS = ['now', 'money', 'timeline', 'nbca', 'tefa'];
+const TAB_LABELS = { now: 'Now', money: 'Money', timeline: 'Timeline', nbca: 'NBCA Prep', tefa: 'TEFA' };
 
 const IddingsPlanner = () => {
   const { tab } = useParams();
@@ -661,6 +667,7 @@ const IddingsPlanner = () => {
           />
         )}
         {activeTab === 'timeline' && <TimelineView />}
+        {activeTab === 'nbca' && <NbcaPrepView />}
         {activeTab === 'tefa' && <TefaView />}
       </main>
 
@@ -1435,6 +1442,570 @@ const TefaView = () => {
             Tier 3 starts at {T3_START.toLocaleString()}; our band is {BAND_LO.toLocaleString()}–{BAND_HI.toLocaleString()}. All share the
             published track through Jun 23 ({k.frontierNow.toLocaleString()}); they differ only in how much of the remainder leaves after.
           </p>
+        </div>
+      </section>
+    </div>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// NBCA PREP — everything we need to know, do, and remember for the 2026–27
+// school year at New Braunfels Christian Academy. Data mirrors nbca-prep.md.
+// ---------------------------------------------------------------------------
+
+// The must-do items with hard consequences if missed, most urgent first.
+// `links` are verified against nbcatx.org/page/parent-resources (Jul 2026).
+const NBCA_ACTIONS = [
+  {
+    title: 'OTC medication permission (Tylenol / Ibuprofen / Benadryl)',
+    due: 'Before school starts',
+    who: 'Any child needing OTC meds',
+    detail:
+      'This is a school-wide Jotform, not 4th-grade-only — complete it for any child the nurse may need to give Tylenol, Ibuprofen, or Benadryl to during the day. We flagged it for Sebastian, but do one per child as needed. Off-campus and prescription meds use separate forms (see Key links).',
+    links: [{ label: 'Permission to Administer (Jotform)', url: 'https://form.jotform.com/251976016734058' }],
+  },
+  {
+    title: 'Athletic paperwork — Cassius & Dorothy',
+    due: 'Due Jul 31',
+    who: 'Both athletes',
+    detail:
+      'Physicals and medical-history forms must be completed and uploaded to the Rank One portal before either can participate in sports. Download the Rank One app (iOS/Android) and subscribe to "Schedule Alerts." The Athletic Handbook has the full policy.',
+    links: [
+      { label: 'Rank One portal', url: 'https://nbca.store.rankone.com/' },
+      { label: 'Athletic Handbook', url: 'https://docs.google.com/document/d/1rpI6cJBamE3AZuOGglpiffz3fI2JBXaMzKeFwSl5Fkg/edit' },
+    ],
+  },
+  {
+    title: 'Grandparent passes',
+    due: 'Anytime',
+    who: 'FACTS portal',
+    detail:
+      'Log in to FACTS (District Code: NBCA-TX) → "Family" tab → "Family Demographic Form." Verify or add grandparents’ names and addresses so they get free passes mailed for all NBCA sporting events.',
+    links: [{ label: 'FACTS Family Portal', url: 'https://factsmgt.com/parent-log-in/' }],
+  },
+  {
+    title: 'Hot lunch ordering (optional)',
+    due: 'Daily, 9am–1pm',
+    who: 'FACTS Parent Portal',
+    detail:
+      'Vendors: Chick-Fil-A, NB Tortilleria, Whataburger, Jersey Mike’s, Mattenga’s Pizza. Order via the FACTS Parent Portal; ordering closes daily between 9am and 1pm.',
+    links: [{ label: 'Ordering & paying for lunch (PDF)', url: 'https://core-docs.s3.us-east-1.amazonaws.com/documents/asset/uploaded_file/902/New_Braunfels_Christian_Academy/5936517/Ordering_and_Paying_for_Lunch_25-26.pdf' }],
+  },
+];
+
+// Verified official NBCA links, grouped for the "Key links & portals" card.
+const NBCA_LINKS = [
+  {
+    group: 'Portals & hubs',
+    links: [
+      { label: 'Parent Resources hub', url: 'https://www.nbcatx.org/page/parent-resources' },
+      { label: 'School calendar', url: 'https://www.nbcatx.org/page/calendar-events' },
+      { label: 'FACTS Family Portal', url: 'https://factsmgt.com/parent-log-in/' },
+      { label: 'Athletics overview', url: 'https://www.nbcatx.org/page/athletics-overview' },
+    ],
+  },
+  {
+    group: 'Health & medical forms',
+    links: [
+      { label: 'OTC meds — Permission to Administer (Jotform)', url: 'https://form.jotform.com/251976016734058' },
+      { label: 'Elementary off-campus medication', url: 'https://5il.co/i8gg' },
+      { label: 'Secondary off-campus medication', url: 'https://5il.co/i8gj' },
+      { label: 'Prescription medication permission', url: 'https://5il.co/i8gl' },
+      { label: 'Vaccine requirements (K–12)', url: 'https://5il.co/2tez3' },
+      { label: 'Asthma action plan', url: 'https://5il.co/i8gk' },
+      { label: 'Food allergy action plan', url: 'https://5il.co/i8gh' },
+    ],
+  },
+  {
+    group: 'Uniforms, spirit wear & volunteering',
+    links: [
+      { label: 'Global Schoolwear (uniforms & PE)', url: 'https://www.globalschoolwear.com/' },
+      { label: 'PTO online store (spirit wear)', url: 'https://nbcapto.org/product/set-the-example-t-shirts/' },
+      { label: 'NBCA Resale Facebook group', url: 'https://www.facebook.com/groups/900133394399967' },
+      { label: 'Volunteer application', url: 'https://forms.gle/ZTV3kLtAhhTxUTaEA' },
+      { label: 'Business Office FAQs', url: 'https://5il.co/3nawo' },
+    ],
+  },
+];
+
+const NBCA_CAMPUSES = [
+  {
+    name: 'Elementary Campus',
+    who: 'Sebastian · 4th Grade',
+    address: '995 Mission Hills Dr., New Braunfels, TX 78130',
+    dropoff: '7:30 AM',
+    pickup: '3:10 PM',
+  },
+  {
+    name: 'Secondary Campus',
+    who: 'Cassius · 9th · & Dorothy · 7th',
+    address: '220 FM 1863, New Braunfels, TX 78132',
+    dropoff: '7:30 AM (earlier if morning sports)',
+    pickup: '3:45 PM (later if afternoon sports)',
+  },
+];
+
+const NBCA_CONTACTS = [
+  {
+    role: 'Business Office — FACTS, tuition, lunch, extended care',
+    name: 'Nanette Jones',
+    phone: '830-629-3696',
+    email: 'njones@nbcatx.org',
+  },
+  { role: 'Athletic Operations', name: 'Janey Polk', phone: null, email: 'jpolk@nbcatx.org' },
+  { role: 'School Nurse', name: 'Keri Benson', phone: '830-629-6222', email: 'kbenson@nbcatx.org' },
+];
+
+const NBCA_KIDS = [
+  {
+    name: 'Cassius',
+    grade: '9th Grade',
+    accent: 'text-tefa-navy',
+    // Per-child official links (verified Jul 2026). Secondary supply list is shared MS+HS.
+    links: [
+      { label: 'Secondary supply list', url: 'https://aptg.co/tCJ7SC' },
+      { label: '9th & 9th Honors summer reading', url: 'https://aptg.co/y0zrrR' },
+      { label: 'Secondary dress code', url: 'https://aptg.co/92BMKR' },
+      { label: 'Report an absence', url: 'https://forms.gle/9X6MM7t3gq3Q3vRu8' },
+    ],
+    items: [
+      {
+        label: 'Summer strength & conditioning',
+        text:
+          'Mon–Thurs, 6:30–8:00 AM on the football field / weight room until Jul 23. Coach Hunter Harrison. Sign up via the RankOne link.',
+        link: 'https://nbca.store.rankone.com/Camp/List?mc_cid=230ac33dbb&mc_eid=2b0df2e354',
+        linkLabel: 'RankOne camp sign-up',
+      },
+      {
+        label: 'TAPPS / TMS registration',
+        text: 'Needs a profile in the TAPPS system to track eligibility. You’ll need his Student ID.',
+      },
+      {
+        label: 'Fall Break athletics (Oct 12–23)',
+        text:
+          'The district does NOT pause. ALL high-school athletes must stay in town and attend practices and competitions during Fall Break.',
+      },
+      {
+        label: 'Parent meetings',
+        text: 'Cross Country: Aug 4 @ 5:30 PM (Secondary Gym) · Football: Aug 7 @ 8:00 PM (Wildcat Stadium home stands).',
+      },
+      {
+        label: 'Student involvement',
+        text: 'Eligible to apply/run for Student Council or audition for the Chapel Worship Team. (NHS is sophomores/juniors only.)',
+      },
+      { label: 'Retreat', text: '9th-grade class retreat — dates TBD.' },
+      {
+        label: 'Fall schedule',
+        text:
+          'English 9 Honors · Spanish I · Old Testament · World Geography (Chapel Wed) · Honors Geometry · HS Band · Biology · Athletics (Periods 8 & 9).',
+      },
+    ],
+  },
+  {
+    name: 'Dorothy',
+    grade: '7th Grade',
+    accent: 'text-tefa-red',
+    links: [
+      { label: 'Secondary supply list', url: 'https://aptg.co/tCJ7SC' },
+      { label: '7th grade summer reading', url: 'https://aptg.co/J20fyQ' },
+      { label: 'MS Math IXL Summer Boost', url: 'https://aptg.co/bs1dtZ' },
+      { label: 'PE uniform — Global Schoolwear', url: 'https://www.globalschoolwear.com/' },
+      { label: 'Secondary dress code', url: 'https://aptg.co/92BMKR' },
+    ],
+    items: [
+      {
+        label: 'Mandatory PE uniform',
+        text:
+          'Buy at least 1 pair of athletic shorts and 1 athletic shirt through the Global Schoolwear site. Compression shorts allowed underneath.',
+      },
+      {
+        label: 'IXL Summer Boost — Math',
+        text: 'Complete the 7th-grade summer plan before Aug 12 using the NBCA custom link.',
+      },
+      {
+        label: 'Middle School Houses',
+        text: 'Randomly assigned to Courage, Loyalty, Integrity, or Wisdom for monthly team competitions.',
+      },
+      {
+        label: 'Fall Break athletics (Oct 12–23)',
+        text:
+          'Week 1 (Oct 12–16) is a BYE for MS Football & Volleyball — best time to travel. Week 2 (Oct 19–23) has normal practices and playoff games; attendance mandatory.',
+      },
+      {
+        label: 'Parent meetings',
+        text: 'Volleyball: Aug 3 @ 5:30 PM (Secondary Gym) · Cross Country: Aug 4 @ 5:30 PM (Secondary Gym).',
+      },
+      { label: 'Retreat', text: 'Middle-school class retreat — dates TBD.' },
+      {
+        label: 'Fall schedule',
+        text: 'MS Athletics · Math 7 · Bible 7 Girls · English 7 (Chapel Wed) · Science 7 · MS Band · History 7 · MS Art (Periods 8 & 9).',
+      },
+    ],
+  },
+  {
+    name: 'Sebastian',
+    grade: '4th Grade',
+    accent: 'text-tefa-green',
+    links: [
+      { label: 'Elementary 3rd–5th supply list', url: 'https://5il.co/2o0ag' },
+      { label: 'All elementary supply lists', url: 'https://aptg.co/rSGL4x' },
+      { label: 'Elementary dress code', url: 'https://aptg.co/HcLxcf' },
+      { label: 'Report an absence', url: 'https://forms.gle/mnX8JapePioAnfPq5' },
+    ],
+    // Itemized 4th-grade list, grouped so it reads as a checklist rather than a wall of text.
+    supplies: [
+      {
+        group: 'Label with name',
+        tone: 'navy',
+        items: [
+          'ESV Bible (w/ sticky arrow page markers)',
+          'Forvencer 12-pocket project organizer',
+          'Zippered pencil bag',
+          'Thick plastic folders w/ brads — 1 orange, 1 red',
+          'Dry-erase grid whiteboard',
+          '4 wide-ruled composition notebooks',
+          '2 wide-ruled 70-page spiral notebooks',
+          'Fiskars 6" scissors',
+          'Crayola 12-ct colored pencils',
+          'Wired mouse',
+          'Wired in-ear headphones',
+          'Black Sharpies — 2 regular, 2 fine tip',
+          '2 highlighters',
+          '2 grading pens',
+          'Crayola watercolors (8 colors)',
+        ],
+      },
+      {
+        group: 'Community use — do NOT label',
+        tone: 'gold',
+        items: [
+          'Ticonderoga 30-ct pencils',
+          '12-ct pencil-top erasers',
+          'Magic Rub eraser',
+          'Expo 12-ct dry-erase markers',
+          '4 Elmer’s giant glue sticks',
+          '2 Clorox wipes',
+          '10-ct Crayola markers',
+          '24-ct Crayola crayons',
+        ],
+      },
+      {
+        group: 'Boys only (Sebastian)',
+        tone: 'green',
+        items: [
+          '3-ct Scotch tape rolls',
+          '1 medium hand sanitizer',
+          '12-pack file folders',
+        ],
+      },
+    ],
+    items: [
+      {
+        label: 'Summer reading (recommended)',
+        text:
+          'The Tale of Despereaux · Because of Winn-Dixie · Frindle · The Cricket in Times Square · The Miraculous Journey of Edward Tulane · Hatchet.',
+      },
+    ],
+  },
+];
+
+const NBCA_MISC = [
+  {
+    icon: Shirt,
+    title: 'Uniforms, spirit wear & technology',
+    points: [
+      'Daily uniforms ordered through Tommy Hilfiger.',
+      'Spirit wear: Athletic Booster Club (sold at home football games), the PTO Online Store, the NBCA Resale Facebook page, or limited resale at the Elementary/Secondary offices.',
+      'Technology: students use Google Apps for Education. Classroom Chromebooks are for academic use only.',
+    ],
+  },
+  {
+    icon: Users,
+    title: 'Parent volunteering & booster clubs',
+    points: [
+      'Field-trip chaperones must submit a Volunteer Application at least one week ahead for background checks.',
+      'NBCA PTO — fosters a close union between home and school.',
+      'Athletic Booster Club — boards: Membership, Merchandise, Fundraising, Concessions, Sports Banquet (athleticboosters@nbcatx.org).',
+      'Fine Arts Booster Club — theater, band, choir, dance, yearbook, art (nbcafinearts@gmail.com).',
+    ],
+  },
+];
+
+// Master July–March timeline. `iso` drives past/upcoming styling against TODAY.
+const NBCA_TIMELINE = [
+  { date: 'Now – Jul 23', iso: '2026-07-23', title: 'Summer strength & conditioning', detail: 'Cassius · Mon–Thurs 6:30–8:00 AM.' },
+  { date: 'Jul 25', iso: '2026-07-25', title: 'Summer Band Camp', detail: '10:15 AM–12:15 PM · Cassius & Dorothy.' },
+  { date: 'Jul 27 – 31', iso: '2026-07-27', title: 'Athletics Dead Week', detail: 'No practices, games, or team events.' },
+  { date: 'Jul 31', iso: '2026-07-31', title: 'Rank One athletic paperwork DUE', detail: 'Physicals + medical history uploaded for Cassius & Dorothy.' },
+  { date: 'Aug 1', iso: '2026-08-01', title: 'Band Camp / schedule-change window opens', detail: 'Summer Band Camp 10:15–12:15.' },
+  { date: 'Aug 3', iso: '2026-08-03', title: 'HS fall sports begin · Media Day · Volleyball meeting', detail: 'Cassius practice starts · HS Media Day 12:30–4:30 PM · HS & MS Volleyball parent meeting 5:30 PM (Secondary Gym).' },
+  { date: 'Aug 4', iso: '2026-08-04', title: 'Cross Country parent meeting', detail: 'HS & MS · 5:30 PM (Secondary Gym).' },
+  { date: 'Aug 7', iso: '2026-08-07', title: 'Football parent meeting', detail: 'HS & MS · 8:00 PM (Wildcat Stadium home stands).' },
+  { date: 'Aug 10', iso: '2026-08-10', title: 'MS football/volleyball begin · Elementary Meet the Teacher', detail: 'Dorothy practice starts · Meet the Teacher (A–M last names) 4:30–5:30 PM (Elementary).' },
+  { date: 'Aug 11', iso: '2026-08-11', title: '4th Grade Parent Orientation', detail: '5:30–6:30 PM.' },
+  { date: 'Aug 12', iso: '2026-08-12', title: 'FIRST DAY OF SCHOOL', detail: 'MS Cross Country practice also begins.' },
+  { date: 'Aug 17', iso: '2026-08-17', title: '7th/8th meeting · Meet the Wildcats', detail: '7th & 8th grade parent/student meeting 5:30 PM (Secondary Gym) · Meet the Wildcats 6:30 PM (Athletic Complex).' },
+  { date: 'Aug 21', iso: '2026-08-21', title: 'Football home opener', detail: 'vs. Austin Hill Country Christian · 7:00 PM · Band plays!' },
+  { date: 'Aug 24', iso: '2026-08-24', title: 'HS parent/student meeting', detail: '6:30 PM (Secondary Gym).' },
+  { date: 'Aug 27', iso: '2026-08-27', title: 'Volleyball home opener', detail: 'vs. Bracken · 6:00 PM.' },
+  { date: 'Oct 9', iso: '2026-10-09', title: 'End of 1st Quarter', detail: null },
+  { date: 'Oct 12 – 23', iso: '2026-10-12', title: 'Fall Break', detail: 'Students off — but mandatory sports-attendance rules apply (see per-kid notes).' },
+  { date: 'Mar 8 – 12', iso: '2027-03-08', title: 'Spring Break', detail: null },
+  { date: 'May 26', iso: '2027-05-26', title: 'Last Day of School', detail: 'Half day.' },
+];
+
+// A compact external-link pill used across the NBCA Prep tab.
+const LinkPill = ({ label, url }) => (
+  <a
+    href={url}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="inline-flex items-center gap-1 text-[11px] font-semibold text-tefa-green bg-tefa-green/10 hover:bg-tefa-green/20 rounded-full px-2.5 py-1 transition"
+  >
+    {label} <ExternalLink size={11} />
+  </a>
+);
+
+const SUPPLY_TONE = {
+  navy: { head: 'text-tefa-navy', dot: 'bg-tefa-navy/40', chip: 'bg-tefa-navy/5 border-tefa-navy/15' },
+  gold: { head: 'text-tefa-gold', dot: 'bg-tefa-gold', chip: 'bg-tefa-gold/10 border-tefa-gold/25' },
+  green: { head: 'text-tefa-green', dot: 'bg-tefa-green/50', chip: 'bg-tefa-green/5 border-tefa-green/20' },
+};
+
+const NbcaPrepView = () => {
+  const nextIdx = NBCA_TIMELINE.findIndex((e) => e.iso >= TODAY);
+
+  return (
+    <div className="space-y-6">
+      {/* Urgent action items */}
+      <section className="bg-white rounded-xl shadow-md border-2 border-tefa-gold/50 p-6">
+        <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2 mb-1">
+          <AlertCircle size={20} /> Urgent all-family action items
+        </h2>
+        <p className="text-sm text-tefa-body/70 mb-4">The paperwork with hard deadlines — clear these first.</p>
+        <ul className="space-y-3">
+          {NBCA_ACTIONS.map((a) => (
+            <li key={a.title} className="flex items-start gap-3 rounded-lg border border-gray-100 bg-tefa-light/50 p-3">
+              <span className="shrink-0 mt-0.5 text-[11px] font-bold uppercase tracking-wide bg-tefa-gold/20 text-tefa-navy rounded px-2 py-1 w-28 text-center">
+                {a.due}
+              </span>
+              <div>
+                <div className="flex items-baseline gap-2 flex-wrap">
+                  <span className="font-bold text-tefa-navy text-sm">{a.title}</span>
+                  <span className="text-[11px] text-tefa-body/50">{a.who}</span>
+                </div>
+                <p className="text-sm text-tefa-body/75 mt-0.5">{a.detail}</p>
+                {a.links && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {a.links.map((l) => (
+                      <LinkPill key={l.url} label={l.label} url={l.url} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* Key links & portals — verified against the NBCA parent-resources pages */}
+      <section className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+        <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2 mb-1">
+          <ExternalLink size={20} /> Key links & portals
+        </h2>
+        <p className="text-sm text-tefa-body/70 mb-4">
+          Official NBCA links, verified from{' '}
+          <a href="https://www.nbcatx.org/page/parent-resources" target="_blank" rel="noopener noreferrer"
+            className="underline text-tefa-green hover:text-tefa-navy">nbcatx.org/parent-resources</a>{' '}
+          (Jul 2026).
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {NBCA_LINKS.map((grp) => (
+            <div key={grp.group}>
+              <div className="text-xs font-bold uppercase tracking-wide text-tefa-body/60 mb-2">{grp.group}</div>
+              <div className="flex flex-wrap gap-2">
+                {grp.links.map((l) => (
+                  <LinkPill key={l.url} label={l.label} url={l.url} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Campus logistics */}
+      <section className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+        <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2 mb-4">
+          <MapPin size={20} /> Campuses, hours & drop-off
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {NBCA_CAMPUSES.map((c) => (
+            <div key={c.name} className="rounded-lg border border-gray-200 bg-tefa-light p-4">
+              <div className="font-bold text-tefa-navy text-sm">{c.name}</div>
+              <div className="text-[11px] text-tefa-body/50 mb-2">{c.who}</div>
+              <div className="text-xs text-tefa-body/70 flex items-start gap-1.5 mb-2">
+                <MapPin size={13} className="mt-0.5 shrink-0 text-tefa-body/40" /> {c.address}
+              </div>
+              <div className="flex gap-4 text-xs">
+                <div>
+                  <span className="text-tefa-body/50">Drop-off</span>{' '}
+                  <span className="font-bold text-tefa-navy">{c.dropoff}</span>
+                </div>
+                <div>
+                  <span className="text-tefa-body/50">Pick-up</span>{' '}
+                  <span className="font-bold text-tefa-navy">{c.pickup}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <h3 className="text-sm font-bold text-tefa-navy mt-5 mb-2">Key contacts</h3>
+        <div className="divide-y divide-gray-100">
+          {NBCA_CONTACTS.map((p) => (
+            <div key={p.name} className="py-2.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+              <div>
+                <div className="font-bold text-tefa-navy text-sm">{p.name}</div>
+                <div className="text-[11px] text-tefa-body/50">{p.role}</div>
+              </div>
+              <div className="flex flex-col sm:items-end text-xs gap-0.5">
+                {p.phone && (
+                  <a href={`tel:${p.phone.replace(/[^0-9]/g, '')}`} className="flex items-center gap-1.5 text-tefa-body/70 hover:text-tefa-green">
+                    <Phone size={12} /> {p.phone}
+                  </a>
+                )}
+                <a href={`mailto:${p.email}`} className="flex items-center gap-1.5 text-tefa-body/70 hover:text-tefa-green">
+                  <Mail size={12} /> {p.email}
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Per-kid cards */}
+      {NBCA_KIDS.map((kid) => (
+        <section key={kid.name} className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+          <h2 className="text-lg font-bold flex items-center gap-2 mb-3">
+            <GraduationCap size={20} className={kid.accent} />
+            <span className={kid.accent}>{kid.name}</span>
+            <span className="text-sm font-medium text-tefa-body/50">· {kid.grade}</span>
+          </h2>
+
+          {/* Per-child official links */}
+          {kid.links && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {kid.links.map((l) => (
+                <LinkPill key={l.url} label={l.label} url={l.url} />
+              ))}
+            </div>
+          )}
+
+          <div className="space-y-3">
+            {kid.items.map((it) => (
+              <div key={it.label} className="border-l-2 border-gray-200 pl-3">
+                <div className="text-xs font-bold uppercase tracking-wide text-tefa-body/60">{it.label}</div>
+                <p className="text-sm text-tefa-body/80 mt-0.5">
+                  {it.text}
+                  {it.link && (
+                    <>
+                      {' '}
+                      <a href={it.link} target="_blank" rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 font-semibold text-tefa-green hover:underline">
+                        {it.linkLabel || 'Open link'} <ExternalLink size={12} />
+                      </a>
+                    </>
+                  )}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* Itemized, grouped supply checklist (Sebastian) */}
+          {kid.supplies && (
+            <div className="mt-5">
+              <div className="flex items-center gap-2 mb-3">
+                <Backpack size={16} className="text-tefa-body/60" />
+                <span className="text-sm font-bold text-tefa-navy">School supply list</span>
+                <span className="text-[11px] text-tefa-body/50">4th grade · check off as you shop</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {kid.supplies.map((sg) => {
+                  const t = SUPPLY_TONE[sg.tone];
+                  return (
+                    <div key={sg.group} className={`rounded-lg border p-3 ${t.chip}`}>
+                      <div className={`text-xs font-bold uppercase tracking-wide mb-2 ${t.head}`}>{sg.group}</div>
+                      <ul className="space-y-1.5">
+                        {sg.items.map((item) => (
+                          <li key={item} className="flex items-start gap-2 text-xs text-tefa-body/80">
+                            <span className={`mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full ${t.dot}`} />
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="text-[11px] text-tefa-body/50 mt-2">
+                Girls-only list (not needed for Sebastian): 1 box tissues, 50-ct 9"×12" construction paper.
+              </p>
+            </div>
+          )}
+        </section>
+      ))}
+
+      {/* Uniforms / boosters */}
+      {NBCA_MISC.map((m) => {
+        const Icon = m.icon;
+        return (
+          <section key={m.title} className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+            <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2 mb-3">
+              <Icon size={20} /> {m.title}
+            </h2>
+            <ul className="space-y-2">
+              {m.points.map((pt) => (
+                <li key={pt} className="flex items-start gap-2 text-sm text-tefa-body/80">
+                  <span className="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-tefa-navy/40" />
+                  {pt}
+                </li>
+              ))}
+            </ul>
+          </section>
+        );
+      })}
+
+      {/* Master timeline */}
+      <section className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+        <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2 mb-6">
+          <Calendar size={20} /> Master timeline · July – May
+        </h2>
+        <div className="relative border-l-2 border-gray-200 ml-3 space-y-5">
+          {NBCA_TIMELINE.map((e, idx) => {
+            const past = e.iso < TODAY;
+            const isNext = idx === nextIdx;
+            return (
+              <div key={e.title} className={`relative pl-6 ${past ? 'opacity-50' : ''}`}>
+                <div
+                  className={`absolute -left-[7px] top-1.5 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm ${
+                    isNext ? 'bg-tefa-navy ring-4 ring-tefa-sky/40' : 'bg-gray-300'
+                  }`}
+                />
+                <div className={`bg-white p-3 rounded-lg shadow-sm border ${isNext ? 'border-tefa-navy/30 ring-1 ring-tefa-sky/30' : 'border-gray-100'}`}>
+                  <div className="flex items-center gap-2 mb-0.5">
+                    {isNext && (
+                      <span className="text-[10px] font-bold bg-tefa-green text-white px-2 py-0.5 rounded uppercase tracking-wide">
+                        Up next
+                      </span>
+                    )}
+                    <span className="text-xs font-bold text-tefa-body/50">{e.date}</span>
+                  </div>
+                  <h3 className="font-bold text-tefa-navy text-sm">{e.title}</h3>
+                  {e.detail && <p className="text-sm text-tefa-body/70 mt-0.5">{e.detail}</p>}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </section>
     </div>
