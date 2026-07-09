@@ -1793,47 +1793,47 @@ const NBCA_TASKS = [
   {
     group: 'Urgent — all family',
     tasks: [
-      { text: 'Athletic paperwork completed (medical-history forms uploaded to Rank One) — except Physicals', done: true },
-      { text: 'Physicals for Cassius & Dorothy uploaded to Rank One (DUE Jul 31)', done: false },
-      { text: 'OTC medication permission Jotform completed (Sebastian / any child needing meds)', done: false },
-      { text: 'Grandparent passes added via FACTS → Family → Family Demographic Form', done: false },
-      { text: 'Hot lunch ordering set up in FACTS Parent Portal (optional)', done: false },
+      { text: 'Athletic paperwork completed (medical-history forms uploaded to Rank One) — except Physicals', done: true, link: 'Rank One', url: 'https://nbca.store.rankone.com/' },
+      { text: 'Physicals for Cassius & Dorothy uploaded to Rank One (DUE Jul 31)', done: false, link: 'Rank One', url: 'https://nbca.store.rankone.com/' },
+      { text: 'OTC medication permission Jotform completed (Sebastian / any child needing meds)', done: false, link: 'Open Jotform', url: 'https://form.jotform.com/251976016734058' },
+      { text: 'Grandparent passes added via FACTS → Family → Family Demographic Form', done: false, link: 'FACTS', url: 'https://factsmgt.com/parent-log-in/' },
+      { text: 'Hot lunch ordering set up in FACTS Parent Portal (optional)', done: false, link: 'FACTS', url: 'https://factsmgt.com/parent-log-in/' },
     ],
   },
   {
     group: 'Cassius · 9th Grade',
     tasks: [
-      { text: 'Signed up for High School Football tryouts', done: true },
-      { text: 'Summer strength & conditioning (Mon–Thu 6:30–8:00 AM until Jul 23)', done: false },
+      { text: 'Signed up for High School Football tryouts', done: true, link: 'Athletics', url: 'https://www.nbcatx.org/page/athletics-overview' },
+      { text: 'Summer strength & conditioning (Mon–Thu 6:30–8:00 AM until Jul 23)', done: false, link: 'RankOne camp', url: 'https://nbca.store.rankone.com/Camp/List?mc_cid=230ac33dbb&mc_eid=2b0df2e354' },
       { text: 'TAPPS / TMS registration (need Student ID)', done: false },
-      { text: 'Cross Country parent meeting Aug 4 · Football parent meeting Aug 7', done: false },
-      { text: 'Secondary supply list purchased', done: false },
-      { text: 'Summer reading (English 9 Honors): The 7 Habits of Highly Effective Teens (Covey), The Faithful Spy (Hendrix), The Hiding Place (ten Boom) + response questions', done: false },
+      { text: 'Cross Country parent meeting Aug 4 · Football parent meeting Aug 7', done: false, link: 'Calendar', url: 'https://www.nbcatx.org/page/calendar-events' },
+      { text: 'Secondary supply list purchased', done: false, link: 'Supply list', url: 'https://aptg.co/tCJ7SC' },
+      { text: 'Summer reading (English 9 Honors): The 7 Habits of Highly Effective Teens (Covey), The Faithful Spy (Hendrix), The Hiding Place (ten Boom) + response questions', done: false, link: 'Reading list', url: 'https://aptg.co/y0zrrR' },
     ],
   },
   {
     group: 'Dorothy · 7th Grade',
     tasks: [
-      { text: 'Mandatory PE uniform ordered from Global Schoolwear (1 shorts + 1 shirt)', done: false },
-      { text: 'IXL Summer Boost — Math completed before Aug 12', done: false },
-      { text: 'Volleyball parent meeting Aug 3 · Cross Country parent meeting Aug 4', done: false },
-      { text: 'Secondary supply list purchased', done: false },
-      { text: 'Summer reading: The Wednesday Wars (Gary D. Schmidt) + One-Pager response (test grade)', done: false },
+      { text: 'Mandatory PE uniform ordered from Global Schoolwear (1 shorts + 1 shirt)', done: false, link: 'Global Schoolwear', url: 'https://www.globalschoolwear.com/' },
+      { text: 'IXL Summer Boost — Math completed before Aug 12', done: false, link: 'IXL Boost', url: 'https://aptg.co/bs1dtZ' },
+      { text: 'Volleyball parent meeting Aug 3 · Cross Country parent meeting Aug 4', done: false, link: 'Calendar', url: 'https://www.nbcatx.org/page/calendar-events' },
+      { text: 'Secondary supply list purchased', done: false, link: 'Supply list', url: 'https://aptg.co/tCJ7SC' },
+      { text: 'Summer reading: The Wednesday Wars (Gary D. Schmidt) + One-Pager response (test grade)', done: false, link: 'Reading list', url: 'https://aptg.co/J20fyQ' },
     ],
   },
   {
     group: 'Sebastian · 4th Grade',
     tasks: [
-      { text: 'Uniforms for Elementary purchased', done: true },
-      { text: '4th-grade school supplies purchased', done: false },
+      { text: 'Uniforms for Elementary purchased', done: true, link: 'Global Schoolwear', url: 'https://www.globalschoolwear.com/' },
+      { text: '4th-grade school supplies purchased', done: false, link: 'Supply list', url: 'https://5il.co/2o0ag' },
       { text: 'Summer reading (recommended): The Tale of Despereaux, Because of Winn-Dixie, Frindle, The Cricket in Times Square, The Miraculous Journey of Edward Tulane, Hatchet', done: false },
     ],
   },
   {
     group: 'General',
     tasks: [
-      { text: 'Daily uniforms ordered through Tommy Hilfiger', done: false },
-      { text: 'Volunteer application submitted (for field-trip chaperones / background check)', done: false },
+      { text: 'Daily uniforms ordered through Tommy Hilfiger', done: false, link: 'Global Schoolwear', url: 'https://www.globalschoolwear.com/' },
+      { text: 'Volunteer application submitted (for field-trip chaperones / background check)', done: false, link: 'Apply', url: 'https://forms.gle/ZTV3kLtAhhTxUTaEA' },
     ],
   },
 ];
@@ -1843,7 +1843,9 @@ const tasksToMarkdown = () =>
   NBCA_TASKS.map(
     (g) =>
       `### ${g.group}\n` +
-      g.tasks.map((t) => `- [${t.done ? 'x' : ' '}] ${t.text}`).join('\n')
+      g.tasks
+        .map((t) => `- [${t.done ? 'x' : ' '}] ${t.text}${t.url ? ` — [${t.link || 'Link'}](${t.url})` : ''}`)
+        .join('\n')
   ).join('\n\n');
 
 // Checklist card with a one-click "Copy as Markdown" button.
@@ -1900,7 +1902,19 @@ const NbcaTaskList = () => {
                   ) : (
                     <Square size={16} className="mt-0.5 shrink-0 text-tefa-body/30" />
                   )}
-                  <span className={t.done ? 'text-tefa-body/50 line-through' : 'text-tefa-body/80'}>{t.text}</span>
+                  <span className="flex-1">
+                    <span className={t.done ? 'text-tefa-body/50 line-through' : 'text-tefa-body/80'}>{t.text}</span>
+                    {t.url && (
+                      <a
+                        href={t.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="ml-1.5 inline-flex items-center gap-0.5 align-baseline text-[11px] font-semibold text-tefa-green hover:underline whitespace-nowrap"
+                      >
+                        {t.link || 'Link'} <ExternalLink size={10} />
+                      </a>
+                    )}
+                  </span>
                 </li>
               ))}
             </ul>
