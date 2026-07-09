@@ -1473,7 +1473,7 @@ const NBCA_ACTIONS = [
     due: 'Due Jul 31',
     who: 'Both athletes',
     detail:
-      'Physicals and medical-history forms must be completed and uploaded to the Rank One portal before either can participate in sports. Download the Rank One app (iOS/Android) and subscribe to "Schedule Alerts." The Athletic Handbook has the full policy.',
+      'TAPPS Medical History, TAPPS Student Profile, and Athletic Handbook are all APPROVED for both kids — only the Physical Upload Form is still incomplete. Get physicals done and uploaded to the Rank One portal before Jul 31. Download the Rank One app (iOS/Android) and subscribe to "Schedule Alerts."',
     links: [
       { label: 'Rank One portal', url: 'https://nbca.store.rankone.com/' },
       { label: 'Athletic Handbook', url: 'https://docs.google.com/document/d/1rpI6cJBamE3AZuOGglpiffz3fI2JBXaMzKeFwSl5Fkg/edit' },
@@ -1582,7 +1582,7 @@ const NBCA_KIDS = [
       },
       {
         label: 'TAPPS / TMS registration',
-        text: 'Needs a profile in the TAPPS system to track eligibility. You’ll need his Student ID.',
+        text: 'DONE — TAPPS Medical History and Student Profile are both approved in Rank One. Only the physical upload remains.',
       },
       {
         label: 'Fall Break athletics (Oct 12–23)',
@@ -1793,7 +1793,7 @@ const NBCA_TASKS = [
   {
     group: 'Urgent — all family',
     tasks: [
-      { text: 'Athletic paperwork completed (medical-history forms uploaded to Rank One) — except Physicals', done: true, link: 'Rank One', url: 'https://nbca.store.rankone.com/' },
+      { text: 'Athletic paperwork approved for Cassius & Dorothy (TAPPS Medical History, TAPPS Student Profile, Athletic Handbook) — except Physicals', done: true, link: 'Rank One', url: 'https://nbca.store.rankone.com/' },
       { text: 'Physicals for Cassius & Dorothy uploaded to Rank One (DUE Jul 31)', done: false, link: 'Rank One', url: 'https://nbca.store.rankone.com/' },
       { text: 'OTC medication permission Jotform completed (Sebastian / any child needing meds)', done: false, link: 'Open Jotform', url: 'https://form.jotform.com/251976016734058' },
       { text: 'Grandparent passes added via FACTS → Family → Family Demographic Form', done: false, link: 'FACTS', url: 'https://factsmgt.com/parent-log-in/' },
@@ -1805,7 +1805,7 @@ const NBCA_TASKS = [
     tasks: [
       { text: 'Signed up for High School Football tryouts', done: true, link: 'Athletics', url: 'https://www.nbcatx.org/page/athletics-overview' },
       { text: 'Summer strength & conditioning (Mon–Thu 6:30–8:00 AM until Jul 23)', done: false, link: 'RankOne camp', url: 'https://nbca.store.rankone.com/Camp/List?mc_cid=230ac33dbb&mc_eid=2b0df2e354' },
-      { text: 'TAPPS / TMS registration (need Student ID)', done: false },
+      { text: 'TAPPS / TMS registration — Medical History & Student Profile approved', done: true, link: 'Rank One', url: 'https://nbca.store.rankone.com/' },
       { text: 'Cross Country parent meeting Aug 4 · Football parent meeting Aug 7', done: false, link: 'Calendar', url: 'https://www.nbcatx.org/page/calendar-events' },
       { text: 'Secondary supply list purchased', done: false, link: 'Supply list', url: 'https://aptg.co/tCJ7SC' },
       { text: 'Summer reading (English 9 Honors): The 7 Habits of Highly Effective Teens (Covey), The Faithful Spy (Hendrix), The Hiding Place (ten Boom) + response questions', done: false, link: 'Reading list', url: 'https://aptg.co/y0zrrR' },
