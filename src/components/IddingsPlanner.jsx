@@ -31,7 +31,7 @@ import {
 // shows is derived from the data in this block — update here if a figure changes.
 // ---------------------------------------------------------------------------
 
-const TODAY = '2026-06-25';
+const TODAY = '2026-07-09';
 
 // Per-child 2026-27 gross tuition and the NBCA financial aid already granted.
 const STUDENTS = [
@@ -74,30 +74,46 @@ const YOUR_POS = { lo: 45000, hi: 50000 };
 //   • ~$890M already funded in ACTIVE awards. They hold to that $890M by
 //     funding additional batches to backfill as families opt out or bump down
 //     to homeschool/other ($2,000).
-//   • ~$20M reserve remains for outstanding appeals. Once the appeal window
-//     closes, they award that down to the waitlist while continuing to backfill.
+//   • ~$20M reserve was held for outstanding appeals. Once the appeal window
+//     closed, they awarded that down to the waitlist.
 //
-// This REPLACES the earlier inferred ~$100M reserve. The reserve is $20M — so
-// the big "reserve release" upside is off the table. Forward motion now comes
-// almost entirely from BACKFILL CHURN: the program is essentially fully
-// deployed ($890M active + $20M reserve = $910M), so the waitlist advances only
-// as awarded families leave (opt out, bump to $2,000, or miss the Jul 15
-// deadline), each departure recycling ~one new blended seat down the list.
+// UPDATE (Jul 8, 2026): the appeal window has now closed and Travis Pillow
+// confirmed the reserve is SPENT — "we funded approximately 4,000 additional
+// students today … with the appeal window closed, we spent down nearly all of
+// the reserve set aside for appeals. That's where the bulk of this funding came
+// from." So the reserve is no longer FUTURE upside: it has already fired, and
+// its ~4,000 seats are now baked into the observed frontier (see the Jul 8 point
+// in T2_OBSERVATIONS). Forward motion from here is BACKFILL CHURN only — the
+// program is fully deployed ($890M active + the now-spent reserve = ~$910M), so
+// the waitlist advances only as awarded families leave (opt out, bump to $2,000,
+// or miss the Jul 15 deadline), each departure recycling ~one new blended seat.
+//
+// Reconciliation note: ~4,000 seats off "nearly all of ~$20M" implies ~$5,000
+// per seat — below the $7,678 blend, so either those reserve awards skewed toward
+// the $2,000 homeschool tier or the pot was larger than $20M. We anchor on the
+// PUBLISHED count (4,000 seats), per this file's "published numbers win" rule,
+// rather than forcing it through the blended cost.
 // ---------------------------------------------------------------------------
 
 const TEFA_BUDGET = {
   awardable: 910_000_000,    // after admin/startup/TEA (~$90M off the $1B)
   fundedActive: 890_000_000, // active awards, held here via backfill
-  reserve: 20_000_000,       // total reserve pot (appeals + waitlist), one pot
-  reserveNet: 16_000_000,    // ~$16M left after appeals are mostly paid → cascades to waitlist
+  reserve: 20_000_000,       // total reserve pot (appeals + waitlist) — SPENT DOWN Jul 8
+  reserveNet: 0,             // reserve is exhausted after the Jul 8 draw → 0 left to cascade
   // New T2/T3 seat = blend of private ESA (~$10,474) and homeschool/other ($2,000).
   // Mix updated to 67/33 (was 77/23) — homeschool share has climbed 23%→~33% of
   // active awards as private families bump down via the $2,000 downgrade.
   blendedCost: Math.round(0.67 * 10474 + 0.33 * 2000), // ~7,678 (67/33 private/homeschool)
-  source: 'Travis Pillow, Comptroller spokesperson — Jun 25, 2026',
+  source: 'Travis Pillow, Comptroller spokesperson — Jul 8, 2026 (reserve spent)',
 };
-// Seats the reserve funds once appeals close — NET of appeals (~$16M ÷ ~$7,678).
-const RESERVE_SEATS = Math.round(TEFA_BUDGET.reserveNet / TEFA_BUDGET.blendedCost); // ~2,084
+// The reserve draw actually observed Jul 8 — ~4,000 waitlist students funded off
+// the appeals reserve as the appeal window closed. This is NOW in the frontier
+// (T2_OBSERVATIONS Jul 8), not a future add-on.
+const RESERVE_AWARDED_JUL8 = 4000;
+// Reserve seats still available to cascade GOING FORWARD — zero, the reserve is
+// exhausted. (Was ~2,084 modeled as future upside; that release has since fired
+// as the larger Jul 8 draw and is already counted in the observed frontier.)
+const RESERVE_SEATS = 0;
 // Active awards that can churn — the population that frees seats when it leaves.
 const ACTIVE_AWARDS = 107000; // "nearly 107,000 active" (Jun 23 update)
 
@@ -164,9 +180,10 @@ const BAND_HI = TEFA.bandHi;      // 50,000 — bottom of our family's band
 // How the cascade frontier maps to "fuel": the frontier advances ~1 seat per family
 // that LEAVES an award without taking a full private seat. With the Jul 1 activation
 // count in hand, the fuel is no longer a guessed rate on all 107k — it's a SHARE of
-// the ~34,000 remainder (awarded but not activated by Jul 1). So a scenario's terminal
-// frontier ≈
-//   frontier-now (12,916)  +  movedAsideShare × 34,000 × seats-per-departure  +  reserve seats.
+// the ~34,000 remainder (awarded but not activated by Jul 1). The appeals reserve has
+// already fired (Jul 8, ~4,000 seats, now in frontier-now), so it no longer adds a
+// forward term. A scenario's terminal frontier ≈
+//   frontier-now (16,916)  +  movedAsideShare × 34,000 × seats-per-departure  +  0 reserve.
 // Each moved-aside family frees a seat one of two ways, and BOTH are counted via the
 // opt-out:downgrade split in seatsPerDeparture: a full opt-out frees the whole award
 // (~$10,474), a drop to the $2,000 homeschool tier frees only the difference (~$8,474).
@@ -201,42 +218,44 @@ const T2_OBSERVATIONS = [
   { date: '2026-05-29', t2Remaining: 17066 }, // after 3,317 cascade awards
   { date: '2026-06-10', t2Remaining: 12966 }, // after 4,100 more cascade awards
   { date: '2026-06-23', t2Remaining: 7467 },  // after 5,499 more cascade awards (Jun 23 update) → frontier 12,916
+  { date: '2026-07-08', t2Remaining: 3467 },  // Jul 8: ~4,000 more awarded off the now-spent appeals reserve → frontier 16,916 (still Tier 2)
 ];
 
 // Frontier reached so far = how deep the cascade has funded down the global list.
 // Future advance is added ON TOP of this from the 34k remainder, so it's the base
 // the projection and the simulator both build from.
-const FRONTIER_NOW = T2_AT_LOTTERY - T2_OBSERVATIONS[T2_OBSERVATIONS.length - 1].t2Remaining; // 12,916
+const FRONTIER_NOW = T2_AT_LOTTERY - T2_OBSERVATIONS[T2_OBSERVATIONS.length - 1].t2Remaining; // 16,916 (Jul 8)
 
 // Three scenarios over ONE honest unknown: what SHARE of the ~34,000 remainder (awarded
 // but not activated by Jul 1) ends up moved aside — opting out or dropping to the $2,000
-// homeschool tier — instead of confirming a private seat. Realistic band is 30–50%:
-//   LOW   (30% of the remainder leaves)  → funded ≈ 26,800  (short of our band)
-//   LIKELY (40%, the central anchor)     → funded ≈ 30,800  (just into the band start)
-//   HIGH  (50%)                          → funded ≈ 34,700  (into the band, short of our 45k)
+// homeschool tier — instead of confirming a private seat. Realistic band is 30–50%.
+// Anchored on the Jul 8 frontier (16,916, reserve already spent), the terminals are now:
+//   LOW   (30% of the remainder leaves)  → funded ≈ 28,800  (just short of our band start)
+//   LIKELY (40%, the central anchor)     → funded ≈ 32,700  (into the band, low end)
+//   HIGH  (50%)                          → funded ≈ 36,700  (into the band, short of our 45k)
 // `share` is the moved-aside fraction; `optOutShare` is how that fraction splits between
 // full opt-outs (~$10,474 freed) and $2,000 homeschool downgrades (~$8,474) — held at the
 // observed 23% opt-out / 77% downgrade mix (→ ~1.16 seats/departure), exposed as a lever.
-// Each terminal = frontier-now + share × 34,000 × seats-per-departure + reserve. Scenarios,
-// not forecasts; after Aug 15 each drifts on small residual churn.
+// Each terminal = frontier-now + share × 34,000 × seats-per-departure + 0 reserve (spent).
+// Scenarios, not forecasts; after Aug 15 each drifts on small residual churn.
 const OBS_OPTOUT_SHARE_OF_CHURN = 0.231;   // observed 2.8% opt-out / 9.3% downgrade split
 
 const REALISTIC = {
   share: 0.40,                              // LIKELY — 40% of the 34k remainder moved aside
   optOutShare: OBS_OPTOUT_SHARE_OF_CHURN,   // 23% opt out fully, 77% drop to $2,000 → ~1.16 seats/departure
-  reserveSeats: RESERVE_SEATS,              // net $16M-after-appeals reserve (~2,084 seats)
+  reserveSeats: RESERVE_SEATS,              // 0 — appeals reserve spent Jul 8 (already in frontier-now)
 };
 
 const AGGRESSIVE = {
   share: 0.50,                              // HIGH — half the remainder fails to confirm
   optOutShare: OBS_OPTOUT_SHARE_OF_CHURN,
-  reserveSeats: RESERVE_SEATS,
+  reserveSeats: RESERVE_SEATS,              // 0 — reserve spent
 };
 
 const RESEARCH = {
   share: 0.30,                              // LOW — most of the remainder still confirms by Jul 15/31
   optOutShare: OBS_OPTOUT_SHARE_OF_CHURN,
-  reserveSeats: RESERVE_SEATS,
+  reserveSeats: RESERVE_SEATS,              // 0 — reserve spent
 };
 
 // Chart window: from the lottery (frontier 0) through end-August. The big waves
@@ -245,7 +264,7 @@ const RESEARCH = {
 // `today` anchors the "Today" marker to a fixed date so a screenshot of the
 // chart reads the same for everyone (the artifact gets posted/shared) — bump it
 // as the analysis is refreshed, rather than letting it drift with the viewer's clock.
-const FRONTIER_WINDOW = { chartStart: '2026-05-04', today: '2026-06-30', jul15: '2026-07-15', end: '2026-08-31' };
+const FRONTIER_WINDOW = { chartStart: '2026-05-04', today: '2026-07-09', jul15: '2026-07-15', end: '2026-08-31' };
 const WAVES_END = '2026-08-15';   // after this the big mechanisms are exhausted
 const POST_DRIFT = 30;            // seats/day of small residual attrition after Aug 15 (realistic trickle)
 
@@ -337,10 +356,11 @@ function buildCascadeProjection({
   };
 
   // FUNDED frontier — the hard money limit. = frontier-now + (share of the 34k remainder
-  // that's moved aside) × seats-per-departure (dollars freed ÷ blended cost) + net reserve
-  // seats. The deepest waitlist position real money reaches. Both fuel mechanisms count via
-  // the opt-out:downgrade split — a full opt-out frees the whole award, a $2,000 homeschool
-  // drop frees only the difference. Never-activation does NOT enter here.
+  // that's moved aside) × seats-per-departure (dollars freed ÷ blended cost) + reserve seats
+  // (now 0 — the appeals reserve was spent Jul 8 and its ~4,000 seats are already in
+  // frontier-now). The deepest waitlist position real money reaches. Both fuel mechanisms
+  // count via the opt-out:downgrade split — a full opt-out frees the whole award, a $2,000
+  // homeschool drop frees only the difference. Never-activation does NOT enter here.
   const terminalSeats = (s) =>
     Math.round(fL + s.share * REMAINDER * seatsPerDeparture(s.optOutShare, 1 - s.optOutShare) + s.reserveSeats);
   // Default-shape terminals from the module scenarios. The waypoint heights below are
@@ -351,7 +371,7 @@ function buildCascadeProjection({
   const defRealT = terminalSeats(REALISTIC);
   const defAggT = terminalSeats(AGGRESSIVE);
 
-  // Pin the Jun-23 anchor; scale each future waypoint's gap above it linearly so the
+  // Pin the Jul-8 anchor; scale each future waypoint's gap above it linearly so the
   // line still hits `terminalSeats(scenario)`. scale = 1 at default churn (identical
   // curve); a terminal below the current frontier clamps the line flat (can't rewind).
   const fitLine = (waypoints, defTerminal, scenario) => {
@@ -363,41 +383,39 @@ function buildCascadeProjection({
     return { fn: buildLine(scaled, wavesEnd), terminal: newTerminal };
   };
 
-  // All three share ONE shape: a quiet Jul 1–15 lull (the 34k remainder is still inside its
-  // confirmation window), then the SURGE Jul 15–31 as non-confirmers are moved aside and the
-  // reserve releases, tapering to the terminal by Aug 15. They differ only in how much of the
-  // remainder leaves (30 / 40 / 50%). fitLine pins each to its exact terminal.
+  // All three share ONE shape from the Jul 8 anchor (16,916, reserve already spent): a quiet
+  // Jul 8–15 lull (the 34k remainder is still inside its confirmation window), then the SURGE
+  // Jul 15–31 as non-confirmers are moved aside, tapering to the terminal by Aug 15. They
+  // differ only in how much of the remainder leaves (30 / 40 / 50%). fitLine pins each to its
+  // exact terminal. There is no reserve step now — the appeals reserve fired Jul 8.
 
-  // LIKELY — 40% of the remainder moved aside → ~30,800 (just into the band start).
+  // LIKELY — 40% of the remainder moved aside → ~32,700 (into the band, low end).
   const real_ = fitLine([
-    { t: tL, f: fL },                              // Jun 23 anchor (12,916)
-    { t: dayOf('2026-07-01'), f: 14500 },          // Tier 2 tail clearing; remainder hasn't acted
-    { t: jul15, f: 16500 },                        // QUIET Jul 1–15 lull
-    { t: dayOf('2026-07-17'), f: 16500 + RESERVE_SEATS }, // reserve releases + deadline shakeout begins
-    { t: dayOf('2026-07-31'), f: 26000 },          // bulk of moved-aside seats cascade Jul 15–31
-    { t: wavesEnd, f: defRealT },                  // taper Aug 1–15 → ~30,800
+    { t: tL, f: fL },                              // Jul 8 anchor (16,916)
+    { t: jul15, f: 19000 },                        // QUIET Jul 8–15 lull; Tier 2 tail clearing
+    { t: dayOf('2026-07-17'), f: 20500 },          // Jul 15 deadline shakeout begins
+    { t: dayOf('2026-07-31'), f: 29000 },          // bulk of moved-aside seats cascade Jul 15–31
+    { t: wavesEnd, f: defRealT },                  // taper Aug 1–15 → ~32,700
   ], defRealT, realistic);
   const realFn = real_.fn, realTerminal = real_.terminal;
 
-  // HIGH — 50% of the remainder leaves → ~34,700 (into the band, still short of our 45k).
+  // HIGH — 50% of the remainder leaves → ~36,700 (into the band, still short of our 45k).
   const agg_ = fitLine([
-    { t: tL, f: fL },                              // Jun 23 anchor (12,916)
-    { t: dayOf('2026-07-01'), f: 15000 },          // Tier 2 tail clearing
-    { t: jul15, f: 17500 },                        // QUIET Jul 1–15 lull
-    { t: dayOf('2026-07-17'), f: 17500 + RESERVE_SEATS }, // reserve + heavier deadline shakeout
-    { t: dayOf('2026-07-31'), f: 29000 },          // heavy moved-aside cascade Jul 15–31
-    { t: wavesEnd, f: defAggT },                   // taper Aug 1–15 → ~34,700
+    { t: tL, f: fL },                              // Jul 8 anchor (16,916)
+    { t: jul15, f: 19500 },                        // QUIET Jul 8–15 lull
+    { t: dayOf('2026-07-17'), f: 21500 },          // heavier Jul 15 deadline shakeout begins
+    { t: dayOf('2026-07-31'), f: 32000 },          // heavy moved-aside cascade Jul 15–31
+    { t: wavesEnd, f: defAggT },                   // taper Aug 1–15 → ~36,700
   ], defAggT, aggressive);
   const aggFn = agg_.fn, aggTerminal = agg_.terminal;
 
-  // LOW — 30% of the remainder leaves → ~26,800 (most confirm; cascade stalls short of the band).
+  // LOW — 30% of the remainder leaves → ~28,800 (most confirm; cascade stalls just short of the band).
   const research_ = fitLine([
-    { t: tL, f: fL },                              // Jun 23 anchor (12,916)
-    { t: dayOf('2026-07-01'), f: 14000 },          // slow Tier 2 clearing
-    { t: jul15, f: 16000 },                        // QUIET Jul 1–15 lull
-    { t: dayOf('2026-07-17'), f: 16000 + RESERVE_SEATS }, // reserve + small deadline bump
-    { t: dayOf('2026-07-31'), f: 23000 },          // modest moved-aside cascade Jul 15–31
-    { t: wavesEnd, f: defResearchT },              // taper Aug 1–15 → ~26,800
+    { t: tL, f: fL },                              // Jul 8 anchor (16,916)
+    { t: jul15, f: 18500 },                        // QUIET Jul 8–15 lull; slow Tier 2 clearing
+    { t: dayOf('2026-07-17'), f: 19800 },          // small Jul 15 deadline bump
+    { t: dayOf('2026-07-31'), f: 25500 },          // modest moved-aside cascade Jul 15–31
+    { t: wavesEnd, f: defResearchT },              // taper Aug 1–15 → ~28,800
   ], defResearchT, research);
   const researchFn = research_.fn, researchTerminal = research_.terminal;
 
@@ -422,7 +440,7 @@ function buildCascadeProjection({
   }
 
   // Frontier reached at the dates the table below the chart reports.
-  const TABLE_DATES = ['2026-07-01', '2026-07-15', '2026-07-20', '2026-07-31', '2026-08-15', '2026-08-31'];
+  const TABLE_DATES = ['2026-07-08', '2026-07-15', '2026-07-20', '2026-07-31', '2026-08-15', '2026-08-31'];
   const sampleAt = (fn) => TABLE_DATES.map((d) => Math.round(fn(dayOf(d))));
   const projectionTable = {
     dates: TABLE_DATES,
@@ -477,36 +495,36 @@ const BAND_OUTLOOK = [
     scope: 'positions 1 – 20,383',
     call: 'Expected',
     tone: 'good',
-    note: 'Every seat freed so far has gone to Tier 2. At the current pace the remaining backlog clears mid-to-late July — and this has to finish before any Tier 3 offer goes out at all.',
+    note: 'Every seat freed so far has gone to Tier 2, and the Jul 8 reserve draw (~4,000 more) pushed the frontier to 16,916 — only ~3,467 Tier 2 families left ahead of us. At this pace the backlog clears in July, and this has to finish before any Tier 3 offer goes out at all.',
   },
   {
     band: '20,384 – 25,000',
     scope: 'early Tier 3',
     call: 'Likely',
     tone: 'good',
-    note: 'Reached once Tier 2 clears and the net ~$16M reserve (~2,084 seats) is awarded after appeals. Even the low case — 30% of the ~34k remainder moved aside (~26,800) — funds past here.',
+    note: 'Reached once the last ~3,467 Tier 2 families clear. The appeals reserve has already fired (Jul 8, into Tier 2), so from here it is churn-driven — but even the low case, 30% of the ~34k remainder moved aside (~28,800), funds well past here.',
   },
   {
     band: '25,001 – 30,000',
     scope: 'mid Tier 3',
-    call: 'Possible',
-    tone: 'mid',
-    note: 'The likely case — 40% of the remainder leaving (~30,800) — reaches just past here; the low 30% case (~26,800) lands inside this band. Needs the bulk of the Jul 15 shakeout to actually land.',
+    call: 'Likely',
+    tone: 'good',
+    note: 'The Jul 8 reserve draw lifted the whole cascade ~1,900 seats. The low 30% case (~28,800) now lands inside this band, and the likely 40% (~32,700) and high 50% (~36,700) cases pass through it. Needs the Jul 15 shakeout to land.',
   },
   {
     band: '30,001 – 50,000',
     scope: 'YOUR BAND · you sit at 45–50k',
-    call: 'Only the band start, only at the high end',
+    call: 'Band start reached in the likely & high cases',
     tone: 'mid',
     ourBand: true,
-    note: 'Our seat is the DEEP end (45–50k). The high case — 50% of the ~34k remainder moved aside (~34,700) — crosses only the START of the band (30,001); the likely 40% case (~30,800) just touches it. None reach our 45k: that would take essentially the entire remainder collapsing, far beyond a 30–50% shakeout. Plan as if no voucher.',
+    note: 'Our seat is the DEEP end (45–50k). After the Jul 8 reserve draw, the likely 40% case (~32,700) and the high 50% case (~36,700) both cross into the START of the band (30,001); the low 30% case (~28,800) falls just short. None reach our 45k: that would take essentially the entire remainder collapsing, far beyond a 30–50% shakeout. Plan as if no voucher.',
   },
   {
     band: '50,001 +',
     scope: 'deep Tier 3 / Tier 4',
     call: 'Not expected',
     tone: 'bad',
-    note: 'Even 50% of the remainder leaving funds only ~34,700 — reaching 50k would need more departures than the entire ~34k remainder contains. Tier 4 does not move in Year 1 at all.',
+    note: 'Even 50% of the remainder leaving funds only ~36,700 — reaching 50k would need more departures than the entire ~34k remainder contains, and the reserve is now spent. Tier 4 does not move in Year 1 at all.',
   },
 ];
 
@@ -555,6 +573,8 @@ const TIMELINE = [
     detail: `Last day to withdraw from NBCA losing only the $690 enrollment fee. After this: 10% of tuition owed (${usd2(WITHDRAWAL_PENALTY.july)}) in July, 20% (${usd2(WITHDRAWAL_PENALTY.august)}) in August.` },
   { date: 'Jul 6', iso: '2026-07-06', title: 'First FACTS tuition draft', kind: 'pay',
     detail: 'First scheduled payment. Use checking/savings ACH to avoid the card fee. See the Money tab for the full schedule.' },
+  { date: 'Jul 8', iso: '2026-07-08', title: 'TEFA reserve draw — ~4,000 awarded, appeal reserve now spent', kind: 'info',
+    detail: 'With the appeal window closed, the Comptroller funded ~4,000 more waitlisted students off the appeals reserve — spending nearly all of it (Travis Pillow). The funded frontier moved from ~12,916 to ~16,916 (still Tier 2). This is the reserve firing early rather than a future upside; forward motion now depends entirely on the Jul 15 shakeout. Still doesn\'t reach our band.' },
   { date: 'Jul 15', iso: '2026-07-15', title: 'TEFA opt-in / opt-out deadline', kind: 'info',
     detail: 'The biggest TEFA waitlist-cascade event of the year — but it lands AFTER the June 30 withdrawal deadline.' },
   { date: 'Oct 1', iso: '2026-10-01', title: 'TEFA 2nd installment (if funded)', kind: 'info',
@@ -1024,7 +1044,7 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, k, casca
       // holdFlat pins seats/departure at the observed downgrade-heavy mix (~1.16); otherwise it
       // varies with the sampled opt-out share. Both exit routes (opt-out / $2,000) are in seatsPerDeparture.
       const spd = holdFlat || moved === 0 ? seatsPerDeparture(OBS_OPTOUT_RATE, OBS_DOWNGRADE_RATE) : seatsPerDeparture(optShare, 1 - optShare);
-      arr[i] = FRONTIER_NOW + moved * REMAINDER * spd + RESERVE_SEATS; // FUNDED frontier reached
+      arr[i] = FRONTIER_NOW + moved * REMAINDER * spd + RESERVE_SEATS; // FUNDED frontier reached (RESERVE_SEATS now 0 — reserve spent Jul 8, already in FRONTIER_NOW)
     }
     const sorted = Array.from(arr).sort((a, b) => a - b);
     const pct = (p) => sorted[Math.floor(p * (sorted.length - 1))];
@@ -1078,12 +1098,12 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, k, casca
         <div className="rounded-lg bg-tefa-light border border-tefa-navy/20 p-3 text-center">
           <div className="text-xs text-tefa-navy/70 font-medium">Likely FUNDED</div>
           <div className="font-bold text-tefa-navy text-lg">~{k.realisticTerminal.toLocaleString()}</div>
-          <div className="text-[10px] text-tefa-body/40">~{k.realisticChurnPct}% of remainder leaves · just into band start, short of our 45k</div>
+          <div className="text-[10px] text-tefa-body/40">~{k.realisticChurnPct}% of remainder leaves · into the band, short of our 45k</div>
         </div>
         <div className="rounded-lg bg-tefa-light border border-tefa-red/30 p-3 text-center">
           <div className="text-xs text-tefa-red/70 font-medium">High FUNDED</div>
           <div className="font-bold text-tefa-red text-lg">~{k.aggressiveTerminal.toLocaleString()}</div>
-          <div className="text-[10px] text-tefa-body/40">~{k.aggressiveChurnPct}% of remainder leaves · crosses band start, still short of 45k</div>
+          <div className="text-[10px] text-tefa-body/40">~{k.aggressiveChurnPct}% of remainder leaves · into the band, still short of 45k</div>
         </div>
       </div>
 
@@ -1354,10 +1374,11 @@ const TefaView = () => {
           })}
         </div>
         <p className="text-xs text-tefa-body/50 mt-3">
-          <strong>Bottom line:</strong> of the ~107,000 active awards, <strong>~{k.funded.toLocaleString()} were funded on Jul 1</strong> — so the only fuel
-          left is the <strong>~{k.remainder.toLocaleString()} remainder</strong> that hadn't activated, leaving by opt-out or the $2,000 homeschool drop.
+          <strong>Bottom line:</strong> of the ~107,000 active awards, <strong>~{k.funded.toLocaleString()} were funded on Jul 1</strong>, and on Jul 8
+          the Comptroller spent nearly all of the appeals reserve to award <strong>~{RESERVE_AWARDED_JUL8.toLocaleString()} more</strong> — moving the frontier to <strong>{k.frontierNow.toLocaleString()}</strong>.
+          With the reserve now gone, the only fuel left is the <strong>~{k.remainder.toLocaleString()} remainder</strong> that hadn't activated, leaving by opt-out or the $2,000 homeschool drop.
           Realistically 30–50% of that remainder is moved aside, funding the cascade to <strong>~{k.researchTerminal.toLocaleString()}–{k.aggressiveTerminal.toLocaleString()}</strong>{' '}
-          (likely ~{k.realisticTerminal.toLocaleString()}). That just reaches the <strong>start</strong> of our band at the high end and never reaches our actual
+          (likely ~{k.realisticTerminal.toLocaleString()}). That now crosses <strong>into</strong> the start of our band in the likely and high cases, but never reaches our actual
           45–50k position. <strong>Plan on no voucher this year</strong>; it would take essentially the entire remainder collapsing to get money to our seat.
         </p>
       </section>
@@ -1372,14 +1393,14 @@ const TefaView = () => {
           <Activity size={20} /> The scenarios behind the model, and the dates
         </h2>
         <p className="text-[11px] text-tefa-body/55 mb-3">
-          <strong>As of Jun 30, 2026.</strong> The Jun 23 Comptroller update put the official frontier at <strong>{k.frontierNow.toLocaleString()}</strong> —
-          nearly 110,000 awarded, ~{JUNE23_CASCADE.optOuts.toLocaleString()} opt-outs, ~107,000 active. The Jun 30 release then pinned the activation:{' '}
-          <strong>~{k.funded.toLocaleString()} accounts are funded Jul 1</strong> (opted in + confirmed), leaving a <strong>~{k.remainder.toLocaleString()} remainder</strong>{' '}
-          that was awarded but hadn't activated. That remainder is the entire pool that can still free a seat — the cascade can't advance on anyone else.
+          <strong>As of Jul 8, 2026.</strong> The Jun 23 Comptroller update put the frontier at <strong>12,916</strong> —
+          nearly 110,000 awarded, ~{JUNE23_CASCADE.optOuts.toLocaleString()} opt-outs, ~107,000 active. The Jun 30 release pinned the activation:{' '}
+          <strong>~{k.funded.toLocaleString()} accounts funded Jul 1</strong> (opted in + confirmed), leaving a <strong>~{k.remainder.toLocaleString()} remainder</strong> that was awarded but hadn't activated.
+          Then on <strong>Jul 8</strong> the Comptroller funded <strong>~{RESERVE_AWARDED_JUL8.toLocaleString()} more</strong> off the appeals reserve as the appeal window closed — spending nearly all of it — lifting the frontier to <strong>{k.frontierNow.toLocaleString()}</strong> (still Tier 2). The reserve is now spent; that ~{k.remainder.toLocaleString()} remainder is the only pool left that can still free a seat.
         </p>
         <div className="text-[11px] text-tefa-body/60 bg-tefa-light rounded p-3 space-y-1">
-          <div><strong>One unknown, a 30–50% band.</strong> The frontier (= {T2_AT_LOTTERY.toLocaleString()} at-lottery − Tier 2 still queued) has reached {k.frontierNow.toLocaleString()}. Future advance = how much of the ~{k.remainder.toLocaleString()} remainder is moved aside × seats freed per departure + the net ~$16M reserve (~{RESERVE_SEATS.toLocaleString()} seats). Both exit routes count: a full <strong>opt-out</strong> frees the whole award (~$10,474), a drop to the <strong>$2,000 homeschool</strong> tier frees only the difference (~$8,474) — held at the observed ~23/77 mix → freed-ratio {k.freedRatio} seats/departure. <strong>Low ~{k.researchChurnPct}%</strong> → ~<strong>{k.researchTerminal.toLocaleString()}</strong>; <strong>likely ~{k.realisticChurnPct}%</strong> → ~<strong>{k.realisticTerminal.toLocaleString()}</strong>; <strong>high ~{k.aggressiveChurnPct}%</strong> → ~<strong>{k.aggressiveTerminal.toLocaleString()}</strong>. Only the high case crosses our band start ({BAND_LO.toLocaleString()}); none reach our 45k.</div>
-          <div><strong>Watch — the Jul 15 deadline.</strong> Families awarded before Jun 22 who don't select a school by Jul 15 (confirmed by Jul 31) are "moved aside to allow other families to come off the waitlist" (Travis Pillow). That shakeout of the remainder — plus the ~$20M reserve awarded once appeals finalize — is the single event that decides whether the cascade reaches our band, and it lands <em>after</em> the Jun 30 penalty-free withdrawal deadline.</div>
+          <div><strong>One unknown, a 30–50% band.</strong> The frontier (= {T2_AT_LOTTERY.toLocaleString()} at-lottery − Tier 2 still queued) has reached {k.frontierNow.toLocaleString()}, with only ~{k.t2Remaining.toLocaleString()} Tier 2 families still ahead. The appeals reserve has already fired (Jul 8), so future advance = how much of the ~{k.remainder.toLocaleString()} remainder is moved aside × seats freed per departure (no reserve add-on left). Both exit routes count: a full <strong>opt-out</strong> frees the whole award (~$10,474), a drop to the <strong>$2,000 homeschool</strong> tier frees only the difference (~$8,474) — held at the observed ~23/77 mix → freed-ratio {k.freedRatio} seats/departure. <strong>Low ~{k.researchChurnPct}%</strong> → ~<strong>{k.researchTerminal.toLocaleString()}</strong>; <strong>likely ~{k.realisticChurnPct}%</strong> → ~<strong>{k.realisticTerminal.toLocaleString()}</strong>; <strong>high ~{k.aggressiveChurnPct}%</strong> → ~<strong>{k.aggressiveTerminal.toLocaleString()}</strong>. The likely and high cases now cross our band start ({BAND_LO.toLocaleString()}); none reach our 45k.</div>
+          <div><strong>Watch — the Jul 15 deadline.</strong> Families awarded before Jun 22 who don't select a school by Jul 15 (confirmed by Jul 31) are "moved aside to allow other families to come off the waitlist" (Travis Pillow). With the appeals reserve already spent (Jul 8), that shakeout of the remainder is now the <em>only</em> event left that could push the cascade toward our band — and it lands <em>after</em> the Jun 30 penalty-free withdrawal deadline.</div>
         </div>
 
         {/* Frontier position reached by each scenario, at the key cascade dates. */}
