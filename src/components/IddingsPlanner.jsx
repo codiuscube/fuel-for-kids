@@ -17,6 +17,10 @@ import {
   Shirt,
   GraduationCap,
   Backpack,
+  CheckSquare,
+  Square,
+  Copy,
+  Check,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -1772,6 +1776,131 @@ const SUPPLY_TONE = {
   green: { head: 'text-tefa-green', dot: 'bg-tefa-green/50', chip: 'bg-tefa-green/5 border-tefa-green/20' },
 };
 
+// Master back-to-school task list, distilled from everything on this page.
+// `done: true` items are already handled. This is the single source both the
+// on-page checklist and the "Copy as Markdown" button read from.
+const NBCA_TASKS = [
+  {
+    group: 'Urgent — all family',
+    tasks: [
+      { text: 'Athletic paperwork completed (medical-history forms uploaded to Rank One) — except Physicals', done: true },
+      { text: 'Physicals for Cassius & Dorothy uploaded to Rank One (DUE Jul 31)', done: false },
+      { text: 'OTC medication permission Jotform completed (Sebastian / any child needing meds)', done: false },
+      { text: 'Grandparent passes added via FACTS → Family → Family Demographic Form', done: false },
+      { text: 'Hot lunch ordering set up in FACTS Parent Portal (optional)', done: false },
+    ],
+  },
+  {
+    group: 'Cassius · 9th Grade',
+    tasks: [
+      { text: 'Signed up for High School Football tryouts', done: true },
+      { text: 'Summer strength & conditioning (Mon–Thu 6:30–8:00 AM until Jul 23)', done: false },
+      { text: 'TAPPS / TMS registration (need Student ID)', done: false },
+      { text: 'Cross Country parent meeting Aug 4 · Football parent meeting Aug 7', done: false },
+      { text: 'Secondary supply list purchased', done: false },
+      { text: '9th / 9th Honors summer reading', done: false },
+    ],
+  },
+  {
+    group: 'Dorothy · 7th Grade',
+    tasks: [
+      { text: 'Mandatory PE uniform ordered from Global Schoolwear (1 shorts + 1 shirt)', done: false },
+      { text: 'IXL Summer Boost — Math completed before Aug 12', done: false },
+      { text: 'Volleyball parent meeting Aug 3 · Cross Country parent meeting Aug 4', done: false },
+      { text: 'Secondary supply list purchased', done: false },
+      { text: '7th grade summer reading', done: false },
+    ],
+  },
+  {
+    group: 'Sebastian · 4th Grade',
+    tasks: [
+      { text: 'Uniforms for Elementary purchased', done: true },
+      { text: '4th-grade school supplies purchased', done: false },
+      { text: 'Summer reading (recommended)', done: false },
+    ],
+  },
+  {
+    group: 'General',
+    tasks: [
+      { text: 'Daily uniforms ordered through Tommy Hilfiger', done: false },
+      { text: 'Volunteer application submitted (for field-trip chaperones / background check)', done: false },
+    ],
+  },
+];
+
+// Serialize the task list to GitHub-flavored Markdown checkboxes for copying.
+const tasksToMarkdown = () =>
+  NBCA_TASKS.map(
+    (g) =>
+      `### ${g.group}\n` +
+      g.tasks.map((t) => `- [${t.done ? 'x' : ' '}] ${t.text}`).join('\n')
+  ).join('\n\n');
+
+// Checklist card with a one-click "Copy as Markdown" button.
+const NbcaTaskList = () => {
+  const [copied, setCopied] = useState(false);
+
+  const copy = async () => {
+    const md = `# NBCA 2026–27 Back-to-School Task List\n\n${tasksToMarkdown()}\n`;
+    try {
+      await navigator.clipboard.writeText(md);
+    } catch {
+      // Fallback for browsers/contexts without the async clipboard API.
+      const ta = document.createElement('textarea');
+      ta.value = md;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const total = NBCA_TASKS.reduce((a, g) => a + g.tasks.length, 0);
+  const done = NBCA_TASKS.reduce((a, g) => a + g.tasks.filter((t) => t.done).length, 0);
+
+  return (
+    <section className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+      <div className="flex items-start justify-between gap-3 mb-1 flex-wrap">
+        <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2">
+          <CheckSquare size={20} /> Back-to-school task list
+        </h2>
+        <button
+          onClick={copy}
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-tefa-green hover:bg-tefa-navy rounded-lg px-3 py-2 transition shrink-0"
+        >
+          {copied ? <Check size={14} /> : <Copy size={14} />}
+          {copied ? 'Copied!' : 'Copy as Markdown'}
+        </button>
+      </div>
+      <p className="text-sm text-tefa-body/70 mb-4">
+        Everything from this page in one checklist — {done} of {total} done. Copy pastes clean
+        Markdown checkboxes into Notes, Todoist, GitHub, etc.
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+        {NBCA_TASKS.map((g) => (
+          <div key={g.group}>
+            <div className="text-xs font-bold uppercase tracking-wide text-tefa-body/60 mb-2">{g.group}</div>
+            <ul className="space-y-1.5">
+              {g.tasks.map((t) => (
+                <li key={t.text} className="flex items-start gap-2 text-sm">
+                  {t.done ? (
+                    <CheckSquare size={16} className="mt-0.5 shrink-0 text-tefa-green" />
+                  ) : (
+                    <Square size={16} className="mt-0.5 shrink-0 text-tefa-body/30" />
+                  )}
+                  <span className={t.done ? 'text-tefa-body/50 line-through' : 'text-tefa-body/80'}>{t.text}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+};
+
 const NbcaPrepView = () => {
   const nextIdx = NBCA_TIMELINE.findIndex((e) => e.iso >= TODAY);
 
@@ -2008,6 +2137,9 @@ const NbcaPrepView = () => {
           })}
         </div>
       </section>
+
+      {/* Copyable master task list — distilled from everything above */}
+      <NbcaTaskList />
     </div>
   );
 };
