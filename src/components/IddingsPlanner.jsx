@@ -1599,6 +1599,11 @@ const NBCA_KIDS = [
       },
       { label: 'Retreat', text: '9th-grade class retreat — dates TBD.' },
       {
+        label: 'Summer reading — English 9 Honors',
+        text:
+          'Three books (Honors reads all three): The 7 Habits of Highly Effective Teens by Sean Covey · The Faithful Spy by John Hendrix · The Hiding Place by Corrie ten Boom. Typed reading-response questions + annotations due the first day of class (submit to Google Classroom & turnitin.com). Regular English 9 does the first two only.',
+      },
+      {
         label: 'Fall schedule',
         text:
           'English 9 Honors · Spanish I · Old Testament · World Geography (Chapel Wed) · Honors Geometry · HS Band · Biology · Athletics (Periods 8 & 9).',
@@ -1640,6 +1645,11 @@ const NBCA_KIDS = [
         text: 'Volleyball: Aug 3 @ 5:30 PM (Secondary Gym) · Cross Country: Aug 4 @ 5:30 PM (Secondary Gym).',
       },
       { label: 'Retreat', text: 'Middle-school class retreat — dates TBD.' },
+      {
+        label: 'Summer reading',
+        text:
+          'The Wednesday Wars by Gary D. Schmidt. Plus a creative One-Pager reading response (title, author, themes border, character & setting drawings, 2 cited quotes, summary, personal rating) — counts as a test grade, due the first week of school.',
+      },
       {
         label: 'Fall schedule',
         text: 'MS Athletics · Math 7 · Bible 7 Girls · English 7 (Chapel Wed) · Science 7 · MS Band · History 7 · MS Art (Periods 8 & 9).',
@@ -1798,7 +1808,7 @@ const NBCA_TASKS = [
       { text: 'TAPPS / TMS registration (need Student ID)', done: false },
       { text: 'Cross Country parent meeting Aug 4 · Football parent meeting Aug 7', done: false },
       { text: 'Secondary supply list purchased', done: false },
-      { text: '9th / 9th Honors summer reading', done: false },
+      { text: 'Summer reading (English 9 Honors): The 7 Habits of Highly Effective Teens (Covey), The Faithful Spy (Hendrix), The Hiding Place (ten Boom) + response questions', done: false },
     ],
   },
   {
@@ -1808,7 +1818,7 @@ const NBCA_TASKS = [
       { text: 'IXL Summer Boost — Math completed before Aug 12', done: false },
       { text: 'Volleyball parent meeting Aug 3 · Cross Country parent meeting Aug 4', done: false },
       { text: 'Secondary supply list purchased', done: false },
-      { text: '7th grade summer reading', done: false },
+      { text: 'Summer reading: The Wednesday Wars (Gary D. Schmidt) + One-Pager response (test grade)', done: false },
     ],
   },
   {
@@ -1816,7 +1826,7 @@ const NBCA_TASKS = [
     tasks: [
       { text: 'Uniforms for Elementary purchased', done: true },
       { text: '4th-grade school supplies purchased', done: false },
-      { text: 'Summer reading (recommended)', done: false },
+      { text: 'Summer reading (recommended): The Tale of Despereaux, Because of Winn-Dixie, Frindle, The Cricket in Times Square, The Miraculous Journey of Edward Tulane, Hatchet', done: false },
     ],
   },
   {
