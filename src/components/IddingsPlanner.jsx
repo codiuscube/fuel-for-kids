@@ -1743,8 +1743,7 @@ const NBCA_KIDS = [
       },
       {
         label: 'IXL Summer Boost — Math',
-        text:
-          'Complete the 7th-grade plan (20 skills, SmartScore 80 each) by Aug 12 — hard deadline, counts as a Q1 quiz grade. Login credentials requested from the math teachers Jul 20 (Dorothy is new, so she needed rostering); sign in via the NBCA custom link, not ixl.com.',
+        text: 'NOT REQUIRED — Mrs. Scobee confirmed (Jul 20) that new students are exempt from the IXL Summer Boost.',
       },
       {
         label: 'Middle School Houses',
@@ -1932,7 +1931,7 @@ const NBCA_TASKS = [
     group: 'Dorothy · 7th Grade',
     tasks: [
       { text: 'Mandatory PE uniform ordered from Global Schoolwear (1 shorts + 1 shirt)', done: false, link: 'Global Schoolwear', url: 'https://www.globalschoolwear.com/' },
-      { text: 'IXL Summer Boost — Math by Aug 12 (credentials requested Jul 20, waiting on teachers; 20 skills @ SmartScore 80)', done: false, link: 'IXL Boost', url: 'https://aptg.co/bs1dtZ' },
+      { text: 'IXL Summer Boost — NOT REQUIRED for new students (Mrs. Scobee, Jul 20)', done: true },
       { text: 'Volleyball parent meeting Aug 3 · Cross Country parent meeting Aug 4', done: false, link: 'Calendar', url: 'https://www.nbcatx.org/page/calendar-events' },
       { text: 'Secondary supply list purchased', done: false, link: 'Supply list', url: 'https://aptg.co/tCJ7SC' },
       { text: 'Summer reading: The Wednesday Wars (Gary D. Schmidt) + One-Pager response (test grade)', done: true, link: 'Reading list', url: 'https://aptg.co/J20fyQ' },
