@@ -1589,7 +1589,7 @@ const NBCA_ACTIONS = [
     due: 'Due Jul 31',
     who: 'Both athletes',
     detail:
-      'TAPPS Medical History, TAPPS Student Profile, and Athletic Handbook are all APPROVED for both kids — only the Physical Upload Form is still incomplete. Get physicals done and uploaded to the Rank One portal before Jul 31. Download the Rank One app (iOS/Android) and subscribe to "Schedule Alerts."',
+      'Everything is SUBMITTED: TAPPS Medical History, TAPPS Student Profile, and Athletic Handbook approved, physicals uploaded and Pending Approval. Watch Rank One for the physicals to flip to Approved — sports show "Not Eligible" until they do, and practices need a physical on file. Open questions with Janey (emailed Jul 20): does Cassius need his own TMS student login, do we owe TAPPS PAPF/STF transfer forms (Cassius homeschooled last year; no transfer email received for Dorothy), and are her attached PDF forms different from the Rank One ones.',
     links: [
       { label: 'Rank One portal', url: 'https://nbca.store.rankone.com/' },
       { label: 'Athletic Handbook', url: 'https://docs.google.com/document/d/1rpI6cJBamE3AZuOGglpiffz3fI2JBXaMzKeFwSl5Fkg/edit' },
@@ -1691,14 +1691,12 @@ const NBCA_KIDS = [
     items: [
       {
         label: 'Summer strength & conditioning',
-        text:
-          'Mon–Thurs, 6:30–8:00 AM on the football field / weight room until Jul 23. Coach Hunter Harrison. Sign up via the RankOne link.',
-        link: 'https://nbca.store.rankone.com/Camp/List?mc_cid=230ac33dbb&mc_eid=2b0df2e354',
-        linkLabel: 'RankOne camp sign-up',
+        text: 'SKIPPING — we opted out of the summer camp (ran Mon–Thurs 6:30–8:00 AM until Jul 23). Fall practice still starts Aug 3.',
       },
       {
         label: 'TAPPS / TMS registration',
-        text: 'DONE — TAPPS Medical History and Student Profile are both approved in Rank One. Only the physical upload remains.',
+        text:
+          'Rank One is fully submitted: Medical History, Student Profile, and Handbook approved; physical uploaded, Pending Approval. TMS (separate HS-only system): parent account requested via the app — waiting on Janey to confirm whether Cassius needs his own student login.',
       },
       {
         label: 'Fall Break athletics (Oct 12–23)',
@@ -1863,10 +1861,10 @@ const NBCA_MISC = [
 
 // Master July–March timeline. `iso` drives past/upcoming styling against TODAY.
 const NBCA_TIMELINE = [
-  { date: 'Now – Jul 23', iso: '2026-07-23', title: 'Summer strength & conditioning', detail: 'Cassius · Mon–Thurs 6:30–8:00 AM.' },
+  { date: 'Now – Jul 23', iso: '2026-07-23', title: 'Summer strength & conditioning', detail: 'Skipping — Cassius is not attending.' },
   { date: 'Jul 25', iso: '2026-07-25', title: 'Summer Band Camp', detail: '10:15 AM–12:15 PM · Cassius & Dorothy.' },
   { date: 'Jul 27 – 31', iso: '2026-07-27', title: 'Athletics Dead Week', detail: 'No practices, games, or team events.' },
-  { date: 'Jul 31', iso: '2026-07-31', title: 'Rank One athletic paperwork DUE', detail: 'Physicals + medical history uploaded for Cassius & Dorothy.' },
+  { date: 'Jul 31', iso: '2026-07-31', title: 'Rank One athletic paperwork DUE', detail: 'All submitted for Cassius & Dorothy — physicals Pending Approval; confirm they flip to Approved by this date.' },
   { date: 'Aug 1', iso: '2026-08-01', title: 'Band Camp / schedule-change window opens', detail: 'Summer Band Camp 10:15–12:15.' },
   { date: 'Aug 3', iso: '2026-08-03', title: 'HS fall sports begin · Media Day · Volleyball meeting', detail: 'Cassius practice starts · HS Media Day 12:30–4:30 PM · HS & MS Volleyball parent meeting 5:30 PM (Secondary Gym).' },
   { date: 'Aug 4', iso: '2026-08-04', title: 'Cross Country parent meeting', detail: 'HS & MS · 5:30 PM (Secondary Gym).' },
@@ -1874,7 +1872,7 @@ const NBCA_TIMELINE = [
   { date: 'Aug 10', iso: '2026-08-10', title: 'MS football/volleyball begin · Elementary Meet the Teacher', detail: 'Dorothy practice starts · Meet the Teacher (A–M last names) 4:30–5:30 PM (Elementary).' },
   { date: 'Aug 11', iso: '2026-08-11', title: '4th Grade Parent Orientation', detail: '5:30–6:30 PM.' },
   { date: 'Aug 12', iso: '2026-08-12', title: 'FIRST DAY OF SCHOOL', detail: 'MS Cross Country practice also begins.' },
-  { date: 'Aug 17', iso: '2026-08-17', title: '7th/8th meeting · Meet the Wildcats', detail: '7th & 8th grade parent/student meeting 5:30 PM (Secondary Gym) · Meet the Wildcats 6:30 PM (Athletic Complex).' },
+  { date: 'Aug 17', iso: '2026-08-17', title: 'New Parent Breakfast · 7th/8th meeting · Meet the Wildcats', detail: 'New Parent Breakfast 8:30 AM (McKenna Event Center) — RSVP’d ✓ · 7th & 8th grade parent/student meeting 5:30 PM (Secondary Gym) · Meet the Wildcats 6:30 PM (Athletic Complex).' },
   { date: 'Aug 21', iso: '2026-08-21', title: 'Football home opener', detail: 'vs. Austin Hill Country Christian · 7:00 PM · Band plays!' },
   { date: 'Aug 24', iso: '2026-08-24', title: 'HS parent/student meeting', detail: '6:30 PM (Secondary Gym).' },
   { date: 'Aug 27', iso: '2026-08-27', title: 'Volleyball home opener', detail: 'vs. Bracken · 6:00 PM.' },
@@ -1909,10 +1907,11 @@ const NBCA_TASKS = [
   {
     group: 'Urgent — all family',
     tasks: [
-      { text: 'Athletic paperwork approved for Cassius & Dorothy (TAPPS Medical History, TAPPS Student Profile, Athletic Handbook) — except Physicals', done: true, link: 'Rank One', url: 'https://nbca.store.rankone.com/' },
-      { text: 'Physicals for Cassius & Dorothy uploaded to Rank One (DUE Jul 31)', done: false, link: 'Rank One', url: 'https://nbca.store.rankone.com/' },
-      { text: 'OTC medication permission Jotform completed (Sebastian / any child needing meds)', done: false, link: 'Open Jotform', url: 'https://form.jotform.com/251976016734058' },
-      { text: 'Grandparent passes added via FACTS → Family → Family Demographic Form', done: false, link: 'FACTS', url: 'https://factsmgt.com/parent-log-in/' },
+      { text: 'Athletic paperwork approved for Cassius & Dorothy (TAPPS Medical History, TAPPS Student Profile, Athletic Handbook)', done: true, link: 'Rank One', url: 'https://nbca.store.rankone.com/' },
+      { text: 'Physicals for Cassius & Dorothy uploaded to Rank One — Pending Approval; watch for it to flip before practices', done: true, link: 'Rank One', url: 'https://nbca.store.rankone.com/' },
+      { text: 'Awaiting Janey’s reply (emailed Jul 20): TMS student login for Cassius? PAPF/STF transfer forms (Cassius homeschooled, no transfer email for Dorothy)? Her PDF forms vs Rank One?', done: false, link: 'Email Janey', url: 'mailto:jpolk@nbcatx.org' },
+      { text: 'OTC medication permission Jotform completed for all three kids', done: true, link: 'Open Jotform', url: 'https://form.jotform.com/251976016734058' },
+      { text: 'Grandparent passes added via FACTS → Family → Family Demographic Form', done: true, link: 'FACTS', url: 'https://factsmgt.com/parent-log-in/' },
       { text: 'Hot lunch ordering set up in FACTS Parent Portal (optional)', done: false, link: 'FACTS', url: 'https://factsmgt.com/parent-log-in/' },
     ],
   },
@@ -1920,11 +1919,12 @@ const NBCA_TASKS = [
     group: 'Cassius · 9th Grade',
     tasks: [
       { text: 'Signed up for High School Football tryouts', done: true, link: 'Athletics', url: 'https://www.nbcatx.org/page/athletics-overview' },
-      { text: 'Summer strength & conditioning (Mon–Thu 6:30–8:00 AM until Jul 23)', done: false, link: 'RankOne camp', url: 'https://nbca.store.rankone.com/Camp/List?mc_cid=230ac33dbb&mc_eid=2b0df2e354' },
-      { text: 'TAPPS / TMS registration — Medical History & Student Profile approved', done: true, link: 'Rank One', url: 'https://nbca.store.rankone.com/' },
+      { text: 'Summer strength & conditioning — SKIPPED (opted out)', done: true },
+      { text: 'Rank One TAPPS docs approved · physical uploaded (Pending Approval)', done: true, link: 'Rank One', url: 'https://nbca.store.rankone.com/' },
+      { text: 'TMS account — parent account requested via app; awaiting Janey on whether Cassius needs his own student login', done: false },
       { text: 'Cross Country parent meeting Aug 4 · Football parent meeting Aug 7', done: false, link: 'Calendar', url: 'https://www.nbcatx.org/page/calendar-events' },
       { text: 'Secondary supply list purchased', done: false, link: 'Supply list', url: 'https://aptg.co/tCJ7SC' },
-      { text: 'Summer reading (English 9 Honors): The 7 Habits of Highly Effective Teens (Covey), The Faithful Spy (Hendrix), The Hiding Place (ten Boom) + response questions', done: false, link: 'Reading list', url: 'https://aptg.co/y0zrrR' },
+      { text: 'Summer reading (English 9 Honors): The 7 Habits of Highly Effective Teens (Covey), The Faithful Spy (Hendrix), The Hiding Place (ten Boom) + response questions', done: true, link: 'Reading list', url: 'https://aptg.co/y0zrrR' },
     ],
   },
   {
@@ -1934,7 +1934,7 @@ const NBCA_TASKS = [
       { text: 'IXL Summer Boost — Math completed before Aug 12', done: false, link: 'IXL Boost', url: 'https://aptg.co/bs1dtZ' },
       { text: 'Volleyball parent meeting Aug 3 · Cross Country parent meeting Aug 4', done: false, link: 'Calendar', url: 'https://www.nbcatx.org/page/calendar-events' },
       { text: 'Secondary supply list purchased', done: false, link: 'Supply list', url: 'https://aptg.co/tCJ7SC' },
-      { text: 'Summer reading: The Wednesday Wars (Gary D. Schmidt) + One-Pager response (test grade)', done: false, link: 'Reading list', url: 'https://aptg.co/J20fyQ' },
+      { text: 'Summer reading: The Wednesday Wars (Gary D. Schmidt) + One-Pager response (test grade)', done: true, link: 'Reading list', url: 'https://aptg.co/J20fyQ' },
     ],
   },
   {
@@ -1942,13 +1942,13 @@ const NBCA_TASKS = [
     tasks: [
       { text: 'Uniforms for Elementary purchased', done: true, link: 'Global Schoolwear', url: 'https://www.globalschoolwear.com/' },
       { text: '4th-grade school supplies purchased', done: false, link: 'Supply list', url: 'https://5il.co/2o0ag' },
-      { text: 'Summer reading (recommended): The Tale of Despereaux, Because of Winn-Dixie, Frindle, The Cricket in Times Square, The Miraculous Journey of Edward Tulane, Hatchet', done: false },
+      { text: 'Summer reading (recommended): The Tale of Despereaux, Because of Winn-Dixie, Frindle, The Cricket in Times Square, The Miraculous Journey of Edward Tulane, Hatchet', done: true },
     ],
   },
   {
     group: 'General',
     tasks: [
-      { text: 'Daily uniforms ordered through Tommy Hilfiger', done: false, link: 'Global Schoolwear', url: 'https://www.globalschoolwear.com/' },
+      { text: 'Daily uniforms — Sebastian’s purchased; Cassius & Dorothy’s being picked up by a helper while we’re traveling', done: false, link: 'Global Schoolwear', url: 'https://www.globalschoolwear.com/' },
       { text: 'Volunteer application submitted (for field-trip chaperones / background check)', done: false, link: 'Apply', url: 'https://forms.gle/ZTV3kLtAhhTxUTaEA' },
     ],
   },
