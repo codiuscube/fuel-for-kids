@@ -1837,13 +1837,68 @@ const NBCA_KIDS = [
   },
 ];
 
+// ---------------------------------------------------------------------------
+// Dress code, verbatim from the two official 2026-27 PDFs (Secondary Campus
+// Student Dress Code; Elementary Campus Section 4, update 6.16.26). The two
+// campuses differ in ways that cost money if you guess — belts and the chapel
+// uniform are Elementary-only, and the colour is "hunter" at Secondary but
+// "evergreen" at Elementary. Keep this block as the single source of truth.
+// ---------------------------------------------------------------------------
+
+const UNIFORM_RULES = [
+  {
+    campus: 'Secondary · Cassius (9th) & Dorothy (7th)',
+    tone: 'navy',
+    colors: 'White · hunter · black',
+    rules: [
+      { label: 'Shoes', text: 'Any closed-toe shoe. Must have a full front AND back — slip-ons are not allowed. No Crocs, water shoes, or slippers. No messages, writing, or wheels.' },
+      { label: 'Socks', text: 'Matching socks in solid white, hunter, or black. (Dorothy: capri/ankle leggings or tights in solid white or black only, and only under skirts.)' },
+      { label: 'Belts', text: 'NOT required — belts appear nowhere in the secondary dress code. Do not buy.', flag: 'good' },
+      { label: 'Tops', text: 'Long or short sleeve polo — white, hunter, or black — stretch pique, pique, interlock, or performance. NBCA logo required.' },
+      { label: 'Dorothy bottoms', text: 'A-Line side button, box pleat, or pleated — SKIRT OR SKORT — in white plaid or khaki. Also khaki twill Bermuda short or straight/bootcut pant. No shorter than 3" above the knee or she is sent to call home.' },
+      { label: 'Cassius bottoms', text: 'Flat front twill blend, flat front twill cotton, or performance golf — short or pant — in khaki. Same 3"-above-knee rule applies to boys.' },
+      { label: 'Outerwear', text: 'Only TH hunter or black ½-zip fleece, full-zip polar fleece, or crewneck sweatshirt — all with the NBCA logo. No sweatshirts or hoodies inside any building, gym included, except Friday. Full uniform underneath.' },
+      { label: 'Friday spirit day', text: 'Long blue jeans (not ragged, torn, or holed) or uniform shorts, plus an OFFICIAL (not handmade) NBCA t-shirt or athletic jersey. No cargo shorts.' },
+      { label: 'MS P.E.', text: 'Order at globalschoolwear.com OR wear a green, white, black, or gray spirit shirt. Shorts need a 5" minimum inseam.' },
+    ],
+  },
+  {
+    campus: 'Elementary · Sebastian (4th)',
+    tone: 'green',
+    colors: 'White · evergreen · black',
+    rules: [
+      { label: 'Belts', text: 'REQUIRED — brown or black belt whenever slacks or shorts have belt loops. (Navy also allowed for chapel.) This is the opposite of the secondary rule.', flag: 'warn' },
+      { label: 'Chapel uniform', text: 'A separate, stricter uniform: TH khaki pant + EVERGREEN pique/interlocking/performance polo with NBCA logo, belt, solid socks. Easy to miss when buying only daily options.', flag: 'warn' },
+      { label: 'Shoes', text: 'Any athletic shoe, any color. MAY NOT have characters, wheels, light-up, or open toe. Boots allowed on Spirit Days. The daily-options list also says "simple athletic-type shoe (black and/or white)" — plain black or white is the safe buy.' },
+      { label: 'Socks', text: 'Solid color — evergreen, black, or white only.' },
+      { label: 'Daily uniform', text: 'TH khaki pant or khaki shorts + TH white, evergreen, or black pique/interlocking/performance co-ed polo with NBCA logo. All boys’ shirts must be tucked in.' },
+      { label: 'Outerwear', text: 'Inside: TH full-zip polar fleece, co-ed half-zip fleece, or crewneck — school colors, logo required. Hoodies (NBCA or school colors) only on Spirit Days. Outside: any color.' },
+      { label: 'Friday spirit day', text: 'Long blue jeans (hemmed, not ragged/torn/holed) or uniform shorts with an official NBCA spirit shirt. Closed-toe shoes like boots or Sperry’s are fine, but he must bring proper athletic shoes for P.E.' },
+    ],
+  },
+];
+
+// What is actually still missing after the resale-sale haul (voice message, Jul 27).
+const UNIFORM_BUY = [
+  { kid: 'Dorothy', item: '3 skirts or skorts — white plaid or khaki', why: 'Sold out at the resale sale in five minutes. No resale path; longest lead time of anything on this list.', urgent: true },
+  { kid: 'Cassius', item: '2 khaki shorts — size 31', why: 'The "size 32" she hunted for runs big on him. 32 only if 31 is unavailable.', urgent: true },
+  { kid: 'Cassius', item: '2 more logo polos (white / hunter / black)', why: 'He has 3 from resale. 5 covers a week without midweek laundry — but confirm his 2 black + 1 green are daily polos, not spirit shirts. If they are spirit shirts he needs 5.' },
+  { kid: 'Dorothy', item: 'P.E. shorts (5" min inseam)', why: 'Shirt may not be needed — the dress code allows a green/white/black/gray spirit shirt instead. Confirm with Janey before buying the Global Schoolwear top.' },
+  { kid: 'Sebastian', item: 'Brown or black belt', why: 'Required at Elementary whenever bottoms have belt loops. Not covered by the secondary rules.', urgent: true },
+  { kid: 'Sebastian', item: 'Evergreen chapel polo — verify owned', why: 'Chapel uniform is separate from daily options. Check the purchased set actually includes an evergreen logo polo.' },
+  { kid: 'All three', item: 'Plain lace-up athletic sneakers', why: 'No slip-ons (secondary), no light-up or characters (elementary). Doubles as P.E. footwear for all three.' },
+  { kid: 'All three', item: 'Solid white & solid black sock multipacks', why: 'Same palette works on both campuses. No patterns, no logos.' },
+  { kid: 'Dorothy', item: 'Verify the BOGO cardigan + zip-up', why: 'Must be TH hunter or black WITH the NBCA logo to be legal daily wear. A plain sweater will not pass.', urgent: true },
+];
+
 const NBCA_MISC = [
   {
     icon: Shirt,
     title: 'Uniforms, spirit wear & technology',
     points: [
-      'Daily uniforms ordered through Tommy Hilfiger.',
+      'Tommy Hilfiger is the sole approved uniform provider. Order through globalschoolwear.com using NBCA partner school code NEWB01.',
       'Spirit wear: Athletic Booster Club (sold at home football games), the PTO Online Store, the NBCA Resale Facebook page, or limited resale at the Elementary/Secondary offices.',
+      'Dress-code infractions send the student to the office to call home, and the missed class counts as an unexcused absence.',
       'Technology: students use Google Apps for Education. Classroom Chromebooks are for academic use only.',
     ],
   },
@@ -1900,6 +1955,81 @@ const SUPPLY_TONE = {
   green: { head: 'text-tefa-green', dot: 'bg-tefa-green/50', chip: 'bg-tefa-green/5 border-tefa-green/20' },
 };
 
+// Dress-code reference + the remaining shopping gaps, in one card. Split by
+// campus because the rules genuinely conflict between the two.
+const UniformView = () => (
+  <section className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+    <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2 mb-1">
+      <Shirt size={20} /> Dress code &amp; what’s left to buy
+    </h2>
+    <p className="text-sm text-tefa-body/70 mb-5">
+      From the official 2026-27 Secondary and Elementary dress-code PDFs. The two campuses
+      differ — <span className="font-semibold text-tefa-body">belts are required at Elementary and
+      absent from Secondary</span>, and the green is called “hunter” at Secondary but “evergreen”
+      at Elementary.
+    </p>
+
+    {/* Still-to-buy list first — it's the actionable part */}
+    <div className="rounded-lg border border-tefa-gold/30 bg-tefa-gold/5 p-4 mb-6">
+      <div className="text-xs font-bold uppercase tracking-wide text-tefa-gold mb-3">
+        Still to buy · after the Jul 27 resale haul
+      </div>
+      <ul className="space-y-2.5">
+        {UNIFORM_BUY.map((b) => (
+          <li key={`${b.kid}-${b.item}`} className="flex items-start gap-2.5 text-sm">
+            <span
+              className={`mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full ${
+                b.urgent ? 'bg-tefa-gold' : 'bg-tefa-navy/30'
+              }`}
+            />
+            <span className="flex-1">
+              <span className="font-semibold text-tefa-navy">{b.kid}</span>
+              <span className="text-tefa-body/50"> · </span>
+              <span className="text-tefa-body/90">{b.item}</span>
+              {b.urgent && (
+                <span className="ml-2 text-[10px] font-bold bg-tefa-gold text-white px-1.5 py-0.5 rounded uppercase tracking-wide">
+                  Order first
+                </span>
+              )}
+              <span className="block text-xs text-tefa-body/60 mt-0.5">{b.why}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    {/* Per-campus rules */}
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {UNIFORM_RULES.map((c) => {
+        const t = SUPPLY_TONE[c.tone];
+        return (
+          <div key={c.campus} className={`rounded-lg border p-4 ${t.chip}`}>
+            <div className={`text-xs font-bold uppercase tracking-wide ${t.head}`}>{c.campus}</div>
+            <div className="text-[11px] text-tefa-body/60 mb-3">Uniform colors: {c.colors}</div>
+            <div className="space-y-2.5">
+              {c.rules.map((r) => (
+                <div key={r.label} className="border-l-2 border-gray-200 pl-2.5">
+                  <div className="text-[11px] font-bold uppercase tracking-wide text-tefa-body/60">
+                    {r.label}
+                    {r.flag === 'warn' && <span className="ml-1.5 text-tefa-gold">▲</span>}
+                    {r.flag === 'good' && <span className="ml-1.5 text-tefa-green">✓</span>}
+                  </div>
+                  <p className="text-xs text-tefa-body/80 mt-0.5">{r.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+
+    <p className="text-[11px] text-tefa-body/50 mt-4">
+      Order through globalschoolwear.com · NBCA partner school code <span className="font-semibold">NEWB01</span>.
+      School starts Aug 12, so anything ordered new should ship by ~Aug 5.
+    </p>
+  </section>
+);
+
 // Master back-to-school task list, distilled from everything on this page.
 // `done: true` items are already handled. This is the single source both the
 // on-page checklist and the "Copy as Markdown" button read from.
@@ -1918,6 +2048,8 @@ const NBCA_TASKS = [
   {
     group: 'Cassius · 9th Grade',
     tasks: [
+      { text: 'Khaki shorts ordered — SIZE 31 (32 runs big on him); flat front twill or performance golf, no shorter than 3" above the knee', done: false, link: 'Global Schoolwear', url: 'https://www.globalschoolwear.com/' },
+      { text: 'Confirm his 2 black + 1 green resale shirts are daily logo polos, not spirit shirts — decides whether he needs 2 more tops or 5', done: false },
       { text: 'Signed up for High School Football tryouts', done: true, link: 'Athletics', url: 'https://www.nbcatx.org/page/athletics-overview' },
       { text: 'Summer strength & conditioning — SKIPPED (opted out)', done: true },
       { text: 'Rank One TAPPS docs approved · physical uploaded (Pending Approval)', done: true, link: 'Rank One', url: 'https://nbca.store.rankone.com/' },
@@ -1930,7 +2062,9 @@ const NBCA_TASKS = [
   {
     group: 'Dorothy · 7th Grade',
     tasks: [
-      { text: 'Mandatory PE uniform ordered from Global Schoolwear (1 shorts + 1 shirt)', done: false, link: 'Global Schoolwear', url: 'https://www.globalschoolwear.com/' },
+      { text: 'PE shorts ordered (5" min inseam) — ask Janey whether the Global Schoolwear shirt is required, since the dress code allows a green/white/black/gray spirit shirt instead', done: false, link: 'Global Schoolwear', url: 'https://www.globalschoolwear.com/' },
+      { text: 'Skirts/skorts ordered — white plaid or khaki, no shorter than 3" above the knee (sold out at the resale sale)', done: false, link: 'Global Schoolwear', url: 'https://www.globalschoolwear.com/' },
+      { text: 'Resale BOGO cardigan + zip-up verified as TH hunter/black WITH the NBCA logo', done: false },
       { text: 'IXL Summer Boost — NOT REQUIRED for new students (Mrs. Scobee, Jul 20)', done: true },
       { text: 'Volleyball parent meeting Aug 3 · Cross Country parent meeting Aug 4', done: false, link: 'Calendar', url: 'https://www.nbcatx.org/page/calendar-events' },
       { text: 'Secondary supply list purchased', done: false, link: 'Supply list', url: 'https://aptg.co/tCJ7SC' },
@@ -1941,6 +2075,8 @@ const NBCA_TASKS = [
     group: 'Sebastian · 4th Grade',
     tasks: [
       { text: 'Uniforms for Elementary purchased', done: true, link: 'Global Schoolwear', url: 'https://www.globalschoolwear.com/' },
+      { text: 'Brown or black belt bought — REQUIRED at Elementary whenever bottoms have belt loops (secondary has no belt rule, so easy to miss)', done: false },
+      { text: 'Confirm the purchased set includes an EVERGREEN logo polo for the chapel uniform — it is separate from the daily options', done: false },
       { text: '4th-grade school supplies purchased', done: false, link: 'Supply list', url: 'https://5il.co/2o0ag' },
       { text: 'Summer reading (recommended): The Tale of Despereaux, Because of Winn-Dixie, Frindle, The Cricket in Times Square, The Miraculous Journey of Edward Tulane, Hatchet', done: true },
     ],
@@ -1949,6 +2085,9 @@ const NBCA_TASKS = [
     group: 'General',
     tasks: [
       { text: 'Daily uniforms — Sebastian’s purchased; Cassius & Dorothy’s being picked up by a helper while we’re traveling', done: false, link: 'Global Schoolwear', url: 'https://www.globalschoolwear.com/' },
+      { text: 'Pickup arranged for the resale haul (Cassius: 2 black + 1 green shirts; Dorothy: cardigan + zip-up; plus spirit wear) — count and size everything on arrival', done: false },
+      { text: 'Plain lace-up athletic sneakers for all three — no slip-ons (secondary), no light-up/characters (elementary)', done: false },
+      { text: 'Solid white & solid black sock multipacks — same palette works on both campuses', done: false },
       { text: 'Volunteer application submitted (for field-trip chaperones / background check)', done: false, link: 'Apply', url: 'https://forms.gle/ZTV3kLtAhhTxUTaEA' },
     ],
   },
@@ -2223,6 +2362,9 @@ const NbcaPrepView = () => {
           )}
         </section>
       ))}
+
+      {/* Dress code + what's still to buy */}
+      <UniformView />
 
       {/* Uniforms / boosters */}
       {NBCA_MISC.map((m) => {
