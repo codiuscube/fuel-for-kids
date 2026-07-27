@@ -1586,10 +1586,10 @@ const NBCA_ACTIONS = [
   },
   {
     title: 'Athletic paperwork — Cassius & Dorothy',
-    due: 'Due Jul 31',
+    due: 'Cleared — TAPPS account only',
     who: 'Both athletes',
     detail:
-      'Everything is SUBMITTED: TAPPS Medical History, TAPPS Student Profile, and Athletic Handbook approved, physicals uploaded and Pending Approval. Watch Rank One for the physicals to flip to Approved — sports show "Not Eligible" until they do, and practices need a physical on file. Open questions with Janey (emailed Jul 20): does Cassius need his own TMS student login, do we owe TAPPS PAPF/STF transfer forms (Cassius homeschooled last year; no transfer email received for Dorothy), and are her attached PDF forms different from the Rank One ones.',
+      'CLEARED by Janey (Jul 21): both kids are complete in Rank One — Medical History, Student Profile, Handbook, and physicals all in. NO transfer paperwork for either: those forms are high-school transfers only, and Cassius is an incoming 9th grader who has never competed at the HS level elsewhere. The PDFs she emailed Jul 20 are the same forms already done in Rank One, so nothing to re-file. ONE thing left for the whole family: Cassius must create his OWN TAPPS account first, then add Cody’s email inside it as the parent address so it links to the parent account.',
     links: [
       { label: 'Rank One portal', url: 'https://nbca.store.rankone.com/' },
       { label: 'Athletic Handbook', url: 'https://docs.google.com/document/d/1rpI6cJBamE3AZuOGglpiffz3fI2JBXaMzKeFwSl5Fkg/edit' },
@@ -1694,9 +1694,9 @@ const NBCA_KIDS = [
         text: 'SKIPPING — we opted out of the summer camp (ran Mon–Thurs 6:30–8:00 AM until Jul 23). Fall practice still starts Aug 3.',
       },
       {
-        label: 'TAPPS / TMS registration',
+        label: 'TAPPS account — LAST ITEM',
         text:
-          'Rank One is fully submitted: Medical History, Student Profile, and Handbook approved; physical uploaded, Pending Approval. TMS (separate HS-only system): parent account requested via the app — waiting on Janey to confirm whether Cassius needs his own student login.',
+          'Rank One is complete (Janey, Jul 21) and no transfer paperwork is owed — those forms are for HS transfer students, and he has never competed at the HS level. Remaining: CASSIUS creates his own TAPPS account himself, then adds Cody’s email inside it as the parent address so it links to the parent account. Order matters — his account first, then the link.',
       },
       {
         label: 'Fall Break athletics (Oct 12–23)',
@@ -1919,7 +1919,7 @@ const NBCA_TIMELINE = [
   { date: 'Now – Jul 23', iso: '2026-07-23', title: 'Summer strength & conditioning', detail: 'Skipping — Cassius is not attending.' },
   { date: 'Jul 25', iso: '2026-07-25', title: 'Summer Band Camp', detail: '10:15 AM–12:15 PM · Cassius & Dorothy.' },
   { date: 'Jul 27 – 31', iso: '2026-07-27', title: 'Athletics Dead Week', detail: 'No practices, games, or team events.' },
-  { date: 'Jul 31', iso: '2026-07-31', title: 'Rank One athletic paperwork DUE', detail: 'All submitted for Cassius & Dorothy — physicals Pending Approval; confirm they flip to Approved by this date.' },
+  { date: 'Jul 31', iso: '2026-07-31', title: 'Rank One athletic paperwork DUE', detail: 'DONE — Janey confirmed Jul 21 that Cassius & Dorothy are both complete in Rank One and owe no transfer forms. Only Cassius’s own TAPPS account is left.' },
   { date: 'Aug 1', iso: '2026-08-01', title: 'Band Camp / schedule-change window opens', detail: 'Summer Band Camp 10:15–12:15.' },
   { date: 'Aug 3', iso: '2026-08-03', title: 'HS fall sports begin · Media Day · Volleyball meeting', detail: 'Cassius practice starts · HS Media Day 12:30–4:30 PM · HS & MS Volleyball parent meeting 5:30 PM (Secondary Gym).' },
   { date: 'Aug 4', iso: '2026-08-04', title: 'Cross Country parent meeting', detail: 'HS & MS · 5:30 PM (Secondary Gym).' },
@@ -2031,43 +2031,48 @@ const UniformView = () => (
 );
 
 // Master back-to-school task list, distilled from everything on this page.
-// `done: true` items are already handled. This is the single source both the
-// on-page checklist and the "Copy as Markdown" button read from.
+// `done: true` items are already handled. `owner` is who is on the hook for an
+// open item — Cody by default; only assigned elsewhere when someone else has to
+// physically do it (e.g. TAPPS requires the student to create his own account).
+// This is the single source both the on-page checklist and the "Copy as
+// Markdown" button read from.
 const NBCA_TASKS = [
   {
     group: 'Urgent — all family',
     tasks: [
       { text: 'Athletic paperwork approved for Cassius & Dorothy (TAPPS Medical History, TAPPS Student Profile, Athletic Handbook)', done: true, link: 'Rank One', url: 'https://nbca.store.rankone.com/' },
-      { text: 'Physicals for Cassius & Dorothy uploaded to Rank One — Pending Approval; watch for it to flip before practices', done: true, link: 'Rank One', url: 'https://nbca.store.rankone.com/' },
-      { text: 'Awaiting Janey’s reply (emailed Jul 20): TMS student login for Cassius? PAPF/STF transfer forms (Cassius homeschooled, no transfer email for Dorothy)? Her PDF forms vs Rank One?', done: false, link: 'Email Janey', url: 'mailto:jpolk@nbcatx.org' },
+      { text: 'Physicals for Cassius & Dorothy uploaded — Janey confirmed Jul 21 that both kids are COMPLETE in Rank One', done: true, link: 'Rank One', url: 'https://nbca.store.rankone.com/' },
+      { text: 'Transfer paperwork (PAPF/STF) — NOT NEEDED for either kid (Janey, Jul 21): those forms are HS transfer students only, and Cassius has never competed at the HS level', done: true },
+      { text: 'Janey’s emailed PDF forms — same forms already completed in Rank One; nothing to re-file (Janey, Jul 21)', done: true },
       { text: 'OTC medication permission Jotform completed for all three kids', done: true, link: 'Open Jotform', url: 'https://form.jotform.com/251976016734058' },
       { text: 'Grandparent passes added via FACTS → Family → Family Demographic Form', done: true, link: 'FACTS', url: 'https://factsmgt.com/parent-log-in/' },
-      { text: 'Hot lunch ordering set up in FACTS Parent Portal (optional)', done: false, link: 'FACTS', url: 'https://factsmgt.com/parent-log-in/' },
+      { text: 'Hot lunch ordering set up in FACTS Parent Portal (optional)', done: false, owner: 'Cody', link: 'FACTS', url: 'https://factsmgt.com/parent-log-in/' },
     ],
   },
   {
     group: 'Cassius · 9th Grade',
     tasks: [
-      { text: 'Khaki shorts ordered — SIZE 31 (32 runs big on him); flat front twill or performance golf, no shorter than 3" above the knee', done: false, link: 'Global Schoolwear', url: 'https://www.globalschoolwear.com/' },
-      { text: 'Confirm his 2 black + 1 green resale shirts are daily logo polos, not spirit shirts — decides whether he needs 2 more tops or 5', done: false },
+      { text: 'TAPPS account — LAST ITEM for the whole family: Cassius creates his OWN account first, then adds Cody’s email in it as the parent address so it links to the parent account', done: false, owner: 'Cassius', link: 'TAPPS', url: 'https://www.tapps.net/' },
+      { text: 'Khaki shorts ordered — SIZE 31 (32 runs big on him); flat front twill or performance golf, no shorter than 3" above the knee', done: false, owner: 'Cody', link: 'Global Schoolwear', url: 'https://www.globalschoolwear.com/' },
+      { text: 'Confirm his 2 black + 1 green resale shirts are daily logo polos, not spirit shirts — decides whether he needs 2 more tops or 5', done: false, owner: 'Cody' },
       { text: 'Signed up for High School Football tryouts', done: true, link: 'Athletics', url: 'https://www.nbcatx.org/page/athletics-overview' },
       { text: 'Summer strength & conditioning — SKIPPED (opted out)', done: true },
-      { text: 'Rank One TAPPS docs approved · physical uploaded (Pending Approval)', done: true, link: 'Rank One', url: 'https://nbca.store.rankone.com/' },
-      { text: 'TMS account — parent account requested via app; awaiting Janey on whether Cassius needs his own student login', done: false },
-      { text: 'Cross Country parent meeting Aug 4 · Football parent meeting Aug 7', done: false, link: 'Calendar', url: 'https://www.nbcatx.org/page/calendar-events' },
-      { text: 'Secondary supply list purchased', done: false, link: 'Supply list', url: 'https://aptg.co/tCJ7SC' },
+      { text: 'Rank One complete — TAPPS docs approved, physical in, no transfer forms owed (Janey, Jul 21)', done: true, link: 'Rank One', url: 'https://nbca.store.rankone.com/' },
+      { text: 'Cross Country parent meeting Aug 4 · Football parent meeting Aug 7', done: false, owner: 'Cody', link: 'Calendar', url: 'https://www.nbcatx.org/page/calendar-events' },
+      { text: 'Secondary supply list purchased', done: false, owner: 'Cody', link: 'Supply list', url: 'https://aptg.co/tCJ7SC' },
       { text: 'Summer reading (English 9 Honors): The 7 Habits of Highly Effective Teens (Covey), The Faithful Spy (Hendrix), The Hiding Place (ten Boom) + response questions', done: true, link: 'Reading list', url: 'https://aptg.co/y0zrrR' },
     ],
   },
   {
     group: 'Dorothy · 7th Grade',
     tasks: [
-      { text: 'PE shorts ordered (5" min inseam) — ask Janey whether the Global Schoolwear shirt is required, since the dress code allows a green/white/black/gray spirit shirt instead', done: false, link: 'Global Schoolwear', url: 'https://www.globalschoolwear.com/' },
-      { text: 'Skirts/skorts ordered — white plaid or khaki, no shorter than 3" above the knee (sold out at the resale sale)', done: false, link: 'Global Schoolwear', url: 'https://www.globalschoolwear.com/' },
-      { text: 'Resale BOGO cardigan + zip-up verified as TH hunter/black WITH the NBCA logo', done: false },
+      { text: 'PE shorts ordered (5" min inseam) — ask Janey whether the Global Schoolwear shirt is required, since the dress code allows a green/white/black/gray spirit shirt instead', done: false, owner: 'Cody', link: 'Global Schoolwear', url: 'https://www.globalschoolwear.com/' },
+      { text: 'Skirts/skorts ordered — white plaid or khaki, no shorter than 3" above the knee (sold out at the resale sale)', done: false, owner: 'Cody', link: 'Global Schoolwear', url: 'https://www.globalschoolwear.com/' },
+      { text: 'Resale BOGO cardigan + zip-up verified as TH hunter/black WITH the NBCA logo', done: false, owner: 'Cody' },
+      { text: 'Athletic paperwork COMPLETE — physical received, no transfer forms needed (Janey, Jul 21)', done: true, link: 'Rank One', url: 'https://nbca.store.rankone.com/' },
       { text: 'IXL Summer Boost — NOT REQUIRED for new students (Mrs. Scobee, Jul 20)', done: true },
-      { text: 'Volleyball parent meeting Aug 3 · Cross Country parent meeting Aug 4', done: false, link: 'Calendar', url: 'https://www.nbcatx.org/page/calendar-events' },
-      { text: 'Secondary supply list purchased', done: false, link: 'Supply list', url: 'https://aptg.co/tCJ7SC' },
+      { text: 'Volleyball parent meeting Aug 3 · Cross Country parent meeting Aug 4', done: false, owner: 'Cody', link: 'Calendar', url: 'https://www.nbcatx.org/page/calendar-events' },
+      { text: 'Secondary supply list purchased', done: false, owner: 'Cody', link: 'Supply list', url: 'https://aptg.co/tCJ7SC' },
       { text: 'Summer reading: The Wednesday Wars (Gary D. Schmidt) + One-Pager response (test grade)', done: true, link: 'Reading list', url: 'https://aptg.co/J20fyQ' },
     ],
   },
@@ -2075,20 +2080,20 @@ const NBCA_TASKS = [
     group: 'Sebastian · 4th Grade',
     tasks: [
       { text: 'Uniforms for Elementary purchased', done: true, link: 'Global Schoolwear', url: 'https://www.globalschoolwear.com/' },
-      { text: 'Brown or black belt bought — REQUIRED at Elementary whenever bottoms have belt loops (secondary has no belt rule, so easy to miss)', done: false },
-      { text: 'Confirm the purchased set includes an EVERGREEN logo polo for the chapel uniform — it is separate from the daily options', done: false },
-      { text: '4th-grade school supplies purchased', done: false, link: 'Supply list', url: 'https://5il.co/2o0ag' },
+      { text: 'Brown or black belt bought — REQUIRED at Elementary whenever bottoms have belt loops (secondary has no belt rule, so easy to miss)', done: false, owner: 'Cody' },
+      { text: 'Confirm the purchased set includes an EVERGREEN logo polo for the chapel uniform — it is separate from the daily options', done: false, owner: 'Cody' },
+      { text: '4th-grade school supplies purchased', done: false, owner: 'Cody', link: 'Supply list', url: 'https://5il.co/2o0ag' },
       { text: 'Summer reading (recommended): The Tale of Despereaux, Because of Winn-Dixie, Frindle, The Cricket in Times Square, The Miraculous Journey of Edward Tulane, Hatchet', done: true },
     ],
   },
   {
     group: 'General',
     tasks: [
-      { text: 'Daily uniforms — Sebastian’s purchased; Cassius & Dorothy’s being picked up by a helper while we’re traveling', done: false, link: 'Global Schoolwear', url: 'https://www.globalschoolwear.com/' },
-      { text: 'Pickup arranged for the resale haul (Cassius: 2 black + 1 green shirts; Dorothy: cardigan + zip-up; plus spirit wear) — count and size everything on arrival', done: false },
-      { text: 'Plain lace-up athletic sneakers for all three — no slip-ons (secondary), no light-up/characters (elementary)', done: false },
-      { text: 'Solid white & solid black sock multipacks — same palette works on both campuses', done: false },
-      { text: 'Volunteer application submitted (for field-trip chaperones / background check)', done: false, link: 'Apply', url: 'https://forms.gle/ZTV3kLtAhhTxUTaEA' },
+      { text: 'Daily uniforms — Sebastian’s purchased; Cassius & Dorothy’s being picked up by a helper while we’re traveling', done: false, owner: 'Cody', link: 'Global Schoolwear', url: 'https://www.globalschoolwear.com/' },
+      { text: 'Pickup arranged for the resale haul (Cassius: 2 black + 1 green shirts; Dorothy: cardigan + zip-up; plus spirit wear) — count and size everything on arrival', done: false, owner: 'Cody' },
+      { text: 'Plain lace-up athletic sneakers for all three — no slip-ons (secondary), no light-up/characters (elementary)', done: false, owner: 'Cody' },
+      { text: 'Solid white & solid black sock multipacks — same palette works on both campuses', done: false, owner: 'Cody' },
+      { text: 'Volunteer application submitted (for field-trip chaperones / background check)', done: false, owner: 'Cody', link: 'Apply', url: 'https://forms.gle/ZTV3kLtAhhTxUTaEA' },
     ],
   },
 ];
@@ -2099,7 +2104,11 @@ const tasksToMarkdown = () =>
     (g) =>
       `### ${g.group}\n` +
       g.tasks
-        .map((t) => `- [${t.done ? 'x' : ' '}] ${t.text}${t.url ? ` — [${t.link || 'Link'}](${t.url})` : ''}`)
+        .map(
+          (t) =>
+            `- [${t.done ? 'x' : ' '}] ${t.owner ? `**@${t.owner}** · ` : ''}${t.text}` +
+            `${t.url ? ` — [${t.link || 'Link'}](${t.url})` : ''}`
+        )
         .join('\n')
   ).join('\n\n');
 
@@ -2142,8 +2151,9 @@ const NbcaTaskList = () => {
         </button>
       </div>
       <p className="text-sm text-tefa-body/70 mb-4">
-        Everything from this page in one checklist — {done} of {total} done. Copy pastes clean
-        Markdown checkboxes into Notes, Todoist, GitHub, etc.
+        Everything from this page in one checklist — {done} of {total} done. Every open item has an
+        owner (Cody unless tagged otherwise). Copy pastes clean Markdown checkboxes into Notes,
+        Todoist, GitHub, etc.
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
         {NBCA_TASKS.map((g) => (
@@ -2158,6 +2168,17 @@ const NbcaTaskList = () => {
                     <Square size={16} className="mt-0.5 shrink-0 text-tefa-body/30" />
                   )}
                   <span className="flex-1">
+                    {!t.done && t.owner && (
+                      <span
+                        className={`mr-1.5 inline-block align-baseline rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+                          t.owner === 'Cody'
+                            ? 'bg-tefa-navy/10 text-tefa-navy'
+                            : 'bg-tefa-gold/20 text-tefa-body'
+                        }`}
+                      >
+                        {t.owner}
+                      </span>
+                    )}
                     <span className={t.done ? 'text-tefa-body/50 line-through' : 'text-tefa-body/80'}>{t.text}</span>
                     {t.url && (
                       <a
