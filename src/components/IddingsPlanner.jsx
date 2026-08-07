@@ -1954,9 +1954,14 @@ const NBCA_KIDS = [
     grade: '4th Grade',
     accent: 'text-tefa-green',
     links: [
-      { label: 'Elementary 3rd–5th supply list', url: 'https://5il.co/2o0ag' },
-      { label: 'All elementary supply lists', url: 'https://aptg.co/rSGL4x' },
+      // 5il.co/2o0ag was labelled as the supply list but resolves to the 3rd–5th summer
+      // READING suggestions. The K–5 supply list PDF (4th grade is p.5) is the aptg.co link.
+      { label: 'Elementary K–5 supply list (4th grade, p.5)', url: 'https://aptg.co/rSGL4x' },
+      { label: '3rd–5th summer reading suggestions', url: 'https://5il.co/2o0ag' },
       { label: 'Elementary dress code', url: 'https://aptg.co/HcLxcf' },
+      // The 4th-grade list links these two by name — the organizer is bolded "please get this one".
+      { label: 'Forvencer 12-pocket organizer (exact product)', url: 'https://a.co/d/1Q6xRAm' },
+      { label: '12-pack colored file folders (exact product)', url: 'https://a.co/d/06AoTcyK' },
       { label: 'Report an absence', url: 'https://forms.gle/mnX8JapePioAnfPq5' },
     ],
     // Itemized 4th-grade list, grouped so it reads as a checklist rather than a wall of text.
@@ -1966,7 +1971,7 @@ const NBCA_KIDS = [
         tone: 'navy',
         items: [
           'ESV Bible (w/ sticky arrow page markers)',
-          'Forvencer 12-pocket project organizer',
+          'Forvencer 12-pocket project organizer — teacher links one exact product, see above',
           'Zippered pencil bag',
           'Thick plastic folders w/ brads — 1 orange, 1 red',
           'Dry-erase grid whiteboard',
@@ -1979,7 +1984,7 @@ const NBCA_KIDS = [
           'Black Sharpies — 2 regular, 2 fine tip',
           '2 highlighters',
           '2 grading pens',
-          'Crayola watercolors (8 colors)',
+          'Crayola watercolors (8 colors, no glitter)',
         ],
       },
       {
@@ -1989,7 +1994,7 @@ const NBCA_KIDS = [
           'Ticonderoga 30-ct pencils',
           '12-ct pencil-top erasers',
           'Magic Rub eraser',
-          'Expo 12-ct dry-erase markers',
+          'Expo 12-ct dry-erase markers (assorted colors, chisel tip)',
           '4 Elmer’s giant glue sticks',
           '2 Clorox wipes',
           '10-ct Crayola markers',
@@ -2000,9 +2005,8 @@ const NBCA_KIDS = [
         group: 'Boys only (Sebastian)',
         tone: 'green',
         items: [
-          '3-ct Scotch tape rolls',
           '1 medium hand sanitizer',
-          '12-pack file folders',
+          '12-pack file folders — assorted colors, teacher links one exact product, see above',
         ],
       },
     ],
