@@ -1888,7 +1888,7 @@ const NBCA_CONTACTS = [
 // it to the WHERE_ORDER values below so nothing falls off the end of that list.
 // ---------------------------------------------------------------------------
 
-const SUPPLIES_ASOF = 'Aug 8, 2026';
+const SUPPLIES_ASOF = 'Aug 9, 2026';
 
 const SUPPLY_LISTS = [
   {
@@ -1902,18 +1902,20 @@ const SUPPLY_LISTS = [
     link: { label: 'Secondary supply list', url: 'https://aptg.co/tCJ7SC' },
     groups: [
       {
-        group: 'Not started',
-        tone: 'red',
+        group: 'Purchased',
+        tone: 'navy',
         items: [
           {
-            item: 'The whole Secondary list — nothing bought yet',
-            status: 'open',
-            where: 'Walmart / Amazon',
-            note:
-              'Not itemized here. Open the linked list and shop it. The same list covers both kids, so anything personal has to be bought twice — and Dorothy’s art sheet below is separate, with no overlap allowed since those supplies never leave the art room.',
+            item: 'The whole Secondary list',
+            status: 'bought',
+            note: 'Confirmed bought Aug 9 — covered by the Aug 7–8 Walmart and Amazon orders.',
           },
         ],
       },
+    ],
+    notes: [
+      'What on the receipts covers it: a second ESV Bible (Amazon qty 2), a second 1" black binder (Walmart qty 2), wide- AND college-ruled filler paper, 12 Paper Mate ballpoint pens (4-ct × 3), 96 Ticonderoga pencils (48-ct × 2), a second pair of scissors (Amazon 2-pack), 8 boxes of Kleenex, and 4 canisters of disinfecting wipes beyond the 2 on Sebastian’s list.',
+      'CAVEAT: this list has never been itemized here — the school’s copy is behind a link this planner cannot read — so it is marked bought on the receipts plus Cody’s confirmation, not on a line-by-line match. If something on the sheet was missed, this tab will not catch it. Worth one pass against the paper copy before Aug 12.',
     ],
   },
   {
@@ -2706,7 +2708,7 @@ const NBCA_TASKS = [
       { text: 'Summer strength & conditioning — SKIPPED (opted out)', done: true },
       { text: 'Rank One complete — TAPPS docs approved, physical in, no transfer forms owed (Janey, Jul 21)', done: true, link: 'Rank One', url: 'https://nbca.store.rankone.com/' },
       { text: 'Cross Country parent meeting Aug 4 · Football parent meeting Aug 7', done: false, owner: 'Cody', link: 'Calendar', url: 'https://www.nbcatx.org/page/calendar-events' },
-      { text: 'Secondary supply list purchased', done: false, owner: 'Cody', link: 'Supply list', url: 'https://aptg.co/tCJ7SC' },
+      { text: 'Secondary supply list purchased — confirmed Aug 9 off the Aug 7–8 orders (never itemized here, so give the paper copy one pass)', done: true, link: 'Supply list', url: 'https://aptg.co/tCJ7SC' },
       { text: 'Summer reading (English 9 Honors): The 7 Habits of Highly Effective Teens (Covey), The Faithful Spy (Hendrix), The Hiding Place (ten Boom) + response questions', done: true, link: 'Reading list', url: 'https://aptg.co/y0zrrR' },
     ],
   },
@@ -2719,7 +2721,7 @@ const NBCA_TASKS = [
       { text: 'Athletic paperwork COMPLETE — physical received, no transfer forms needed (Janey, Jul 21)', done: true, link: 'Rank One', url: 'https://nbca.store.rankone.com/' },
       { text: 'IXL Summer Boost — NOT REQUIRED for new students (Mrs. Scobee, Jul 20)', done: true },
       { text: 'Volleyball parent meeting Aug 3 · Cross Country parent meeting Aug 4', done: false, owner: 'Cody', link: 'Calendar', url: 'https://www.nbcatx.org/page/calendar-events' },
-      { text: 'Secondary supply list purchased', done: false, owner: 'Cody', link: 'Supply list', url: 'https://aptg.co/tCJ7SC' },
+      { text: 'Secondary supply list purchased — confirmed Aug 9 off the Aug 7–8 orders (never itemized here, so give the paper copy one pass)', done: true, link: 'Supply list', url: 'https://aptg.co/tCJ7SC' },
       { text: 'MS Art supply list — DUE WED AUG 19, needs parent initials on the sheet. Item-by-item status is on the Supplies tab', done: false, owner: 'Cody' },
       { text: 'Summer reading: The Wednesday Wars (Gary D. Schmidt) + One-Pager response (test grade)', done: true, link: 'Reading list', url: 'https://aptg.co/J20fyQ' },
     ],
