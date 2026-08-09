@@ -1914,6 +1914,31 @@ const NBCA_KIDS = [
       { label: 'PE uniform — Global Schoolwear', url: 'https://www.globalschoolwear.com/' },
       { label: 'Secondary dress code', url: 'https://aptg.co/92BMKR' },
     ],
+    // MS Art hands out its own sheet, separate from the Secondary supply list.
+    // These stay in the art room all year, so they cannot double as the items
+    // Dorothy carries between classes — anything shared has to be bought twice.
+    suppliesTitle: 'MS Art supply list',
+    suppliesMeta: 'Due Wed Aug 19 · lives in the art room all year',
+    supplies: [
+      {
+        group: 'To live in art class',
+        tone: 'red',
+        items: [
+          '1" binder',
+          '1 pkg 50-count sheet protectors',
+          '12 Ticonderoga #2 pencils',
+          '1 white block eraser',
+          '2 black Sharpies — 1 medium tip, 1 ultra fine',
+          '1 zippered pencil pouch',
+          '1 pack notebook paper',
+        ],
+      },
+    ],
+    suppliesNotes: [
+      'Sheet requires a parent’s initials before it goes back to the teacher.',
+      'Covered by the Aug 7 orders: 1" binder (2 black Pen+Gear bought), Ticonderoga pencils (96 bought), white block eraser (Pentel Hi-Polymer 4-pack), notebook paper (wide- and college-ruled filler both bought).',
+      'Still to buy: 50-ct sheet protectors, and a second zippered pencil pouch — only one was ordered and it is Sebastian’s. The black Sharpie multi-tip 6-pack can cover both kids if you split it.',
+    ],
     items: [
       {
         label: 'Mandatory PE uniform',
@@ -1960,6 +1985,8 @@ const NBCA_KIDS = [
       { label: 'Report an absence', url: 'https://forms.gle/mnX8JapePioAnfPq5' },
     ],
     // Itemized 4th-grade list, grouped so it reads as a checklist rather than a wall of text.
+    suppliesTitle: 'School supply list',
+    suppliesMeta: '4th grade · check off as you shop',
     supplies: [
       {
         group: 'Label with name',
@@ -2005,6 +2032,11 @@ const NBCA_KIDS = [
           '12-pack file folders',
         ],
       },
+    ],
+    suppliesNotes: [
+      'Girls-only list (not needed for Sebastian): 1 box tissues, 50-ct 9"×12" construction paper.',
+      'Still to buy: 3-ct Scotch tape rolls, and an orange folder WITH brads — the orange Pen+Gear poly folder on the Aug 7 Walmart order is 2-pocket with no prongs, so it does not meet the list. The red one (3-prong) is correct.',
+      'Wired mouse and wired in-ear headphones are bought — they are not on any of the four Aug 7–8 receipts, so do not re-order off those.',
     ],
     items: [
       {
@@ -2132,6 +2164,14 @@ const SUPPLY_TONE = {
   navy: { head: 'text-tefa-navy', dot: 'bg-tefa-navy/40', chip: 'bg-tefa-navy/5 border-tefa-navy/15' },
   gold: { head: 'text-tefa-gold', dot: 'bg-tefa-gold', chip: 'bg-tefa-gold/10 border-tefa-gold/25' },
   green: { head: 'text-tefa-green', dot: 'bg-tefa-green/50', chip: 'bg-tefa-green/5 border-tefa-green/20' },
+  red: { head: 'text-tefa-red', dot: 'bg-tefa-red/40', chip: 'bg-tefa-red/5 border-tefa-red/15' },
+};
+
+// Column counts are written out literally so Tailwind's scanner emits them.
+const SUPPLY_COLS = {
+  1: 'grid-cols-1',
+  2: 'grid-cols-1 sm:grid-cols-2',
+  3: 'grid-cols-1 sm:grid-cols-3',
 };
 
 // Dress-code reference + the remaining shopping gaps, in one card. Split by
@@ -2252,6 +2292,7 @@ const NBCA_TASKS = [
       { text: 'IXL Summer Boost — NOT REQUIRED for new students (Mrs. Scobee, Jul 20)', done: true },
       { text: 'Volleyball parent meeting Aug 3 · Cross Country parent meeting Aug 4', done: false, owner: 'Cody', link: 'Calendar', url: 'https://www.nbcatx.org/page/calendar-events' },
       { text: 'Secondary supply list purchased', done: false, owner: 'Cody', link: 'Supply list', url: 'https://aptg.co/tCJ7SC' },
+      { text: 'MS Art supply list — DUE WED AUG 19, needs parent initials on the sheet. Short a 50-ct pkg of sheet protectors and a second zippered pencil pouch', done: false, owner: 'Cody' },
       { text: 'Summer reading: The Wednesday Wars (Gary D. Schmidt) + One-Pager response (test grade)', done: true, link: 'Reading list', url: 'https://aptg.co/J20fyQ' },
     ],
   },
@@ -2261,7 +2302,7 @@ const NBCA_TASKS = [
       { text: 'Uniforms for Elementary purchased', done: true, link: 'Global Schoolwear', url: 'https://www.globalschoolwear.com/' },
       { text: 'Brown or black belt bought — REQUIRED at Elementary whenever bottoms have belt loops (secondary has no belt rule, so easy to miss)', done: false, owner: 'Cody' },
       { text: 'Confirm the purchased set includes an EVERGREEN logo polo for the chapel uniform — it is separate from the daily options', done: false, owner: 'Cody' },
-      { text: '4th-grade school supplies purchased', done: false, owner: 'Cody', link: 'Supply list', url: 'https://5il.co/2o0ag' },
+      { text: '4th-grade school supplies — mostly bought Aug 7–8. Outstanding: 3-ct Scotch tape rolls + an orange folder WITH brads (the one ordered has no prongs)', done: false, owner: 'Cody', link: 'Supply list', url: 'https://5il.co/2o0ag' },
       { text: 'Summer reading (recommended): The Tale of Despereaux, Because of Winn-Dixie, Frindle, The Cricket in Times Square, The Miraculous Journey of Edward Tulane, Hatchet', done: true },
     ],
   },
@@ -2529,15 +2570,15 @@ const NbcaPrepView = () => {
             ))}
           </div>
 
-          {/* Itemized, grouped supply checklist (Sebastian) */}
+          {/* Itemized, grouped supply checklist (Sebastian's 4th-grade list, Dorothy's art list) */}
           {kid.supplies && (
             <div className="mt-5">
               <div className="flex items-center gap-2 mb-3">
                 <Backpack size={16} className="text-tefa-body/60" />
-                <span className="text-sm font-bold text-tefa-navy">School supply list</span>
-                <span className="text-[11px] text-tefa-body/50">4th grade · check off as you shop</span>
+                <span className="text-sm font-bold text-tefa-navy">{kid.suppliesTitle}</span>
+                <span className="text-[11px] text-tefa-body/50">{kid.suppliesMeta}</span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className={`grid gap-3 ${SUPPLY_COLS[kid.supplies.length] || SUPPLY_COLS[3]}`}>
                 {kid.supplies.map((sg) => {
                   const t = SUPPLY_TONE[sg.tone];
                   return (
@@ -2555,9 +2596,11 @@ const NbcaPrepView = () => {
                   );
                 })}
               </div>
-              <p className="text-[11px] text-tefa-body/50 mt-2">
-                Girls-only list (not needed for Sebastian): 1 box tissues, 50-ct 9"×12" construction paper.
-              </p>
+              {kid.suppliesNotes?.map((note) => (
+                <p key={note} className="text-[11px] text-tefa-body/50 mt-2">
+                  {note}
+                </p>
+              ))}
             </div>
           )}
         </section>
