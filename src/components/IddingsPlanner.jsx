@@ -23,6 +23,8 @@ import {
   Check,
   ShoppingCart,
   RotateCcw,
+  Tag,
+  Package,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -2394,8 +2396,186 @@ const readChecked = () => {
   }
 };
 
+// ---------------------------------------------------------------------------
+// PACK THE BOX — once something is bought, this is the sorting the kids
+// actually have to do: does it get a name on it, or does it go in unlabeled
+// for the class to share. Only lists that are itemized (more than the
+// "nothing bought yet" placeholder) have anything to sort, so the shared
+// Secondary list — bought off-page, never broken out here — is skipped in
+// favor of the general rules.
+// ---------------------------------------------------------------------------
+
+const PACK_DESTINATION = {
+  'ms-art': 'Its own bag — this lives in the art room all year, not the everyday box.',
+  'elementary-4': 'The everyday supply box, ready to go Aug 12.',
+};
+
+const packGroupsFor = (kidName) =>
+  SUPPLY_LISTS.filter((l) => l.who.includes(kidName))
+    .map((l) => ({
+      ...l,
+      packItems: l.groups.flatMap((g) =>
+        g.items
+          .filter((i) => i.where !== 'Paperwork')
+          .map((i) => ({ ...i, community: /community/i.test(g.group) }))
+      ),
+    }))
+    .filter((l) => l.packItems.length > 1);
+
+const PACK_RULES = [
+  {
+    icon: Tag,
+    title: 'One name, one box',
+    text: 'Anything that’s just theirs — pencil pouch, scissors, calculator, binder — gets their name on it before it goes in.',
+  },
+  {
+    icon: Users,
+    title: 'Shared stuff stays unlabeled',
+    text: 'Consumables donated to the whole class — tissues, wipes, glue sticks, community pencils — go in bare. A name on shared stuff just means it disappears into someone else’s desk.',
+  },
+  {
+    icon: Package,
+    title: 'Class-only supplies get their own bag',
+    text: 'Some supplies live in one classroom all year, not the backpack. Dorothy’s MS Art supplies stay in the art room — pack them separately from her everyday box.',
+  },
+  {
+    icon: Backpack,
+    title: 'Backups stay home',
+    text: 'Extra folders or notebooks bought as backups sit in a bin at home. Only what the list actually calls for on day one rides in on day one.',
+  },
+];
+
+const SUPPLY_PACK_KEY = 'iddings.supplies.packed.v1';
+
+const readPacked = () => {
+  try {
+    const raw = window.localStorage.getItem(SUPPLY_PACK_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+};
+
+// A single sortable line inside a kid's pack card.
+const PackItem = ({ id, item, packed, togglePacked }) => {
+  const isPacked = !!packed[id];
+  return (
+    <li>
+      <button
+        onClick={() => togglePacked(id)}
+        className="w-full flex items-start gap-2 text-left hover:bg-tefa-light/60 rounded px-1 -mx-1 py-0.5 transition"
+      >
+        {isPacked ? (
+          <CheckSquare size={13} className="mt-0.5 shrink-0 text-tefa-green" />
+        ) : (
+          <Square size={13} className="mt-0.5 shrink-0 text-tefa-body/30" />
+        )}
+        <span className={`text-xs flex-1 ${isPacked ? 'text-tefa-body/40 line-through' : 'text-tefa-body/90'}`}>
+          {item.item}
+        </span>
+      </button>
+    </li>
+  );
+};
+
+// Per-kid packing card: each itemized list gets split into "name goes on it"
+// vs "unlabeled — shared", plus where the packed box actually ends up.
+const PackTheBoxView = ({ packed, togglePacked }) => (
+  <section className="bg-white rounded-xl shadow-md border border-gray-200 p-6 space-y-6">
+    <div>
+      <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2">
+        <Backpack size={20} /> Pack the box
+      </h2>
+      <p className="text-sm text-tefa-body/70">
+        Once it&rsquo;s bought, here&rsquo;s how each kid sorts it &mdash; what gets a name on it, what stays
+        unlabeled for the class, and what doesn&rsquo;t go in the everyday box at all.
+      </p>
+    </div>
+
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      {PACK_RULES.map((r) => (
+        <div key={r.title} className="rounded-lg bg-tefa-light border border-gray-200 p-3">
+          <r.icon size={16} className="text-tefa-navy/60 mb-1.5" />
+          <div className="text-xs font-bold text-tefa-navy">{r.title}</div>
+          <p className="text-[11px] text-tefa-body/60 mt-1">{r.text}</p>
+        </div>
+      ))}
+    </div>
+
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      {STUDENTS.map((kid) => {
+        const lists = packGroupsFor(kid.name);
+        return (
+          <div key={kid.name} className="rounded-lg border border-gray-200 p-4">
+            <div className="flex items-baseline gap-2 mb-3">
+              <span className="font-bold text-tefa-navy">{kid.name}</span>
+              <span className="text-[11px] text-tefa-body/50">{kid.grade}</span>
+            </div>
+            {lists.length === 0 ? (
+              <p className="text-xs text-tefa-body/60">
+                Nothing itemized yet — the Secondary list isn&rsquo;t broken out item by item. Once it&rsquo;s
+                shopped, sort it by the rules above: personal tools get a name, class-pool consumables don&rsquo;t.
+              </p>
+            ) : (
+              lists.map((l) => {
+                const labelItems = l.packItems.filter((i) => !i.community);
+                const communityItems = l.packItems.filter((i) => i.community);
+                return (
+                  <div key={l.id} className="mb-4 last:mb-0">
+                    <div className="text-xs font-bold text-tefa-navy">{l.title}</div>
+                    <div className="text-[11px] text-tefa-body/50 mb-2">
+                      {PACK_DESTINATION[l.id] || 'The everyday supply box.'}
+                    </div>
+                    {labelItems.length > 0 && (
+                      <div className="mb-2">
+                        <div className="text-[10px] font-bold uppercase tracking-wide text-tefa-body/40 mb-1">
+                          Name goes on it
+                        </div>
+                        <ul className="space-y-1">
+                          {labelItems.map((i) => (
+                            <PackItem
+                              key={`${l.id}:${i.item}`}
+                              id={`${l.id}:${i.item}`}
+                              item={i}
+                              packed={packed}
+                              togglePacked={togglePacked}
+                            />
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {communityItems.length > 0 && (
+                      <div>
+                        <div className="text-[10px] font-bold uppercase tracking-wide text-tefa-body/40 mb-1">
+                          Unlabeled — shared with the class
+                        </div>
+                        <ul className="space-y-1">
+                          {communityItems.map((i) => (
+                            <PackItem
+                              key={`${l.id}:${i.item}`}
+                              id={`${l.id}:${i.item}`}
+                              item={i}
+                              packed={packed}
+                              togglePacked={togglePacked}
+                            />
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
+        );
+      })}
+    </div>
+  </section>
+);
+
 const SuppliesView = ({ setTab }) => {
   const [checked, setChecked] = useState(readChecked);
+  const [packed, setPacked] = useState(readPacked);
   const [copied, setCopied] = useState(false);
 
   const persist = (next) => {
@@ -2409,6 +2589,16 @@ const SuppliesView = ({ setTab }) => {
 
   const toggle = (id) => persist({ ...checked, [id]: !checked[id] });
   const reset = () => persist({});
+
+  const togglePacked = (id) => {
+    const next = { ...packed, [id]: !packed[id] };
+    setPacked(next);
+    try {
+      window.localStorage.setItem(SUPPLY_PACK_KEY, JSON.stringify(next));
+    } catch {
+      // Private-mode / storage-disabled browsers: the tick still works for the session.
+    }
+  };
 
   const total = OPEN_SUPPLY_ITEMS.length;
   const got = OPEN_SUPPLY_ITEMS.filter((i) => checked[i.id]).length;
@@ -2571,6 +2761,9 @@ const SuppliesView = ({ setTab }) => {
           </section>
         );
       })}
+
+      {/* Once it's bought, this is how the kids actually sort it into their box */}
+      <PackTheBoxView packed={packed} togglePacked={togglePacked} />
 
       {/* Full lists, so "outstanding" can be checked against what's already done */}
       <section className="bg-white rounded-xl shadow-md border border-gray-200 p-6 space-y-6">
