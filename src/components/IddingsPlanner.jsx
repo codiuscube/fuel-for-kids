@@ -1986,7 +1986,9 @@ const SUPPLY_LISTS = [
     who: ['Sebastian'],
     meta: '4th grade · mostly closed out by the Aug 7–8 orders',
     due: 'Aug 12',
-    link: { label: 'Elementary 3rd–5th supply list', url: 'https://5il.co/2o0ag' },
+    // 5il.co/2o0ag is the 3rd–5th summer READING suggestions, not the supply list.
+    // The official K–5 supply list PDF (4th grade is p.5) is the aptg.co link.
+    link: { label: 'Elementary K–5 supply list (4th grade, p.5)', url: 'https://aptg.co/rSGL4x' },
     groups: [
       {
         group: 'Label with name',
