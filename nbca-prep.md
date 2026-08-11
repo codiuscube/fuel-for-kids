@@ -53,6 +53,10 @@
 **Key Action Items & Info:**
 
 - **Mandatory PE Uniform:** Must purchase at least 1 pair of athletic shorts and 1 athletic shirt through the Global Schoolwear site. (Compression shorts allowed underneath).
+- **MS Art Supply List (DUE Wed, Aug 19):** Separate from the Secondary supply list, and these items **live in the art room all year** — so anything Dorothy also needs day-to-day has to be bought twice. Requires a parent's initials on the sheet.
+  - (1) 1" binder, (1) pkg 50-count sheet protectors, (12) Ticonderoga #2 pencils, (1) white block eraser, (2) black Sharpies (1 medium tip & 1 ultra fine), (1) zippered pencil pouch, (1) pack notebook paper.
+  - _Already covered by the Aug 7 orders:_ 1" binder, Ticonderoga pencils, white block eraser (Pentel Hi-Polymer), notebook paper.
+  - _Still to buy:_ 50-ct sheet protectors; a **second** zippered pencil pouch (only one ordered, and it is Sebastian's).
 - **IXL Summer Boost Math Plan:** Dorothy must complete the **7th Grade** summer plan before August 12 using the specific NBCA custom link.
 - **Middle School Houses:** Dorothy will be randomly assigned to the Courage, Loyalty, Integrity, or Wisdom house for monthly team competitions.
 - **Athletics Expectations (Fall Break Oct 12-23):** Week 1 (Oct 12-16) is a BYE week for MS Football and Volleyball, making it the best time to travel. Week 2 (Oct 19-23) has normal practices and playoff games, so attendance is mandatory.
@@ -73,6 +77,7 @@
   - **Label with Name:** ESV Bible (w/ 1 sticky arrow page markers), Forvencer 12-pocket project organizer, zippered pencil bag, thick plastic folders w/ brads (1 orange, 1 red), dry erase grid whiteboard, 4 wide-ruled composition notebooks, 2 wide-ruled 70-page spiral notebooks, Fiskars 6" scissors, Crayola 12-ct colored pencils, wired mouse, wired in-ear headphones, black sharpies (2 regular, 2 fine tip), 2 highlighters, 2 grading pens, Crayola watercolors (8 colors).
   - **Community Use (Do NOT Label):** Ticonderoga 30-ct pencils, 12-ct pencil top erasers, Magic Rub eraser, Expo 12-ct dry erase markers, 4 Elmer's giant glue sticks, 2 Clorox wipes, 10-ct Crayola markers, 24-ct Crayola crayons.
   - **Gender Specific:** _Girls Only:_ 1 box tissues, 50-ct 9"x12" construction paper. _Boys Only:_ 3-ct Scotch tape rolls, 1 med hand sanitizer, 12-pack file folders.
+  - **Still to buy (as of Aug 9):** 3-ct Scotch tape rolls; an orange folder **with brads** — the orange Pen+Gear poly folder on the Aug 7 Walmart order is 2-pocket with no prongs. (The red 3-prong folder is correct.) Wired mouse and headphones are already bought.
 - **Summer Reading:** Highly recommended books include _The Tale of Despereaux_, _Because of Winn-Dixie_, _Frindle_, _The Cricket in Times Square_, _The Miraculous Journey of Edward Tulane_, and _Hatchet_.
 
 ---

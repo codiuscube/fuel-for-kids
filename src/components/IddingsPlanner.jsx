@@ -21,6 +21,10 @@ import {
   Square,
   Copy,
   Check,
+  ShoppingCart,
+  RotateCcw,
+  Tag,
+  Package,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -823,12 +827,13 @@ const PAYMENT_PLAN = {
     'Dec 7, 2026', 'Jan 5, 2027', 'Feb 5, 2027', 'Mar 5, 2027', 'Apr 5, 2027'],
 };
 
-const VALID_TABS = ['now', 'money', 'timeline', 'nbca', 'fall', 'tefa'];
+const VALID_TABS = ['now', 'money', 'timeline', 'nbca', 'supplies', 'fall', 'tefa'];
 const TAB_LABELS = {
   now: 'Now',
   money: 'Money',
   timeline: 'Timeline',
   nbca: 'NBCA Prep',
+  supplies: 'Supplies',
   fall: 'Fall Plan',
   tefa: 'TEFA',
 };
@@ -907,7 +912,8 @@ const IddingsPlanner = () => {
           />
         )}
         {activeTab === 'timeline' && <TimelineView />}
-        {activeTab === 'nbca' && <NbcaPrepView />}
+        {activeTab === 'nbca' && <NbcaPrepView setTab={setTab} />}
+        {activeTab === 'supplies' && <SuppliesView setTab={setTab} />}
         {activeTab === 'fall' && <FallPlanView />}
         {activeTab === 'tefa' && <TefaView />}
       </main>
@@ -1050,6 +1056,25 @@ const NowView = ({ balanceDue, perStudent, setTab }) => {
           className="mt-4 text-sm font-bold text-tefa-navy underline decoration-tefa-navy/40 hover:text-tefa-green"
         >
           See the full timeline →
+        </button>
+      </section>
+
+      {/* Back-to-school shopping, in one number */}
+      <section className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+        <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2 mb-2">
+          <ShoppingCart size={20} /> School supplies
+        </h2>
+        <div className="flex items-end gap-3">
+          <div className="text-4xl font-bold text-tefa-navy">{OPEN_SUPPLY_ITEMS.length}</div>
+          <div className="text-sm text-tefa-body/60 pb-1">
+            items still outstanding across the supply lists, Dorothy&rsquo;s art sheet, and the uniform gaps.
+          </div>
+        </div>
+        <button
+          onClick={() => setTab('supplies')}
+          className="mt-4 text-sm font-bold text-tefa-navy underline decoration-tefa-navy/40 hover:text-tefa-green"
+        >
+          Open the supplies checklist →
         </button>
       </section>
 
@@ -1872,6 +1897,154 @@ const NBCA_CONTACTS = [
   { role: 'School Nurse', name: 'Keri Benson', phone: '830-629-6222', email: 'kbenson@nbcatx.org' },
 ];
 
+// ---------------------------------------------------------------------------
+// SUPPLIES — the single source of truth for every school-supply list and for
+// what is still outstanding on each one. Item statuses were reconciled against
+// the two Walmart and two Amazon orders placed Aug 7–8; `note` records which
+// order closed an item out so nothing gets bought twice. Both the Supplies tab
+// and the per-kid cards on NBCA Prep render from this block.
+//
+// `where` on an open item is the only field the shopping list groups by — keep
+// it to the WHERE_ORDER values below so nothing falls off the end of that list.
+// ---------------------------------------------------------------------------
+
+const SUPPLIES_ASOF = 'Aug 8, 2026';
+
+const SUPPLY_LISTS = [
+  {
+    id: 'secondary',
+    title: 'Secondary supply list',
+    // One list serves both secondary kids, so it is stored once rather than
+    // duplicated per child.
+    who: ['Cassius', 'Dorothy'],
+    meta: 'One shared MS + HS list · needed by the first day',
+    due: 'Aug 12',
+    link: { label: 'Secondary supply list', url: 'https://aptg.co/tCJ7SC' },
+    groups: [
+      {
+        group: 'Not started',
+        tone: 'red',
+        items: [
+          {
+            item: 'The whole Secondary list — nothing bought yet',
+            status: 'open',
+            where: 'Walmart / Amazon',
+            note:
+              'Not itemized here. Open the linked list and shop it. The same list covers both kids, so anything personal has to be bought twice — and Dorothy’s art sheet below is separate, with no overlap allowed since those supplies never leave the art room.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'ms-art',
+    title: 'MS Art supply list',
+    who: ['Dorothy'],
+    meta: 'Separate sheet from the art teacher · lives in the art room all year',
+    due: 'Wed Aug 19',
+    link: null,
+    groups: [
+      {
+        group: 'To live in art class',
+        tone: 'red',
+        items: [
+          { item: '1" binder', status: 'bought', note: 'Two black Pen+Gear binders on the Aug 7 order.' },
+          { item: '1 pkg 50-count sheet protectors', status: 'open', where: 'Walmart / Amazon' },
+          { item: '12 Ticonderoga #2 pencils', status: 'bought', note: '96 bought.' },
+          { item: '1 white block eraser', status: 'bought', note: 'Pentel Hi-Polymer 4-pack.' },
+          {
+            item: '2 black Sharpies — 1 medium tip, 1 ultra fine',
+            status: 'bought',
+            note: 'The multi-tip 6-pack covers Dorothy and Sebastian if you split it.',
+          },
+          {
+            item: '1 zippered pencil pouch',
+            status: 'open',
+            where: 'Walmart / Amazon',
+            note: 'Only one pouch was ordered and it is Sebastian’s. This is a second one.',
+          },
+          { item: '1 pack notebook paper', status: 'bought', note: 'Wide- and college-ruled filler both bought.' },
+        ],
+      },
+      {
+        group: 'Before the sheet goes back',
+        tone: 'gold',
+        items: [
+          {
+            item: 'Parent initials on the art sheet',
+            status: 'open',
+            where: 'Paperwork',
+            note: 'The signed sheet goes back to the teacher with the supplies by Aug 19.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'elementary-4',
+    title: 'School supply list',
+    who: ['Sebastian'],
+    meta: '4th grade · mostly closed out by the Aug 7–8 orders',
+    due: 'Aug 12',
+    link: { label: 'Elementary 3rd–5th supply list', url: 'https://5il.co/2o0ag' },
+    groups: [
+      {
+        group: 'Label with name',
+        tone: 'navy',
+        items: [
+          { item: 'ESV Bible (w/ sticky arrow page markers)', status: 'bought' },
+          { item: 'Forvencer 12-pocket project organizer', status: 'bought' },
+          { item: 'Zippered pencil bag', status: 'bought' },
+          { item: 'Thick plastic folder w/ brads — red', status: 'bought', note: 'The red 3-prong folder on the Aug 7 order is correct.' },
+          {
+            item: 'Thick plastic folder w/ brads — orange',
+            status: 'open',
+            where: 'Walmart / Amazon',
+            note: 'The orange Pen+Gear poly folder that arrived is 2-pocket with no prongs, so it does not meet the list. Re-buy an orange one WITH brads.',
+          },
+          { item: 'Dry-erase grid whiteboard', status: 'bought' },
+          { item: '4 wide-ruled composition notebooks', status: 'bought' },
+          { item: '2 wide-ruled 70-page spiral notebooks', status: 'bought' },
+          { item: 'Fiskars 6" scissors', status: 'bought' },
+          { item: 'Crayola 12-ct colored pencils', status: 'bought' },
+          { item: 'Wired mouse', status: 'bought', note: 'Already owned — not on any of the four Aug 7–8 receipts, so do not re-order off those.' },
+          { item: 'Wired in-ear headphones', status: 'bought', note: 'Already owned — same caveat as the mouse.' },
+          { item: 'Black Sharpies — 2 regular, 2 fine tip', status: 'bought' },
+          { item: '2 highlighters', status: 'bought' },
+          { item: '2 grading pens', status: 'bought' },
+          { item: 'Crayola watercolors (8 colors)', status: 'bought' },
+        ],
+      },
+      {
+        group: 'Community use — do NOT label',
+        tone: 'gold',
+        items: [
+          { item: 'Ticonderoga 30-ct pencils', status: 'bought' },
+          { item: '12-ct pencil-top erasers', status: 'bought' },
+          { item: 'Magic Rub eraser', status: 'bought' },
+          { item: 'Expo 12-ct dry-erase markers', status: 'bought' },
+          { item: '4 Elmer’s giant glue sticks', status: 'bought' },
+          { item: '2 Clorox wipes', status: 'bought' },
+          { item: '10-ct Crayola markers', status: 'bought' },
+          { item: '24-ct Crayola crayons', status: 'bought' },
+        ],
+      },
+      {
+        group: 'Boys only (Sebastian)',
+        tone: 'green',
+        items: [
+          { item: '3-ct Scotch tape rolls', status: 'open', where: 'Walmart / Amazon' },
+          { item: '1 medium hand sanitizer', status: 'bought' },
+          { item: '12-pack file folders', status: 'bought' },
+        ],
+      },
+    ],
+    notes: ['Girls-only items on the same sheet, not needed for Sebastian: 1 box tissues, 50-ct 9"×12" construction paper.'],
+  },
+];
+
+const supplyListsFor = (name) => SUPPLY_LISTS.filter((l) => l.who.includes(name));
+
 const NBCA_KIDS = [
   {
     name: 'Cassius',
@@ -1981,52 +2154,6 @@ const NBCA_KIDS = [
       { label: '12-pack colored file folders (exact product)', url: 'https://a.co/d/06AoTcyK' },
       { label: 'Report an absence', url: 'https://forms.gle/mnX8JapePioAnfPq5' },
     ],
-    // Itemized 4th-grade list, grouped so it reads as a checklist rather than a wall of text.
-    supplies: [
-      {
-        group: 'Label with name',
-        tone: 'navy',
-        items: [
-          'ESV Bible (w/ sticky arrow page markers)',
-          'Forvencer 12-pocket project organizer — teacher links one exact product, see above',
-          'Zippered pencil bag',
-          'Thick plastic folders w/ brads — 1 orange, 1 red',
-          'Dry-erase grid whiteboard',
-          '4 wide-ruled composition notebooks',
-          '2 wide-ruled 70-page spiral notebooks',
-          'Fiskars 6" scissors',
-          'Crayola 12-ct colored pencils',
-          'Wired mouse',
-          'Wired in-ear headphones',
-          'Black Sharpies — 2 regular, 2 fine tip',
-          '2 highlighters',
-          '2 grading pens',
-          'Crayola watercolors (8 colors, no glitter)',
-        ],
-      },
-      {
-        group: 'Community use — do NOT label',
-        tone: 'gold',
-        items: [
-          'Ticonderoga 30-ct pencils',
-          '12-ct pencil-top erasers',
-          'Magic Rub eraser',
-          'Expo 12-ct dry-erase markers (assorted colors, chisel tip)',
-          '4 Elmer’s giant glue sticks',
-          '2 Clorox wipes',
-          '10-ct Crayola markers',
-          '24-ct Crayola crayons',
-        ],
-      },
-      {
-        group: 'Boys only (Sebastian)',
-        tone: 'green',
-        items: [
-          '1 medium hand sanitizer',
-          '12-pack file folders — assorted colors, teacher links one exact product, see above',
-        ],
-      },
-    ],
     items: [
       {
         label: 'Summer reading (recommended)',
@@ -2079,16 +2206,18 @@ const UNIFORM_RULES = [
 ];
 
 // What is actually still missing after the resale-sale haul (voice message, Jul 27).
+// `where` matches the WHERE_ORDER buckets so these join the Supplies-tab
+// shopping list alongside the paper-and-pencil items.
 const UNIFORM_BUY = [
-  { kid: 'Dorothy', item: '3 skirts or skorts — white plaid or khaki', why: 'Sold out at the resale sale in five minutes. No resale path; longest lead time of anything on this list.', urgent: true },
-  { kid: 'Cassius', item: '2 khaki shorts — size 31', why: 'The "size 32" she hunted for runs big on him. 32 only if 31 is unavailable.', urgent: true },
-  { kid: 'Cassius', item: '2 more logo polos (white / hunter / black)', why: 'He has 3 from resale. 5 covers a week without midweek laundry — but confirm his 2 black + 1 green are daily polos, not spirit shirts. If they are spirit shirts he needs 5.' },
-  { kid: 'Dorothy', item: 'P.E. shorts (5" min inseam)', why: 'Shirt may not be needed — the dress code allows a green/white/black/gray spirit shirt instead. Confirm with Janey before buying the Global Schoolwear top.' },
-  { kid: 'Sebastian', item: 'Brown or black belt', why: 'Required at Elementary whenever bottoms have belt loops. Not covered by the secondary rules.', urgent: true },
-  { kid: 'Sebastian', item: 'Evergreen chapel polo — verify owned', why: 'Chapel uniform is separate from daily options. Check the purchased set actually includes an evergreen logo polo.' },
-  { kid: 'All three', item: 'Plain lace-up athletic sneakers', why: 'No slip-ons (secondary), no light-up or characters (elementary). Doubles as P.E. footwear for all three.' },
-  { kid: 'All three', item: 'Solid white & solid black sock multipacks', why: 'Same palette works on both campuses. No patterns, no logos.' },
-  { kid: 'Dorothy', item: 'Verify the BOGO cardigan + zip-up', why: 'Must be TH hunter or black WITH the NBCA logo to be legal daily wear. A plain sweater will not pass.', urgent: true },
+  { kid: 'Dorothy', item: '3 skirts or skorts — white plaid or khaki', where: 'Global Schoolwear', why: 'Sold out at the resale sale in five minutes. No resale path; longest lead time of anything on this list.', urgent: true },
+  { kid: 'Cassius', item: '2 khaki shorts — size 31', where: 'Global Schoolwear', why: 'The "size 32" she hunted for runs big on him. 32 only if 31 is unavailable.', urgent: true },
+  { kid: 'Cassius', item: '2 more logo polos (white / hunter / black)', where: 'Global Schoolwear', why: 'He has 3 from resale. 5 covers a week without midweek laundry — but confirm his 2 black + 1 green are daily polos, not spirit shirts. If they are spirit shirts he needs 5.' },
+  { kid: 'Dorothy', item: 'P.E. shorts (5" min inseam)', where: 'Global Schoolwear', why: 'Shirt may not be needed — the dress code allows a green/white/black/gray spirit shirt instead. Confirm with Janey before buying the Global Schoolwear top.' },
+  { kid: 'Sebastian', item: 'Brown or black belt', where: 'Any store', why: 'Required at Elementary whenever bottoms have belt loops. Not covered by the secondary rules.', urgent: true },
+  { kid: 'Sebastian', item: 'Evergreen chapel polo — verify owned', where: 'Check at home', why: 'Chapel uniform is separate from daily options. Check the purchased set actually includes an evergreen logo polo.' },
+  { kid: 'All three', item: 'Plain lace-up athletic sneakers', where: 'Any store', why: 'No slip-ons (secondary), no light-up or characters (elementary). Doubles as P.E. footwear for all three.' },
+  { kid: 'All three', item: 'Solid white & solid black sock multipacks', where: 'Any store', why: 'Same palette works on both campuses. No patterns, no logos.' },
+  { kid: 'Dorothy', item: 'Verify the BOGO cardigan + zip-up', where: 'Check at home', why: 'Must be TH hunter or black WITH the NBCA logo to be legal daily wear. A plain sweater will not pass.', urgent: true },
 ];
 
 const NBCA_MISC = [
@@ -2150,9 +2279,543 @@ const LinkPill = ({ label, url }) => (
 );
 
 const SUPPLY_TONE = {
-  navy: { head: 'text-tefa-navy', dot: 'bg-tefa-navy/40', chip: 'bg-tefa-navy/5 border-tefa-navy/15' },
-  gold: { head: 'text-tefa-gold', dot: 'bg-tefa-gold', chip: 'bg-tefa-gold/10 border-tefa-gold/25' },
-  green: { head: 'text-tefa-green', dot: 'bg-tefa-green/50', chip: 'bg-tefa-green/5 border-tefa-green/20' },
+  navy: { head: 'text-tefa-navy', chip: 'bg-tefa-navy/5 border-tefa-navy/15' },
+  gold: { head: 'text-tefa-gold', chip: 'bg-tefa-gold/10 border-tefa-gold/25' },
+  green: { head: 'text-tefa-green', chip: 'bg-tefa-green/5 border-tefa-green/20' },
+  red: { head: 'text-tefa-red', chip: 'bg-tefa-red/5 border-tefa-red/15' },
+};
+
+// Column counts are written out literally so Tailwind's scanner emits them.
+const SUPPLY_COLS = {
+  1: 'grid-cols-1',
+  2: 'grid-cols-1 sm:grid-cols-2',
+  3: 'grid-cols-1 sm:grid-cols-3',
+};
+
+// One card per supply list, used on both the Supplies tab and the per-kid
+// cards on NBCA Prep. Bought items stay visible (struck through) so the list
+// reads as a reconciliation, not just a to-buy list.
+const SupplyListCard = ({ list, showWho = false }) => (
+  <div>
+    <div className="flex items-center gap-2 mb-1 flex-wrap">
+      <Backpack size={16} className="text-tefa-body/60" />
+      <span className="text-sm font-bold text-tefa-navy">{list.title}</span>
+      {showWho && <span className="text-[11px] font-semibold text-tefa-body/70">{list.who.join(' & ')}</span>}
+      <span className="text-[11px] text-tefa-body/50">{list.meta}</span>
+      {list.due && (
+        <span className="text-[10px] font-bold uppercase tracking-wide bg-tefa-gold/20 text-tefa-navy rounded px-2 py-0.5">
+          Due {list.due}
+        </span>
+      )}
+      {list.link && <LinkPill label={list.link.label} url={list.link.url} />}
+    </div>
+    <div className={`grid gap-3 mt-3 items-start ${SUPPLY_COLS[list.groups.length] || SUPPLY_COLS[3]}`}>
+      {list.groups.map((sg) => {
+        const t = SUPPLY_TONE[sg.tone];
+        const openInGroup = sg.items.filter((i) => i.status === 'open').length;
+        return (
+          <div key={sg.group} className={`rounded-lg border p-3 ${t.chip}`}>
+            <div className={`text-xs font-bold uppercase tracking-wide mb-2 flex items-center justify-between gap-2 ${t.head}`}>
+              <span>{sg.group}</span>
+              {openInGroup > 0 && (
+                <span className="text-[10px] font-bold text-tefa-red bg-white/70 rounded px-1.5 py-0.5">{openInGroup} open</span>
+              )}
+            </div>
+            <ul className="space-y-1.5">
+              {sg.items.map((item) => (
+                <li key={item.item} className="flex items-start gap-2 text-xs">
+                  {item.status === 'bought' ? (
+                    <CheckSquare size={13} className="mt-0.5 shrink-0 text-tefa-green" />
+                  ) : (
+                    <Square size={13} className="mt-0.5 shrink-0 text-tefa-red" />
+                  )}
+                  <span className="flex-1">
+                    <span className={item.status === 'bought' ? 'text-tefa-body/45 line-through' : 'font-bold text-tefa-body'}>
+                      {item.item}
+                    </span>
+                    {item.note && <span className="block text-[11px] text-tefa-body/50 mt-0.5">{item.note}</span>}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+      })}
+    </div>
+    {list.notes?.map((note) => (
+      <p key={note} className="text-[11px] text-tefa-body/50 mt-2">
+        {note}
+      </p>
+    ))}
+  </div>
+);
+
+// ---------------------------------------------------------------------------
+// SUPPLIES tab — "what is still outstanding", in one place. Everything below is
+// derived; the facts live in SUPPLY_LISTS and UNIFORM_BUY.
+// ---------------------------------------------------------------------------
+
+// Grouped by where you actually have to go to close the item out, because that
+// is what decides whether it happens in one trip or five.
+const WHERE_ORDER = ['Walmart / Amazon', 'Global Schoolwear', 'Any store', 'Check at home', 'Paperwork'];
+const WHERE_META = {
+  'Walmart / Amazon': { blurb: 'Add to the next general-supplies order.' },
+  'Global Schoolwear': {
+    blurb: 'Tommy Hilfiger is the only approved provider — partner school code NEWB01. Longest lead time, order first.',
+    url: 'https://www.globalschoolwear.com/',
+    label: 'Global Schoolwear',
+  },
+  'Any store': { blurb: 'No approved vendor — it only has to meet the dress code.' },
+  'Check at home': { blurb: 'Nothing to buy until someone physically checks what already arrived.' },
+  Paperwork: { blurb: 'Not a purchase — a signature or a form.' },
+};
+
+// Every open line from the supply lists, plus the uniform gaps, flattened into
+// one shopping list. `id` is stable so the local check-off state survives a
+// reload; it changes only if the item's wording changes.
+const OPEN_SUPPLY_ITEMS = [
+  ...SUPPLY_LISTS.flatMap((l) =>
+    l.groups.flatMap((g) =>
+      g.items
+        .filter((i) => i.status === 'open')
+        .map((i) => ({
+          id: `${l.id}:${i.item}`,
+          item: i.item,
+          who: l.who.join(' & '),
+          source: l.title,
+          due: l.due,
+          where: i.where || 'Walmart / Amazon',
+          note: i.note,
+          url: l.link?.url,
+          linkLabel: l.link?.label,
+        }))
+    )
+  ),
+  ...UNIFORM_BUY.map((u) => ({
+    id: `uniform:${u.item}`,
+    item: u.item,
+    who: u.kid,
+    source: 'Uniform & dress code',
+    due: 'Aug 12',
+    where: u.where,
+    note: u.why,
+    urgent: u.urgent,
+    url: u.where === 'Global Schoolwear' ? 'https://www.globalschoolwear.com/' : undefined,
+    linkLabel: u.where === 'Global Schoolwear' ? 'Global Schoolwear' : undefined,
+  })),
+];
+
+// Check-off state is deliberately local to the browser: it is a shopping aid,
+// not a fact about the family, so it never edits the data above. Anything
+// genuinely bought should be promoted to `status: 'bought'` in SUPPLY_LISTS.
+const SUPPLY_CHECK_KEY = 'iddings.supplies.checked.v1';
+
+const readChecked = () => {
+  try {
+    const raw = window.localStorage.getItem(SUPPLY_CHECK_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+};
+
+// ---------------------------------------------------------------------------
+// PACK THE BOX — once something is bought, this is the sorting the kids
+// actually have to do: does it get a name on it, or does it go in unlabeled
+// for the class to share. Only lists that are itemized (more than the
+// "nothing bought yet" placeholder) have anything to sort, so the shared
+// Secondary list — bought off-page, never broken out here — is skipped in
+// favor of the general rules.
+// ---------------------------------------------------------------------------
+
+const PACK_DESTINATION = {
+  'ms-art': 'Its own bag — this lives in the art room all year, not the everyday box.',
+  'elementary-4': 'The everyday supply box, ready to go Aug 12.',
+};
+
+const packGroupsFor = (kidName) =>
+  SUPPLY_LISTS.filter((l) => l.who.includes(kidName))
+    .map((l) => ({
+      ...l,
+      packItems: l.groups.flatMap((g) =>
+        g.items
+          .filter((i) => i.where !== 'Paperwork')
+          .map((i) => ({ ...i, community: /community/i.test(g.group) }))
+      ),
+    }))
+    .filter((l) => l.packItems.length > 1);
+
+const PACK_RULES = [
+  {
+    icon: Tag,
+    title: 'One name, one box',
+    text: 'Anything that’s just theirs — pencil pouch, scissors, calculator, binder — gets their name on it before it goes in.',
+  },
+  {
+    icon: Users,
+    title: 'Shared stuff stays unlabeled',
+    text: 'Consumables donated to the whole class — tissues, wipes, glue sticks, community pencils — go in bare. A name on shared stuff just means it disappears into someone else’s desk.',
+  },
+  {
+    icon: Package,
+    title: 'Class-only supplies get their own bag',
+    text: 'Some supplies live in one classroom all year, not the backpack. Dorothy’s MS Art supplies stay in the art room — pack them separately from her everyday box.',
+  },
+  {
+    icon: Backpack,
+    title: 'Backups stay home',
+    text: 'Extra folders or notebooks bought as backups sit in a bin at home. Only what the list actually calls for on day one rides in on day one.',
+  },
+];
+
+const SUPPLY_PACK_KEY = 'iddings.supplies.packed.v1';
+
+const readPacked = () => {
+  try {
+    const raw = window.localStorage.getItem(SUPPLY_PACK_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+};
+
+// A single sortable line inside a kid's pack card.
+const PackItem = ({ id, item, packed, togglePacked }) => {
+  const isPacked = !!packed[id];
+  return (
+    <li>
+      <button
+        onClick={() => togglePacked(id)}
+        className="w-full flex items-start gap-2 text-left hover:bg-tefa-light/60 rounded px-1 -mx-1 py-0.5 transition"
+      >
+        {isPacked ? (
+          <CheckSquare size={13} className="mt-0.5 shrink-0 text-tefa-green" />
+        ) : (
+          <Square size={13} className="mt-0.5 shrink-0 text-tefa-body/30" />
+        )}
+        <span className={`text-xs flex-1 ${isPacked ? 'text-tefa-body/40 line-through' : 'text-tefa-body/90'}`}>
+          {item.item}
+        </span>
+      </button>
+    </li>
+  );
+};
+
+// Per-kid packing card: each itemized list gets split into "name goes on it"
+// vs "unlabeled — shared", plus where the packed box actually ends up.
+const PackTheBoxView = ({ packed, togglePacked }) => (
+  <section className="bg-white rounded-xl shadow-md border border-gray-200 p-6 space-y-6">
+    <div>
+      <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2">
+        <Backpack size={20} /> Pack the box
+      </h2>
+      <p className="text-sm text-tefa-body/70">
+        Once it&rsquo;s bought, here&rsquo;s how each kid sorts it &mdash; what gets a name on it, what stays
+        unlabeled for the class, and what doesn&rsquo;t go in the everyday box at all.
+      </p>
+    </div>
+
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      {PACK_RULES.map((r) => (
+        <div key={r.title} className="rounded-lg bg-tefa-light border border-gray-200 p-3">
+          <r.icon size={16} className="text-tefa-navy/60 mb-1.5" />
+          <div className="text-xs font-bold text-tefa-navy">{r.title}</div>
+          <p className="text-[11px] text-tefa-body/60 mt-1">{r.text}</p>
+        </div>
+      ))}
+    </div>
+
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      {STUDENTS.map((kid) => {
+        const lists = packGroupsFor(kid.name);
+        return (
+          <div key={kid.name} className="rounded-lg border border-gray-200 p-4">
+            <div className="flex items-baseline gap-2 mb-3">
+              <span className="font-bold text-tefa-navy">{kid.name}</span>
+              <span className="text-[11px] text-tefa-body/50">{kid.grade}</span>
+            </div>
+            {lists.length === 0 ? (
+              <p className="text-xs text-tefa-body/60">
+                Nothing itemized yet — the Secondary list isn&rsquo;t broken out item by item. Once it&rsquo;s
+                shopped, sort it by the rules above: personal tools get a name, class-pool consumables don&rsquo;t.
+              </p>
+            ) : (
+              lists.map((l) => {
+                const labelItems = l.packItems.filter((i) => !i.community);
+                const communityItems = l.packItems.filter((i) => i.community);
+                return (
+                  <div key={l.id} className="mb-4 last:mb-0">
+                    <div className="text-xs font-bold text-tefa-navy">{l.title}</div>
+                    <div className="text-[11px] text-tefa-body/50 mb-2">
+                      {PACK_DESTINATION[l.id] || 'The everyday supply box.'}
+                    </div>
+                    {labelItems.length > 0 && (
+                      <div className="mb-2">
+                        <div className="text-[10px] font-bold uppercase tracking-wide text-tefa-body/40 mb-1">
+                          Name goes on it
+                        </div>
+                        <ul className="space-y-1">
+                          {labelItems.map((i) => (
+                            <PackItem
+                              key={`${l.id}:${i.item}`}
+                              id={`${l.id}:${i.item}`}
+                              item={i}
+                              packed={packed}
+                              togglePacked={togglePacked}
+                            />
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {communityItems.length > 0 && (
+                      <div>
+                        <div className="text-[10px] font-bold uppercase tracking-wide text-tefa-body/40 mb-1">
+                          Unlabeled — shared with the class
+                        </div>
+                        <ul className="space-y-1">
+                          {communityItems.map((i) => (
+                            <PackItem
+                              key={`${l.id}:${i.item}`}
+                              id={`${l.id}:${i.item}`}
+                              item={i}
+                              packed={packed}
+                              togglePacked={togglePacked}
+                            />
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
+        );
+      })}
+    </div>
+  </section>
+);
+
+const SuppliesView = ({ setTab }) => {
+  const [checked, setChecked] = useState(readChecked);
+  const [packed, setPacked] = useState(readPacked);
+  const [copied, setCopied] = useState(false);
+
+  const persist = (next) => {
+    setChecked(next);
+    try {
+      window.localStorage.setItem(SUPPLY_CHECK_KEY, JSON.stringify(next));
+    } catch {
+      // Private-mode / storage-disabled browsers: the tick still works for the session.
+    }
+  };
+
+  const toggle = (id) => persist({ ...checked, [id]: !checked[id] });
+  const reset = () => persist({});
+
+  const togglePacked = (id) => {
+    const next = { ...packed, [id]: !packed[id] };
+    setPacked(next);
+    try {
+      window.localStorage.setItem(SUPPLY_PACK_KEY, JSON.stringify(next));
+    } catch {
+      // Private-mode / storage-disabled browsers: the tick still works for the session.
+    }
+  };
+
+  const total = OPEN_SUPPLY_ITEMS.length;
+  const got = OPEN_SUPPLY_ITEMS.filter((i) => checked[i.id]).length;
+  const left = total - got;
+
+  const buckets = WHERE_ORDER.map((where) => ({
+    where,
+    items: OPEN_SUPPLY_ITEMS.filter((i) => i.where === where),
+  })).filter((b) => b.items.length > 0);
+
+  const copy = async () => {
+    const md =
+      `# School supplies still outstanding\n\n` +
+      `_Reconciled against the Aug 7–8 orders (as of ${SUPPLIES_ASOF}). ${left} of ${total} left._\n\n` +
+      buckets
+        .map(
+          (b) =>
+            `## ${b.where}\n` +
+            b.items
+              .map((i) => `- [${checked[i.id] ? 'x' : ' '}] **${i.who}** · ${i.item}${i.note ? ` — ${i.note}` : ''}`)
+              .join('\n')
+        )
+        .join('\n\n');
+    try {
+      await navigator.clipboard.writeText(`${md}\n`);
+    } catch {
+      const ta = document.createElement('textarea');
+      ta.value = `${md}\n`;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* The headline: how much is left, and against what deadlines */}
+      <section className="bg-white rounded-xl shadow-md border-2 border-tefa-gold/50 p-6">
+        <div className="flex items-start justify-between gap-3 flex-wrap mb-2">
+          <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2">
+            <ShoppingCart size={20} /> Still outstanding
+          </h2>
+          <div className="flex gap-2 shrink-0">
+            {got > 0 && (
+              <button
+                onClick={reset}
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-tefa-body/70 border border-gray-300 hover:bg-tefa-light rounded-lg px-3 py-2 transition"
+              >
+                <RotateCcw size={14} /> Reset ticks
+              </button>
+            )}
+            <button
+              onClick={copy}
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-tefa-green hover:bg-tefa-navy rounded-lg px-3 py-2 transition"
+            >
+              {copied ? <Check size={14} /> : <Copy size={14} />}
+              {copied ? 'Copied!' : 'Copy shopping list'}
+            </button>
+          </div>
+        </div>
+        <div className="flex items-end gap-3 mb-3">
+          <div className="text-4xl font-bold text-tefa-navy">{left}</div>
+          <div className="text-sm text-tefa-body/60 pb-1">
+            of {total} open items left — school supplies, the art sheet, and the uniform gaps, in one list.
+          </div>
+        </div>
+        <div className="h-2 rounded-full bg-gray-200 overflow-hidden mb-4">
+          <div className="h-full bg-tefa-green transition-all" style={{ width: `${total ? (got / total) * 100 : 0}%` }} />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+          <div className="rounded-lg bg-tefa-light border border-gray-200 p-3">
+            <div className="text-[11px] font-bold uppercase tracking-wide text-tefa-body/50">Aug 12</div>
+            <div className="font-bold text-tefa-navy">First day of school</div>
+            <div className="text-xs text-tefa-body/60 mt-0.5">Everything except the art sheet has to be in the backpack.</div>
+          </div>
+          <div className="rounded-lg bg-tefa-light border border-gray-200 p-3">
+            <div className="text-[11px] font-bold uppercase tracking-wide text-tefa-body/50">Wed Aug 19</div>
+            <div className="font-bold text-tefa-navy">MS Art supplies due</div>
+            <div className="text-xs text-tefa-body/60 mt-0.5">Dorothy — sheet needs a parent&rsquo;s initials too.</div>
+          </div>
+          <div className="rounded-lg bg-tefa-light border border-gray-200 p-3">
+            <div className="text-[11px] font-bold uppercase tracking-wide text-tefa-body/50">Reconciled</div>
+            <div className="font-bold text-tefa-navy">{SUPPLIES_ASOF}</div>
+            <div className="text-xs text-tefa-body/60 mt-0.5">Checked against the two Walmart and two Amazon orders.</div>
+          </div>
+        </div>
+        <p className="text-[11px] text-tefa-body/50 mt-3">
+          Ticks are saved in this browser only — they are a shopping aid, not a record. Once something is genuinely
+          bought, promote it in the source list so it shows as bought for everyone.
+        </p>
+      </section>
+
+      {/* The shopping list, grouped by where you have to go */}
+      {buckets.map((b) => {
+        const meta = WHERE_META[b.where] || {};
+        const bucketLeft = b.items.filter((i) => !checked[i.id]).length;
+        return (
+          <section key={b.where} className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+            <div className="flex items-baseline gap-2 flex-wrap mb-1">
+              <h2 className="text-lg font-bold text-tefa-navy">{b.where}</h2>
+              <span className="text-xs font-bold text-tefa-body/50">
+                {bucketLeft} of {b.items.length} left
+              </span>
+              {meta.url && <LinkPill label={meta.label} url={meta.url} />}
+            </div>
+            {meta.blurb && <p className="text-sm text-tefa-body/70 mb-4">{meta.blurb}</p>}
+            <ul className="divide-y divide-gray-100">
+              {b.items.map((i) => {
+                const isChecked = !!checked[i.id];
+                return (
+                  <li key={i.id}>
+                    <button
+                      onClick={() => toggle(i.id)}
+                      className="w-full flex items-start gap-3 text-left py-3 hover:bg-tefa-light/60 rounded-lg px-2 -mx-2 transition"
+                    >
+                      {isChecked ? (
+                        <CheckSquare size={18} className="mt-0.5 shrink-0 text-tefa-green" />
+                      ) : (
+                        <Square size={18} className="mt-0.5 shrink-0 text-tefa-body/30" />
+                      )}
+                      <span className="flex-1">
+                        <span className="flex items-baseline gap-2 flex-wrap">
+                          <span
+                            className={`text-sm font-bold ${isChecked ? 'text-tefa-body/40 line-through' : 'text-tefa-navy'}`}
+                          >
+                            {i.item}
+                          </span>
+                          <span className="text-[10px] font-bold uppercase tracking-wide bg-tefa-navy/10 text-tefa-navy rounded px-1.5 py-0.5">
+                            {i.who}
+                          </span>
+                          {i.urgent && !isChecked && (
+                            <span className="text-[10px] font-bold uppercase tracking-wide bg-tefa-red/10 text-tefa-red rounded px-1.5 py-0.5">
+                              Urgent
+                            </span>
+                          )}
+                        </span>
+                        {i.note && (
+                          <span className={`block text-xs mt-0.5 ${isChecked ? 'text-tefa-body/35' : 'text-tefa-body/70'}`}>
+                            {i.note}
+                          </span>
+                        )}
+                        <span className="block text-[11px] text-tefa-body/45 mt-1">
+                          {i.source}
+                          {i.due && ` · due ${i.due}`}
+                        </span>
+                      </span>
+                    </button>
+                    {i.url && (
+                      <div className="pb-3 pl-9">
+                        <LinkPill label={i.linkLabel || 'Open list'} url={i.url} />
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        );
+      })}
+
+      {/* Once it's bought, this is how the kids actually sort it into their box */}
+      <PackTheBoxView packed={packed} togglePacked={togglePacked} />
+
+      {/* Full lists, so "outstanding" can be checked against what's already done */}
+      <section className="bg-white rounded-xl shadow-md border border-gray-200 p-6 space-y-6">
+        <div>
+          <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2">
+            <Backpack size={20} /> The full lists
+          </h2>
+          <p className="text-sm text-tefa-body/70">
+            Everything each list asks for, with what the Aug 7–8 orders already closed out struck through — so an open
+            item is open because it was checked, not because it was forgotten.
+          </p>
+        </div>
+        {SUPPLY_LISTS.map((l) => (
+          <SupplyListCard key={l.id} list={l} showWho />
+        ))}
+      </section>
+
+      <p className="text-sm text-tefa-body/70 text-center">
+        The uniform items above are the gaps only. The full dress code, campus by campus, lives on{' '}
+        <button
+          onClick={() => setTab('nbca')}
+          className="font-bold text-tefa-navy underline decoration-tefa-navy/40 hover:text-tefa-green"
+        >
+          NBCA Prep
+        </button>
+        .
+      </p>
+    </div>
+  );
 };
 
 // Dress-code reference + the remaining shopping gaps, in one card. Split by
@@ -2273,6 +2936,7 @@ const NBCA_TASKS = [
       { text: 'IXL Summer Boost — NOT REQUIRED for new students (Mrs. Scobee, Jul 20)', done: true },
       { text: 'Volleyball parent meeting Aug 3 · Cross Country parent meeting Aug 4', done: false, owner: 'Cody', link: 'Calendar', url: 'https://www.nbcatx.org/page/calendar-events' },
       { text: 'Secondary supply list purchased (Aug 7) — wipes, Kleenex, pencils, pens, 1" binder, wide-ruled paper. ESV STUDY Bible already owned; TI-84 is optional in 7th, required in 8th', done: true, link: 'Supply list', url: 'https://aptg.co/tCJ7SC' },
+      { text: 'MS Art supply list — DUE WED AUG 19, needs parent initials on the sheet. Item-by-item status is on the Supplies tab', done: false, owner: 'Cody' },
       { text: 'Summer reading: The Wednesday Wars (Gary D. Schmidt) + One-Pager response (test grade)', done: true, link: 'Reading list', url: 'https://aptg.co/J20fyQ' },
     ],
   },
@@ -2282,7 +2946,9 @@ const NBCA_TASKS = [
       { text: 'Uniforms for Elementary purchased', done: true, link: 'Global Schoolwear', url: 'https://www.globalschoolwear.com/' },
       { text: 'Brown or black belt bought — REQUIRED at Elementary whenever bottoms have belt loops (secondary has no belt rule, so easy to miss)', done: false, owner: 'Cody' },
       { text: 'Confirm the purchased set includes an EVERGREEN logo polo for the chapel uniform — it is separate from the daily options', done: false, owner: 'Cody' },
-      { text: '4th-grade school supplies purchased (Aug 7) — STILL OPEN: an orange folder WITH PRONGS (the one that shipped is a 2-pocket poly with no brads) and the wired mouse. Everything else received', done: false, owner: 'Cody', link: 'Supply list', url: 'https://aptg.co/rSGL4x' },
+      // Status text from the Supplies tab work; URL kept from this branch — 5il.co/2o0ag
+      // is the 3rd–5th summer READING list, not the supply list (see the Sebastian links above).
+      { text: '4th-grade school supplies — mostly bought Aug 7–8; what is left is on the Supplies tab', done: false, owner: 'Cody', link: 'Supply list', url: 'https://aptg.co/rSGL4x' },
       { text: 'Summer reading (recommended): The Tale of Despereaux, Because of Winn-Dixie, Frindle, The Cricket in Times Square, The Miraculous Journey of Edward Tulane, Hatchet', done: true },
     ],
   },
@@ -2401,11 +3067,31 @@ const NbcaTaskList = () => {
   );
 };
 
-const NbcaPrepView = () => {
+const NbcaPrepView = ({ setTab }) => {
   const nextIdx = NBCA_TIMELINE.findIndex((e) => e.iso >= TODAY);
+  const openSupplies = OPEN_SUPPLY_ITEMS.length;
 
   return (
     <div className="space-y-6">
+      {/* Supplies live on their own tab — this page links there rather than
+          re-listing what is outstanding. */}
+      <button
+        onClick={() => setTab('supplies')}
+        className="w-full flex items-center justify-between gap-3 text-left bg-white rounded-xl shadow-md border border-gray-200 hover:border-tefa-green/50 p-4 transition"
+      >
+        <span className="flex items-center gap-3">
+          <ShoppingCart size={20} className="text-tefa-green shrink-0" />
+          <span>
+            <span className="block text-sm font-bold text-tefa-navy">
+              {openSupplies} school-supply &amp; uniform items still outstanding
+            </span>
+            <span className="block text-xs text-tefa-body/60">
+              Supply lists, the art sheet, and the uniform gaps — one tickable checklist.
+            </span>
+          </span>
+        </span>
+        <span className="text-sm font-bold text-tefa-navy shrink-0">Supplies &rarr;</span>
+      </button>
       {/* Urgent action items */}
       <section className="bg-white rounded-xl shadow-md border-2 border-tefa-gold/50 p-6">
         <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2 mb-1">
@@ -2550,37 +3236,13 @@ const NbcaPrepView = () => {
             ))}
           </div>
 
-          {/* Itemized, grouped supply checklist (Sebastian) */}
-          {kid.supplies && (
-            <div className="mt-5">
-              <div className="flex items-center gap-2 mb-3">
-                <Backpack size={16} className="text-tefa-body/60" />
-                <span className="text-sm font-bold text-tefa-navy">School supply list</span>
-                <span className="text-[11px] text-tefa-body/50">4th grade · check off as you shop</span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {kid.supplies.map((sg) => {
-                  const t = SUPPLY_TONE[sg.tone];
-                  return (
-                    <div key={sg.group} className={`rounded-lg border p-3 ${t.chip}`}>
-                      <div className={`text-xs font-bold uppercase tracking-wide mb-2 ${t.head}`}>{sg.group}</div>
-                      <ul className="space-y-1.5">
-                        {sg.items.map((item) => (
-                          <li key={item} className="flex items-start gap-2 text-xs text-tefa-body/80">
-                            <span className={`mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full ${t.dot}`} />
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  );
-                })}
-              </div>
-              <p className="text-[11px] text-tefa-body/50 mt-2">
-                Girls-only list (not needed for Sebastian): 1 box tissues, 50-ct 9"×12" construction paper.
-              </p>
+          {/* Supply lists for this child, rendered from the shared SUPPLY_LISTS
+              source so the Supplies tab and this card can never disagree. */}
+          {supplyListsFor(kid.name).map((l) => (
+            <div key={l.id} className="mt-5">
+              <SupplyListCard list={l} />
             </div>
-          )}
+          ))}
         </section>
       ))}
 
