@@ -35,6 +35,7 @@ import {
   ReferenceLine,
   ReferenceArea,
 } from 'recharts';
+import FallPlanView from './FallPlanView';
 
 // ---------------------------------------------------------------------------
 // Single source of truth for the family's real numbers. Everything the page
@@ -822,8 +823,15 @@ const PAYMENT_PLAN = {
     'Dec 7, 2026', 'Jan 5, 2027', 'Feb 5, 2027', 'Mar 5, 2027', 'Apr 5, 2027'],
 };
 
-const VALID_TABS = ['now', 'money', 'timeline', 'nbca', 'tefa'];
-const TAB_LABELS = { now: 'Now', money: 'Money', timeline: 'Timeline', nbca: 'NBCA Prep', tefa: 'TEFA' };
+const VALID_TABS = ['now', 'money', 'timeline', 'nbca', 'fall', 'tefa'];
+const TAB_LABELS = {
+  now: 'Now',
+  money: 'Money',
+  timeline: 'Timeline',
+  nbca: 'NBCA Prep',
+  fall: 'Fall Plan',
+  tefa: 'TEFA',
+};
 
 const IddingsPlanner = () => {
   const { tab } = useParams();
@@ -858,7 +866,7 @@ const IddingsPlanner = () => {
             <h1 className="text-2xl font-bold tracking-tight">Iddings Family Planner</h1>
             <p className="text-tefa-sky text-sm mt-1">NBCA 2026–2027 · what to do, when, and what we owe</p>
           </div>
-          <nav className="flex gap-2 text-sm font-medium">
+          <nav className="flex flex-wrap justify-center gap-2 text-sm font-medium">
             {VALID_TABS.map((t) => (
               <button
                 key={t}
@@ -876,7 +884,15 @@ const IddingsPlanner = () => {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto p-6 space-y-6">
+      {/* The Fall Plan is a full-bleed call sheet with its own masthead and grid,
+          so it gets a wider container and no page padding of its own. */}
+      <main
+        className={
+          activeTab === 'fall'
+            ? 'max-w-6xl mx-auto'
+            : 'max-w-4xl mx-auto p-6 space-y-6'
+        }
+      >
         {activeTab === 'now' && (
           <NowView balanceDue={balanceDue} perStudent={perStudent} setTab={setTab} />
         )}
@@ -892,6 +908,7 @@ const IddingsPlanner = () => {
         )}
         {activeTab === 'timeline' && <TimelineView />}
         {activeTab === 'nbca' && <NbcaPrepView />}
+        {activeTab === 'fall' && <FallPlanView />}
         {activeTab === 'tefa' && <TefaView />}
       </main>
 
