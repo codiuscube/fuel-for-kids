@@ -776,6 +776,11 @@ function buildCascadeProjection({
   return { series, kpis };
 }
 
+// The default (no-slider) projection, computed once at module load. The Now tab's summary
+// card quotes the same headline terminals the TEFA tab charts, and both must come from this
+// one call so a future tweak to the scenarios cannot leave the two tabs disagreeing.
+const DEFAULT_KPIS = buildCascadeProjection().kpis;
+
 
 const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const fmtChartDate = (ts) => {
@@ -1005,6 +1010,7 @@ const IddingsPlanner = () => {
 // NOW — the one page that answers "what do we do, and what do we owe?"
 // ---------------------------------------------------------------------------
 const NowView = ({ balanceDue, perStudent, setTab }) => {
+  const k = DEFAULT_KPIS;   // headline TEFA numbers, shared with the TEFA tab
   const actions = [
     { date: 'By Jun 15', text: 'Accept the NBCA scholarship ($12,000) by replying to Nanette.', done: false },
     { date: 'Resolved', text: 'ACE scholarship came back denied for all three (funds unavailable) — no ACE money is coming, so budget for the full balance below.', done: true },
