@@ -361,14 +361,29 @@ const T2_OBSERVATIONS = [
   //      Marie Alexa, Jamie Pfent, Ashleigh Bomar), while the deep-end 30–50k families
   //      (Devyn, Shawna Turk, Amanda Mae Morris) did NOT — so the frontier is cutting
   //      through the deep end of the 30–50k band right now                     → ~45–47k
-  // Four methods converge on 46,000 (band 44,000–48,000). Rate: ~1,000/day since Jul 29.
-  { date: '2026-08-11', frontier: 46000, unofficial: true, triangulated: true },
+  // Four methods converge on 46,000. Rate: ~1,000/day since Jul 29.
+  //
+  // OFFICIAL CORROBORATION (Aug 11): the Texas Education Freedom Accounts account posted
+  // "We've funded almost 15,000 additional waitlisted students! Log in to your parent portal
+  // to check for an updated status and award notification." This is the first official figure
+  // since late June, and it independently confirms a wave of this size. It does NOT pin the
+  // frontier exactly, because "additional funded" is a COUNT and the frontier is a DEPTH, and
+  // the two readings disagree:
+  //   (a) 34,000 (community Jul 29) + 15,000  → frontier ~49,000, i.e. AT our seat already.
+  //   (b) The personal anecdotes cap it lower: Devyn Shaffer self-places at the deep end of
+  //       the 30–50k band (so ≤50,000) and still reads 3–4k ahead, which is impossible if the
+  //       frontier were 49,000. Reading (b) implies the community's 34,000 was ~2–3k high and
+  //       the true Jul 29 base was ~31–32k, giving 31,500 + 15,000 → ~46,500.
+  // We keep 46,000 central (it satisfies both the anecdotes and the official count under the
+  // more likely base) but raise the HIGH edge to 49,000, because reading (a) is a legitimate
+  // read of an official number and it puts an offer at our door right now.
+  { date: '2026-08-11', frontier: 46000, unofficial: true, triangulated: true, officialWave: 15000 },
 ];
 
-// The spread across those four methods — used as the LOW/HIGH anchor for the scenario
-// lines, so the projection's uncertainty starts from the real disagreement in the
-// evidence rather than from a guessed forward rate.
-const AUG11_TRIANGULATION = { lo: 44000, central: 46000, hi: 48000 };
+// The spread across those methods — used as the anchor uncertainty for the Monte Carlo, so the
+// projection's uncertainty starts from the real disagreement in the evidence rather than from a
+// guessed forward rate. The HIGH edge is set by the official "almost 15,000 additional" reading.
+const AUG11_TRIANGULATION = { lo: 44000, central: 46000, hi: 49000 };
 
 // Frontier for an observation, whichever way it was recorded.
 const frontierOf = (o) => (o.frontier != null ? o.frontier : T2_AT_LOTTERY - o.t2Remaining);
@@ -716,6 +731,7 @@ function buildCascadeProjection({
     totalAdvance: TOTAL_ADVANCE_SINCE_POOL_COUNT,
     anchorLo: AUG11_TRIANGULATION.lo,
     anchorHi: AUG11_TRIANGULATION.hi,
+    officialWave: t2Observations[t2Observations.length - 1].officialWave ?? null,
     // Tier 2 is CLEARED — the frontier is this far PAST the 20,383 Tier 2 backlog.
     intoTier3: fL - T2_AT_LOTTERY,
     // Positions still between the frontier and our own seat — the only gap that matters now.
@@ -737,6 +753,9 @@ function buildCascadeProjection({
     optOutsSoFar,
     optOutPctNow: +(100 * optOutsSoFar / ACTIVE_AWARDS).toFixed(1), // ~2.8% (Jun 23)
     funded: FUNDED_JULY1,
+    // Base the August melt actually applies to: the Jul 1 cohort PLUS the seats both draws
+    // filled since. Quoting the bare 73,000 understates it by ~14,500.
+    meltBase: Math.round(fundedBase(realistic.acceptRate)),
     remainder: CHURN_POOL,          // the PRE-deadline 18k pool (historical reference)
     // What's actually left of that 18k after the Jul 29 draw, at the central acceptance.
     poolLeft: Math.round(remainingPool(realistic.acceptRate, spdObs)),
@@ -886,6 +905,8 @@ const TIMELINE = [
     detail: 'Unofficial community number: roughly 34,000 have now been pulled off the waitlist, up from ~17,000 on Jul 11 — the Jul 15 deadline shakeout firing at full force. Two things changed. First, Tier 2 is CLEARED: the frontier is ~13,600 positions past the 20,383 Tier 2 backlog, so every award now going out is Tier 3. Second, our own Odyssey range moved to 15,001–20,000 — that many families are still AHEAD of us, which is the one datum specific to our family. Added to the ~34,000 frontier that puts our original position at 49,001–50,000, truncated by the May 13 band ceiling: the very bottom of our band, not the 45,001 we had assumed. Awaiting the official Comptroller figure to replace the unofficial 34,000.' },
   { date: 'Jul 31', iso: '2026-07-31', title: 'TEFA — enrollment confirmation deadline', kind: 'info',
     detail: 'Families swept in the Jul 15 sweep had to have enrollment confirmed by this date. Whatever laggard tail survives here is one of the two remaining fuel sources for the cascade; the other is ordinary August melt on the ~80,000 funded families.' },
+  { date: 'Aug 11', iso: '2026-08-11', title: 'OFFICIAL — "almost 15,000 additional waitlisted students" funded. CHECK THE PORTAL.', kind: 'do',
+    detail: 'The Texas Education Freedom Accounts account posted: "We\'ve funded almost 15,000 additional waitlisted students! Log in to your parent portal to check for an updated status and award notification." First official figure since late June, and it confirms the August wave the community threads were describing. Two readings, and both are good for us: on the community\'s 34,000 Jul 29 base, +15,000 puts the frontier at ~49,000 — our seat exactly; on the personal anecdotes (Devyn Shaffer still reads 3–4k ahead from ≤50,000), the Jul 29 base was nearer 31–32k and the frontier is ~46,500. So we are somewhere between AT the line and ~4,000 short. ACTION: log into the Odyssey parent portal and check status — and check email and text, including spam. Awards have been landing at odd hours (one family was funded at 9pm).' },
   { date: 'Aug 11', iso: '2026-08-11', title: 'TEFA — second wave, frontier ~46,000; we are ~3,000–4,000 out', kind: 'info',
     detail: 'A second big draw landed with no deadline behind it, carrying the frontier from ~34,000 to roughly 46,000 in under two weeks. Unofficial, but triangulated four ways from the Aug 10–11 community threads rather than resting on one number: Devyn Shaffer (our exact 15,001–20,000 range last week) now reads 3–4k; Hilda Soto, originally 50k–100k, now reads 5–10k; Mary Foreman\'s Jul 31 gap independently re-confirms the old 34,000 anchor; and the funded/unfunded split shows the cascade cutting through the deep end of the 30–50k originals right now. Our position has not moved — still 49,001–50,000 — so the gap is now about 3,001–4,000, matching Devyn\'s reading exactly. The likely case now CLEARS our seat (~51,200 by Aug 31) where it missed by ~7,000 three weeks ago. Two cautions: no Comptroller figure has been published since late June, and the laggard pool that fuelled this wave is most of the way spent.' },
   { date: 'Late August', iso: '2026-08-25', title: 'TEFA — the window where the likely case crosses us', kind: 'info',
@@ -1032,8 +1053,10 @@ const NowView = ({ balanceDue, perStudent, setTab }) => {
           <Scale size={20} /> The one decision that matters: by June 30
         </h2>
         <p className="text-sm text-tefa-body/80 mb-4">
-          TEFA almost certainly won't fund us this school year (see below), so the real choice is whether to
-          commit to NBCA and pay tuition out of pocket. June 30 is the last day to back out cheaply.
+          This decision had to be made back in June, when TEFA looked out of reach — and it had to be made
+          without knowing what August would bring. It is now genuinely in reach (see below), but every TEFA
+          date lands <em>after</em> June 30, so the choice was always whether to commit to NBCA and pay tuition
+          out of pocket. Kept here as the record of a call made on the information available at the time.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
           <div className="rounded-lg border border-tefa-green/30 bg-tefa-green/5 p-4">
@@ -1160,8 +1183,13 @@ const NowView = ({ balanceDue, perStudent, setTab }) => {
       {/* TEFA outlook — the whole modeling story, in one honest card */}
       <section className="bg-amber-50 rounded-xl shadow-md border border-amber-300 p-6">
         <h2 className="text-lg font-bold text-amber-800 flex items-center gap-2 mb-2">
-          <AlertCircle size={20} /> TEFA outlook: we are now ~{k.gapToUs.toLocaleString()}–{k.gapToUsHi.toLocaleString()} away — the likely case reaches us
+          <AlertCircle size={20} /> TEFA: check the parent portal now — we are ~{k.gapToUs.toLocaleString()}–{k.gapToUsHi.toLocaleString()} away, possibly zero
         </h2>
+        <p className="text-sm text-amber-900 mb-3 font-semibold">
+          Official, Aug 11: &ldquo;We&rsquo;ve funded almost {k.officialWave?.toLocaleString()} additional waitlisted students! Log in to your
+          parent portal to check for an updated status and award notification.&rdquo; Check Odyssey, email, and text —
+          including spam. Awards have been landing at odd hours.
+        </p>
         <p className="text-sm text-amber-900/90 mb-3">
           All three kids are <strong>{TEFA.tier}</strong> and <strong>waitlisted</strong> in band{' '}
           <strong>{TEFA.band}</strong> (texted to us {TEFA.notifiedOn}); our position inside it is pinned at{' '}
@@ -1170,6 +1198,8 @@ const NowView = ({ balanceDue, perStudent, setTab }) => {
           <strong>{FRONTIER_NOW.toLocaleString()}</strong> as of <strong>Aug 11</strong> after a second big wave with no
           deadline behind it. So the families still ahead of us number about{' '}
           <strong>{k.gapToUs.toLocaleString()}–{k.gapToUsHi.toLocaleString()}</strong>, down from 15,001–20,000 two weeks ago.
+          On the most optimistic reading of the official figure — {k.officialWave?.toLocaleString()} added to the community&rsquo;s
+          34,000 — the frontier is already at <strong>~{k.anchorHi.toLocaleString()}</strong>, which is our seat.
         </p>
         <p className="text-sm text-amber-900/90 mb-3">
           <strong>The conclusion flipped.</strong> The likely case now lands ~{k.realisticTerminal.toLocaleString()} by Aug 31 —
@@ -1178,11 +1208,12 @@ const NowView = ({ balanceDue, perStudent, setTab }) => {
           the <strong>more likely outcome than not</strong>.
         </p>
         <p className="text-sm text-amber-900/90">
-          <strong>Two cautions, and they matter.</strong> The ~{FRONTIER_NOW.toLocaleString()} is triangulated from community
-          reports — the Comptroller has published nothing since late June — and the laggard pool that fuelled this wave is
-          mostly spent, so the grind from here is slower. It also lands <strong>after</strong> the Jun 30 withdrawal deadline
-          regardless. <strong>Keep budgeting the full balance until the money actually arrives</strong> — but this is no
-          longer a tail-case hope.
+          <strong>Two cautions, and they matter.</strong> The official post gives a <em>count</em> of students funded, not a
+          waitlist <em>depth</em> — so the exact ~{FRONTIER_NOW.toLocaleString()} is still triangulated, and the two readings
+          disagree by about {(k.anchorHi - FRONTIER_NOW).toLocaleString()}. And the laggard pool that fuelled this wave is
+          mostly spent, so the grind from here is slower than the last two weeks suggest. It also lands <strong>after</strong> the
+          Jun 30 withdrawal deadline regardless. <strong>Keep budgeting the full balance until the money actually arrives</strong>
+          — but this is no longer a tail-case hope.
         </p>
         <button
           onClick={() => setTab('tefa')}
@@ -1468,7 +1499,7 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, declineM
       </h2>
       <p className="text-sm text-tefa-body/80 mb-4">
         One model, two views of the same thing. Each line is the <strong>offer frontier</strong> — how deep an offer travels, set by two dials: how much of the{' '}
-        <strong>~{k.poolLeft.toLocaleString()}</strong> laggards left after the Jul 29 draw still get swept (plus August melt — together they fund the seats) and how many
+        <strong>~{k.poolLeft.toLocaleString()}</strong> laggards left after both draws still get swept (plus August melt — together they fund the seats) and how many
         deep-waitlist families <em>decline</em> the seats they're offered (each &ldquo;no&rdquo; passes the offer deeper for free). <strong>Distribution</strong> runs that model{' '}
         <strong>{trials.toLocaleString()} times</strong> and shows where the offer landed across all of them — <em>the lines are essentially the averages of that cloud</em>.
         Drag the dials and <strong>both</strong> update. Our band is {BAND_LO.toLocaleString()}–{BAND_HI.toLocaleString()} (we sit at ~{YOUR_POS.lo.toLocaleString()}); Tier 3 opens at {T3_START.toLocaleString()}.
@@ -1480,7 +1511,7 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, declineM
           <div className="text-xs text-tefa-body/50 font-medium">Pulled Off So Far</div>
           <div className="font-bold text-tefa-navy text-lg">{k.frontierNow.toLocaleString()}</div>
           <div className="text-[10px] text-tefa-body/40">
-            {k.asOfUnofficial ? 'UNOFFICIAL' : 'official'} as of {fmtChartDate(Date.parse(k.asOf))} · +{k.jul29Advance.toLocaleString()} since Jul 8
+            {k.asOfUnofficial ? 'UNOFFICIAL' : 'official'} as of {fmtChartDate(Date.parse(k.asOf))} · +{k.recentAdvance.toLocaleString()} since Jul 29
           </div>
         </div>
         <div className="rounded-lg bg-tefa-light border border-gray-200 p-3 text-center">
@@ -1563,11 +1594,11 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, declineM
                     label={{ value: `Tier 3 starts — ${T3_START.toLocaleString()} (cleared)`, position: 'insideBottomLeft', fontSize: 9, fontWeight: 600, fill: '#b08a3e' }} />
                 <ReferenceLine y={BAND_LO} stroke="#aa2142" strokeDasharray="8 4"
                     label={{ value: `Our band starts — ${BAND_LO.toLocaleString()} (reached)`, position: 'insideTopLeft', fontSize: 9, fontWeight: 600, fill: '#aa2142' }} />
-                <Line type="monotone" dataKey="observedLine" name="Pulled off so far" stroke="#202562" strokeWidth={2.5} dot={false} legendType="none" />
-                <Line type="monotone" dataKey="research" name={`Low — ${k.researchChurnPct}% tail · ${k.researchDeclinePct}% decline`} stroke="#2e7d5b" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="realistic" name={`Likely — ${k.realisticChurnPct}% tail · ${k.realisticDeclinePct}% decline`} stroke="#202562" strokeWidth={2.5} dot={false} />
-                <Line type="monotone" dataKey="aggressive" name={`High — ${k.aggressiveChurnPct}% tail · ${k.aggressiveDeclinePct}% decline`} stroke="#aa2142" strokeWidth={2.5} dot={false} />
-                <Scatter dataKey="observed" name="Published data" fill="#202562" />
+                <Line type="monotone" dataKey="observedLine" name="Pulled off so far" stroke="#202562" strokeWidth={2.5} dot={false} legendType="none"  isAnimationActive={false} />
+                <Line type="monotone" dataKey="research" name={`Low — ${k.researchChurnPct}% tail · ${k.researchDeclinePct}% decline`} stroke="#2e7d5b" strokeWidth={2} dot={false}  isAnimationActive={false} />
+                <Line type="monotone" dataKey="realistic" name={`Likely — ${k.realisticChurnPct}% tail · ${k.realisticDeclinePct}% decline`} stroke="#202562" strokeWidth={2.5} dot={false}  isAnimationActive={false} />
+                <Line type="monotone" dataKey="aggressive" name={`High — ${k.aggressiveChurnPct}% tail · ${k.aggressiveDeclinePct}% decline`} stroke="#aa2142" strokeWidth={2.5} dot={false}  isAnimationActive={false} />
+                <Scatter dataKey="observed" name="Published data" fill="#202562" isAnimationActive={false} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
@@ -1620,7 +1651,7 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, declineM
         <div className="font-semibold text-tefa-navy text-[13px]">How to read the dials</div>
         <p>
           <strong className="text-tefa-navy">Residual tail swept (PERT min / likely / max)</strong> — your three-point guess for{' '}
-          <em>what % of the ~{k.poolLeft.toLocaleString()} laggards who survived the Jul 29 draw</em> still get moved aside (opt out or drop to $2,000)
+          <em>what % of the ~{k.poolLeft.toLocaleString()} laggards who survived both draws</em> still get moved aside (opt out or drop to $2,000)
           rather than confirm. Alongside August melt on the funded base, it sets <strong>how many seats free up</strong>. The pool it draws from is
           back-solved from the observed Jul 29 advance, so a scenario can never spend more of the {k.remainder.toLocaleString()} than existed.
         </p>
@@ -1725,8 +1756,8 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, declineM
       </div>
 
       <p className="text-[10px] text-tefa-body/45 mt-4">
-        Defaults reproduce the model: residual tail PERT(15 / 25 / 35) of the ~{k.poolLeft.toLocaleString()} laggards left after Jul 29, August melt 0.5–1.5% of the
-        ~{Math.round(k.funded / 1000)}k funded base, decline rate PERT(35 / 50 / 65), opt-out share ~23%, freed-ratio held at the observed ~1.16 — the median offer lands
+        Defaults reproduce the model: residual tail PERT(15 / 25 / 35) of the ~{k.poolLeft.toLocaleString()} laggards left after both draws, August melt 0.5–1.5% of the
+        ~{Math.round(k.meltBase / 1000)}k funded base, decline rate PERT(35 / 50 / 65), opt-out share ~23%, freed-ratio held at the observed ~1.16 — the median offer lands
         near ~{fmt(r.p50)}. Every run clears our band start ({BAND_LO.toLocaleString()}) now, so the only number that matters is the share clearing{' '}
         {YOUR_POS.lo.toLocaleString()} — the probability an offer reaches <em>us</em>. Drag to stress-test. A planning tool, not a forecast.
       </p>
@@ -1771,11 +1802,12 @@ const TefaView = () => {
           <Layers size={20} /> Will an offer reach us? Likelihood by band
         </h2>
         <p className="text-sm text-tefa-body/80 mb-4">
-          Awards cascade down <strong>one</strong> tier-ordered waitlist. <strong>Tier 2 is now cleared</strong> — the Jul 29
-          draw carried the frontier to <strong>~{k.frontierNow.toLocaleString()}</strong>, about {k.intoTier3.toLocaleString()} positions
+          Awards cascade down <strong>one</strong> tier-ordered waitlist. <strong>Tier 2 is now cleared</strong> — the August
+          wave carried the frontier to <strong>~{k.frontierNow.toLocaleString()}</strong>, about {k.intoTier3.toLocaleString()} positions
           past the {T2_AT_LOTTERY.toLocaleString()} Tier 2 backlog. Our own seat is at{' '}
-          <strong>{YOUR_POS.lo.toLocaleString()}</strong>, so roughly <strong>{k.gapToUs.toLocaleString()}</strong> families still sit
-          between the frontier and us.
+          <strong>{YOUR_POS.lo.toLocaleString()}</strong>, so roughly <strong>{k.gapToUs.toLocaleString()}–{k.gapToUsHi.toLocaleString()}</strong> families still sit
+          between the frontier and us — and on the most optimistic reading of the official
+          &ldquo;almost 15,000 additional&rdquo; figure, <strong>none do</strong>.
         </p>
         <div className="space-y-2">
           {BAND_OUTLOOK.map((b) => {
@@ -1810,10 +1842,11 @@ const TefaView = () => {
           <strong>{YOUR_POS.lo.toLocaleString()}–{YOUR_POS.hi.toLocaleString()}</strong>. That leaves only <strong>~{k.gapToUs.toLocaleString()}–{k.gapToUsHi.toLocaleString()}</strong> families
           between the frontier and us, down from 15,001–20,000 two weeks ago. The laggard pool is now mostly spent: of the {k.remainder.toLocaleString()} Pillow counted on Jul 11,
           roughly <strong>{k.poolSpent.toLocaleString()}</strong> were consumed producing the {k.totalAdvance.toLocaleString()}-deep total advance, leaving ~{k.poolLeft.toLocaleString()}. Forward fuel is the residual tail plus <strong>August melt</strong> on
-          the ~{Math.round(k.funded / 1000)}k funded base, stretched by the <strong>decline rate</strong> among deep offerees — every decline passes the seat down for free.
+          the ~{Math.round(k.meltBase / 1000)}k funded base, stretched by the <strong>decline rate</strong> among deep offerees — every decline passes the seat down for free.
           Likely (<strong>~{k.realisticTerminal.toLocaleString()}</strong>) and high (<strong>~{k.aggressiveTerminal.toLocaleString()}</strong>) now <strong>clear</strong> us; only low (<strong>~{k.researchTerminal.toLocaleString()}</strong>) falls short, by ~{(YOUR_POS.lo - k.researchTerminal).toLocaleString()}.
-          A voucher has gone from a long shot to <strong>more likely than not</strong> — but the anchor is unpublished and the fuel is finite.
-          <strong> Keep budgeting the full balance until the money lands.</strong>
+          A voucher has gone from a long shot to <strong>more likely than not</strong>, and the wave is now officially confirmed
+          (&ldquo;almost {k.officialWave?.toLocaleString()} additional&rdquo;) — but that is a count, not a depth, and the fuel behind it is finite.
+          <strong> Check the portal, then keep budgeting the full balance until the money lands.</strong>
         </p>
       </section>
 
@@ -1828,8 +1861,11 @@ const TefaView = () => {
           <Activity size={20} /> The scenarios behind the model, and the dates
         </h2>
         <p className="text-[11px] text-tefa-body/55 mb-3">
-          <strong>As of Aug 11, 2026 — the frontier figure is UNOFFICIAL.</strong> It comes from the parent community, not the Comptroller,
-          which has published nothing since late June: ~<strong>{k.frontierNow.toLocaleString()}</strong> pulled off the waitlist, up from {k.frontierPrev.toLocaleString()} on Jul 29.
+          <strong>As of Aug 11, 2026 — the exact frontier is still an ESTIMATE, but the wave is now OFFICIAL.</strong> The Texas Education
+          Freedom Accounts account confirmed &ldquo;almost {k.officialWave?.toLocaleString()} additional waitlisted students&rdquo; funded — the first official figure
+          since late June. That is a <em>count</em>, though, not a waitlist <em>depth</em>, so it corroborates the size of the wave without pinning
+          where the line now sits: ~<strong>{k.frontierNow.toLocaleString()}</strong> pulled off the waitlist on our central read, up from {k.frontierPrev.toLocaleString()} on Jul 29,
+          and as deep as <strong>{k.anchorHi.toLocaleString()}</strong> if the community's 34,000 base was right.
           It is <strong>triangulated four ways</strong> rather than taken from one person&rsquo;s number, which is why it carries more weight than the Jul 29 figure did:
           (1) <strong>Devyn Shaffer</strong> — same 15,001–20,000 range as us last week, now reads &ldquo;3-4k&rdquo;, implying ~45–46k;
           (2) <strong>Hilda Soto</strong> — originally 50k–100k, now reads 5–10k, implying ~45–48k;
@@ -1839,7 +1875,7 @@ const TefaView = () => {
           but it is still self-reported. Treat the exact number as provisional; the direction and scale are well supported.
         </p>
         <div className="text-[11px] text-tefa-body/60 bg-tefa-light rounded p-3 space-y-1">
-          <div><strong>The fuel is now two slow terms, not one cliff.</strong> Forward advance = (residual laggard tail + August melt) × seats-freed-per-departure ÷ <strong>acceptance rate</strong>. The tail is drawn from what <em>survived both draws</em>: of Pillow's {k.remainder.toLocaleString()} laggards, ~<strong>{k.poolSpent.toLocaleString()}</strong> were consumed producing the observed {k.totalAdvance.toLocaleString()}-deep total advance since Jul 8, leaving ~{k.poolLeft.toLocaleString()}. August melt is ordinary summer attrition on the ~{Math.round(k.funded / 1000)}k funded base ({k.researchMeltPct}–{k.aggressiveMeltPct}%): took the ESA, then withdrew, moved, or never showed. Each departure frees dollars two ways (a full <strong>opt-out</strong> frees ~$10,474, a <strong>$2,000 homeschool</strong> drop frees ~$8,474; observed ~23/77 mix → {k.freedRatio} seats/departure). The ÷ acceptance is the OFFER stretch: a deep family who <strong>declines</strong> frees no money but passes the same seat deeper for free, so the offer travels 1/acceptance as deep. <strong>Low</strong> ({k.researchChurnPct}% tail, {k.researchMeltPct}% melt, {k.researchDeclinePct}% decline) → ~<strong>{k.researchTerminal.toLocaleString()}</strong>; <strong>likely</strong> ({k.realisticChurnPct}% / {k.realisticMeltPct}% / {k.realisticDeclinePct}%) → ~<strong>{k.realisticTerminal.toLocaleString()}</strong>; <strong>high</strong> ({k.aggressiveChurnPct}% / {k.aggressiveMeltPct}% / {k.aggressiveDeclinePct}%) → ~<strong>{k.aggressiveTerminal.toLocaleString()}</strong>. <strong>Likely and high now both reach our {YOUR_POS.lo.toLocaleString()}; only low misses.</strong> That is the reverse of the Jul 29 model, and it is the frontier that moved, not us.</div>
+          <div><strong>The fuel is now two slow terms, not one cliff.</strong> Forward advance = (residual laggard tail + August melt) × seats-freed-per-departure ÷ <strong>acceptance rate</strong>. The tail is drawn from what <em>survived both draws</em>: of Pillow's {k.remainder.toLocaleString()} laggards, ~<strong>{k.poolSpent.toLocaleString()}</strong> were consumed producing the observed {k.totalAdvance.toLocaleString()}-deep total advance since Jul 8, leaving ~{k.poolLeft.toLocaleString()}. August melt is ordinary summer attrition on the ~{Math.round(k.meltBase / 1000)}k funded base ({k.researchMeltPct}–{k.aggressiveMeltPct}%): took the ESA, then withdrew, moved, or never showed. Each departure frees dollars two ways (a full <strong>opt-out</strong> frees ~$10,474, a <strong>$2,000 homeschool</strong> drop frees ~$8,474; observed ~23/77 mix → {k.freedRatio} seats/departure). The ÷ acceptance is the OFFER stretch: a deep family who <strong>declines</strong> frees no money but passes the same seat deeper for free, so the offer travels 1/acceptance as deep. <strong>Low</strong> ({k.researchChurnPct}% tail, {k.researchMeltPct}% melt, {k.researchDeclinePct}% decline) → ~<strong>{k.researchTerminal.toLocaleString()}</strong>; <strong>likely</strong> ({k.realisticChurnPct}% / {k.realisticMeltPct}% / {k.realisticDeclinePct}%) → ~<strong>{k.realisticTerminal.toLocaleString()}</strong>; <strong>high</strong> ({k.aggressiveChurnPct}% / {k.aggressiveMeltPct}% / {k.aggressiveDeclinePct}%) → ~<strong>{k.aggressiveTerminal.toLocaleString()}</strong>. <strong>Likely and high now both reach our {YOUR_POS.lo.toLocaleString()}; only low misses.</strong> That is the reverse of the Jul 29 model, and it is the frontier that moved, not us.</div>
           <div><strong>Why the back-out matters.</strong> A high-decline scenario needed <em>fewer</em> departures to produce the observed {k.totalAdvance.toLocaleString()}-deep advance — each freed seat travelled further before it stuck — so it leaves <em>more</em> tail in reserve. A low-decline scenario burned more pool to get here and has less left. Tying the levers to the observation this way stops a scenario from spending more of the {k.remainder.toLocaleString()} than ever existed, which is the error that makes naive &ldquo;apply the same attrition % to every wave&rdquo; projections run away.</div>
           <div className="pt-1"><strong>Scoring our own Jul 29 call — we were too pessimistic, and it is worth being clear about why.</strong> Three weeks ago this model said the likely case landed ~42,100 and put <em>P(reach us)</em> near 2%. The frontier is now ~{k.frontierNow.toLocaleString()}, past that likely case and three weeks early. The error was structural, not arithmetic: we treated Pillow's 18,000 not-opted-in as a <em>hard ceiling on all future fuel</em>, when in fact August produced departures from the <em>already-funded</em> base at a rate well above the 0.5–1.5% melt we allowed — families who took an ESA and then did not show up when school actually started. The lesson for the next refresh: a published pool count bounds <em>that pool</em>, not the total fuel, and school-start melt is a bigger, later term than a summer model wants to believe. The Facebook &ldquo;each wave unlocks another 34%&rdquo; claim we argued down on Jul 29 (it projected ~50,490) has landed closer to the truth than our central case did — its double-counting critique still stands on the arithmetic, but its <em>conclusion</em> was better calibrated than ours.</div>
           <div><strong>Watch — the grind, and the possibility of a third wave.</strong> We said on Jul 29 that the Jul 15 deadline was the last cliff. The Aug 11 wave proves that was wrong: ~{k.recentAdvance.toLocaleString()} more positions cleared with no deadline behind them. What remains is the Jul 31 confirmation tail plus school-start melt, and the pool is genuinely thinner now (~{k.poolLeft.toLocaleString()} left) — but we have now under-called two waves in a row, so treat the low case as a floor rather than a forecast. It all lands <em>after</em> the Jun 30 penalty-free withdrawal deadline, so the withdrawal call had to be made without knowing any of this.</div>
@@ -1875,7 +1911,7 @@ const TefaView = () => {
           <p className="text-[10px] text-tefa-body/45 mt-2">
             Each row is the OFFER frontier — the global waitlist position an offer reaches given that residual-tail share, August melt rate, and deep-waitlist decline rate.
             Tier 2 cleared at {T2_AT_LOTTERY.toLocaleString()}; our band is {BAND_LO.toLocaleString()}–{BAND_HI.toLocaleString()} and our own seat is {YOUR_POS.lo.toLocaleString()}–{YOUR_POS.hi.toLocaleString()}.
-            All three share the observed track through Jul 29 ({k.frontierNow.toLocaleString()}, unofficial); they differ only in what happens through August.
+            All three share the observed track through Aug 11 ({k.frontierNow.toLocaleString()}, unofficial &amp; triangulated); they differ only in what happens over the rest of August.
           </p>
         </div>
       </section>
