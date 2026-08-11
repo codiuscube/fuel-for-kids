@@ -78,40 +78,36 @@ const TEFA = {
 };
 
 // ---------------------------------------------------------------------------
-// Our CURRENT standing, from the personal Odyssey update on Jul 29, 2026:
-// "your range is 15,001 – 20,000". Per the waitlist mechanics, the displayed
-// range is our ORIGINAL position minus the depth the cascade has funded — so this
-// is the first datum that pins our original position instead of assuming it.
+// OUR ORIGINAL POSITION — 49,001 – 50,000. PINNED (Cody, Aug 11, 2026).
 //
-// The arithmetic:  original = displayed range + depth already pulled ahead of us.
-// Against the Jul 29 frontier (~34,000): 15,001–20,000 + 34,000 = 49,001–54,000,
-// and the May 13 Comptroller text capped our band at 50,000 — so the top of that
-// interval is truncated and we land at 49,001–50,000: the very BOTTOM of our band.
+// This used to be DERIVED each refresh as (Odyssey range + credited depth), which made
+// the whole model swing every time the frontier estimate moved. It is now an ANCHORED
+// CONSTANT, and the derivation runs the other way: the frontier is the observed
+// quantity, and the gap still ahead of us is what falls out of it.
 //
-// Why not the softer 45,001–50,000 read (which a 30,000 credit would give)? Because
-// the displayed range is what the state says is still AHEAD of us, and it is the one
-// datum specific to our family. Anchoring on it avoids having to first settle whether
-// the true depth is the community's 34,000 or the ~30,000 implied by a 45k position —
-// the gap is 15,001–20,000 either way. Taking the optimistic edge instead would pair a
-// 34,000 frontier with a position derived from a 30,000 credit, which is incoherent.
-//
-// A staleness check rules out the hopeful alternative: if the display still reflected
-// Pillow's Jul 11 depth (~17,000), our original would be 32,001–37,000 — but a 34,000
-// frontier would then already have PASSED us and Odyssey would be showing ~0 ahead,
-// not 15,001–20,000. The display cannot be both lagging and showing that range, so the
-// credited depth really is ~30–34k and we are at the deep end regardless.
+// How it was originally established (Jul 29, 2026, and unchanged since): the personal
+// Odyssey update read "15,001 – 20,000" — that many families still AHEAD of us. Added
+// to the Jul 29 frontier (~34,000) that gives 49,001–54,000, and the May 13 Comptroller
+// text capped our band at 50,000, truncating it to 49,001–50,000: the very BOTTOM of
+// our band. See ODYSSEY_READING below for the confirmation evidence.
 // ---------------------------------------------------------------------------
-const CURRENT_RANGE = { lo: 15001, hi: 20000, asOf: '2026-07-29' };
-// Depth already pulled ahead of us — the Jul 29 frontier (kept in sync with
-// T2_OBSERVATIONS' last entry below; asserted at load so the two can't drift).
-const CREDITED_DEPTH = 34000;
-// Cody's own original lottery position — DERIVED from the Jul 29 personal range, then
-// truncated by the May 13 band ceiling (the chart's y-axis is original position, so the
-// frontier must reach THIS to fund us). → 49,001 – 50,000.
-const YOUR_POS = {
-  lo: Math.min(CURRENT_RANGE.lo + CREDITED_DEPTH, TEFA.bandHi),
-  hi: Math.min(CURRENT_RANGE.hi + CREDITED_DEPTH, TEFA.bandHi),
-};
+const YOUR_POS = { lo: 49001, hi: 50000 };
+
+// The last personal Odyssey reading. NOT an input to YOUR_POS any more — it is the
+// CHECK. When a fresh reading comes in, put it here: the implied gap computed from the
+// frontier (CURRENT_GAP, below) should agree with it, and the load-time guard warns if
+// the reading is older than the newest frontier observation.
+//
+// Corroboration for the pin, from the Aug 10–11 TEFA Parents threads — two families who
+// were at OUR EXACT Odyssey range in the same week, both self-placing at the deep end of
+// the same 30–50k band:
+//   • Devyn Shaffer  — "was 15-20 last week also and I just checked and am at 3-4k now …
+//                       we were also initially 30-50k so I suspect we were closer to the
+//                       50k end." Same start, so our implied 3,001–4,000 gap should match
+//                       theirs — and it does, exactly.
+//   • Shawna Turk    — "30-50k but by calculations, we were 47-50k. Still on waitlist."
+// Independent families converging on the same deep-end placement is why the pin holds.
+const ODYSSEY_READING = { lo: 15001, hi: 20000, asOf: '2026-07-29' };
 
 // ---------------------------------------------------------------------------
 // Confirmed program budget — Travis Pillow (Comptroller spokesperson),
@@ -353,7 +349,26 @@ const T2_OBSERVATIONS = [
   // original position). Flagged `unofficial` — replace with the Comptroller figure
   // when it publishes.
   { date: '2026-07-29', frontier: 34000, unofficial: true },
+  // Aug 11: a SECOND big wave, with no deadline behind it. Still unofficial — the
+  // Comptroller has published nothing since late June — but this point is TRIANGULATED
+  // from four independent readings in the Aug 10–11 TEFA Parents threads rather than
+  // resting on one person's number (see AUG11_TRIANGULATION for the full working):
+  //   1. Devyn Shaffer  — orig 30–50k "closer to the 50k end", now 3–4k ahead  → ~45–46k
+  //   2. Mary Foreman   — orig 50,001–100,000, gap 20–25k as of Jul 31         → validates 34k
+  //   3. Hilda Soto     — orig 50k–100k, now 5–10k ahead                       → ~45–48k
+  //   4. The funded/unfunded boundary: every 30–50k original who does NOT self-place at
+  //      the deep end got funded Aug 10–11 (Savannah Elery, Jenn Graham, Chelsea Krek,
+  //      Marie Alexa, Jamie Pfent, Ashleigh Bomar), while the deep-end 30–50k families
+  //      (Devyn, Shawna Turk, Amanda Mae Morris) did NOT — so the frontier is cutting
+  //      through the deep end of the 30–50k band right now                     → ~45–47k
+  // Four methods converge on 46,000 (band 44,000–48,000). Rate: ~1,000/day since Jul 29.
+  { date: '2026-08-11', frontier: 46000, unofficial: true, triangulated: true },
 ];
+
+// The spread across those four methods — used as the LOW/HIGH anchor for the scenario
+// lines, so the projection's uncertainty starts from the real disagreement in the
+// evidence rather than from a guessed forward rate.
+const AUG11_TRIANGULATION = { lo: 44000, central: 46000, hi: 48000 };
 
 // Frontier for an observation, whichever way it was recorded.
 const frontierOf = (o) => (o.frontier != null ? o.frontier : T2_AT_LOTTERY - o.t2Remaining);
@@ -361,20 +376,38 @@ const frontierOf = (o) => (o.frontier != null ? o.frontier : T2_AT_LOTTERY - o.t
 // Frontier reached so far = how deep the cascade has funded down the global list.
 // Future advance is added ON TOP of this from the 18k not-opted-in pool, so it's the base
 // the projection and the simulator both build from.
-const FRONTIER_NOW = frontierOf(T2_OBSERVATIONS[T2_OBSERVATIONS.length - 1]); // 34,000 (Jul 29, unofficial)
-// The advance the Jul 15 deadline shakeout actually produced (16,916 → 34,000).
-const FRONTIER_PREV = frontierOf(T2_OBSERVATIONS[T2_OBSERVATIONS.length - 2]);  // 16,916 (Jul 8)
-const JUL29_ADVANCE = FRONTIER_NOW - FRONTIER_PREV;                             // ~17,084
+const FRONTIER_NOW = frontierOf(T2_OBSERVATIONS[T2_OBSERVATIONS.length - 1]); // 46,000 (Aug 11, triangulated)
+// The advance since the previous observation (34,000 Jul 29 → 46,000 Aug 11).
+const FRONTIER_PREV = frontierOf(T2_OBSERVATIONS[T2_OBSERVATIONS.length - 2]);  // 34,000 (Jul 29)
+const RECENT_ADVANCE = FRONTIER_NOW - FRONTIER_PREV;                            // ~12,000 in 13 days
+// The Jul 15 shakeout advance, kept for the fuel back-out below (16,916 → 34,000).
+const JUL29_ADVANCE = 34000 - 16916;                                            // ~17,084
 
-// YOUR_POS is derived by adding CREDITED_DEPTH to the Odyssey range, so that depth must
-// stay equal to the frontier we chart. If a future observation moves the frontier without
-// a matching Odyssey update, these drift apart and our position silently shifts — which is
-// exactly the incoherence (34,000 frontier vs 30,000-implied position) this replaced.
-if (CREDITED_DEPTH !== FRONTIER_NOW) {
+// THE GAP — how many families are still ahead of us. Now DERIVED (position is pinned,
+// frontier is observed), which is the inverse of the old arrangement. Against the
+// triangulated 46,000 this is 3,001–4,000 — and Devyn Shaffer, who started this week at
+// our exact 15,001–20,000 range, independently reports "3-4k now". The model and the
+// one directly comparable family agree without being fitted to each other.
+const CURRENT_GAP = {
+  lo: Math.max(0, YOUR_POS.lo - FRONTIER_NOW),
+  hi: Math.max(0, YOUR_POS.hi - FRONTIER_NOW),
+};
+// Same gap at the edges of the triangulation band — the honest spread on "how close".
+const GAP_RANGE = {
+  best: Math.max(0, YOUR_POS.lo - AUG11_TRIANGULATION.hi),   // 1,001 if the frontier is 48,000
+  worst: Math.max(0, YOUR_POS.hi - AUG11_TRIANGULATION.lo),  // 6,000 if it is only 44,000
+};
+
+// Staleness guard. The Odyssey reading is no longer an INPUT, so a stale one can't
+// corrupt the position — but it does stop being a useful check, and the implied gap is
+// then unconfirmed. Warn so a refreshed reading gets entered rather than silently
+// leaving CURRENT_GAP resting on the triangulation alone.
+if (Date.parse(ODYSSEY_READING.asOf) < Date.parse(T2_OBSERVATIONS[T2_OBSERVATIONS.length - 1].date)) {
   console.warn(
-    `[TEFA] CREDITED_DEPTH (${CREDITED_DEPTH}) != FRONTIER_NOW (${FRONTIER_NOW}). ` +
-    `YOUR_POS is derived from the Odyssey range + credited depth; update CURRENT_RANGE ` +
-    `from a fresh Odyssey reading, or set CREDITED_DEPTH to match the new frontier.`
+    `[TEFA] Odyssey reading (${ODYSSEY_READING.asOf}) is older than the newest frontier ` +
+    `observation (${T2_OBSERVATIONS[T2_OBSERVATIONS.length - 1].date}). YOUR_POS is pinned so it ` +
+    `is unaffected, but the implied gap of ${CURRENT_GAP.lo.toLocaleString()}–${CURRENT_GAP.hi.toLocaleString()} ` +
+    `is currently UNCONFIRMED — update ODYSSEY_READING when a fresh range comes in.`
   );
 }
 
@@ -382,14 +415,16 @@ if (CREDITED_DEPTH !== FRONTIER_NOW) {
 // OFFER frontier, not the funded-seat count — and it runs much deeper, because a deep-Tier-3
 // family who is offered a freed seat and says NO frees no money; it just passes the SAME
 // dollars to the next position on the list (the never-activation stretch). So, rebuilt on
-// the Jul 29 anchor (34,000) with the deadline pool now largely spent:
+// the Aug 11 anchor (46,000) with the deadline pool now mostly spent:
 //
 //   departures     = tailShare × (what's LEFT of the 18k)  +  augAttrition × funded base
 //   funded seats   = departures × seats-per-departure          (how many seats get filled)
-//   OFFER frontier = 34,000 + funded seats ÷ acceptance        (how deep an offer travels)
+//   OFFER frontier = 46,000 + funded seats ÷ acceptance        (how deep an offer travels)
 //
-// where "what's LEFT of the 18k" is backed out of the observation itself:
-//   departures already spent = (17,084 advance × acceptance) ÷ seats-per-departure
+// where "what's LEFT of the 18k" is backed out of the observations themselves — and note it
+// is backed out of the FULL advance since the pool was counted, both draws, not just the
+// Jul 15 one, or the August fuel would be credited twice:
+//   departures already spent = (29,084 advance × acceptance) ÷ seats-per-departure
 //
 // Three honest unknowns, each a scenario lever:
 //   1. `tailShare`  — of the laggards who survived the Jul 15 sweep, what slice still gets
@@ -404,12 +439,13 @@ if (CREDITED_DEPTH !== FRONTIER_NOW) {
 //
 // The three lines pair the levers along one "how favorable to deep waitlisters" axis (a soft
 // year has BOTH more awardees walking away AND more deep offerees declining):
-//   LOW    (15% tail, 0.5% melt, 35% decline) → OFFER ≈ 37,000  (short of us by ~8,000)
-//   LIKELY (25% tail, 1.0% melt, 50% decline) → OFFER ≈ 42,100  (short of us by ~7,000)
-//   HIGH   (35% tail, 1.5% melt, 65% decline) → OFFER ≈ 52,900  (CLEARS our 49,001 seat)
-// Every scenario is now deep inside our 30,001–50,000 band — the band question is settled.
-// The live question is the last ~15,000–20,000 positions between the frontier and OUR seat,
-// and only the high case covers it. `optOutShare` splits each departure between full opt-outs
+//   LOW    (15% tail, 0.5% melt, 35% decline) → OFFER ≈ 47,300  (short of us by ~1,700)
+//   LIKELY (25% tail, 1.0% melt, 50% decline) → OFFER ≈ 51,200  (CLEARS our 49,001 by ~2,200)
+//   HIGH   (35% tail, 1.5% melt, 65% decline) → OFFER ≈ 60,900  (clears comfortably)
+// THE CONCLUSION FLIPPED. Under the Jul 29 anchor only the high case reached us; now only the
+// LOW case misses, and it misses by ~1,700 instead of ~8,000. Our position did not move — the
+// frontier did, ~12,000 deeper in 13 days. The live question is the last ~3,000–4,000 positions
+// between the frontier and OUR seat. `optOutShare` splits each departure between full opt-outs
 // (~$10,474 freed) and $2,000 homeschool downgrades (~$8,474) — held at the observed 23/77
 // mix; new fills stay at the observed 33% homeschool blend (~$7,678/seat).
 // Scenarios, not forecasts; after Aug 31 each drifts on small residual churn.
@@ -441,13 +477,30 @@ const RESEARCH = {
 
 // Shared fuel math, used by both the projection and the Monte Carlo so the two can't drift.
 // Back-solve how much of the 18k the observed Jul 29 advance consumed, then price what's left.
-const spentDepartures = (accept, spd) => (JUL29_ADVANCE * accept) / spd;
+// The pool has been drawn down by BOTH big draws, not just the Jul 15 shakeout — the
+// Aug 11 wave carried another ~12,000. Back the consumption out of the FULL advance
+// since the Jul 11 pool count (16,916 → 46,000 = ~29,084), or the model would credit
+// the August fuel twice and over-project the terminal.
+const TOTAL_ADVANCE_SINCE_POOL_COUNT = FRONTIER_NOW - 16916;   // ~29,084 (Jul 8 → Aug 11)
+const spentDepartures = (accept, spd) => (TOTAL_ADVANCE_SINCE_POOL_COUNT * accept) / spd;
 const remainingPool = (accept, spd) => Math.max(0, CHURN_POOL - spentDepartures(accept, spd));
-// Funded base the August melt applies to: the Jul 1 cohort plus the seats the Jul 29 draw filled.
-const fundedBase = (accept) => FUNDED_JULY1 + JUL29_ADVANCE * accept;
-// Forward OFFER advance beyond the Jul 29 frontier.
+// Funded base the August melt applies to: the Jul 1 cohort plus the seats both draws filled.
+const fundedBase = (accept) => FUNDED_JULY1 + TOTAL_ADVANCE_SINCE_POOL_COUNT * accept;
+// Forward OFFER advance beyond the Aug 11 frontier.
 const forwardAdvance = (tailShare, augRate, accept, spd) =>
   ((tailShare * remainingPool(accept, spd) + augRate * fundedBase(accept)) * spd) / accept;
+
+// Anchor uncertainty. The dominant unknown right now is not the forward fuel rate — it is
+// WHERE THE FRONTIER ACTUALLY IS, because the Aug 11 point is triangulated from community
+// reports rather than published. This is deliberately NOT applied to the three projection
+// lines: the chart's observed series ends at the central 46,000, so shifting a line's
+// terminal without shifting its anchor would draw a low case that dips below a point we
+// have already plotted. It belongs in the Monte Carlo instead, where the anchor can be
+// drawn jointly with the fuel levers — see ANCHOR_SD in the simulator.
+const ANCHOR_BAND = {
+  lo: AUG11_TRIANGULATION.lo - AUG11_TRIANGULATION.central,   // −2,000
+  hi: AUG11_TRIANGULATION.hi - AUG11_TRIANGULATION.central,   // +2,000
+};
 
 // Chart window: from the lottery (frontier 0) through end-August. The big waves
 // (Tier 2 clear, reserve, the Jul 15 deadline shakeout) are done by ~Aug 15; after
@@ -455,7 +508,7 @@ const forwardAdvance = (tailShare, augRate, accept, spd) =>
 // `today` anchors the "Today" marker to a fixed date so a screenshot of the
 // chart reads the same for everyone (the artifact gets posted/shared) — bump it
 // as the analysis is refreshed, rather than letting it drift with the viewer's clock.
-const FRONTIER_WINDOW = { chartStart: '2026-05-04', today: '2026-07-29', jul15: '2026-07-15', jul29: '2026-07-29', end: '2026-09-15' };
+const FRONTIER_WINDOW = { chartStart: '2026-05-04', today: '2026-08-11', jul15: '2026-07-15', jul29: '2026-07-29', end: '2026-09-15' };
 const WAVES_END = '2026-08-31';   // August melt runs the whole month; after this it's a trickle
 const POST_DRIFT = 25;            // seats/day of small residual attrition after Aug 31 (realistic trickle)
 
@@ -582,37 +635,43 @@ function buildCascadeProjection({
     return { fn: buildLine(scaled, wavesEnd), terminal: newTerminal };
   };
 
-  // All three share ONE shape from the Jul 29 anchor (34,000 — the deadline shakeout has fired
-  // and Tier 2 is cleared): a fast early-August stretch as declines from the big Jul 29 batch
-  // recycle down the list, then a steady grind on the residual laggard tail and August melt,
-  // flattening to the terminal by Aug 31. There is no cliff left — the Jul 15 deadline WAS the
-  // cliff. They differ in how much tail survives and how many deep offerees decline. fitLine
-  // pins each curve to its exact terminal.
+  // All three now run from the Aug 11 anchor (~46,000 — a SECOND big wave, with no deadline
+  // behind it, cutting through the deep end of the 30–50k originals). The shape is a
+  // decelerating grind: the wave that carried ~12,000 in 13 days cannot hold that rate,
+  // because the pool it draws from is finite and school has already started. Each line
+  // tapers to its terminal by Aug 31. They differ in how much laggard tail survived the two
+  // draws and how many deep offerees decline. fitLine pins each curve to its exact terminal.
+  //
+  // NOTE the headline change: the LIKELY case now CLEARS our 49,001 seat. Under the Jul 29
+  // model it missed by ~7,000. Nothing about our position moved — the frontier did.
 
-  // LIKELY — 25% tail, 1.0% melt, 50% decline → OFFER ~42,100 (short of our 49,001 by ~7,000).
+  // LIKELY — 25% tail, 1.0% melt, 50% decline → OFFER ~51,200 (CLEARS 49,001 by ~2,200).
   const real_ = fitLine([
-    { t: tL, f: fL },                              // Jul 29 anchor (34,000)
-    { t: dayOf('2026-08-05'), f: 36400 },          // declines from the Jul 29 batch recycle fast
-    { t: dayOf('2026-08-15'), f: 39800 },          // laggard tail swept + first-week-of-school melt
-    { t: wavesEnd, f: defRealT },                  // grind to ~42,100 by Aug 31
+    { t: tL, f: fL },                              // Aug 11 anchor (46,000)
+    { t: dayOf('2026-08-18'), f: 48600 },          // wave continues but decelerating
+    { t: dayOf('2026-08-25'), f: 50300 },          // crosses our 49,001 seat in this window
+    { t: wavesEnd, f: defRealT },                  // taper to ~51,200 by Aug 31
   ], defRealT, realistic);
   const realFn = real_.fn, realTerminal = real_.terminal;
 
-  // HIGH — 35% tail, 1.5% melt, 65% decline → OFFER ~52,900 (CLEARS our 49,001 seat).
+  // HIGH — 35% tail, 1.5% melt, 65% decline → OFFER ~60,900 (clears 49,001 in mid-August).
   const agg_ = fitLine([
-    { t: tL, f: fL },                              // Jul 29 anchor (34,000)
-    { t: dayOf('2026-08-05'), f: 39500 },          // heavy decline stretch off the Jul 29 batch
-    { t: dayOf('2026-08-15'), f: 46500 },          // crosses our position mid-August
-    { t: wavesEnd, f: defAggT },                   // ~52,900 by Aug 31
+    { t: tL, f: fL },                              // Aug 11 anchor (46,000)
+    { t: dayOf('2026-08-18'), f: 52000 },          // heavy decline stretch; crosses us this week
+    { t: dayOf('2026-08-25'), f: 57500 },          // deep offerees keep declining, offer runs on
+    { t: wavesEnd, f: defAggT },                   // ~60,900 by Aug 31
   ], defAggT, aggressive);
   const aggFn = agg_.fn, aggTerminal = agg_.terminal;
 
-  // LOW — 15% tail, 0.5% melt, 35% decline → OFFER ~37,000 (deep in our band, short of us).
+  // LOW — 15% tail, 0.5% melt, 35% decline → OFFER ~47,300. This is now the ONLY scenario
+  // that misses us, and it misses by ~1,700 rather than the ~8,000 of the Jul 29 model:
+  // the Aug 11 wave largely exhausted the laggard pool at this scenario's high acceptance,
+  // so almost nothing is left to carry the frontier the last stretch.
   const research_ = fitLine([
-    { t: tL, f: fL },                              // Jul 29 anchor (34,000)
-    { t: dayOf('2026-08-05'), f: 34900 },          // little stretch; most offerees accept
-    { t: dayOf('2026-08-15'), f: 36100 },          // thin tail, light melt
-    { t: wavesEnd, f: defResearchT },              // ~37,000 by Aug 31
+    { t: tL, f: fL },                              // Aug 11 anchor (46,000)
+    { t: dayOf('2026-08-18'), f: 46700 },          // wave stalls out; pool nearly spent
+    { t: dayOf('2026-08-25'), f: 47100 },          // thin tail, light melt
+    { t: wavesEnd, f: defResearchT },              // ~47,300 by Aug 31 — stops just short of us
   ], defResearchT, research);
   const researchFn = research_.fn, researchTerminal = research_.terminal;
 
@@ -637,7 +696,7 @@ function buildCascadeProjection({
   }
 
   // Frontier reached at the dates the table below the chart reports.
-  const TABLE_DATES = ['2026-07-08', '2026-07-29', '2026-08-05', '2026-08-15', '2026-08-31', '2026-09-15'];
+  const TABLE_DATES = ['2026-07-08', '2026-07-29', '2026-08-11', '2026-08-18', '2026-08-25', '2026-08-31', '2026-09-15'];
   const sampleAt = (fn) => TABLE_DATES.map((d) => Math.round(fn(dayOf(d))));
   const projectionTable = {
     dates: TABLE_DATES,
@@ -652,17 +711,29 @@ function buildCascadeProjection({
     asOfUnofficial: !!t2Observations[t2Observations.length - 1].unofficial,
     frontierNow: fL,
     frontierPrev: FRONTIER_PREV,
-    jul29Advance: JUL29_ADVANCE,
+    jul29Advance: JUL29_ADVANCE,        // the Jul 15 shakeout (16,916 → 34,000)
+    recentAdvance: RECENT_ADVANCE,      // the Aug 11 wave (34,000 → 46,000)
+    totalAdvance: TOTAL_ADVANCE_SINCE_POOL_COUNT,
+    anchorLo: AUG11_TRIANGULATION.lo,
+    anchorHi: AUG11_TRIANGULATION.hi,
     // Tier 2 is CLEARED — the frontier is this far PAST the 20,383 Tier 2 backlog.
     intoTier3: fL - T2_AT_LOTTERY,
     // Positions still between the frontier and our own seat — the only gap that matters now.
     // Anchored on the Odyssey range directly (the datum specific to us), not on a position
     // derived from the disputed frontier number. Equal to YOUR_POS.lo − frontier by
     // construction, but stated this way so the robust source is obvious.
-    gapToUs: CURRENT_RANGE.lo,
-    gapToUsHi: CURRENT_RANGE.hi,
-    currentRangeLo: CURRENT_RANGE.lo,
-    currentRangeHi: CURRENT_RANGE.hi,
+    // Positions still between the frontier and our seat. Now DERIVED from the pinned
+    // position minus the observed frontier (the inverse of the old arrangement), and
+    // independently matched by Devyn Shaffer's "3-4k now" from our exact starting range.
+    gapToUs: CURRENT_GAP.lo,
+    gapToUsHi: CURRENT_GAP.hi,
+    gapBest: GAP_RANGE.best,        // if the frontier is really at the 48,000 edge
+    gapWorst: GAP_RANGE.worst,      // if it is only at 44,000
+    // The last personal Odyssey reading, and whether it still confirms the derived gap.
+    odysseyLo: ODYSSEY_READING.lo,
+    odysseyHi: ODYSSEY_READING.hi,
+    odysseyAsOf: ODYSSEY_READING.asOf,
+    odysseyStale: Date.parse(ODYSSEY_READING.asOf) < Date.parse(t2Observations[t2Observations.length - 1].date),
     optOutsSoFar,
     optOutPctNow: +(100 * optOutsSoFar / ACTIVE_AWARDS).toFixed(1), // ~2.8% (Jun 23)
     funded: FUNDED_JULY1,
@@ -712,7 +783,7 @@ const fmtChartDate = (ts) => {
   const d = new Date(ts);
   return `${MONTHS_SHORT[d.getUTCMonth()]} ${d.getUTCDate()}`;
 };
-const FRONTIER_TICKS = ['2026-05-04', '2026-06-01', '2026-07-01', '2026-07-29', '2026-08-15', '2026-08-31', '2026-09-15'].map(Date.parse);
+const FRONTIER_TICKS = ['2026-05-04', '2026-06-01', '2026-07-01', '2026-07-29', '2026-08-11', '2026-08-31', '2026-09-15'].map(Date.parse);
 
 // Plain-language likelihood of the cascade reaching each global waitlist band,
 // drawn from the published bands analysis. ourBand flags the family's bucket.
@@ -722,36 +793,36 @@ const BAND_OUTLOOK = [
     scope: 'positions 1 – 20,383',
     call: 'DONE',
     tone: 'good',
-    note: 'Settled. The Jul 29 draw carried the frontier to ~34,000, roughly 13,600 positions PAST the 20,383 Tier 2 backlog. Tier 2 is fully cleared and every award now going out is a Tier 3 award — the gate that stood in front of us all summer is behind us.',
+    note: 'Settled since Jul 29, and now far behind the frontier — at ~46,000 the cascade is roughly 25,600 positions PAST the 20,383 Tier 2 backlog. Every award going out is a Tier 3 award.',
   },
   {
     band: '20,384 – 30,000',
     scope: 'early / mid Tier 3',
     call: 'DONE',
     tone: 'good',
-    note: 'Also passed on Jul 29. These positions were the whole question in the Jul 11 model, which topped out near 37,900 even if all 18,000 laggards walked. The deadline shakeout cleared them outright.',
+    note: 'Also passed on Jul 29. These positions were the whole question in the Jul 11 model, which topped out near 37,900 even if all 18,000 laggards walked. The deadline shakeout cleared them outright — and the Aug 11 wave has since gone ~16,000 deeper still.',
   },
   {
-    band: '30,001 – 49,000',
+    band: '30,001 – 46,000',
     scope: 'our band, above our seat',
-    call: 'Reached / in reach',
+    call: 'DONE',
     tone: 'good',
-    note: 'The frontier is already inside our band at ~34,000, and every scenario runs deeper — the low case still lands ~37,000, the likely case ~42,100. Reaching the band is settled. What is NOT settled is the last stretch to our own position, which sits at the very bottom of it.',
+    note: 'Passed. The Aug 11 wave carried the frontier to ~46,000 — a second big draw with no deadline behind it. The Aug 10–11 community threads show exactly this boundary: families whose original was 30–50k are being funded right now (Savannah Elery, Jenn Graham, Chelsea Krek, Marie Alexa, Jamie Pfent, Ashleigh Bomar), while the ones who self-place at the DEEP end of that same band are not yet. The frontier is cutting through the last few thousand positions of our band as of today.',
   },
   {
     band: '49,001 – 50,000',
     scope: 'YOUR SEAT · the bottom of the band',
-    call: 'Unlikely — needs ~15,000 more; only the top of the high case',
-    tone: 'bad',
+    call: 'Live — ~3,000–4,000 to go; the likely case now clears',
+    tone: 'mid',
     ourBand: true,
-    note: 'Our Jul 29 Odyssey range of 15,001–20,000 is the number that matters, and it is the one datum specific to us: that many families are still AHEAD of us right now. Added to the ~34,000 frontier it puts our original position at 49,001–50,000 — the bottom of the band, not the 45,001 we assumed before the personal update. That extra ~4,000 matters: the likely case (~42,100) now misses by ~7,000 rather than ~2,900, and the model\'s 95th percentile (~47,800) still falls short of 49,001. Only the strongest runs — a fat laggard tail, heavy August melt AND a very high decline rate together — get there. A voucher this year is a genuine possibility but a clear minority one. Budget the full balance and treat it as upside, not plan.',
+    note: 'This is the headline change. Our position has NOT moved — it is still pinned at 49,001–50,000 — but the frontier has, from ~34,000 on Jul 29 to ~46,000 on Aug 11. That leaves roughly 3,001–4,000 families ahead of us, and the likely case now lands ~51,200, CLEARING our seat by ~2,200 (it missed by ~7,000 under the Jul 29 model). Only the low case still falls short, and it falls short by ~1,700 rather than ~8,000. The strongest single corroboration is Devyn Shaffer, who was at our exact 15,001–20,000 range the same week and independently reports being at "3-4k now" — the same gap our model derives without being fitted to it. Two honest cautions: the ~46,000 is triangulated from community reports, not published (the Comptroller has released nothing since late June), and the fuel is finite — the pool that carried this wave is most of the way spent. Do NOT spend the money before it arrives, but this is no longer a 2% tail event.',
   },
   {
     band: '50,001 +',
     scope: 'deeper Tier 3 / Tier 4',
-    call: 'Tail only',
-    tone: 'bad',
-    note: 'Past our seat entirely — barely further than us now, since we sit at the band floor. It takes the high case or better for the offer to travel beyond 50,000. Real in the upper tail, not a base case. Tier 4 does not move in Year 1.',
+    call: 'Plausible',
+    tone: 'mid',
+    note: 'Barely further than us, since we sit at the band floor — the likely case (~51,200) already crosses into it, and families originally in the 50k–100k band are being funded (Amy Bryant, Hilda Soto now 5–10k out). Tier 4 still does not move in Year 1.',
   },
 ];
 
@@ -810,12 +881,14 @@ const TIMELINE = [
     detail: 'Unofficial community number: roughly 34,000 have now been pulled off the waitlist, up from ~17,000 on Jul 11 — the Jul 15 deadline shakeout firing at full force. Two things changed. First, Tier 2 is CLEARED: the frontier is ~13,600 positions past the 20,383 Tier 2 backlog, so every award now going out is Tier 3. Second, our own Odyssey range moved to 15,001–20,000 — that many families are still AHEAD of us, which is the one datum specific to our family. Added to the ~34,000 frontier that puts our original position at 49,001–50,000, truncated by the May 13 band ceiling: the very bottom of our band, not the 45,001 we had assumed. Awaiting the official Comptroller figure to replace the unofficial 34,000.' },
   { date: 'Jul 31', iso: '2026-07-31', title: 'TEFA — enrollment confirmation deadline', kind: 'info',
     detail: 'Families swept in the Jul 15 sweep had to have enrollment confirmed by this date. Whatever laggard tail survives here is one of the two remaining fuel sources for the cascade; the other is ordinary August melt on the ~80,000 funded families.' },
-  { date: 'August', iso: '2026-08-15', title: 'TEFA — August melt is the remaining fuel', kind: 'info',
-    detail: 'No cliff left — the Jul 15 deadline was the cliff. From here the cascade advances on a slower grind: the residual laggard tail plus families who took an ESA and then withdrew, moved, or never showed up as school starts (0.5–1.5% of ~80,000). Every deep family who is offered a seat and declines passes it deeper for free, which is what stretches the offer toward us. Likely case lands ~42,100 by Aug 31 — about 7,000 short of our 49,001; only the top of the high case reaches us.' },
+  { date: 'Aug 11', iso: '2026-08-11', title: 'TEFA — second wave, frontier ~46,000; we are ~3,000–4,000 out', kind: 'info',
+    detail: 'A second big draw landed with no deadline behind it, carrying the frontier from ~34,000 to roughly 46,000 in under two weeks. Unofficial, but triangulated four ways from the Aug 10–11 community threads rather than resting on one number: Devyn Shaffer (our exact 15,001–20,000 range last week) now reads 3–4k; Hilda Soto, originally 50k–100k, now reads 5–10k; Mary Foreman\'s Jul 31 gap independently re-confirms the old 34,000 anchor; and the funded/unfunded split shows the cascade cutting through the deep end of the 30–50k originals right now. Our position has not moved — still 49,001–50,000 — so the gap is now about 3,001–4,000, matching Devyn\'s reading exactly. The likely case now CLEARS our seat (~51,200 by Aug 31) where it missed by ~7,000 three weeks ago. Two cautions: no Comptroller figure has been published since late June, and the laggard pool that fuelled this wave is most of the way spent.' },
+  { date: 'Late August', iso: '2026-08-25', title: 'TEFA — the window where the likely case crosses us', kind: 'info',
+    detail: 'The remaining fuel is the residual laggard tail plus ordinary melt on the ~87,000 funded base as school starts (0.5–1.5%): took the ESA, then withdrew, moved, or never showed. Every deep family offered a seat who declines passes it deeper for free, which is what stretches the offer. Likely case crosses our 49,001 in the Aug 18–25 window and lands ~51,200 by Aug 31; the low case stalls at ~47,300, about 1,700 short. Watch email AND text — awards land at odd hours (one family in the Aug 10 thread was funded at 9pm).' },
   { date: 'Oct 1', iso: '2026-10-01', title: 'TEFA 2nd installment (if funded)', kind: 'info',
-    detail: 'Only relevant if a waitlist offer reached us and we opted in. Not expected in Year 1.' },
+    detail: 'Only relevant if a waitlist offer reached us and we opted in — which, as of the Aug 11 re-anchor, is now the likely case rather than a long shot. Still not money to spend before it lands.' },
   { date: 'Feb 1', iso: '2027-02-01', title: 'TEFA final installment (if funded)', kind: 'info',
-    detail: 'Final 50% of a TEFA award, if one ever arrives. Not expected in Year 1.' },
+    detail: 'Final 50% of a TEFA award, if one arrives.' },
 ];
 
 // Confirmed payment plan: ten equal FACTS drafts starting July 6. Amounts are
@@ -1081,24 +1154,29 @@ const NowView = ({ balanceDue, perStudent, setTab }) => {
       {/* TEFA outlook — the whole modeling story, in one honest card */}
       <section className="bg-amber-50 rounded-xl shadow-md border border-amber-300 p-6">
         <h2 className="text-lg font-bold text-amber-800 flex items-center gap-2 mb-2">
-          <AlertCircle size={20} /> TEFA outlook: still budget for no voucher — but we are much closer than we were
+          <AlertCircle size={20} /> TEFA outlook: we are now ~{k.gapToUs.toLocaleString()}–{k.gapToUsHi.toLocaleString()} away — the likely case reaches us
         </h2>
         <p className="text-sm text-amber-900/90 mb-3">
           All three kids are <strong>{TEFA.tier}</strong> and <strong>waitlisted</strong> in band{' '}
-          <strong>{TEFA.band}</strong> (texted to us {TEFA.notifiedOn}). On <strong>Jul 29</strong> roughly{' '}
-          <strong>34,000</strong> were pulled off the waitlist (unofficial) — the Jul 15 deadline shakeout firing hard.
-          <strong> Tier 2 is cleared</strong>, and our own Odyssey range moved to{' '}
-          <strong>{CURRENT_RANGE.lo.toLocaleString()}–{CURRENT_RANGE.hi.toLocaleString()}</strong> — that many families are still{' '}
-          <em>ahead</em> of us, which puts our original position at{' '}
-          <strong>{YOUR_POS.lo.toLocaleString()}–{YOUR_POS.hi.toLocaleString()}</strong>: the bottom of our band.
+          <strong>{TEFA.band}</strong> (texted to us {TEFA.notifiedOn}); our position inside it is pinned at{' '}
+          <strong>{YOUR_POS.lo.toLocaleString()}–{YOUR_POS.hi.toLocaleString()}</strong>, the bottom of the band. That has
+          not changed. What changed is the <em>frontier</em>: ~34,000 on Jul 29, and roughly{' '}
+          <strong>{FRONTIER_NOW.toLocaleString()}</strong> as of <strong>Aug 11</strong> after a second big wave with no
+          deadline behind it. So the families still ahead of us number about{' '}
+          <strong>{k.gapToUs.toLocaleString()}–{k.gapToUsHi.toLocaleString()}</strong>, down from 15,001–20,000 two weeks ago.
+        </p>
+        <p className="text-sm text-amber-900/90 mb-3">
+          <strong>The conclusion flipped.</strong> The likely case now lands ~{k.realisticTerminal.toLocaleString()} by Aug 31 —
+          <strong> clearing our seat</strong> — where three weeks ago it missed by ~7,000. Only the low case still falls short,
+          by ~{(YOUR_POS.lo - k.researchTerminal).toLocaleString()}. A voucher this year has gone from a genuine long shot to
+          the <strong>more likely outcome than not</strong>.
         </p>
         <p className="text-sm text-amber-900/90">
-          There is no cliff left — the deadline <em>was</em> the cliff — but the cascade keeps grinding on the leftover
-          laggards and <strong>August melt</strong>, and every deep family who <strong>declines</strong> an offer passes it
-          deeper for free. The likely case lands ~42,100 by Aug 31, still <strong>~7,000 short</strong> of us, and even the
-          model&rsquo;s 95th percentile falls just short — only the top of the high case reaches us. So a voucher is a{' '}
-          <strong>real but clear minority</strong> outcome, and it lands <strong>after</strong> the Jun 30 withdrawal deadline
-          regardless. <strong>Budget the full balance; treat a voucher as upside.</strong>
+          <strong>Two cautions, and they matter.</strong> The ~{FRONTIER_NOW.toLocaleString()} is triangulated from community
+          reports — the Comptroller has published nothing since late June — and the laggard pool that fuelled this wave is
+          mostly spent, so the grind from here is slower. It also lands <strong>after</strong> the Jun 30 withdrawal deadline
+          regardless. <strong>Keep budgeting the full balance until the money actually arrives</strong> — but this is no
+          longer a tail-case hope.
         </p>
         <button
           onClick={() => setTab('tefa')}
@@ -1338,17 +1416,24 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, declineM
       // holdFlat pins seats/departure at the observed downgrade-heavy mix (~1.16); otherwise it
       // varies with the sampled opt-out share. Both exit routes (opt-out / $2,000) are in seatsPerDeparture.
       const spd = holdFlat ? seatsPerDeparture(OBS_OPTOUT_RATE, OBS_DOWNGRADE_RATE) : seatsPerDeparture(optShare, 1 - optShare);
+      // ANCHOR UNCERTAINTY. The Aug 11 frontier is triangulated from community reports, not
+      // published, so WHERE WE START is itself a random variable — and right now it is the
+      // single biggest driver of whether we clear 49,001. Draw it across the triangulation
+      // band (44,000–48,000), peaked at the central 46,000, on its own axis: how accurate the
+      // community reports are has nothing to do with how favorable the year turns out, so
+      // this must NOT ride the shared favorability factor.
+      const anchor = FRONTIER_NOW + mcPert(ANCHOR_BAND.lo, 0, ANCHOR_BAND.hi);
       // Same two-term fuel model as the chart (shared helpers, so they cannot drift): the residual
-      // laggard tail — drawn from what SURVIVED the Jul 29 draw, back-solved from the observed
+      // laggard tail — drawn from what SURVIVED both draws, back-solved from the observed
       // advance — plus August melt, all stretched by 1/acceptance since a decline passes the same
       // dollars deeper for free. RESERVE_SEATS is 0 (the appeals reserve fired Jul 8).
-      arr[i] = FRONTIER_NOW + forwardAdvance(tail, Math.max(0, augRate), acc, spd) + RESERVE_SEATS;
+      arr[i] = anchor + forwardAdvance(tail, Math.max(0, augRate), acc, spd) + RESERVE_SEATS;
     }
     const sorted = Array.from(arr).sort((a, b) => a - b);
     const pct = (p) => sorted[Math.floor(p * (sorted.length - 1))];
     const frac = (thr) => { let n = 0; for (const v of arr) if (v >= thr) n++; return n / trials; };
-    // Every run now starts at the Jul 29 frontier (34,000), so the window shifts up.
-    const lo = 30000, hi = 70000, bins = 52, w = (hi - lo) / bins;
+    // Every run now starts at the Aug 11 frontier (~46,000 ± 2,000), so the window shifts up again.
+    const lo = 42000, hi = 80000, bins = 52, w = (hi - lo) / bins;
     const hist = new Array(bins).fill(0);
     for (const v of arr) {
       let b = Math.floor((v - lo) / w);
