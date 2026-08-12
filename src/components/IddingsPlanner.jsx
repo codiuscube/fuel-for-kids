@@ -78,20 +78,39 @@ const TEFA = {
 };
 
 // ---------------------------------------------------------------------------
-// OUR ORIGINAL POSITION — 49,001 – 50,000. PINNED (Cody, Aug 11, 2026).
+// OUR ORIGINAL POSITION — 49,001 – 50,000. An ESTIMATE, not a fact. ⚠ Read this before
+// quoting the absolute numbers anywhere.
 //
-// This used to be DERIVED each refresh as (Odyssey range + credited depth), which made
-// the whole model swing every time the frontier estimate moved. It is now an ANCHORED
-// CONSTANT, and the derivation runs the other way: the frontier is the observed
-// quantity, and the gap still ahead of us is what falls out of it.
+// What Odyssey has ACTUALLY told us about our own position, and nothing more:
+//   • original band          30,000 – 50,000   (at sign-up)
+//   • families ahead, Jul 29 15,001 – 20,000
+//   • families ahead, Aug 11  3,001 –  4,000   (official, ticket #727303)
+// Note what is missing: no absolute rank, ever. Odyssey only reports the GAP.
 //
-// How it was originally established (Jul 29, 2026, and unchanged since): the personal
-// Odyssey update read "15,001 – 20,000" — that many families still AHEAD of us. Added
-// to the Jul 29 frontier (~34,000) that gives 49,001–54,000, and the May 13 Comptroller
-// text capped our band at 50,000, truncating it to 49,001–50,000: the very BOTTOM of
-// our band. See ODYSSEY_READING below for the confirmation evidence.
+// The 49,001–50,000 below is inferred: Jul 29's gap (15,001–20,000) added to the Jul 29
+// frontier (~34,000, itself community-derived) gives 49,001–54,000, truncated by the
+// 50,000 band ceiling. So it inherits every soft assumption in that 34,000 — it is the
+// DEEPEST reading our band allows, i.e. the conservative end, not a measurement.
+//
+// ⚠ WHY IT IS SAFE TO KEEP USING ANYWAY. Swept across the whole band Odyssey gave us
+// (original position 32,000 → 50,000, so frontier 28,500 → 46,500), the verdict does not
+// change: the likely case clears the gap by 5,081–9,372 and the high case by 14,670–20,656,
+// while the low case falls short at every value. Identical answer for all of them. That is
+// not luck — the model is anchored on the GAP (measured, ±1,000) and prices fuel in seats,
+// so where the absolute line sits only changes how much fuel has already been burned. And
+// it errs safe: a SHALLOWER true position means less fuel spent, hence more left, hence a
+// BIGGER advance. 49,001 is the pessimistic corner of the band.
+//
+// Consequence for the reader: treat every absolute figure in this file (46,000 frontier,
+// ~51,200 terminal) as a scale that could shift by ±10,000 wholesale. Treat the GAP, and
+// the advance-vs-gap comparison built on it, as the real output.
 // ---------------------------------------------------------------------------
 const YOUR_POS = { lo: 49001, hi: 50000 };
+// The one HARD fact about our absolute position: the band Odyssey gave us at sign-up.
+// YOUR_POS sits at the very bottom of it.
+const ORIGINAL_BAND = { lo: 30001, hi: 50000 };
+// Verified by sweeping the fuel model across ORIGINAL_BAND — see the ⚠ note above.
+const POSITION_IS_ESTIMATE = true;
 
 // THE PERSONAL READING — now the single most reliable input in this file, and the
 // PRIMARY quantity the model tracks. Everything about "how close are we" derives from
@@ -103,9 +122,18 @@ const YOUR_POS = { lo: 49001, hi: 50000 };
 // don't have visibility into individual rankings, only management can confirm ranges."
 //
 // This is OFFICIAL and PERSONAL — not a community estimate, not an inference. It is the
-// first hard number we have had about our own position since Jul 29, and it settles the
-// anchor dispute outright: it matches the independently triangulated 3,001–4,000 gap
-// exactly, which confirms both the 46,000 frontier and the pinned YOUR_POS above.
+// first hard number we have had about our own position since Jul 29.
+//
+// ⚠ BE PRECISE ABOUT WHAT THE MATCH PROVES. The model's derived gap was also 3,001–4,000,
+// and an earlier pass read that agreement as confirming the 46,000 frontier AND the
+// 49,001–50,000 position. It does not. Expand the derivation and the anchor cancels:
+//   derived gap = YOUR_POS − FRONTIER_NOW
+//               = (Jul29 gap + 34,000) − (34,000 + observed advance)
+//               = Jul29 gap − observed advance
+// The 34,000 drops out. So the exact match confirms the OBSERVED ADVANCE (~12,000–16,000
+// between Jul 29 and Aug 11) and the gap itself — it says nothing about absolute depth.
+// Odyssey reports only gaps, so no Odyssey reading can ever pin the absolute frontier.
+// That is why the model treats the gap as primary and the frontier as cosmetic scale.
 //
 // The same email confirms three mechanics the model already assumes:
 //   • "No fixed weekly or monthly schedule for awards. They go out in BATCHES tied to
@@ -319,7 +347,7 @@ const BAND_HI = TEFA.bandHi;      // 50,000 — bottom of our family's band
 // (~$10,474), a drop to the $2,000 homeschool tier frees only the difference (~$8,474).
 // The ÷ acceptRate is the never-activation stretch: a deep offeree who declines frees no new
 // money, it just passes the same dollars to the next position — so the OFFER travels 1/acceptRate
-// as deep as the funded-seat count. (Superseded Jul 29: with our seat pinned at 49,001 the
+// as deep as the funded-seat count. (Superseded Jul 29: with our seat ESTIMATED at 49,001 the
 // stretch no longer suffices in the central case — see the Jul 29 block above.)
 
 // Jun 23, 2026 Comptroller News & Updates ("More than 5,000 new awards issued to
@@ -386,16 +414,20 @@ const T2_OBSERVATIONS = [
   //       the 30–50k band (so ≤50,000) and still reads 3–4k ahead, which is impossible if the
   //       frontier were 49,000. Reading (b) implies the community's 34,000 was ~2–3k high and
   //       the true Jul 29 base was ~31–32k, giving 31,500 + 15,000 → ~46,500.
-  // RESOLVED, same day, by the Odyssey support email (see ODYSSEY_READING): our own
-  // management-confirmed band is 3,001–4,000 ahead. Against the pinned 49,001–50,000 that
-  // puts the frontier at 45,001–46,999 — so reading (b) is right, 46,000 central stands,
-  // and reading (a)'s 49,000 high edge is RETIRED. No longer `unofficial`: the depth is now
-  // pinned by an official personal reading rather than by community triangulation.
+  // NARROWED, same day, by the Odyssey support email (see ODYSSEY_READING): our own
+  // management-confirmed band is 3,001–4,000 ahead, which is incompatible with reading (a)
+  // (at 49,000 we would be ~1,000 out, not 3–4k), so (a) is RETIRED and 46,000 stands as the
+  // central estimate. ⚠ But `confirmed` here means "consistent with every reading we have",
+  // NOT "published". No document states a cascade depth. This 46,000 still rests on the
+  // community triangulation above plus an inferred position — see the ⚠ note on YOUR_POS for
+  // why the conclusion survives being wrong about it by ±10,000.
   { date: '2026-08-11', frontier: 46000, confirmed: true, officialWave: 15000 },
 ];
 
 // The frontier band, DERIVED from the official Odyssey reading rather than triangulated:
-// frontier = our pinned position − families still ahead of us.
+// frontier = our ESTIMATED position − families still ahead of us. Width ~±1,000 reflects only
+// the Odyssey band; it does NOT include the (much larger, but harmless) uncertainty in
+// YOUR_POS, which shifts this whole band bodily without changing the gap. See YOUR_POS.
 //   lo = YOUR_POS.lo − gap.hi = 49,001 − 4,000 = 45,001
 //   hi = YOUR_POS.hi − gap.lo = 50,000 − 3,001 = 46,999
 // Used as the anchor uncertainty for the Monte Carlo. It is ~±1,000 now instead of the old
@@ -436,7 +468,7 @@ const GAP_CLOSED = {
 const GAP_RANGE = { best: CURRENT_GAP.lo, worst: CURRENT_GAP.hi };
 
 // Consistency check, replacing the old staleness guard. Two independent things now claim
-// to know where the frontier is: the observation series, and (our pinned position − the
+// to know where the frontier is: the observation series, and (our estimated position − the
 // official Odyssey gap). They should agree. If a future edit moves one without the other,
 // say so loudly rather than letting the model quietly describe two different worlds.
 if (FRONTIER_NOW < AUG11_TRIANGULATION.lo || FRONTIER_NOW > AUG11_TRIANGULATION.hi) {
@@ -517,6 +549,37 @@ const RESEARCH = {
   optOutShare: OBS_OPTOUT_SHARE_OF_CHURN,
   reserveSeats: RESERVE_SEATS,              // 0 — reserve spent
 };
+
+// ---------------------------------------------------------------------------
+// ACCEPTANCE RATE — an alarm raised and then RETRACTED the same day (Aug 11). Kept in full,
+// because the retraction depends on a wording distinction that is easy to lose again.
+//
+// THE ALARM: the program's social post said they had "FUNDED almost 15,000 additional
+// waitlisted students." Our own gap closed by 11,001–16,999 POSITIONS over the same stretch.
+// Read that way, positions-passed ÷ funded implies acceptance of 0.88–1.36 — at or above
+// 1.0, not the 0.50 assumed here — which would mean the 2× offer stretch is fictitious and
+// the forward advance is ~1,300 rather than ~5,200, i.e. short of the gap.
+//
+// THE RETRACTION: the official news release (Aug 11, "Nearly 15,000 Additional TEFA Awards
+// ISSUED to Tier 3 Students") shows the social copy was loose. The release says the
+// Comptroller "AWARDED TEFA to nearly 15,000 additional students," and that "parents will
+// have FOUR WEEKS from the date of their award to opt in and confirm enrollment." So the
+// 15,000 are OFFERS, not funded seats — none of them can be funded yet. Offers map ~1:1 onto
+// waitlist positions passed, so 15,000 offers against our 11,001–16,999 positions is exactly
+// what the offer-frontier model predicts. It implies NOTHING about acceptance.
+//
+// Net: the 0.50 stands, and the ~87% with it. The alarm was an artifact of reading "funded"
+// where the agency meant "awarded".
+//
+// STILL GENUINELY UNKNOWN, just not evidenced either way: what fraction of deep Tier 3
+// offerees actually opt in. The first real measurement arrives when the four-week window on
+// the Aug 10 batch closes (~Sep 7) and the funded count is published against the 15,000
+// issued. That single figure resolves the largest remaining lever in this model.
+//
+// LESSON: "funded", "awarded", and "active" are three different populations in this program
+// (85,000 funded / 118,000 active / awards issued cumulatively higher still). Never cross a
+// social-media paraphrase with a hard count without checking which one it means.
+// ---------------------------------------------------------------------------
 
 // Shared fuel math, used by both the projection and the Monte Carlo so the two can't drift.
 // Back-solve how much of the 18k the observed Jul 29 advance consumed, then price what's left.
@@ -869,7 +932,7 @@ const BAND_OUTLOOK = [
     call: 'Live — 3,001–4,000 to go, confirmed by Odyssey; the likely case now clears',
     tone: 'mid',
     ourBand: true,
-    note: 'This is the headline change, and it is no longer an estimate. Odyssey Parent Support confirmed on Aug 11 (ticket #727303) that we sit in the 3,001–4,000 range on the waitlist — a management-confirmed band, down from 15,001–20,000 on Jul 29. So roughly 11,000–17,000 families cleared in thirteen days, which matches the Comptroller\'s "almost 15,000 additional waitlisted students" post over the same window: two unrelated sources, one personal and one public, agreeing on the movement. Our position has not moved — still pinned at 49,001–50,000 — which puts the frontier at ~45,001–46,999 and confirms the ~46,000 central estimate. The likely case now lands ~51,200, CLEARING our seat by ~2,200 (it missed by ~7,000 under the Jul 29 model); only the low case falls short, by ~1,700 rather than ~8,000. The remaining uncertainty is no longer where we stand but whether the fuel lasts: the laggard pool that carried this wave is most of the way spent, and Odyssey confirms there is no fixed schedule — awards go out in batches tied to Comptroller announcements. Do NOT spend the money before it arrives, but this is no longer a 2% tail event.',
+    note: 'This is the headline change, and the gap itself is no longer an estimate. Odyssey Parent Support confirmed on Aug 11 (ticket #727303) that we sit in the 3,001–4,000 range on the waitlist — a management-confirmed band, down from 15,001–20,000 on Jul 29. So roughly 11,000–17,000 families cleared in thirteen days, which matches the Comptroller\'s "almost 15,000 additional waitlisted students" post over the same window: two unrelated sources, one personal and one public, agreeing on the movement. Our own position inside the band is still an ESTIMATE (~49,001–50,000, the deepest corner of it) — Odyssey only ever reports the gap, never a rank — but that no longer matters much: swept across the whole 30,001–50,000 band, the likely and high cases clear the gap at every value and the low case misses at every value. The likely case lands ~51,200, CLEARING our seat by ~2,200 (it missed by ~7,000 under the Jul 29 model); only the low case falls short, by ~1,700 rather than ~8,000. The real remaining uncertainty is the fuel: the laggard pool that carried this wave is most of the way spent, awards go out in batches tied to Comptroller announcements with no fixed schedule, and the biggest open lever — what share of deep Tier 3 offerees actually opt in — stays unmeasured until the four-week windows close. The Aug 11 release confirms those 15,000 were AWARDS ISSUED, not funded seats: parents get four weeks from their award date to opt in and confirm, so the first real read lands around Sep 7. Do NOT spend the money before it arrives, but this is no longer a 2% tail event.',
   },
   {
     band: '50,001 +',
@@ -1223,13 +1286,13 @@ const NowView = ({ balanceDue, perStudent, setTab }) => {
         </p>
         <p className="text-sm text-amber-900/90 mb-3">
           All three kids are <strong>{TEFA.tier}</strong> and <strong>waitlisted</strong> in band{' '}
-          <strong>{TEFA.band}</strong> (texted to us {TEFA.notifiedOn}); our position inside it is pinned at{' '}
-          <strong>{YOUR_POS.lo.toLocaleString()}–{YOUR_POS.hi.toLocaleString()}</strong>. What changed is everything ahead
-          of us: about <strong>{k.gapClosedLo.toLocaleString()}–{k.gapClosedHi.toLocaleString()}</strong> families cleared
-          in thirteen days. That independently matches the Comptroller&rsquo;s Aug 11 post — &ldquo;we&rsquo;ve funded almost{' '}
-          {k.officialWave?.toLocaleString()} additional waitlisted students&rdquo; — so two unrelated sources now agree, which
-          puts the frontier at roughly <strong>{FRONTIER_NOW.toLocaleString()}</strong> and settles an estimate that had been
-          resting on community reports.
+          <strong>{TEFA.band}</strong> (texted to us {TEFA.notifiedOn}). Where we sit <em>inside</em> that band has never been
+          published — we estimate <strong>{YOUR_POS.lo.toLocaleString()}–{YOUR_POS.hi.toLocaleString()}</strong>, the deepest
+          and therefore most pessimistic corner of it. What changed is everything ahead of us: about{' '}
+          <strong>{k.gapClosedLo.toLocaleString()}–{k.gapClosedHi.toLocaleString()}</strong> families cleared in thirteen days.
+          That independently matches the Comptroller&rsquo;s Aug 11 post — &ldquo;we&rsquo;ve funded almost{' '}
+          {k.officialWave?.toLocaleString()} additional waitlisted students&rdquo; — so two unrelated sources agree on the
+          movement, which puts the frontier at roughly <strong>{FRONTIER_NOW.toLocaleString()}</strong>.
         </p>
         <p className="text-sm text-amber-900/90 mb-3">
           <strong>The conclusion flipped.</strong> The likely case now lands ~{k.realisticTerminal.toLocaleString()} by Aug 31 —
@@ -1578,7 +1641,7 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, declineM
         <div className="rounded-lg bg-tefa-light border border-tefa-red/30 p-3 text-center">
           <div className="text-xs text-tefa-red/70 font-medium">P(reach us ~{YOUR_POS.lo.toLocaleString()})</div>
           <div className="font-bold text-tefa-red text-2xl">{pctFmt(r.pHouse)}</div>
-          <div className="text-[10px] text-tefa-body/40">our actual original lottery position</div>
+          <div className="text-[10px] text-tefa-body/40">our estimated original lottery position</div>
         </div>
       </div>
 
@@ -1836,11 +1899,12 @@ const TefaView = () => {
         <p className="text-sm text-tefa-body/80 mb-4">
           Awards cascade down <strong>one</strong> tier-ordered waitlist. <strong>Tier 2 is now cleared</strong> — the August
           wave carried the frontier to <strong>~{k.frontierNow.toLocaleString()}</strong>, about {k.intoTier3.toLocaleString()} positions
-          past the {T2_AT_LOTTERY.toLocaleString()} Tier 2 backlog. Our own seat is at{' '}
-          <strong>{YOUR_POS.lo.toLocaleString()}</strong>, and Odyssey confirmed on Aug 11 that exactly{' '}
+          past the {T2_AT_LOTTERY.toLocaleString()} Tier 2 backlog. Odyssey confirmed on Aug 11 that{' '}
           <strong>{k.gapToUs.toLocaleString()}–{k.gapToUsHi.toLocaleString()}</strong> families still sit between the frontier
-          and us. That is a management-confirmed band about our own family, not an estimate — and it is down from{' '}
-          {k.gapPrevLo.toLocaleString()}–{k.gapPrevHi.toLocaleString()} on Jul 29.
+          and us — a management-confirmed band about our own family, down from{' '}
+          {k.gapPrevLo.toLocaleString()}–{k.gapPrevHi.toLocaleString()} on Jul 29. That gap is the measured quantity here.
+          Our absolute seat (~{YOUR_POS.lo.toLocaleString()}) and the frontier are <em>estimates</em> derived from it, and the
+          two move together — so the conclusion holds even if both are off by thousands.
         </p>
         <div className="space-y-2">
           {BAND_OUTLOOK.map((b) => {
@@ -1875,14 +1939,17 @@ const TefaView = () => {
           are still ahead of us, down from {k.gapPrevLo.toLocaleString()}–{k.gapPrevHi.toLocaleString()} on Jul 29. That is
           ~{k.gapClosedLo.toLocaleString()}–{k.gapClosedHi.toLocaleString()} positions cleared in thirteen days, which matches the
           Comptroller&rsquo;s &ldquo;almost {k.officialWave?.toLocaleString()} additional&rdquo; wave almost exactly — two
-          independent sources agreeing, which is why the frontier estimate of <strong>~{k.frontierNow.toLocaleString()}</strong> can
-          now be treated as settled rather than triangulated. The laggard pool is now mostly spent: of the {k.remainder.toLocaleString()} Pillow counted on Jul 11,
+          independent sources agreeing on the <em>movement</em> — though not, note, on the absolute depth, which no source has
+          ever published; <strong>~{k.frontierNow.toLocaleString()}</strong> remains our best estimate rather than a settled
+          figure, and the answer is built so that does not matter. The laggard pool is now mostly spent: of the {k.remainder.toLocaleString()} Pillow counted on Jul 11,
           roughly <strong>{k.poolSpent.toLocaleString()}</strong> were consumed producing the {k.totalAdvance.toLocaleString()}-deep total advance, leaving ~{k.poolLeft.toLocaleString()}. Forward fuel is the residual tail plus <strong>August melt</strong> on
           the ~{Math.round(k.meltBase / 1000)}k funded base, stretched by the <strong>decline rate</strong> among deep offerees — every decline passes the seat down for free.
           Likely (<strong>~{k.realisticTerminal.toLocaleString()}</strong>) and high (<strong>~{k.aggressiveTerminal.toLocaleString()}</strong>) now <strong>clear</strong> us; only low (<strong>~{k.researchTerminal.toLocaleString()}</strong>) falls short, by ~{(YOUR_POS.lo - k.researchTerminal).toLocaleString()}.
           A voucher has gone from a long shot to <strong>more likely than not</strong>. The remaining uncertainty is no longer
-          <em> where we stand</em> — Odyssey has told us that — but whether there is enough fuel left for one more wave of even
-          {' '}{k.gapToUsHi.toLocaleString()}. Odyssey&rsquo;s own note says awards go out in batches tied to Comptroller
+          <em> how far ahead of us the line is</em> — Odyssey has told us that — but whether there is enough fuel left for one
+          more wave of even {k.gapToUsHi.toLocaleString()}. The Aug 11 release adds the clock we were missing: parents have FOUR WEEKS
+          from their award date to opt in and confirm, so the Aug 10 batch resolves around Sep 7 — and the seats its
+          non-responders give up are the fuel for the next wave down. Odyssey&rsquo;s own note says awards go out in batches tied to Comptroller
           announcements, so this will arrive as a step, not a drift.
           <strong> Check the portal, then keep budgeting the full balance until the money lands.</strong>
         </p>
@@ -1899,7 +1966,7 @@ const TefaView = () => {
           <Activity size={20} /> The scenarios behind the model, and the dates
         </h2>
         <p className="text-[11px] text-tefa-body/55 mb-3">
-          <strong>As of Aug 11, 2026 — our own position is now OFFICIAL, and that is what this model tracks.</strong>{' '}
+          <strong>As of Aug 11, 2026 — our own GAP is now OFFICIAL, and that is what this model tracks.</strong>{' '}
           Odyssey Parent Support answered a direct question the same day (ticket #727303): &ldquo;your student currently falls
           within the {k.gapToUs.toLocaleString()}-{k.gapToUsHi.toLocaleString()} range on the waitlist … only management can
           confirm ranges.&rdquo; That replaces every community estimate for the number that actually decides our outcome.
@@ -1907,23 +1974,30 @@ const TefaView = () => {
           <strong>{k.gapClosedLo.toLocaleString()}–{k.gapClosedHi.toLocaleString()}</strong> families cleared in thirteen days.
           The Comptroller independently posted that &ldquo;almost {k.officialWave?.toLocaleString()} additional waitlisted
           students&rdquo; were funded over the same window. Two unrelated sources — one personal, one public — landing on the
-          same movement is the strongest evidence we have had all summer, and it also settles the older argument about
-          absolute depth: our pinned {YOUR_POS.lo.toLocaleString()}–{YOUR_POS.hi.toLocaleString()} minus a{' '}
-          {k.gapToUs.toLocaleString()}–{k.gapToUsHi.toLocaleString()} gap puts the frontier at{' '}
-          <strong>{k.anchorLo.toLocaleString()}–{k.anchorHi.toLocaleString()}</strong>, confirming the ~{k.frontierNow.toLocaleString()} central
-          estimate and retiring the competing ~49,000 read.
+          same movement is the strongest evidence we have had all summer.
           <br /><br />
-          <strong>Why the gap, not the frontier, is the headline number.</strong> The absolute frontier depends on an assumed
-          initial award base that nobody has published, so reasonable people got answers from ~41,000 to ~49,000 this week.
-          None of that changes how many families are ahead of us — Odyssey measures that directly. The model is therefore
-          anchored on the gap and derives the frontier from it, rather than the reverse, so a future dispute about depth
-          cannot move our answer.
+          <strong>What that email does NOT tell us — and why it does not matter.</strong> Odyssey reports only a <em>gap</em>,
+          never an absolute rank, so no reading from them can pin how deep the cascade has actually run. Our{' '}
+          {YOUR_POS.lo.toLocaleString()}–{YOUR_POS.hi.toLocaleString()} is an <em>inference</em> — Jul 29&rsquo;s gap added to a
+          community-estimated Jul 29 frontier, then capped by our band ceiling. It could be off by ten thousand either way.
+          Worth being precise here, because an earlier pass overstated it: the model&rsquo;s derived gap also came to{' '}
+          {k.gapToUs.toLocaleString()}–{k.gapToUsHi.toLocaleString()}, but that agreement confirms the <em>advance</em> since
+          Jul 29, not the depth — expand the arithmetic and the frontier estimate cancels out of both sides.
+          <br /><br />
+          <strong>Why the gap, not the frontier, is the headline number.</strong> Because the answer does not depend on the
+          depth. Sweeping our true position across the entire band Odyssey gave us — anywhere from{' '}
+          {ORIGINAL_BAND.lo.toLocaleString()} to {ORIGINAL_BAND.hi.toLocaleString()} — the verdict never changes: the likely
+          and high cases clear the gap at every value, the low case falls short at every value. That is by construction. The
+          model is anchored on the measured gap and prices fuel in seats, so the absolute depth only changes how much fuel has
+          already been burned — and it errs safe, since a shallower true position means <em>more</em> fuel left, not less.
+          Treat the absolute figures on this page as a scale that could shift bodily; treat the gap as the real output.
         </p>
         <div className="text-[11px] text-tefa-body/60 bg-tefa-light rounded p-3 space-y-1">
           <div><strong>The fuel is now two slow terms, not one cliff.</strong> Forward advance = (residual laggard tail + August melt) × seats-freed-per-departure ÷ <strong>acceptance rate</strong>. The tail is drawn from what <em>survived both draws</em>: of Pillow's {k.remainder.toLocaleString()} laggards, ~<strong>{k.poolSpent.toLocaleString()}</strong> were consumed producing the observed {k.totalAdvance.toLocaleString()}-deep total advance since Jul 8, leaving ~{k.poolLeft.toLocaleString()}. August melt is ordinary summer attrition on the ~{Math.round(k.meltBase / 1000)}k funded base ({k.researchMeltPct}–{k.aggressiveMeltPct}%): took the ESA, then withdrew, moved, or never showed. Each departure frees dollars two ways (a full <strong>opt-out</strong> frees ~$10,474, a <strong>$2,000 homeschool</strong> drop frees ~$8,474; observed ~23/77 mix → {k.freedRatio} seats/departure). The ÷ acceptance is the OFFER stretch: a deep family who <strong>declines</strong> frees no money but passes the same seat deeper for free, so the offer travels 1/acceptance as deep. <strong>Low</strong> ({k.researchChurnPct}% tail, {k.researchMeltPct}% melt, {k.researchDeclinePct}% decline) → ~<strong>{k.researchTerminal.toLocaleString()}</strong>; <strong>likely</strong> ({k.realisticChurnPct}% / {k.realisticMeltPct}% / {k.realisticDeclinePct}%) → ~<strong>{k.realisticTerminal.toLocaleString()}</strong>; <strong>high</strong> ({k.aggressiveChurnPct}% / {k.aggressiveMeltPct}% / {k.aggressiveDeclinePct}%) → ~<strong>{k.aggressiveTerminal.toLocaleString()}</strong>. <strong>Likely and high now both reach our {YOUR_POS.lo.toLocaleString()}; only low misses.</strong> That is the reverse of the Jul 29 model, and it is the frontier that moved, not us.</div>
           <div><strong>Why the back-out matters.</strong> A high-decline scenario needed <em>fewer</em> departures to produce the observed {k.totalAdvance.toLocaleString()}-deep advance — each freed seat travelled further before it stuck — so it leaves <em>more</em> tail in reserve. A low-decline scenario burned more pool to get here and has less left. Tying the levers to the observation this way stops a scenario from spending more of the {k.remainder.toLocaleString()} than ever existed, which is the error that makes naive &ldquo;apply the same attrition % to every wave&rdquo; projections run away.</div>
           <div className="pt-1"><strong>Scoring our own Jul 29 call — we were too pessimistic, and it is worth being clear about why.</strong> Three weeks ago this model said the likely case landed ~42,100 and put <em>P(reach us)</em> near 2%. The frontier is now ~{k.frontierNow.toLocaleString()}, past that likely case and three weeks early. The error was structural, not arithmetic: we treated Pillow's 18,000 not-opted-in as a <em>hard ceiling on all future fuel</em>, when in fact August produced departures from the <em>already-funded</em> base at a rate well above the 0.5–1.5% melt we allowed — families who took an ESA and then did not show up when school actually started. The lesson for the next refresh: a published pool count bounds <em>that pool</em>, not the total fuel, and school-start melt is a bigger, later term than a summer model wants to believe. The Facebook &ldquo;each wave unlocks another 34%&rdquo; claim we argued down on Jul 29 (it projected ~50,490) has landed closer to the truth than our central case did — its double-counting critique still stands on the arithmetic, but its <em>conclusion</em> was better calibrated than ours.</div>
           <div><strong>Watch — the grind, and the possibility of a third wave.</strong> We said on Jul 29 that the Jul 15 deadline was the last cliff. The Aug 11 wave proves that was wrong: ~{k.recentAdvance.toLocaleString()} more positions cleared with no deadline behind them. What remains is the Jul 31 confirmation tail plus school-start melt, and the pool is genuinely thinner now (~{k.poolLeft.toLocaleString()} left) — but we have now under-called two waves in a row, so treat the low case as a floor rather than a forecast. It all lands <em>after</em> the Jun 30 penalty-free withdrawal deadline, so the withdrawal call had to be made without knowing any of this.</div>
+          <div className="pt-1 border-t border-tefa-body/10"><strong>Awarded ≠ funded — and it matters more than it sounds.</strong> The program&rsquo;s social post said it had &ldquo;<em>funded</em> almost {k.officialWave?.toLocaleString()} additional waitlisted students.&rdquo; The official release the same day says the Comptroller &ldquo;<em>awarded</em> TEFA to nearly {k.officialWave?.toLocaleString()} additional students,&rdquo; and that parents have <strong>four weeks from the date of their award</strong> to opt in and confirm. So those {k.officialWave?.toLocaleString()} are <strong>offers</strong>, and none of them can be funded yet. Worth spelling out, because reading it the other way briefly looked alarming: {k.officialWave?.toLocaleString()} <em>funded</em> against our {k.gapClosedLo.toLocaleString()}–{k.gapClosedHi.toLocaleString()} positions cleared would imply an acceptance rate near <strong>0.9</strong> rather than the <strong>0.5</strong> assumed here, cutting the forward advance from ~5,200 to ~1,300 and leaving us <em>short</em> of the gap. Read correctly, offers map about 1:1 onto positions passed, so {k.officialWave?.toLocaleString()} against {k.gapClosedLo.toLocaleString()}–{k.gapClosedHi.toLocaleString()} is exactly what this model predicts and says nothing at all about acceptance. <strong>The 50% stands.</strong> The real measurement lands when the four-week window on the Aug 10 batch closes around <strong>Sep 7</strong> and a funded count is published against the {k.officialWave?.toLocaleString()} issued — that one figure will settle the largest lever left in the model. Keep the three populations distinct: <strong>85,000 funded</strong>, <strong>118,000 active</strong>, awards issued higher still.</div>
         </div>
 
         {/* Frontier position reached by each scenario, at the key cascade dates. */}
