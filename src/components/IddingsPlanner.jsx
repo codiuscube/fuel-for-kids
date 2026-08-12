@@ -1398,19 +1398,26 @@ const NowView = ({ balanceDue, perStudent, setTab }) => {
           movement, which puts the frontier at roughly <strong>{FRONTIER_NOW.toLocaleString()}</strong>.
         </p>
         <p className="text-sm text-amber-900/90 mb-3">
-          <strong>The conclusion flipped.</strong> The likely case now lands ~{k.realisticTerminal.toLocaleString()} by Aug 31 —
-          <strong> clearing our seat</strong> — where three weeks ago it missed by ~7,000. Only the low case still falls short,
-          by ~{(YOUR_POS.lo - k.researchTerminal).toLocaleString()}. A voucher this year has gone from a genuine long shot to
-          the <strong>more likely outcome than not</strong>.
+          <strong>The conclusion flipped.</strong> The expected case now lands ~{k.realisticTerminal.toLocaleString()} by
+          ~Sep 7 — <strong>clearing our seat</strong> — where three weeks ago it missed by ~7,000. Even the pessimistic case
+          gets past us now. A voucher this year has gone from a genuine long shot to the{' '}
+          <strong>more likely outcome than not</strong>.
+        </p>
+        <p className="text-sm text-amber-900/90 mb-3">
+          <strong>Why it moved so far.</strong> The Aug 10 fact sheet showed the fuel is much bigger than we thought:{' '}
+          <strong>{k.pendingNow.toLocaleString()}</strong> families are holding an award they have not confirmed, against the
+          ~{k.poolLeft.toLocaleString()} the old model assumed was left. Awards carry a <strong>four-week</strong> deadline to
+          opt in, and each family who lets theirs lapse hands their money to the next in line. For the next wave to stop short
+          of us, under <strong>{k.breakevenLapsePct}%</strong> of them would have to walk away — lower than any comparable
+          program on record.
         </p>
         <p className="text-sm text-amber-900/90">
-          <strong>One real caution.</strong> Knowing where we stand is not the same as knowing there is fuel left to get
-          there. The laggard pool that powered this wave is mostly spent, so the grind from here is slower than the last two
-          weeks suggest — and Odyssey confirms there is <em>no</em> fixed schedule: awards go out in batches tied to
-          Comptroller announcements, as opt-outs, homeschool switches, and appeals free up money. It also lands{' '}
-          <strong>after</strong> the Jun 30 withdrawal deadline regardless.{' '}
-          <strong>Keep budgeting the full balance until the money actually arrives</strong> — but this is no longer a
-          tail-case hope.
+          <strong>One real caution.</strong> The risk is no longer that the wave is too small. It is that no wave comes —
+          a funding halt, an administrative pause, a legal challenge. Nothing points that way, and Odyssey says awards go out
+          in batches tied to Comptroller announcements, so expect a step around <strong>Aug 26</strong> and again around{' '}
+          <strong>Sep 7</strong> rather than steady movement. It all lands <strong>after</strong> the Jun 30 withdrawal
+          deadline regardless. This model has now been too pessimistic twice, so a confident answer deserves suspicion —{' '}
+          <strong>keep budgeting the full balance until the money actually arrives</strong>.
         </p>
         <button
           onClick={() => setTab('tefa')}
