@@ -198,7 +198,56 @@ const RESERVE_AWARDED_JUL8 = 4000;
 // as the larger Jul 8 draw and is already counted in the observed frontier.)
 const RESERVE_SEATS = 0;
 // Active awards that can churn — the population that frees seats when it leaves.
+// ⚠ DATED. This is the JUN 23 figure and is only valid for Jun/Jul-vintage derivations
+// (REMAINDER, OBS_OPTOUT_RATE, optOutPctNow). Do NOT swap the Aug figure in here — REMAINDER
+// is defined as (this − FUNDED_JULY1), so mixing an August count with a July funded count
+// silently produces a meaningless "remainder". Use AWARDED_AUG10 for anything current.
 const ACTIVE_AWARDS = 107000; // "nearly 107,000 active" (Jun 23 update)
+
+// ---------------------------------------------------------------------------
+// AUG 10 2026 FACT SHEET — "118,441 STUDENTS AWARDED", Award Snapshot 8/10/2026, published
+// alongside the "Nearly 15,000 Additional TEFA Awards Issued to Tier 3 Students" release.
+// The single most informative document of the summer: it is the first data that lets the
+// cascade depth be derived WITHOUT any community input.
+// ---------------------------------------------------------------------------
+const AWARDED_AUG10 = 118441;
+// Priority-tier split of that total (fact sheet donut). Tier 4 is absent — it does not move
+// in Year 1. Percentages are as published; the counts are ours.
+const TIER_SPLIT_AUG10 = { t1: 0.18, t2: 0.55, t3: 0.27 };
+const AWARDED_BY_TIER = {
+  t1: Math.round(AWARDED_AUG10 * TIER_SPLIT_AUG10.t1),   // ~21,319
+  t2: Math.round(AWARDED_AUG10 * TIER_SPLIT_AUG10.t2),   // ~65,143
+  t3: Math.round(AWARDED_AUG10 * TIER_SPLIT_AUG10.t3),   // ~31,979
+};
+// Awards made at the lottery, before any cascade (May 7 tier table).
+const INITIAL_AWARDS = { t1: 20700, t1sib: 12800, t2: 51800, t3: 30 };
+// INDEPENDENT FRONTIER CHECK. Every Tier 2/Tier 3 award beyond the lottery allocation is a
+// cascade award, so summing them gives the depth directly — no community reports involved.
+// Lands at ~45,300 against the model's 46,000: agreement within ~700 from a wholly separate
+// direction, and the first real corroboration this estimate has ever had.
+const FRONTIER_FROM_FACTSHEET =
+  (AWARDED_BY_TIER.t2 - INITIAL_AWARDS.t2) + (AWARDED_BY_TIER.t3 - INITIAL_AWARDS.t3);
+// Two caveats, both live: these are counts NET of opt-outs, so true cumulative depth is
+// somewhat deeper; and it assumes the 12,800 Tier 1 siblings are not folded into fact-sheet
+// T2/T3 (if they all sat in T2 the implied frontier would be ~32,500). Fact-sheet Tier 1
+// (21,319) is close to initial Tier 1 alone (20,700) and CANNOT be the 33,500 that includes
+// siblings — counts do not shrink — so siblings are certainly not in Tier 1. The community
+// read (frontier cutting the DEEP end of the 30–50k band) also favours ~45,300 over ~32,500.
+
+// Funded participants as of the annual demographic report ("more than 85,000", early Aug,
+// i.e. BEFORE the Aug 10 wave). Deliberately held at the floor of "more than 85,000".
+const FUNDED_EARLY_AUG = 85000;
+// ⚠ THE POOL DOES NOT DRAIN — it REFILLS. Awarded-but-unresolved before the Aug wave was
+// 103,441 − 85,000 = ~18,441, essentially IDENTICAL to Pillow's 18,000 on Jul 11, even though
+// ~13,000 families lapsed out of it in between. Each new award wave refills it as fast as it
+// empties. The forward model below still treats it as a one-time 18,000 draining to ~5,505,
+// which understates remaining fuel by roughly 6× and is the leading explanation for why this
+// model under-called two waves in a row. See PENDING_NOW.
+const AWARDED_BEFORE_AUG_WAVE = AWARDED_AUG10 - 15000;          // ~103,441
+const PENDING_BEFORE_AUG_WAVE = AWARDED_BEFORE_AUG_WAVE - FUNDED_EARLY_AUG;  // ~18,441
+// The pool as it stands now: the older unresolved awards PLUS the fresh 15,000, whose
+// four-week opt-in window runs to ~Sep 7.
+const PENDING_NOW = AWARDED_AUG10 - FUNDED_EARLY_AUG;           // ~33,441
 
 // ---------------------------------------------------------------------------
 // The Jul 1 activation cut — the number that pins how much fuel is actually left.
@@ -288,8 +337,52 @@ const CHURN_POOL = NOT_OPTED_IN;                  // pre-deadline pool; see rema
 // low-decline scenario burned more pool to get here and has less left. The back-out
 // makes the levers cohere with the observation instead of floating free of it.
 // ---------------------------------------------------------------------------
-const TAIL_SHARE = { low: 0.15, likely: 0.25, high: 0.35 };  // slice of the surviving laggards still to be swept
-const AUG_ATTRITION = { low: 0.005, likely: 0.010, high: 0.015 }; // August melt on the funded base
+const TAIL_SHARE = { low: 0.15, likely: 0.25, high: 0.35 };  // LEGACY (pre-Aug-11 model) — see LAPSE_RATE
+const AUG_ATTRITION = { low: 0.005, likely: 0.010, high: 0.015 }; // LEGACY (pre-Aug-11 model)
+
+// ---------------------------------------------------------------------------
+// THE MODEL, REBUILT Aug 11 2026 — ONE WAVE, ONE DIAL.
+//
+// The old three-lever model (tail share × melt ÷ acceptance) was answering the wrong question,
+// and it under-called two waves running. The Aug 10 fact sheet showed why: it assumed a fixed
+// 18,000 laggard pool DRAINING to ~5,505, when in fact the pool REFILLS with every award wave
+// and now stands at ~33,441 (see PENDING_NOW). Fuel stopped being the binding constraint.
+//
+// What actually decides the outcome is now a single quantity: of the families holding an
+// unresolved award, what share let their four-week window LAPSE. So the model is one wave at
+// ~Sep 7 (by which date both open cohorts' windows have closed — Jul 29's ~Aug 26 and
+// Aug 10's ~Sep 7), drawn on the known pool, with lapse rate as the only unknown.
+//
+//      wave = PENDING_NOW × lapseRate × SEATS_PER_LAPSE
+//
+// WHY THE RATES BELOW ARE EXTERNAL BENCHMARKS, NOT OUR OWN HISTORY. Backing a lapse rate out
+// of the Jul/Aug waves gives ~61%, but that is selection-biased garbage: Pillow's 18,000 were
+// families who had ALREADY failed to respond for weeks, so of course they lapsed. Worse, those
+// waves were a one-time deadline mop-up (Jul 15 opt-in + Jul 31 confirmation both fell right
+// before the Aug 10 batch, and that pool went 18,000 → ~1,400). A fresh cohort will not repeat
+// it. So the scenarios are anchored on published multi-program attrition instead.
+//
+// Corroboration that the reassignment is right: the observed Jul/Aug waves imply an effective
+// ~30% rate — which lands on Milwaukee, the HIGH benchmark, not the central one. The waves
+// were running hot, exactly as the mop-up reading predicts. Hence 30% is the aggressive case.
+//
+// ⚠ HONEST LIMIT: these are YEAR-ONE attrition rates for lottery winners, not lapse rates
+// within a four-week opt-in window. Using them here is a defensible stretch, not a like-for-
+// like transfer. It should if anything UNDERSTATE lapse — this cohort is deep Tier 3, offered
+// in late August after school has already started, so most have committed elsewhere. The 8%
+// floor is doing real work precisely because of that mismatch.
+// ---------------------------------------------------------------------------
+const LAPSE_RATE = {
+  low:    0.08,   // queueing-theory minimum renege rate (Kanoria); the gem's "optimistic floor"
+  likely: 0.15,   // gem central; D.C. Opportunity Scholarship measured 14.3% (Hoover)
+  high:   0.30,   // Milwaukee Parental Choice (ERIC ED472999) — and what Jul/Aug implied
+};
+// A LAPSE releases the whole award, not a downgrade's fraction: the family took no action, so
+// they cannot have chosen the $2,000 homeschool tier. Full $10,474 back, against a ~$7,678
+// blended new award → each lapse funds ~1.36 seats. (The old model applied the observed 23:77
+// opt-out:downgrade split to lapsers, which was wrong for exactly this reason.)
+const FULL_AWARD = 10474;
+const SEATS_PER_LAPSE = FULL_AWARD / TEFA_BUDGET.blendedCost;   // ~1.364
 
 // ---------------------------------------------------------------------------
 // Funded seats per departure — the DOLLAR mechanics that turn an active family's
@@ -479,6 +572,15 @@ if (FRONTIER_NOW < AUG11_TRIANGULATION.lo || FRONTIER_NOW > AUG11_TRIANGULATION.
     `T2_OBSERVATIONS entry is out of date.`
   );
 }
+// Third, INDEPENDENT check: the Aug 10 fact sheet's tier split implies a cascade depth with no
+// community input in it at all. Warn if the model's frontier drifts far from it.
+if (Math.abs(FRONTIER_NOW - FRONTIER_FROM_FACTSHEET) > 2500) {
+  console.warn(
+    `[TEFA] Frontier (${FRONTIER_NOW.toLocaleString()}) disagrees with the Aug 10 fact-sheet ` +
+    `derivation (${FRONTIER_FROM_FACTSHEET.toLocaleString()}) by more than 2,500. The fact sheet ` +
+    `is the only frontier evidence with no community input — reconcile before trusting the model.`
+  );
+}
 if (Date.parse(ODYSSEY_READING.asOf) < Date.parse(T2_OBSERVATIONS[T2_OBSERVATIONS.length - 1].date)) {
   console.warn(
     `[TEFA] Odyssey reading (${ODYSSEY_READING.asOf}) is older than the newest frontier ` +
@@ -527,27 +629,18 @@ if (Date.parse(ODYSSEY_READING.asOf) < Date.parse(T2_OBSERVATIONS[T2_OBSERVATION
 const OBS_OPTOUT_SHARE_OF_CHURN = 0.231;   // observed 2.8% opt-out / 9.3% downgrade split
 
 const REALISTIC = {
-  tailShare: TAIL_SHARE.likely,             // LIKELY — 25% of the surviving laggards still swept
-  augRate: AUG_ATTRITION.likely,            // 1.0% August melt on the funded base
-  acceptRate: 0.50,                         // 50% of deep offerees say yes (50% decline) → offer stretches 2×
-  optOutShare: OBS_OPTOUT_SHARE_OF_CHURN,   // 23% opt out fully, 77% drop to $2,000 → ~1.16 seats/departure
+  lapseRate: LAPSE_RATE.likely,             // EXPECTED — 15% lapse (gem central; D.C. 14.3%)
   reserveSeats: RESERVE_SEATS,              // 0 — appeals reserve spent Jul 8 (already in frontier-now)
 };
 
 const AGGRESSIVE = {
-  tailShare: TAIL_SHARE.high,               // HIGH — 35% of the surviving laggards swept
-  augRate: AUG_ATTRITION.high,              // 1.5% August melt
-  acceptRate: 0.35,                         // 65% of deep offerees decline → offer reaches ~52,900
-  optOutShare: OBS_OPTOUT_SHARE_OF_CHURN,
-  reserveSeats: RESERVE_SEATS,              // 0 — reserve spent
+  lapseRate: LAPSE_RATE.high,               // AGGRESSIVE — 30% (Milwaukee; also what Jul/Aug implied)
+  reserveSeats: RESERVE_SEATS,
 };
 
 const RESEARCH = {
-  tailShare: TAIL_SHARE.low,                // LOW — only 15% of the surviving laggards swept
-  augRate: AUG_ATTRITION.low,               // 0.5% August melt
-  acceptRate: 0.65,                         // only 35% of deep offerees decline → little stretch
-  optOutShare: OBS_OPTOUT_SHARE_OF_CHURN,
-  reserveSeats: RESERVE_SEATS,              // 0 — reserve spent
+  lapseRate: LAPSE_RATE.low,                // PESSIMISTIC — 8% queueing floor; below any real program
+  reserveSeats: RESERVE_SEATS,
 };
 
 // ---------------------------------------------------------------------------
@@ -588,13 +681,29 @@ const RESEARCH = {
 // since the Jul 11 pool count (16,916 → 46,000 = ~29,084), or the model would credit
 // the August fuel twice and over-project the terminal.
 const TOTAL_ADVANCE_SINCE_POOL_COUNT = FRONTIER_NOW - 16916;   // ~29,084 (Jul 8 → Aug 11)
+// LEGACY back-out, retained only for the historical narrative on the TEFA tab (how much of
+// Pillow's 18,000 the summer consumed). It no longer drives any projection.
 const spentDepartures = (accept, spd) => (TOTAL_ADVANCE_SINCE_POOL_COUNT * accept) / spd;
 const remainingPool = (accept, spd) => Math.max(0, CHURN_POOL - spentDepartures(accept, spd));
-// Funded base the August melt applies to: the Jul 1 cohort plus the seats both draws filled.
 const fundedBase = (accept) => FUNDED_JULY1 + TOTAL_ADVANCE_SINCE_POOL_COUNT * accept;
-// Forward OFFER advance beyond the Aug 11 frontier.
-const forwardAdvance = (tailShare, augRate, accept, spd) =>
-  ((tailShare * remainingPool(accept, spd) + augRate * fundedBase(accept)) * spd) / accept;
+
+// ---------------------------------------------------------------------------
+// THE FORWARD MODEL. One wave, one dial. Everything the projection and the Monte Carlo
+// need now comes from this single line:
+//
+//     wave = PENDING_NOW (33,441, known) × lapseRate (the only unknown) × 1.364 seats/lapse
+//
+// No ÷acceptance term any more. Under a ONE-generation model an award issued IS a position
+// passed, so the offer frontier and the funded frontier are the same thing. The old ÷accept
+// was standing in for the geometric refill across generations; gating to a single wave makes
+// it explicit instead, and stops it silently doubling the reach.
+// ---------------------------------------------------------------------------
+const forwardAdvance = (lapseRate) => PENDING_NOW * lapseRate * SEATS_PER_LAPSE;
+// How many families must let their window lapse for the wave to reach a given depth.
+const lapsesFor = (positions) => (positions * TEFA_BUDGET.blendedCost) / FULL_AWARD;
+// The break-even: below this lapse rate the wave stops short of us. ~8.8%, which is under the
+// lowest rate any real programme has recorded (D.C. 14.3%) and at the theoretical floor (8%).
+const BREAKEVEN_LAPSE = lapsesFor(CURRENT_GAP.hi) / PENDING_NOW;
 
 // Anchor uncertainty. This USED to be the dominant unknown, when the Aug 11 frontier rested
 // on community triangulation. The Aug 11 Odyssey support email collapsed it to ~±1,000 (the
@@ -610,15 +719,21 @@ const ANCHOR_BAND = {
   hi: AUG11_TRIANGULATION.hi - AUG11_TRIANGULATION.central,   // +2,000
 };
 
-// Chart window: from the lottery (frontier 0) through end-August. The big waves
-// (Tier 2 clear, reserve, the Jul 15 deadline shakeout) are done by ~Aug 15; after
-// that both lines carry only a small residual attrition drift, not another wave.
-// `today` anchors the "Today" marker to a fixed date so a screenshot of the
-// chart reads the same for everyone (the artifact gets posted/shared) — bump it
-// as the analysis is refreshed, rather than letting it drift with the viewer's clock.
+// Chart window: from the lottery (frontier 0) through mid-September. `today` anchors the
+// "Today" marker to a fixed date so a screenshot of the chart reads the same for everyone
+// (the artifact gets posted/shared) — bump it as the analysis is refreshed, rather than
+// letting it drift with the viewer's clock.
 const FRONTIER_WINDOW = { chartStart: '2026-05-04', today: '2026-08-11', jul15: '2026-07-15', jul29: '2026-07-29', end: '2026-09-15' };
-const WAVES_END = '2026-08-31';   // August melt runs the whole month; after this it's a trickle
-const POST_DRIFT = 25;            // seats/day of small residual attrition after Aug 31 (realistic trickle)
+// ONE WAVE, landing ~Sep 7 — the date both open cohorts' four-week windows have closed
+// (Jul 29's batch ~Aug 26, Aug 10's ~Sep 7). Modelling a single merged wave at the later date
+// captures both without double-counting either.
+const WAVES_END = '2026-09-07';
+// No post-wave drift. The old model trickled 25 seats/day forever, which quietly added
+// thousands past the horizon. Under a one-wave model the line is flat after Sep 7 — if a
+// further wave comes, that is a NEW cohort to be added explicitly, not a drift term.
+const POST_DRIFT = 0;
+// Key intermediate: the Jul 29 cohort's window closes here, so part of the wave lands early.
+const WAVE_MID = '2026-08-26';
 
 // Cascade-frontier model. Two scenarios, both anchored on the last published
 // frontier point and landing on a terminal by Aug 15 (small drift after). Each is
@@ -707,22 +822,12 @@ function buildCascadeProjection({
               : spline(Math.min(t, endT)) + Math.max(0, t - endT) * POST_DRIFT;
   };
 
-  // Terminal OFFER frontier = the Jul 29 anchor + the forward advance from the two remaining
-  // fuel terms (residual laggard tail + August melt), stretched by 1/acceptance. The pool the
-  // tail is drawn from is what SURVIVED the Jul 29 draw, back-solved from the observed advance —
-  // so a scenario can never spend more of the 18,000 than existed. Both departure routes count
-  // via the opt-out:downgrade split (a full opt-out frees the whole award, a $2,000 homeschool
-  // drop frees only the difference). Never-activation does NOT fund seats; it only stretches
-  // the offer, which is the ÷ acceptance term.
-  const terminalSeats = (s) => {
-    const spd = seatsPerDeparture(s.optOutShare, 1 - s.optOutShare);
-    return Math.round(fL + forwardAdvance(s.tailShare, s.augRate, s.acceptRate, spd) + s.reserveSeats);
-  };
-  // Funded-seat frontier for a scenario — the offer stretch removed.
-  const terminalFunded = (s) => {
-    const spd = seatsPerDeparture(s.optOutShare, 1 - s.optOutShare);
-    return Math.round(fL + forwardAdvance(s.tailShare, s.augRate, s.acceptRate, spd) * s.acceptRate);
-  };
+  // Terminal frontier = the Aug 11 anchor + ONE wave, sized by how much of the known 33,441
+  // pending pool lapses. No acceptance stretch: within a single generation an award issued is
+  // a position passed, so offer depth and funded depth are the same number.
+  const terminalSeats = (s) => Math.round(fL + forwardAdvance(s.lapseRate) + s.reserveSeats);
+  // Kept so the UI's funded-vs-offer callouts still resolve; under one wave they coincide.
+  const terminalFunded = (s) => terminalSeats(s);
   // Default-shape terminals from the module scenarios. The waypoint heights below are
   // the hand-tuned DEFAULT curves (lull → Jul-15 step → taper). When a scenario's
   // churn is changed by the simulator sliders, `fitLine` rescales the whole curve's
@@ -743,44 +848,34 @@ function buildCascadeProjection({
     return { fn: buildLine(scaled, wavesEnd), terminal: newTerminal };
   };
 
-  // All three now run from the Aug 11 anchor (~46,000 — a SECOND big wave, with no deadline
-  // behind it, cutting through the deep end of the 30–50k originals). The shape is a
-  // decelerating grind: the wave that carried ~12,000 in 13 days cannot hold that rate,
-  // because the pool it draws from is finite and school has already started. Each line
-  // tapers to its terminal by Aug 31. They differ in how much laggard tail survived the two
-  // draws and how many deep offerees decline. fitLine pins each curve to its exact terminal.
-  //
-  // NOTE the headline change: the LIKELY case now CLEARS our 49,001 seat. Under the Jul 29
-  // model it missed by ~7,000. Nothing about our position moved — the frontier did.
+  // ONE WAVE, shaped by when the two open cohorts' four-week windows actually close.
+  // Nothing lapses before a window closes, so the line is FLAT through mid-August — the old
+  // model's smooth taper implied movement on days when no deadline existed. The steps:
+  //   • ~Aug 26  the Jul 29 cohort's window closes  → the older ~18,441 of the pool resolves
+  //   • ~Sep 7   the Aug 10 cohort's window closes  → the fresh 15,000 resolves
+  // after which the line is flat: no drift term, because a further wave would be a NEW cohort
+  // to add explicitly rather than a trickle to assume.
+  const waveMid = dayOf(WAVE_MID);
+  const EARLY_SHARE = PENDING_BEFORE_AUG_WAVE / PENDING_NOW;   // ~0.55 lands by Aug 26
+  const waveShape = (defTerminal) => [
+    { t: tL, f: fL },                                                   // Aug 11 anchor (~46,000)
+    { t: dayOf('2026-08-18'), f: fL },                                  // flat — no window has closed
+    { t: waveMid, f: fL + EARLY_SHARE * (defTerminal - fL) },           // Jul 29 cohort lapses
+    { t: wavesEnd, f: defTerminal },                                    // Aug 10 cohort lapses
+  ];
 
-  // LIKELY — 25% tail, 1.0% melt, 50% decline → OFFER ~51,200 (CLEARS 49,001 by ~2,200).
-  const real_ = fitLine([
-    { t: tL, f: fL },                              // Aug 11 anchor (46,000)
-    { t: dayOf('2026-08-18'), f: 48600 },          // wave continues but decelerating
-    { t: dayOf('2026-08-25'), f: 50300 },          // crosses our 49,001 seat in this window
-    { t: wavesEnd, f: defRealT },                  // taper to ~51,200 by Aug 31
-  ], defRealT, realistic);
+  // EXPECTED — 15% lapse (gem central; D.C. measured 14.3%) → ~52,800. Clears our seat.
+  const real_ = fitLine(waveShape(defRealT), defRealT, realistic);
   const realFn = real_.fn, realTerminal = real_.terminal;
 
-  // HIGH — 35% tail, 1.5% melt, 65% decline → OFFER ~60,900 (clears 49,001 in mid-August).
-  const agg_ = fitLine([
-    { t: tL, f: fL },                              // Aug 11 anchor (46,000)
-    { t: dayOf('2026-08-18'), f: 52000 },          // heavy decline stretch; crosses us this week
-    { t: dayOf('2026-08-25'), f: 57500 },          // deep offerees keep declining, offer runs on
-    { t: wavesEnd, f: defAggT },                   // ~60,900 by Aug 31
-  ], defAggT, aggressive);
+  // AGGRESSIVE — 30% lapse (Milwaukee, and what the Jul/Aug mop-up waves implied) → ~59,700.
+  const agg_ = fitLine(waveShape(defAggT), defAggT, aggressive);
   const aggFn = agg_.fn, aggTerminal = agg_.terminal;
 
-  // LOW — 15% tail, 0.5% melt, 35% decline → OFFER ~47,300. This is now the ONLY scenario
-  // that misses us, and it misses by ~1,700 rather than the ~8,000 of the Jul 29 model:
-  // the Aug 11 wave largely exhausted the laggard pool at this scenario's high acceptance,
-  // so almost nothing is left to carry the frontier the last stretch.
-  const research_ = fitLine([
-    { t: tL, f: fL },                              // Aug 11 anchor (46,000)
-    { t: dayOf('2026-08-18'), f: 46700 },          // wave stalls out; pool nearly spent
-    { t: dayOf('2026-08-25'), f: 47100 },          // thin tail, light melt
-    { t: wavesEnd, f: defResearchT },              // ~47,300 by Aug 31 — stops just short of us
-  ], defResearchT, research);
+  // PESSIMISTIC — 8% lapse, the queueing-theory floor, below any real programme → ~49,650.
+  // Note this now lands only just past our seat rather than short of it: with a 33,441 pool,
+  // even a floor-level lapse rate funds a wave bigger than our 3,001-4,000 gap.
+  const research_ = fitLine(waveShape(defResearchT), defResearchT, research);
   const researchFn = research_.fn, researchTerminal = research_.terminal;
 
   const crossTs = (fn, level) => {
@@ -804,7 +899,7 @@ function buildCascadeProjection({
   }
 
   // Frontier reached at the dates the table below the chart reports.
-  const TABLE_DATES = ['2026-07-08', '2026-07-29', '2026-08-11', '2026-08-18', '2026-08-25', '2026-08-31', '2026-09-15'];
+  const TABLE_DATES = ['2026-07-08', '2026-07-29', '2026-08-11', '2026-08-26', '2026-09-07', '2026-09-15'];
   const sampleAt = (fn) => TABLE_DATES.map((d) => Math.round(fn(dayOf(d))));
   const projectionTable = {
     dates: TABLE_DATES,
@@ -813,7 +908,8 @@ function buildCascadeProjection({
     research: sampleAt(researchFn),
   };
 
-  const spdObs = seatsPerDeparture(realistic.optOutShare, 1 - realistic.optOutShare);
+  const spdObs = seatsPerDeparture(OBS_OPTOUT_SHARE_OF_CHURN, 1 - OBS_OPTOUT_SHARE_OF_CHURN);
+  const HIST_ACCEPT = 0.50;   // the old model's central acceptance, kept ONLY for the historical back-out
   const kpis = {
     asOf: t2Observations[t2Observations.length - 1].date,
     asOfUnofficial: !!t2Observations[t2Observations.length - 1].unofficial,
@@ -848,28 +944,35 @@ function buildCascadeProjection({
     funded: FUNDED_JULY1,
     // Base the August melt actually applies to: the Jul 1 cohort PLUS the seats both draws
     // filled since. Quoting the bare 73,000 understates it by ~14,500.
-    meltBase: Math.round(fundedBase(realistic.acceptRate)),
+    meltBase: Math.round(fundedBase(HIST_ACCEPT)),
     remainder: CHURN_POOL,          // the PRE-deadline 18k pool (historical reference)
     // What's actually left of that 18k after the Jul 29 draw, at the central acceptance.
-    poolLeft: Math.round(remainingPool(realistic.acceptRate, spdObs)),
-    poolSpent: Math.round(spentDepartures(realistic.acceptRate, spdObs)),
+    poolLeft: Math.round(remainingPool(HIST_ACCEPT, spdObs)),
+    poolSpent: Math.round(spentDepartures(HIST_ACCEPT, spdObs)),
     notActivatedJul1: REMAINDER,    // historical: 107k active − 73k funded Jul 1
     optedInSince: REMAINDER - CHURN_POOL, // ~16k of the Jul-1 remainder have since opted in
     reserveSeats: realistic.reserveSeats,
     projectionTable,
     researchTerminal,
     // *TailPct = the share of the SURVIVING laggard pool still to be swept (15 / 25 / 35%).
-    researchChurnPct: Math.round(research.tailShare * 100),
-    realisticChurnPct: Math.round(realistic.tailShare * 100),
-    aggressiveChurnPct: Math.round(aggressive.tailShare * 100),
-    // *MeltPct = August attrition rate on the funded base (0.5 / 1.0 / 1.5%).
-    researchMeltPct: +(research.augRate * 100).toFixed(1),
-    realisticMeltPct: +(realistic.augRate * 100).toFixed(1),
-    aggressiveMeltPct: +(aggressive.augRate * 100).toFixed(1),
-    // *DeclinePct = the deep-waitlist decline rate that stretches the OFFER frontier (35/50/65%).
-    researchDeclinePct: Math.round((1 - research.acceptRate) * 100),
-    realisticDeclinePct: Math.round((1 - realistic.acceptRate) * 100),
-    aggressiveDeclinePct: Math.round((1 - aggressive.acceptRate) * 100),
+    // *LapsePct = THE dial: share of the pending pool that lets its 4-week window lapse.
+    researchLapsePct: +(research.lapseRate * 100).toFixed(1),
+    realisticLapsePct: +(realistic.lapseRate * 100).toFixed(1),
+    aggressiveLapsePct: +(aggressive.lapseRate * 100).toFixed(1),
+    // The known pool the wave is drawn from, and the two cohorts inside it.
+    pendingNow: PENDING_NOW,
+    pendingEarly: PENDING_BEFORE_AUG_WAVE,
+    pendingFresh: PENDING_NOW - PENDING_BEFORE_AUG_WAVE,
+    // Lapse rate below which the wave stops short of us, and the lapses that implies.
+    breakevenLapsePct: +(BREAKEVEN_LAPSE * 100).toFixed(1),
+    breakevenLapses: Math.round(lapsesFor(CURRENT_GAP.hi)),
+    seatsPerLapse: +SEATS_PER_LAPSE.toFixed(2),
+    // Wave size each scenario implies (positions, = awards issued).
+    researchWave: Math.round(forwardAdvance(research.lapseRate)),
+    realisticWave: Math.round(forwardAdvance(realistic.lapseRate)),
+    aggressiveWave: Math.round(forwardAdvance(aggressive.lapseRate)),
+    factsheetFrontier: FRONTIER_FROM_FACTSHEET,
+    awardedAug10: AWARDED_AUG10,
     // Funded-seat frontier (offer stretch removed) — how many NEW seats each scenario actually fills.
     researchFunded: terminalFunded(research),
     realisticFunded: terminalFunded(realistic),
@@ -929,10 +1032,10 @@ const BAND_OUTLOOK = [
   {
     band: '49,001 – 50,000',
     scope: 'YOUR SEAT · the bottom of the band',
-    call: 'Live — 3,001–4,000 to go, confirmed by Odyssey; the likely case now clears',
+    call: 'Live — 3,001–4,000 to go, confirmed by Odyssey; all three scenarios now clear',
     tone: 'mid',
     ourBand: true,
-    note: 'This is the headline change, and the gap itself is no longer an estimate. Odyssey Parent Support confirmed on Aug 11 (ticket #727303) that we sit in the 3,001–4,000 range on the waitlist — a management-confirmed band, down from 15,001–20,000 on Jul 29. So roughly 11,000–17,000 families cleared in thirteen days, which matches the Comptroller\'s "almost 15,000 additional waitlisted students" post over the same window: two unrelated sources, one personal and one public, agreeing on the movement. Our own position inside the band is still an ESTIMATE (~49,001–50,000, the deepest corner of it) — Odyssey only ever reports the gap, never a rank — but that no longer matters much: swept across the whole 30,001–50,000 band, the likely and high cases clear the gap at every value and the low case misses at every value. The likely case lands ~51,200, CLEARING our seat by ~2,200 (it missed by ~7,000 under the Jul 29 model); only the low case falls short, by ~1,700 rather than ~8,000. The real remaining uncertainty is the fuel: the laggard pool that carried this wave is most of the way spent, awards go out in batches tied to Comptroller announcements with no fixed schedule, and the biggest open lever — what share of deep Tier 3 offerees actually opt in — stays unmeasured until the four-week windows close. The Aug 11 release confirms those 15,000 were AWARDS ISSUED, not funded seats: parents get four weeks from their award date to opt in and confirm, so the first real read lands around Sep 7. Do NOT spend the money before it arrives, but this is no longer a 2% tail event.',
+    note: 'This is the headline change, and the gap itself is no longer an estimate. Odyssey Parent Support confirmed on Aug 11 (ticket #727303) that we sit in the 3,001–4,000 range on the waitlist — a management-confirmed band, down from 15,001–20,000 on Jul 29. So roughly 11,000–17,000 families cleared in thirteen days, which matches the Comptroller\'s "almost 15,000 additional waitlisted students" post over the same window: two unrelated sources, one personal and one public, agreeing on the movement. Our own position inside the band is still an ESTIMATE (~49,001–50,000, the deepest corner of it) — Odyssey only ever reports the gap, never a rank — but that no longer matters much: swept across the whole 30,001–50,000 band, the likely and high cases clear the gap at every value and the low case misses at every value. Rebuilt on the Aug 10 fact sheet, ALL THREE scenarios now clear us: expected ~52,800, aggressive ~59,700, and even the pessimistic 8% case ~49,650. The reason is that the pending pool refills rather than drains — 33,441 families currently hold an award they have not confirmed, against the ~5,505 the old model assumed was left. For the next wave to fall short of us, fewer than 8.8% of them would have to walk away; the lowest rate any real program has recorded is D.C. at 14.3%. The wave lands in two steps as the four-week opt-in windows close — ~Aug 26 for the Jul 29 batch, ~Sep 7 for the Aug 10 batch. Genuine remaining risk is no longer the size of the wave but whether one happens at all: a funding halt, an administrative pause, a legal challenge. Nothing suggests any of those. Do NOT spend the money before it arrives — but this has stopped being a tail event.',
   },
   {
     band: '50,001 +',
@@ -1514,8 +1617,8 @@ const mcPert = (min, mode, max, lambda = 4) => {
   return min + mcBeta(a, b) * (max - min);
 };
 
-const CONSERVATIVE_CHURN = 25; // "likely" tail share — slice of the SURVIVING laggard pool still to be swept
-const CONSERVATIVE_DECLINE = 50; // "likely" deep-waitlist decline rate — half of new offerees say no (offer stretches 2×)
+const CONSERVATIVE_CHURN = 15; // EXPECTED lapse rate — gem central; D.C. Opportunity Scholarship measured 14.3%
+const CONSERVATIVE_DECLINE = 50; // LEGACY, unused by the one-wave model; retained so old props still resolve
 
 const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, declineMin, setDeclineMin, declineMax, setDeclineMax, k, cascadeSeries, frontierYMax, todayTs }) => {
   const churnMode = CONSERVATIVE_CHURN; // fixed, not draggable
@@ -1535,29 +1638,18 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, declineM
       // it, with mild independent jitter so they're strongly but not perfectly correlated.
       // This makes the distribution match the three coupled lines: the median lands on LIKELY,
       // and the high tail (both levers high together) is what can reach our seat.
-      const fav = mcPert(0, 50, 100) / 100;                    // 0 = low reach, 1 = deep reach
-      const jitter = () => (mcPert(0, 50, 100) / 100 - 0.5) * 0.2; // ±10% independent wobble
-      const at = (lo, hi) => Math.min(hi, Math.max(lo, lo + (fav + jitter()) * (hi - lo)));
-      const tail = at(churnMin, churnMax) / 100;               // slice of the SURVIVING laggards still swept
-      const decline = at(declineMin, declineMax) / 100;        // deep-waitlist decline rate (co-moves with tail)
-      const acc = Math.max(0.05, 1 - decline);                 // acceptance rate (floor to avoid blow-up)
-      // August melt on the funded base rides the same favorability axis (0.5% → 1.5%).
-      const augRate = (AUG_ATTRITION.low + (fav + jitter()) * (AUG_ATTRITION.high - AUG_ATTRITION.low));
-      const optShare = mcPert(Math.max(0, optMode - 12), optMode, Math.min(100, optMode + 18)) / 100;
-      // holdFlat pins seats/departure at the observed downgrade-heavy mix (~1.16); otherwise it
-      // varies with the sampled opt-out share. Both exit routes (opt-out / $2,000) are in seatsPerDeparture.
-      const spd = holdFlat ? seatsPerDeparture(OBS_OPTOUT_RATE, OBS_DOWNGRADE_RATE) : seatsPerDeparture(optShare, 1 - optShare);
-      // ANCHOR UNCERTAINTY. Now small: the Aug 11 Odyssey email pins the gap to a 1,000-wide
-      // band, so the start point is only uncertain by ~±1,000 (45,001–46,999) rather than the
-      // ±2–3k it was under community triangulation. Still drawn on its OWN axis — how precisely
-      // Odyssey banded us has nothing to do with how favorable the year turns out, so this must
-      // NOT ride the shared favorability factor.
+      // ONE DIAL. The model now has a single unknown — what share of the 33,441 pending awards
+      // let their four-week window lapse — so the simulator draws that and nothing else. The old
+      // shared "favorability" factor coupling three levers is gone: coupling levers was a way of
+      // faking a single underlying axis, and now the axis is explicit.
+      const lapse = mcPert(churnMin, churnMode, churnMax) / 100;
+      // ANCHOR UNCERTAINTY. Small: the Aug 11 Odyssey email pins the gap to a 1,000-wide band,
+      // so the start point is uncertain by only ~±1,000 (45,001-46,999). Drawn on its OWN axis —
+      // how precisely Odyssey banded us has nothing to do with how the lapse rate turns out, so
+      // it must NOT ride the same draw.
       const anchor = FRONTIER_NOW + mcPert(ANCHOR_BAND.lo, 0, ANCHOR_BAND.hi);
-      // Same two-term fuel model as the chart (shared helpers, so they cannot drift): the residual
-      // laggard tail — drawn from what SURVIVED both draws, back-solved from the observed
-      // advance — plus August melt, all stretched by 1/acceptance since a decline passes the same
-      // dollars deeper for free. RESERVE_SEATS is 0 (the appeals reserve fired Jul 8).
-      arr[i] = anchor + forwardAdvance(tail, Math.max(0, augRate), acc, spd) + RESERVE_SEATS;
+      // Same one-wave fuel model as the chart, via the shared helper so the two cannot drift.
+      arr[i] = anchor + forwardAdvance(lapse) + RESERVE_SEATS;
     }
     const sorted = Array.from(arr).sort((a, b) => a - b);
     const pct = (p) => sorted[Math.floor(p * (sorted.length - 1))];
@@ -1591,11 +1683,11 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, declineM
         <Activity size={20} /> How far the line reaches — and how likely
       </h2>
       <p className="text-sm text-tefa-body/80 mb-4">
-        One model, two views of the same thing. Each line is the <strong>offer frontier</strong> — how deep an offer travels, set by two dials: how much of the{' '}
-        <strong>~{k.poolLeft.toLocaleString()}</strong> laggards left after both draws still get swept (plus August melt — together they fund the seats) and how many
-        deep-waitlist families <em>decline</em> the seats they're offered (each &ldquo;no&rdquo; passes the offer deeper for free). <strong>Distribution</strong> runs that model{' '}
-        <strong>{trials.toLocaleString()} times</strong> and shows where the offer landed across all of them — <em>the lines are essentially the averages of that cloud</em>.
-        Drag the dials and <strong>both</strong> update. Our band is {BAND_LO.toLocaleString()}–{BAND_HI.toLocaleString()} (we sit at ~{YOUR_POS.lo.toLocaleString()}); Tier 3 opens at {T3_START.toLocaleString()}.
+        One model, two views of the same thing. Each line is the <strong>frontier</strong> after one wave at ~Sep 7, set by a single dial: what share of the{' '}
+        <strong>{k.pendingNow.toLocaleString()}</strong> families holding an unresolved award let their four-week window lapse. Each lapse returns the full award and funds
+        ~{k.seatsPerLapse} more offers. <strong>Distribution</strong> runs that model{' '}
+        <strong>{trials.toLocaleString()} times</strong> and shows where it landed across all of them — <em>the lines are essentially the averages of that cloud</em>.
+        Drag the dial and <strong>both</strong> update. Our band is {BAND_LO.toLocaleString()}–{BAND_HI.toLocaleString()} (we sit at ~{YOUR_POS.lo.toLocaleString()}); Tier 3 opens at {T3_START.toLocaleString()}.
       </p>
 
       {/* context KPIs */}
@@ -1613,16 +1705,16 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, declineM
           <div className="text-[10px] text-tefa-body/40">OFFICIAL · Odyssey, {fmtChartDate(Date.parse(k.odysseyAsOf))} · was {k.gapPrevLo.toLocaleString()}–{k.gapPrevHi.toLocaleString()}</div>
         </div>
         <div className="rounded-lg bg-tefa-light border border-tefa-navy/20 p-3 text-center">
-          <div className="text-xs text-tefa-navy/70 font-medium">Likely OFFER reach</div>
+          <div className="text-xs text-tefa-navy/70 font-medium">Expected reach</div>
           <div className="font-bold text-tefa-navy text-lg">~{k.realisticTerminal.toLocaleString()}</div>
-          <div className="text-[10px] text-tefa-body/40">{k.realisticChurnPct}% tail · {k.realisticMeltPct}% melt · {k.realisticDeclinePct}% decline · {k.realisticTerminal >= YOUR_POS.lo
+          <div className="text-[10px] text-tefa-body/40">{k.realisticLapsePct}% lapse of {k.pendingNow.toLocaleString()} pending · {k.realisticTerminal >= YOUR_POS.lo
             ? `clears us by ~${(k.realisticTerminal - YOUR_POS.lo).toLocaleString()}`
             : `~${(YOUR_POS.lo - k.realisticTerminal).toLocaleString()} short of us`}</div>
         </div>
         <div className="rounded-lg bg-tefa-light border border-tefa-red/30 p-3 text-center">
-          <div className="text-xs text-tefa-red/70 font-medium">High OFFER reach</div>
+          <div className="text-xs text-tefa-red/70 font-medium">Aggressive reach</div>
           <div className="font-bold text-tefa-red text-lg">~{k.aggressiveTerminal.toLocaleString()}</div>
-          <div className="text-[10px] text-tefa-body/40">{k.aggressiveChurnPct}% tail · {k.aggressiveMeltPct}% melt · {k.aggressiveDeclinePct}% decline · clears our {YOUR_POS.lo.toLocaleString()}</div>
+          <div className="text-[10px] text-tefa-body/40">{k.aggressiveLapsePct}% lapse of {k.pendingNow.toLocaleString()} pending · clears our {YOUR_POS.lo.toLocaleString()}</div>
         </div>
       </div>
 
@@ -1658,7 +1750,7 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, declineM
           </button>
         </div>
         <span className="text-[11px] text-tefa-body/45">
-          {view === 'lines' ? 'Offer-frontier path per scenario (moved-aside share + decline rate) — drag the dials to reshape.' : `Where ${trials.toLocaleString()} runs landed — the lines are the averages of this.`}
+          {view === 'lines' ? 'Frontier after one wave at ~Sep 7, by lapse rate — drag the dial to reshape.' : `Where ${trials.toLocaleString()} runs landed — the lines are the averages of this.`}
         </span>
       </div>
 
@@ -1690,17 +1782,16 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, declineM
                 <ReferenceLine y={BAND_LO} stroke="#aa2142" strokeDasharray="8 4"
                     label={{ value: `Our band starts — ${BAND_LO.toLocaleString()} (reached)`, position: 'insideTopLeft', fontSize: 9, fontWeight: 600, fill: '#aa2142' }} />
                 <Line type="monotone" dataKey="observedLine" name="Pulled off so far" stroke="#202562" strokeWidth={2.5} dot={false} legendType="none"  isAnimationActive={false} />
-                <Line type="monotone" dataKey="research" name={`Low — ${k.researchChurnPct}% tail · ${k.researchDeclinePct}% decline`} stroke="#2e7d5b" strokeWidth={2} dot={false}  isAnimationActive={false} />
-                <Line type="monotone" dataKey="realistic" name={`Likely — ${k.realisticChurnPct}% tail · ${k.realisticDeclinePct}% decline`} stroke="#202562" strokeWidth={2.5} dot={false}  isAnimationActive={false} />
-                <Line type="monotone" dataKey="aggressive" name={`High — ${k.aggressiveChurnPct}% tail · ${k.aggressiveDeclinePct}% decline`} stroke="#aa2142" strokeWidth={2.5} dot={false}  isAnimationActive={false} />
+                <Line type="monotone" dataKey="research" name={`Pessimistic — ${k.researchLapsePct}% lapse`} stroke="#2e7d5b" strokeWidth={2} dot={false}  isAnimationActive={false} />
+                <Line type="monotone" dataKey="realistic" name={`Expected — ${k.realisticLapsePct}% lapse`} stroke="#202562" strokeWidth={2.5} dot={false}  isAnimationActive={false} />
+                <Line type="monotone" dataKey="aggressive" name={`Aggressive — ${k.aggressiveLapsePct}% lapse`} stroke="#aa2142" strokeWidth={2.5} dot={false}  isAnimationActive={false} />
                 <Scatter dataKey="observed" name="Published data" fill="#202562" isAnimationActive={false} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
           <p className="text-[10px] text-tefa-body/45 mt-1">
-            Each line is the OFFER frontier: how deep an offer travels once the residual laggard tail (~{k.poolLeft.toLocaleString()} left of Pillow's {k.remainder.toLocaleString()})
-            and August melt free seats, AND deep-waitlist families decline them. Declines cost no money — they pass the offer deeper for free — so the offer reaches well past
-            the funded-seat count. When a line crosses our position line, an offer has reached us.
+            Each line is the frontier after ONE wave at ~Sep 7, sized by how much of the {k.pendingNow.toLocaleString()}-family pending pool lets its four-week window lapse.
+            The line is flat until a window actually closes — nothing moves on a day with no deadline behind it — then steps at ~Aug 26 and ~Sep 7. When a line crosses our position line, an offer has reached us.
           </p>
         </>
       ) : (
@@ -1743,26 +1834,30 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, declineM
 
       {/* how to read the inputs */}
       <div className="rounded-lg border border-tefa-navy/15 bg-tefa-light/60 p-4 mb-5 text-xs text-tefa-body/80 space-y-2.5">
-        <div className="font-semibold text-tefa-navy text-[13px]">How to read the dials</div>
+        <div className="font-semibold text-tefa-navy text-[13px]">How to read the dial</div>
         <p>
-          <strong className="text-tefa-navy">Residual tail swept (PERT min / likely / max)</strong> — your three-point guess for{' '}
-          <em>what % of the ~{k.poolLeft.toLocaleString()} laggards who survived both draws</em> still get moved aside (opt out or drop to $2,000)
-          rather than confirm. Alongside August melt on the funded base, it sets <strong>how many seats free up</strong>. The pool it draws from is
-          back-solved from the observed Jul 29 advance, so a scenario can never spend more of the {k.remainder.toLocaleString()} than existed.
+          There is now <strong>one</strong> dial, because the model has one unknown. Everything else is published:
+          the pool is <strong>{k.pendingNow.toLocaleString()}</strong> families holding an award they have not confirmed
+          ({k.awardedAug10.toLocaleString()} awarded on the Aug 10 fact sheet, less ~85,000 funded), and the wave date is
+          fixed by the four-week opt-in rule.
         </p>
         <p>
-          <strong className="text-tefa-navy">Deep-waitlist decline rate</strong> — the second lever, and the one that reopened our band:
-          of the deep-Tier-3 families newly <em>offered</em> a freed seat, what fraction <strong>say no</strong>. A decline frees no money — it just
-          passes the same seat to the next position for free — so a higher decline rate <strong>stretches the offer deeper down the list</strong>
-          (offer reach = funded seats ÷ acceptance). In late summer most deep families have enrolled elsewhere, so this runs high.
+          <strong className="text-tefa-navy">Lapse rate</strong> — of those {k.pendingNow.toLocaleString()}, what share simply
+          let the four-week window expire without opting in. A lapse returns the <strong>full ${FULL_AWARD.toLocaleString()}</strong>
+          (they took no action, so they cannot have chosen the $2,000 homeschool tier), which funds ~<strong>{k.seatsPerLapse}</strong>
+          new awards at the ~${TEFA_BUDGET.blendedCost.toLocaleString()} blended cost. Note this is <em>lapsing</em>, not
+          <em> opting out</em>: giving up money you already hold is rare (2.8% observed), while never claiming an offer you
+          waited months for is common.
         </p>
         <ul className="list-disc pl-5 space-y-1 text-tefa-body/70">
-          <li><strong>likely</strong> is <span className="font-mono text-tefa-gold">{CONSERVATIVE_CHURN}%</span> of the tail swept / <span className="font-mono text-tefa-gold">{CONSERVATIVE_DECLINE}%</span> decline — pinned to our central read, <strong>not draggable</strong>.</li>
-          <li>Drag <strong>min</strong> / <strong>max</strong> on each to set how wide the low- and high-reach cases run around that anchor.</li>
+          <li><strong>expected</strong> is <span className="font-mono text-tefa-gold">{CONSERVATIVE_CHURN}%</span> — the gem&rsquo;s central figure, with D.C.&rsquo;s measured 14.3% underneath it. <strong>Not draggable.</strong></li>
+          <li>Drag <strong>pessimistic</strong> down to the 8% queueing-theory floor, or <strong>aggressive</strong> up toward Milwaukee&rsquo;s 30%.</li>
+          <li>Below <span className="font-mono text-tefa-gold">{k.breakevenLapsePct}%</span> the wave stops short of us. Nothing on record runs that low.</li>
         </ul>
-        <p>
-          <strong className="text-tefa-navy">Opt-out share of those leaving</strong> — of the families moved aside, what fraction <strong>quit entirely</strong>
-          (freeing the full $10,474) vs <strong>drop to the $2,000 homeschool tier</strong> (freeing only $8,474). Changes how far each departure pushes the frontier, not how many leave.
+        <p className="text-tefa-body/50">
+          The three old dials (tail swept, decline rate, opt-out share) are gone. They were three ways of describing one
+          underlying quantity, coupled by a shared &ldquo;favorability&rdquo; factor to stop them drifting apart &mdash; which
+          was a sign they should have been one dial all along.
         </p>
       </div>
 
@@ -1770,70 +1865,50 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, declineM
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
         <div>
           <label className="block text-xs font-semibold text-tefa-body/80 mb-2">
-            Residual tail swept — min / <span className="text-tefa-body/50">likely (fixed)</span> / max{' '}
+            Lapse rate — pessimistic / <span className="text-tefa-body/50">expected (fixed)</span> / aggressive{' '}
             <span className="font-mono text-tefa-gold ml-1">{churnMin} / {churnMode} / {churnMax}%</span>
           </label>
           <div className="grid grid-cols-3 gap-3">
             <div className="text-center">
-              <div className="text-[10px] uppercase tracking-wide text-tefa-body/40 mb-1">min (best)</div>
-              <input type="range" min="5" max="24" value={churnMin} className="w-full accent-tefa-navy"
+              <div className="text-[10px] uppercase tracking-wide text-tefa-body/40 mb-1">pessimistic</div>
+              <input type="range" min="2" max="14" value={churnMin} className="w-full accent-tefa-navy"
                 onChange={(e) => setChurnMin(Math.min(+e.target.value, churnMode - 1))} />
+              <div className="text-[9px] text-tefa-body/40">queueing floor 8%</div>
             </div>
             <div className="text-center">
-              <div className="text-[10px] uppercase tracking-wide text-tefa-gold/80 mb-1">likely · locked</div>
+              <div className="text-[10px] uppercase tracking-wide text-tefa-gold/80 mb-1">expected · locked</div>
               <div className="flex items-center justify-center h-[18px] font-mono text-sm font-bold text-tefa-gold">{churnMode}%</div>
-              <div className="text-[9px] text-tefa-body/40">central</div>
+              <div className="text-[9px] text-tefa-body/40">D.C. 14.3%</div>
             </div>
             <div className="text-center">
-              <div className="text-[10px] uppercase tracking-wide text-tefa-body/40 mb-1">max (worst)</div>
-              <input type="range" min="26" max="60" value={churnMax} className="w-full accent-tefa-navy"
+              <div className="text-[10px] uppercase tracking-wide text-tefa-body/40 mb-1">aggressive</div>
+              <input type="range" min="16" max="45" value={churnMax} className="w-full accent-tefa-navy"
                 onChange={(e) => setChurnMax(Math.max(+e.target.value, churnMode + 1))} />
+              <div className="text-[9px] text-tefa-body/40">Milwaukee 30%</div>
             </div>
           </div>
+          <p className="text-[11px] text-tefa-body/45 mt-2">
+            Of the <strong>{k.pendingNow.toLocaleString()}</strong> families holding an unresolved award, what share let their
+            four-week window lapse without opting in. Each lapse returns the full ${FULL_AWARD.toLocaleString()} and funds
+            ~{k.seatsPerLapse} seats at the ~${TEFA_BUDGET.blendedCost.toLocaleString()} blended cost of a new award.
+            <strong> This is the only unknown left in the model</strong> — the pool size is published, and the wave date is set
+            by the four-week rule. Anchored on published multi-program attrition rather than on our own July/August history,
+            which was a one-off deadline mop-up and is not a repeatable rate.
+          </p>
         </div>
 
-        <div>
-          <label className="block text-xs font-semibold text-tefa-body/80 mb-2">
-            Deep-waitlist decline rate — min / <span className="text-tefa-body/50">likely (fixed)</span> / max{' '}
-            <span className="font-mono text-tefa-gold ml-1">{declineMin} / {declineMode} / {declineMax}%</span>
-          </label>
-          <div className="grid grid-cols-3 gap-3">
-            <div className="text-center">
-              <div className="text-[10px] uppercase tracking-wide text-tefa-body/40 mb-1">min (low reach)</div>
-              <input type="range" min="10" max="49" value={declineMin} className="w-full accent-tefa-navy"
-                onChange={(e) => setDeclineMin(Math.min(+e.target.value, declineMode - 1))} />
-            </div>
-            <div className="text-center">
-              <div className="text-[10px] uppercase tracking-wide text-tefa-gold/80 mb-1">likely · locked</div>
-              <div className="flex items-center justify-center h-[18px] font-mono text-sm font-bold text-tefa-gold">{declineMode}%</div>
-              <div className="text-[9px] text-tefa-body/40">central</div>
-            </div>
-            <div className="text-center">
-              <div className="text-[10px] uppercase tracking-wide text-tefa-body/40 mb-1">max (deep reach)</div>
-              <input type="range" min="51" max="85" value={declineMax} className="w-full accent-tefa-navy"
-                onChange={(e) => setDeclineMax(Math.max(+e.target.value, declineMode + 1))} />
-            </div>
+        <div className="rounded-lg bg-tefa-light border border-tefa-sky/30 p-3">
+          <div className="text-xs font-bold text-tefa-navy mb-1.5">The whole model in four lines</div>
+          <div className="text-[11px] text-tefa-body/70 space-y-0.5 font-mono">
+            <div>About {k.officialWave?.toLocaleString()} new awards went out on Aug 10.</div>
+            <div>{k.pendingNow.toLocaleString()} families now hold an award they have not confirmed.</div>
+            <div>If {churnMode}% let it lapse &rarr; {Math.round(k.pendingNow * churnMode / 100).toLocaleString()} lapses &times; {k.seatsPerLapse} = <strong>{Math.round(k.pendingNow * churnMode / 100 * k.seatsPerLapse).toLocaleString()}</strong> more offers.</div>
+            <div>We need <strong>{k.gapToUs.toLocaleString()}&ndash;{k.gapToUsHi.toLocaleString()}</strong>.</div>
           </div>
-        </div>
-
-        <div>
-          <label className="block text-xs font-semibold text-tefa-body/80 mb-2">
-            Opt-out share of churn (likely) <span className="font-mono text-tefa-gold ml-1">{optMode}%</span>
-          </label>
-          <input type="range" min="5" max="80" value={optMode} className="w-full accent-tefa-navy"
-            onChange={(e) => setOptMode(+e.target.value)} />
-          <p className="text-[11px] text-tefa-body/45 mt-1.5">The rest are $2,000 homeschool downgrades. Drawn in a ±range around this. More opt-outs free more dollars per departure.</p>
-        </div>
-
-        <div>
-          <label className="flex items-center gap-2 text-xs font-semibold text-tefa-body/80 cursor-pointer">
-            <input type="checkbox" checked={holdFlat} className="w-4 h-4 accent-tefa-navy"
-              onChange={(e) => setHoldFlat(e.target.checked)} />
-            Hold seats-per-departure flat at 1.0 (friction discount)
-          </label>
-          <p className="text-[11px] text-tefa-body/45 mt-1.5">
-            On = the reviewers' fix: ignore the mix-driven lift, assume admin friction persists. Off = let the dollar mechanism scale seats up to
-            ~1.06 in opt-out-heavy draws. (Barely moves the odds either way.)
+          <p className="text-[11px] text-tefa-body/50 mt-2">
+            It misses only if the lapse rate comes in under <strong>{k.breakevenLapsePct}%</strong> — fewer than{' '}
+            {k.breakevenLapses.toLocaleString()} of the {k.pendingNow.toLocaleString()}. No real programme has recorded a rate
+            that low; the lowest on record is D.C. at 14.3%, and 8% is the theoretical floor for a constrained waitlist.
           </p>
         </div>
 
@@ -1851,8 +1926,8 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, declineM
       </div>
 
       <p className="text-[10px] text-tefa-body/45 mt-4">
-        Defaults reproduce the model: residual tail PERT(15 / 25 / 35) of the ~{k.poolLeft.toLocaleString()} laggards left after both draws, August melt 0.5–1.5% of the
-        ~{Math.round(k.meltBase / 1000)}k funded base, decline rate PERT(35 / 50 / 65), opt-out share ~23%, freed-ratio held at the observed ~1.16 — the median offer lands
+        Defaults reproduce the model: lapse rate PERT({k.researchLapsePct} / {k.realisticLapsePct} / {k.aggressiveLapsePct}) on the {k.pendingNow.toLocaleString()} pending pool
+        at {k.seatsPerLapse} seats per lapse, one wave at ~Sep 7, anchor ±1,000 drawn on its own axis — the median lands
         near ~{fmt(r.p50)}. Every run clears our band start ({BAND_LO.toLocaleString()}) now, so the only number that matters is the share clearing{' '}
         {YOUR_POS.lo.toLocaleString()} — the probability an offer reaches <em>us</em>. Drag to stress-test. A planning tool, not a forecast.
       </p>
@@ -1868,15 +1943,15 @@ const TefaView = () => {
   // The three chart lines (low / likely / high) pair the two levers along one axis: the
   // moved-aside SHARE of the 18k (funds seats) AND the deep-waitlist DECLINE rate (stretches
   // the offer). Dragging either pair of sliders reshapes the chart live.
-  const [churnMin, setChurnMin] = useState(15);     // low: 15% of the surviving laggard tail swept
-  const [churnMax, setChurnMax] = useState(35);     // high: 35% of the tail swept
+  const [churnMin, setChurnMin] = useState(8);      // PESSIMISTIC lapse — queueing-theory floor
+  const [churnMax, setChurnMax] = useState(30);     // AGGRESSIVE lapse — Milwaukee; also what Jul/Aug implied
   const [declineMin, setDeclineMin] = useState(35); // low reach: 35% of deep offerees decline
   const [declineMax, setDeclineMax] = useState(65); // high reach: 65% decline
   const { series: cascadeSeries, kpis: k } = useMemo(
     () => buildCascadeProjection({
-      research: { ...RESEARCH, tailShare: churnMin / 100, acceptRate: Math.max(0.05, 1 - declineMin / 100) },
-      realistic: { ...REALISTIC, tailShare: CONSERVATIVE_CHURN / 100, acceptRate: Math.max(0.05, 1 - CONSERVATIVE_DECLINE / 100) },
-      aggressive: { ...AGGRESSIVE, tailShare: churnMax / 100, acceptRate: Math.max(0.05, 1 - declineMax / 100) },
+      research: { ...RESEARCH, lapseRate: churnMin / 100 },
+      realistic: { ...REALISTIC, lapseRate: CONSERVATIVE_CHURN / 100 },
+      aggressive: { ...AGGRESSIVE, lapseRate: churnMax / 100 },
     }),
     [churnMin, churnMax, declineMin, declineMax]
   );
@@ -1941,10 +2016,10 @@ const TefaView = () => {
           Comptroller&rsquo;s &ldquo;almost {k.officialWave?.toLocaleString()} additional&rdquo; wave almost exactly — two
           independent sources agreeing on the <em>movement</em> — though not, note, on the absolute depth, which no source has
           ever published; <strong>~{k.frontierNow.toLocaleString()}</strong> remains our best estimate rather than a settled
-          figure, and the answer is built so that does not matter. The laggard pool is now mostly spent: of the {k.remainder.toLocaleString()} Pillow counted on Jul 11,
-          roughly <strong>{k.poolSpent.toLocaleString()}</strong> were consumed producing the {k.totalAdvance.toLocaleString()}-deep total advance, leaving ~{k.poolLeft.toLocaleString()}. Forward fuel is the residual tail plus <strong>August melt</strong> on
-          the ~{Math.round(k.meltBase / 1000)}k funded base, stretched by the <strong>decline rate</strong> among deep offerees — every decline passes the seat down for free.
-          Likely (<strong>~{k.realisticTerminal.toLocaleString()}</strong>) and high (<strong>~{k.aggressiveTerminal.toLocaleString()}</strong>) now <strong>clear</strong> us; only low (<strong>~{k.researchTerminal.toLocaleString()}</strong>) falls short, by ~{(YOUR_POS.lo - k.researchTerminal).toLocaleString()}.
+          figure, and the answer is built so that does not matter. The fuel is bigger than we thought, not smaller: the Aug 10 fact sheet shows <strong>{k.pendingNow.toLocaleString()}</strong> families
+          holding an award they have not confirmed. The old model assumed a fixed pool draining to ~{k.poolLeft.toLocaleString()}; in fact it <em>refills</em> with every
+          wave. Each family who lets their four-week window lapse returns the full award and funds ~{k.seatsPerLapse} more offers.
+          <strong>All three scenarios now clear us</strong> — expected <strong>~{k.realisticTerminal.toLocaleString()}</strong>, aggressive <strong>~{k.aggressiveTerminal.toLocaleString()}</strong>, and even the pessimistic <strong>~{k.researchTerminal.toLocaleString()}</strong>, which gets past our seat by ~{Math.abs(k.researchTerminal - YOUR_POS.lo).toLocaleString()}.
           A voucher has gone from a long shot to <strong>more likely than not</strong>. The remaining uncertainty is no longer
           <em> how far ahead of us the line is</em> — Odyssey has told us that — but whether there is enough fuel left for one
           more wave of even {k.gapToUsHi.toLocaleString()}. The Aug 11 release adds the clock we were missing: parents have FOUR WEEKS
@@ -1993,11 +2068,13 @@ const TefaView = () => {
           Treat the absolute figures on this page as a scale that could shift bodily; treat the gap as the real output.
         </p>
         <div className="text-[11px] text-tefa-body/60 bg-tefa-light rounded p-3 space-y-1">
-          <div><strong>The fuel is now two slow terms, not one cliff.</strong> Forward advance = (residual laggard tail + August melt) × seats-freed-per-departure ÷ <strong>acceptance rate</strong>. The tail is drawn from what <em>survived both draws</em>: of Pillow's {k.remainder.toLocaleString()} laggards, ~<strong>{k.poolSpent.toLocaleString()}</strong> were consumed producing the observed {k.totalAdvance.toLocaleString()}-deep total advance since Jul 8, leaving ~{k.poolLeft.toLocaleString()}. August melt is ordinary summer attrition on the ~{Math.round(k.meltBase / 1000)}k funded base ({k.researchMeltPct}–{k.aggressiveMeltPct}%): took the ESA, then withdrew, moved, or never showed. Each departure frees dollars two ways (a full <strong>opt-out</strong> frees ~$10,474, a <strong>$2,000 homeschool</strong> drop frees ~$8,474; observed ~23/77 mix → {k.freedRatio} seats/departure). The ÷ acceptance is the OFFER stretch: a deep family who <strong>declines</strong> frees no money but passes the same seat deeper for free, so the offer travels 1/acceptance as deep. <strong>Low</strong> ({k.researchChurnPct}% tail, {k.researchMeltPct}% melt, {k.researchDeclinePct}% decline) → ~<strong>{k.researchTerminal.toLocaleString()}</strong>; <strong>likely</strong> ({k.realisticChurnPct}% / {k.realisticMeltPct}% / {k.realisticDeclinePct}%) → ~<strong>{k.realisticTerminal.toLocaleString()}</strong>; <strong>high</strong> ({k.aggressiveChurnPct}% / {k.aggressiveMeltPct}% / {k.aggressiveDeclinePct}%) → ~<strong>{k.aggressiveTerminal.toLocaleString()}</strong>. <strong>Likely and high now both reach our {YOUR_POS.lo.toLocaleString()}; only low misses.</strong> That is the reverse of the Jul 29 model, and it is the frontier that moved, not us.</div>
-          <div><strong>Why the back-out matters.</strong> A high-decline scenario needed <em>fewer</em> departures to produce the observed {k.totalAdvance.toLocaleString()}-deep advance — each freed seat travelled further before it stuck — so it leaves <em>more</em> tail in reserve. A low-decline scenario burned more pool to get here and has less left. Tying the levers to the observation this way stops a scenario from spending more of the {k.remainder.toLocaleString()} than ever existed, which is the error that makes naive &ldquo;apply the same attrition % to every wave&rdquo; projections run away.</div>
+          <div><strong>The whole model, in one line.</strong> <strong>wave = pending pool &times; lapse rate &times; seats per lapse</strong>. The pool is <strong>{k.pendingNow.toLocaleString()}</strong> families holding an award they have not confirmed &mdash; published, not estimated ({k.awardedAug10.toLocaleString()} awarded on the Aug 10 fact sheet, minus ~85,000 funded in the annual report). Each family who lets their four-week window <strong>lapse</strong> returns the full ${FULL_AWARD.toLocaleString()}, which funds ~<strong>{k.seatsPerLapse}</strong> new awards at the ~${TEFA_BUDGET.blendedCost.toLocaleString()} blended cost. That leaves the lapse rate as the single unknown: <strong>pessimistic {k.researchLapsePct}%</strong> &rarr; ~{k.researchWave.toLocaleString()} more offers (frontier ~{k.researchTerminal.toLocaleString()}); <strong>expected {k.realisticLapsePct}%</strong> &rarr; ~{k.realisticWave.toLocaleString()} (~{k.realisticTerminal.toLocaleString()}); <strong>aggressive {k.aggressiveLapsePct}%</strong> &rarr; ~{k.aggressiveWave.toLocaleString()} (~{k.aggressiveTerminal.toLocaleString()}). We need {k.gapToUs.toLocaleString()}&ndash;{k.gapToUsHi.toLocaleString()}. <strong>All three clear it.</strong></div>
+          <div><strong>Why the rates come from other programmes, not from our own summer.</strong> Backing a lapse rate out of the July/August waves gives ~61%, and that number is worthless: Pillow&rsquo;s 18,000 were families who had <em>already</em> failed to respond for weeks, so of course they lapsed. Those waves were also a one-time deadline mop-up &mdash; Jul 15 opt-in and Jul 31 confirmation both fell just before the Aug 10 batch, and that pool went 18,000 &rarr; ~1,400. A fresh cohort will not repeat it. So the scenarios use published attrition instead: the queueing-theory floor (8%), D.C. Opportunity Scholarship (14.3%), Milwaukee Parental Choice (30%). Telling detail: the observed July/August waves imply ~30% &mdash; which lands on <em>Milwaukee, the high benchmark</em>, confirming they were running hot. Hence 30% is the aggressive case, not the expected one.</div>
+          <div><strong>What would have to happen for this to miss.</strong> The wave falls short of us only if the lapse rate comes in below <strong>{k.breakevenLapsePct}%</strong> &mdash; fewer than {k.breakevenLapses.toLocaleString()} of the {k.pendingNow.toLocaleString()} pending families walking away. That is beneath every rate any real programme has recorded, and these are <em>year-one</em> attrition figures being applied to a single four-week window on families offered a seat in late August, after school started. If anything they understate it. The honest residual risk is therefore not &ldquo;the wave is too small&rdquo; but &ldquo;no wave happens at all&rdquo; &mdash; a funding halt, an administrative pause, a legal challenge. Nothing in the releases points that way, and nothing in this model would see it coming.</div>
+          <div><strong>Awarded &ne; funded &ne; active &mdash; three different populations.</strong> The Aug 10 fact sheet counts <strong>{k.awardedAug10.toLocaleString()} awarded</strong>; the annual report counts <strong>~85,000 funded</strong>; the gap between them is the {k.pendingNow.toLocaleString()} this whole model runs on. The program&rsquo;s own social copy said it had &ldquo;<em>funded</em> almost {k.officialWave?.toLocaleString()}&rdquo; when the release said &ldquo;<em>awarded</em>&rdquo; &mdash; and reading it the wrong way briefly made the outlook look far worse than it is. Awards carry a four-week clock, so none of the {k.officialWave?.toLocaleString()} can be funded before ~Sep 7. Keep the three straight.</div>
           <div className="pt-1"><strong>Scoring our own Jul 29 call — we were too pessimistic, and it is worth being clear about why.</strong> Three weeks ago this model said the likely case landed ~42,100 and put <em>P(reach us)</em> near 2%. The frontier is now ~{k.frontierNow.toLocaleString()}, past that likely case and three weeks early. The error was structural, not arithmetic: we treated Pillow's 18,000 not-opted-in as a <em>hard ceiling on all future fuel</em>, when in fact August produced departures from the <em>already-funded</em> base at a rate well above the 0.5–1.5% melt we allowed — families who took an ESA and then did not show up when school actually started. The lesson for the next refresh: a published pool count bounds <em>that pool</em>, not the total fuel, and school-start melt is a bigger, later term than a summer model wants to believe. The Facebook &ldquo;each wave unlocks another 34%&rdquo; claim we argued down on Jul 29 (it projected ~50,490) has landed closer to the truth than our central case did — its double-counting critique still stands on the arithmetic, but its <em>conclusion</em> was better calibrated than ours.</div>
-          <div><strong>Watch — the grind, and the possibility of a third wave.</strong> We said on Jul 29 that the Jul 15 deadline was the last cliff. The Aug 11 wave proves that was wrong: ~{k.recentAdvance.toLocaleString()} more positions cleared with no deadline behind them. What remains is the Jul 31 confirmation tail plus school-start melt, and the pool is genuinely thinner now (~{k.poolLeft.toLocaleString()} left) — but we have now under-called two waves in a row, so treat the low case as a floor rather than a forecast. It all lands <em>after</em> the Jun 30 penalty-free withdrawal deadline, so the withdrawal call had to be made without knowing any of this.</div>
-          <div className="pt-1 border-t border-tefa-body/10"><strong>Awarded ≠ funded — and it matters more than it sounds.</strong> The program&rsquo;s social post said it had &ldquo;<em>funded</em> almost {k.officialWave?.toLocaleString()} additional waitlisted students.&rdquo; The official release the same day says the Comptroller &ldquo;<em>awarded</em> TEFA to nearly {k.officialWave?.toLocaleString()} additional students,&rdquo; and that parents have <strong>four weeks from the date of their award</strong> to opt in and confirm. So those {k.officialWave?.toLocaleString()} are <strong>offers</strong>, and none of them can be funded yet. Worth spelling out, because reading it the other way briefly looked alarming: {k.officialWave?.toLocaleString()} <em>funded</em> against our {k.gapClosedLo.toLocaleString()}–{k.gapClosedHi.toLocaleString()} positions cleared would imply an acceptance rate near <strong>0.9</strong> rather than the <strong>0.5</strong> assumed here, cutting the forward advance from ~5,200 to ~1,300 and leaving us <em>short</em> of the gap. Read correctly, offers map about 1:1 onto positions passed, so {k.officialWave?.toLocaleString()} against {k.gapClosedLo.toLocaleString()}–{k.gapClosedHi.toLocaleString()} is exactly what this model predicts and says nothing at all about acceptance. <strong>The 50% stands.</strong> The real measurement lands when the four-week window on the Aug 10 batch closes around <strong>Sep 7</strong> and a funded count is published against the {k.officialWave?.toLocaleString()} issued — that one figure will settle the largest lever left in the model. Keep the three populations distinct: <strong>85,000 funded</strong>, <strong>118,000 active</strong>, awards issued higher still.</div>
+          <div><strong>Watch &mdash; the two dates that matter.</strong> Awards carry a <strong>four-week</strong> opt-in window, so the wave arrives in two steps rather than as a drift: <strong>~Aug 26</strong>, when the Jul 29 cohort&rsquo;s window closes (~{k.pendingEarly.toLocaleString()} of the pool), and <strong>~Sep 7</strong>, when the Aug 10 cohort&rsquo;s closes (the remaining {k.pendingFresh.toLocaleString()}). The model treats these as one merged wave at Sep 7 to avoid double-counting. Odyssey confirms awards go out in batches tied to Comptroller announcements &mdash; expect a step, and expect it to land at an odd hour. It all falls <em>after</em> the Jun 30 penalty-free withdrawal deadline, so that call had to be made without any of this.</div>
+          <div className="pt-1 border-t border-tefa-body/10"><strong>What changed on Aug 11, and why the odds moved so much.</strong> Three findings landed the same day and all pointed the same way. <strong>One:</strong> the pending pool does not drain, it <em>refills</em> &mdash; it was ~18,000 in July and ~18,441 in early August despite ~13,000 lapsing in between, because each wave replenishes it. The old model had it draining to ~{k.poolLeft.toLocaleString()}, understating the fuel roughly six-fold. <strong>Two:</strong> a lapse frees the <em>full</em> award, not the blended figure &mdash; a family who never responded cannot have chosen a $2,000 homeschool downgrade, so the old 1.16 seats/departure was too low for this population. <strong>Three:</strong> the fact sheet&rsquo;s tier split independently puts the frontier at ~{k.factsheetFrontier.toLocaleString()} against our ~{k.frontierNow.toLocaleString()} &mdash; the first corroboration with no community input in it. Together they turn a marginal outlook into a comfortable one. Given this model has now been too pessimistic twice, treat that with suspicion rather than relief &mdash; but the pessimism is not there to be found.</div>
         </div>
 
         {/* Frontier position reached by each scenario, at the key cascade dates. */}
@@ -2014,9 +2091,9 @@ const TefaView = () => {
             </thead>
             <tbody className="tabular-nums">
               {[
-                { key: 'aggressive', label: `High — ${k.aggressiveChurnPct}% aside · ${k.aggressiveDeclinePct}% decline`, color: '#aa2142', vals: k.projectionTable.aggressive },
-                { key: 'conservative', label: `Likely — ${k.realisticChurnPct}% aside · ${k.realisticDeclinePct}% decline`, color: '#202562', vals: k.projectionTable.conservative },
-                { key: 'research', label: `Low — ${k.researchChurnPct}% aside · ${k.researchDeclinePct}% decline`, color: '#2e7d5b', vals: k.projectionTable.research },
+                { key: 'aggressive', label: `Aggressive — ${k.aggressiveLapsePct}% lapse`, color: '#aa2142', vals: k.projectionTable.aggressive },
+                { key: 'conservative', label: `Expected — ${k.realisticLapsePct}% lapse`, color: '#202562', vals: k.projectionTable.conservative },
+                { key: 'research', label: `Pessimistic — ${k.researchLapsePct}% lapse`, color: '#2e7d5b', vals: k.projectionTable.research },
               ].map((row) => (
                 <tr key={row.key} className="border-b border-gray-100">
                   <td className="py-2 pr-3 font-semibold whitespace-nowrap" style={{ color: row.color }}>{row.label}</td>
