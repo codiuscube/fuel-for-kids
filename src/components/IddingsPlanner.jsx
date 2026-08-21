@@ -1142,7 +1142,13 @@ const fmtChartDate = (ts) => {
   const d = new Date(ts);
   return `${MONTHS_SHORT[d.getUTCMonth()]} ${d.getUTCDate()}`;
 };
-const FRONTIER_TICKS = ['2026-05-04', '2026-06-01', '2026-07-01', '2026-07-29', '2026-08-11', '2026-08-31', '2026-09-15'].map(Date.parse);
+// Aug 26 / Sep 7 are ticks rather than free-floating labels: they are DATES, they belong on
+// the date axis, and putting them there keeps them from colliding with each other (they sit
+// only 12 days apart). Aug 31 was dropped — it marks nothing. Sep 15 was dropped too, and
+// that one is load-bearing: it sits 8 days from Sep 7, close enough that Recharts silently
+// suppresses the colliding tick — and the one it drops is Sep 7, the date that matters.
+// The axis still RUNS to Sep 15; only its label is gone.
+const FRONTIER_TICKS = ['2026-05-04', '2026-06-01', '2026-07-01', '2026-07-29', '2026-08-11', WAVE_MID, WAVES_END].map(Date.parse);
 
 // Plain-language likelihood of the cascade reaching each global waitlist band,
 // drawn from the published bands analysis. ourBand flags the family's bucket.
@@ -1938,6 +1944,16 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, declineM
                     label={{ value: 'Jul 15 deadline', position: 'insideTopLeft', fontSize: 9, fontWeight: 700, fill: '#aa2142' }} />
                 <ReferenceLine x={todayTs} stroke="#94a3b8" strokeDasharray="2 2"
                     label={{ value: 'Today', fontSize: 10, fill: '#64748b', position: 'insideBottomLeft' }} />
+                {/* THE TWO EXPIRY DATES. Nothing lapses until a four-week window actually
+                    closes, so these are the only two days on the calendar that can free a
+                    seat — the whole forward model is carried by the steps at them (see
+                    `waveShape`). Drawn from WAVE_MID / WAVES_END so the markers can never
+                    drift away from the dates the lines actually step on. */}
+                <ReferenceArea x1={Date.parse(WAVE_MID)} x2={Date.parse(WAVES_END)}
+                    fill="#b08a3e" fillOpacity={0.13} stroke="none"
+                    label={{ value: 'SEATS FREED', position: 'insideBottom', fontSize: 8, fontWeight: 700, fill: '#8a6b2f' }} />
+                <ReferenceLine x={Date.parse(WAVE_MID)} stroke="#b08a3e" strokeWidth={1.5} strokeDasharray="5 3" />
+                <ReferenceLine x={Date.parse(WAVES_END)} stroke="#b08a3e" strokeWidth={1.5} strokeDasharray="5 3" />
                 {/* Our seat now sits flush against the band ceiling (49,001–50,000), so the old
                     "band ends — 50,000" line would stack three labels on the same pixel. The
                     position band IS the top of the band now; one emphatic marker replaces both. */}
@@ -1958,7 +1974,7 @@ const TefaMonteCarlo = ({ churnMin, setChurnMin, churnMax, setChurnMax, declineM
           </div>
           <p className="text-[10px] text-tefa-body/45 mt-1">
             Each line is the frontier after ONE wave at ~Sep 7, sized by how much of the {k.pendingNow.toLocaleString()}-family pending pool lets its four-week window lapse.
-            The line is flat until a window actually closes — nothing moves on a day with no deadline behind it — then steps at ~Aug 26 and ~Sep 7. When a line crosses our position line, an offer has reached us.
+            The line is flat until a window actually closes — nothing moves on a day with no deadline behind it — then steps at the two gold markers: <strong>~Aug 26</strong>, when the Jul 29 cohort&rsquo;s four-week windows expire, and <strong>~Sep 7</strong>, when the Aug 10 cohort&rsquo;s do. Those are the only two days that can free a seat. When a line crosses our position line, an offer has reached us.
           </p>
         </>
       ) : (
