@@ -46,7 +46,7 @@ import FallPlanView from './FallPlanView';
 // shows is derived from the data in this block — update here if a figure changes.
 // ---------------------------------------------------------------------------
 
-const TODAY = '2026-08-27';
+const TODAY = '2026-08-28';
 
 // Per-child 2026-27 gross tuition and the NBCA financial aid already granted.
 const STUDENTS = [
@@ -684,28 +684,37 @@ const T2_OBSERVATIONS = [
   // anything slightly stale in our favour. Neither is quantified, so neither is modelled.
   //
   // Aug 27: THE RESOLVING BATCH. All three of our kids awarded, and Brad Fleury in the same
-  // cut (original band 50,001–100,000, gap 4,000–5,000 on his Aug 12 email). Recorded as a
-  // LOWER BOUND — the only point in this series that is one. A batch tells you who it
-  // REACHED, never where it stopped, and nobody in the Aug 27 threads reported being passed
-  // over, so there is no upper anchor. The frontier is AT LEAST 46,000 + Brad's 5,000.
+  // cut (original band 50,001–100,000, gap 4,000–5,000 on his Aug 12 email).
   //
-  // THE ANCHOR-INDEPENDENT STATEMENT, which is the one to quote anywhere: BATCH 1 CLOSED A
-  // GAP OF AT LEAST 5,000 POSITIONS IN A SINGLE CUT. That survives every dispute about
-  // absolute depth (see the ⚠ on YOUR_POS), because both inputs are gaps Odyssey measured
-  // directly rather than positions anyone inferred.
+  // MADE OFFICIAL THE NEXT MORNING. Aug 28, the Texas Education Freedom Accounts account
+  // posted: "The Comptroller's office has awarded over 4,500 additional waitlisted
+  // students!" (graphic: "~4,500 additional eligible students are being awarded") — the
+  // same announce-the-morning-after pattern as the Aug 10 wave / Aug 11 post, so this is
+  // the official count OF the Aug 27 batch, not a second batch. Per this file's "published
+  // numbers win" rule it REPLACES the gap-derived ≥5,000 lower bound this point carried
+  // for a day: batch 1 = 4,500 ("over" keeps it a slight floor, but an announced COUNT is
+  // a tight anchor, unlike the unbounded who-it-reached reading). Frontier: 46,000 + 4,500
+  // = 50,500.
   //
-  // ⚠ THIS FALSIFIES THE CLOSED-POOL ARITHMETIC — see BATCH1_OBSERVED below for the working.
-  // Freeing 5,000 positions in batch 1 needs ~70% of the 8,503-award POOL to lapse in the
-  // first 6 of 13 spread days: above the `aggressive` 45% dial, above Milwaukee's 30%, and
-  // ~5× the program-wide rate. Even an impossible 100% lapse caps batch 1 at 6,634. So the
-  // pool was BIGGER than AWARDED_AUG10 − REVOKED − FUNDED_AUG20 implied. That is precisely
-  // the refill mechanism this file documented in July ("⚠ THE POOL DOES NOT DRAIN — it
-  // REFILLS") and the Aug 20 pass overrode: awards kept being issued after the Aug 10 fact
-  // sheet, which the Aug 13 release states verbatim ("expected to increase as additional
-  // awards are made") and the model declined to quantify. That decision, not the lapse dial,
-  // is what was wrong — and raising the dial to fit would assert behaviour nobody has
-  // measured, so the forward number is re-anchored on the observation instead.
-  { date: '2026-08-27', frontier: 51000, lowerBound: true, resolving: true },
+  // RECONCILING THE RETIRED ≥5,000: that bound used the FAR end of Brad's 4,000–5,000
+  // band. An official 4,500 says his true gap sat in the lower half of the band (or the
+  // line had crept slightly past 46,000 before the batch, which the Aug 13 release's
+  // "awards are still going out" allows). The bands overlap; nothing is contradicted —
+  // the bound was simply built on the generous edge, which is what bounds are for.
+  //
+  // ⚠ STILL FALSIFIES THE CLOSED-POOL ARITHMETIC — see BATCH1_OBSERVED below for the
+  // working. 4,500 positions in batch 1 needs ~60% of the 8,503-award POOL to lapse in the
+  // first 6 of 13 spread days: above the `aggressive` 45% dial, well above Milwaukee's 30%,
+  // and ~4× the program-wide rate. (The impossible-100% ceiling is 6,634 — 4,500 fits under
+  // it, but no benchmark in this file supports the rate required.) So the pool was BIGGER
+  // than AWARDED_AUG10 − REVOKED − FUNDED_AUG20 implied. That is precisely the refill
+  // mechanism this file documented in July ("⚠ THE POOL DOES NOT DRAIN — it REFILLS") and
+  // the Aug 20 pass overrode: awards kept being issued after the Aug 10 fact sheet, which
+  // the Aug 13 release states verbatim ("expected to increase as additional awards are
+  // made") and the model declined to quantify. That decision, not the lapse dial, is what
+  // was wrong — and raising the dial to fit would assert behaviour nobody has measured, so
+  // the forward number stays anchored on the observation, now an official count.
+  { date: '2026-08-27', frontier: 50500, official: true, resolving: true },
 ];
 // The pre-award anchor, kept as a named constant because the historical consistency guards
 // below are all statements about the Aug 11 reading and must not drift onto the new point.
@@ -731,10 +740,10 @@ const frontierOf = (o) => (o.frontier != null ? o.frontier : T2_AT_LOTTERY - o.t
 // Frontier reached so far = how deep the cascade has funded down the global list.
 // Future advance is added ON TOP of this from the 18k not-opted-in pool, so it's the base
 // the projection and the simulator both build from.
-const FRONTIER_NOW = frontierOf(T2_OBSERVATIONS[T2_OBSERVATIONS.length - 1]); // 46,000 (Aug 11, confirmed by the Odyssey band)
-// The advance since the previous observation (34,000 Jul 29 → 46,000 Aug 11).
-const FRONTIER_PREV = frontierOf(T2_OBSERVATIONS[T2_OBSERVATIONS.length - 2]);  // 34,000 (Jul 29)
-const RECENT_ADVANCE = FRONTIER_NOW - FRONTIER_PREV;                            // ~12,000 in 13 days
+const FRONTIER_NOW = frontierOf(T2_OBSERVATIONS[T2_OBSERVATIONS.length - 1]); // 50,500 (Aug 27 batch, official count Aug 28)
+// The advance since the previous observation (46,000 Aug 11 → 50,500 Aug 27).
+const FRONTIER_PREV = frontierOf(T2_OBSERVATIONS[T2_OBSERVATIONS.length - 2]);  // 46,000 (Aug 11)
+const RECENT_ADVANCE = FRONTIER_NOW - FRONTIER_PREV;                            // 4,500 — batch 1, official
 // The Jul 15 shakeout advance, kept for the fuel back-out below (16,916 → 34,000).
 const JUL29_ADVANCE = 34000 - 16916;                                            // ~17,084
 
@@ -853,11 +862,12 @@ const BATCH2 = '2026-09-11';
 const BATCH1_SHARE = 6 / 13;
 
 // ---------------------------------------------------------------------------
-// BATCH 2 — RE-ANCHORED ON THE OBSERVATION (Aug 27 revision). The lapse dials below are
-// retired as the BASIS for the forward number and kept only as the record of the call.
-// Batch 1 outran the central dial by ~60%, and the pool arithmetic those dials multiply is
-// falsified (see the Aug 27 observation). Estimating batch 2 off the dials would repeat the
-// same error in the same direction; estimating it off the measured batch 1 does not.
+// BATCH 2 — RE-ANCHORED ON THE OBSERVATION (Aug 27 revision; batch-1 size made OFFICIAL
+// Aug 28 at "over 4,500"). The lapse dials below are retired as the BASIS for the forward
+// number and kept only as the record of the call. Batch 1 outran the central dial by ~43%,
+// and the pool arithmetic those dials multiply is falsified (see the Aug 27 observation).
+// Estimating batch 2 off the dials would repeat the same error in the same direction;
+// estimating it off the officially-counted batch 1 does not.
 //
 // The one structural assumption kept — because it is a claim about the CALENDAR, not about
 // behaviour — is the uniform expiry spread: four-week windows expire roughly evenly across
@@ -870,22 +880,22 @@ const BATCH1_SHARE = 6 / 13;
 // rode in batch 1 as a one-off and does not recur.
 //
 // TWO ROUTES, ONE ANSWER — which is the reason to state a number at all. Keeping the closed
-// pool and solving for the lapse rate that FITS batch 1 (~70%) yields the same batch-2
+// pool and solving for the lapse rate that FITS batch 1 (~60%) yields the same batch-2
 // figure, because both routes reduce to "the remaining 7/13 of whatever batch 1's lapse
 // component actually was". The estimate is therefore robust to which explanation of the
 // overshoot turns out to be right.
 //
-// ⚠ IT IS A FLOOR, NOT A CENTRAL CASE, for two compounding reasons. Batch 1 is itself a lower
-// bound (nobody reported being passed over), so everything scaled off it inherits that. And
-// if awards did keep flowing after Aug 10 — the explanation this file now favours — the pool
-// refills again and a THIRD batch in late September is live, which the two-batch frame had
-// ruled out. Both point the same way: batch 2 should be at least this big.
+// ⚠ STILL A FLOOR, but a much tighter one than a day ago. The Aug 28 official count
+// replaced the unbounded who-it-reached reading with "over 4,500" — a slight floor by its
+// own phrasing, not an open-ended one. What still points UP: if awards kept flowing after
+// Aug 10 — the explanation this file now favours — the pool refills again and a THIRD
+// batch in late September is live, which the two-batch frame had ruled out.
 // ---------------------------------------------------------------------------
-const BATCH1_OBSERVED = FRONTIER_NOW - FRONTIER_AT_AUG11;         // ≥5,000 positions closed
-const BATCH1_LAPSE_COMPONENT = BATCH1_OBSERVED - REVOKED_SEATS;   // ≥3,720 from expiries
+const BATCH1_OBSERVED = FRONTIER_NOW - FRONTIER_AT_AUG11;         // 4,500 — OFFICIAL ("over 4,500", Aug 28 post)
+const BATCH1_LAPSE_COMPONENT = BATCH1_OBSERVED - REVOKED_SEATS;   // ~3,220 from expiries
 const BATCH2_EXPIRY_RATIO = (13 - 6) / 6;                         // remaining ÷ elapsed spread days
-const BATCH2_FLOOR = Math.round(BATCH1_LAPSE_COMPONENT * BATCH2_EXPIRY_RATIO);  // ≥~4,340
-const TERMINAL_FLOOR = FRONTIER_NOW + BATCH2_FLOOR;               // ≥~55,340
+const BATCH2_FLOOR = Math.round(BATCH1_LAPSE_COMPONENT * BATCH2_EXPIRY_RATIO);  // ≥~3,757
+const TERMINAL_FLOOR = FRONTIER_NOW + BATCH2_FLOOR;               // ≥~54,257
 // The lapse rate batch 1 implies IF the closed pool were right — the falsification receipt.
 // Not a dial: no benchmark in this file, or in the literature it cites, supports it.
 const IMPLIED_BATCH1_LAPSE = BATCH1_LAPSE_COMPONENT / (POOL * BATCH1_SHARE * SEATS_PER_LAPSE);
@@ -1086,11 +1096,13 @@ const TIMELINE = [
   { date: 'Aug 13', iso: '2026-08-13', title: 'OFFICIAL — 101,600 students funded. The fuel just halved.', kind: 'info',
     detail: 'Comptroller press release, "Huffines Announces 100,000 Students Receiving Texas Education Freedom Accounts": funding has been delivered to 101,600 students, up from the "more than 85,000" announced in the annual report — about 16,600 families claimed their awards in a fortnight. It also restates the mechanic precisely: four weeks from the award date to opt in and confirm enrollment, and only then does a child "receive funding in their account and count as a participant". Consequence for us, and it is not the good kind: the model runs on awarded minus funded, so the pool of unconfirmed awards fell from ~33,441 to ~16,841. Claimed money can never be released to the waitlist. Expected terminal ~52,800 → ~49,450 (clears our estimated seat by ~450 instead of ~2,200), pessimistic ~49,650 → ~47,850 (now misses), break-even 8.8% → 17.4% of the pool. Two offsets: 85.8% of all awards issued are already funded, so the break-even is only ~2.5% of everyone awarded — well inside any published attrition rate; and the release says awards are still going out, which the model does not count. Also stated: "more than 100,000 students remain on the program waitlist."' },
   { date: 'Aug 27', iso: '2026-08-27', title: 'AWARDED — all three kids. The waitlist question is closed.', kind: 'do',
-    detail: 'The first batch after the four-week windows began expiring landed on Aug 27 \u2014 one day after the Aug 26 expiries and one day inside the model\u2019s Aug 28\u2013Sep 3 batch-1 estimate. Cassius, Dorothy and Sebastian all awarded: $31,422 gross. Corroborated in the same cut by Brad Fleury (original band 50,001\u2013100,000, gap 4,000\u20135,000 on his Aug 12 email), which is what makes the batch measurable: it closed AT LEAST 5,000 positions in one cut, against a central batch-1 estimate of ~3,150. ACTION, and it is the only time-critical item on this page: opt in, select NBCA, and get enrollment confirmed before Sep 15 \u2014 not the Sep 24 window end. Separately, get Nanette\u2019s answer on the \u201c10% of tuition\u201d aid reduction in writing; ~$13,500 of the award\u2019s value to us turns on it.' },
+    detail: 'The first batch after the four-week windows began expiring landed on Aug 27 \u2014 one day after the Aug 26 expiries and one day inside the model\u2019s Aug 28\u2013Sep 3 batch-1 estimate. Cassius, Dorothy and Sebastian all awarded: $31,422 gross. Corroborated in the same cut by Brad Fleury (original band 50,001\u2013100,000, gap 4,000\u20135,000 on his Aug 12 email), and sized OFFICIALLY the next morning: over 4,500 additional waitlisted students, against a central batch-1 estimate of ~3,150 (see Aug 28). ACTION, and it is the only time-critical item on this page: opt in, select NBCA, and get enrollment confirmed before Sep 15 \u2014 not the Sep 24 window end. Separately, get Nanette\u2019s answer on the \u201c10% of tuition\u201d aid reduction in writing; ~$13,500 of the award\u2019s value to us turns on it.' },
+  { date: 'Aug 28', iso: '2026-08-28', title: 'OFFICIAL \u2014 \u201cover 4,500 additional waitlisted students\u201d awarded. Batch 1 is sized.', kind: 'info',
+    detail: `The Texas Education Freedom Accounts account posted: \u201cThe Comptroller\u2019s office has awarded over 4,500 additional waitlisted students! Log in to your parent portal to check for an updated status and award notification.\u201d Same morning-after pattern as the Aug 10 wave and its Aug 11 post, so this is the official count of the Aug 27 batch \u2014 the one that awarded our three kids. It replaces the gap-derived \u201cat least 5,000\u201d bound (which had used the far end of Brad Fleury\u2019s 4,000\u20135,000 band) with a published ~4,500, putting the frontier at ~50,500. The closed-pool falsification stands: 4,500 positions still needs ~60% of the modeled 8,503-award pool to lapse in the first 6 of 13 spread days, far above every benchmark \u2014 so awards kept issuing after Aug 10 and the pool refilled. Batch 2 re-scales off the official count: at least ~${BATCH2_FLOOR.toLocaleString()} further positions, taking the line to ~${TERMINAL_FLOOR.toLocaleString()}+.` },
   { date: 'Aug 26 – Sep 7', iso: '2026-08-26', title: 'TEFA — the pool\u2019s four-week windows expire, continuously', kind: 'info',
     detail: 'The ~9,441 unconfirmed awards (118,441 awarded \u2212 109,000 funded, Aug 20) were issued continuously from late July through Aug 10, so their four-week opt-in windows expire continuously from ~Aug 26 through ~Sep 7 \u2014 so fuel accrues as a ramp. But the waitlist itself moves in Comptroller BATCHES (Odyssey, Aug 11 email) \u2014 expect ~two more, est. ~Aug 28\u2013Sep 3 and ~Sep 11. Every window that lapses returns the full $10,474 and funds ~1.36 new offers. Watch email AND text, including spam \u2014 awards land at odd hours.' },
   { date: 'Sep 8–14', iso: '2026-09-08', title: 'TEFA — batch 2 (no longer our decision point)', kind: 'info',
-    detail: 'The Sep 7 expiries deliver as a second batch, est. ~Sep 11, plausibly cut just before the proration cliff. This no longer decides anything for us \u2014 batch 1 did that on Aug 27 \u2014 but it is what the families still waiting are asking about. Estimate, scaled off the MEASURED size of batch 1 rather than the lapse dials the batch falsified: at least ~4,340 further positions, taking the line to ~55,000+. Two reasons to read that as a floor: batch 1 is itself a lower bound (nobody reported being passed over, so there is no upper anchor), and if awards kept issuing after Aug 10 the pool refills and a third batch in late September is live.' },
+    detail: `The Sep 7 expiries deliver as a second batch, est. ~Sep 11, plausibly cut just before the proration cliff. This no longer decides anything for us \u2014 batch 1 did that on Aug 27 \u2014 but it is what the families still waiting are asking about. Estimate, scaled off the OFFICIAL size of batch 1 (over 4,500, Aug 28 post) rather than the lapse dials the batch falsified: at least ~${BATCH2_FLOOR.toLocaleString()} further positions, taking the line to ~${TERMINAL_FLOOR.toLocaleString()}+. Two reasons to read that as a floor: the official count says \u201cover\u201d 4,500, and if awards kept issuing after Aug 10 the pool refills and a third batch in late September is live.` },
   { date: 'Sep 15', iso: '2026-09-15', title: 'TEFA — proration cliff: confirm same-day or lose 25%', kind: 'do',
     detail: 'Waitlist families must confirm enrollment by Sep 15 to keep the full award (Jun 4 funding-timelines release); after that the second installment drops to 75%, and after Jan 15 the final drops to 50%. An offer arriving in the decisive week must be acted on immediately \u2014 have the school selection ready in advance.' },
   { date: 'Oct 1', iso: '2026-10-01', title: 'TEFA 2nd installment (if funded)', kind: 'info',
@@ -1370,8 +1382,8 @@ const NowView = ({ balanceDue, perStudent, setTab }) => {
         </h2>
         <p className="text-sm text-tefa-body/85 mb-3 font-semibold">
           All three kids were awarded in the first batch after the four-week windows began expiring — {usd(k.awardTotal)} gross.
-          Our Aug 11 gap was {k.gapLo.toLocaleString()}–{k.gapHi.toLocaleString()}; the batch closed at least{' '}
-          {k.batch1Observed.toLocaleString()} positions in a single cut.
+          Our Aug 11 gap was {k.gapLo.toLocaleString()}–{k.gapHi.toLocaleString()}; the Comptroller sized the batch officially
+          the next morning: over {k.batch1Observed.toLocaleString()} additional waitlisted students in a single cut.
         </p>
         <p className="text-sm text-tefa-body/80 mb-3">
           <strong>The one time-critical thing.</strong> An award is an offer, not money. The four-week opt-in window runs to
@@ -1386,7 +1398,8 @@ const NowView = ({ balanceDue, perStudent, setTab }) => {
         </p>
         <p className="text-sm text-tefa-body/80">
           For everyone still waiting: batch 2 (~Sep 11) should carry <strong>at least {k.batch2Floor.toLocaleString()} more
-          positions</strong>, scaled off the size of batch 1 rather than off the old lapse dials.
+          positions</strong>, scaled off batch 1&rsquo;s official size (over 4,500, per the Aug 28 Comptroller post) rather than
+          off the old lapse dials.
         </p>
         <button
           onClick={() => setTab('tefa')}
@@ -1616,7 +1629,7 @@ const TefaView = () => {
     { date: 'NOW', text: 'Opt in and select NBCA in the Odyssey parent portal, then get NBCA to confirm enrollment. This is the only time-critical item on the page — everything else can wait.' },
     { date: 'NOW', text: 'Email Nanette and get the "10% of tuition" aid reduction answered IN WRITING before the school re-cuts the award letters. Gross reading vs net reading is ~$13,500 to us, and the net reading would have NBCA collecting more than full sticker tuition for three kids — say that plainly.' },
     { date: 'Sep 7', text: 'Last four-week windows expire — the Aug 10-dated awards. Whatever fuel batch 2 carries is fixed at this point.' },
-    { date: '~Sep 11', text: 'Batch 2, for the families still waiting. Floor of ~4,340 further positions, scaled off the measured size of batch 1. If it lands materially larger, awards were still being issued after Aug 10 and a third batch is live.' },
+    { date: '~Sep 11', text: `Batch 2, for the families still waiting. Floor of ~${k.batch2Floor.toLocaleString()} further positions, scaled off the OFFICIAL size of batch 1 (over 4,500, Aug 28 post). If it lands materially larger, awards were still being issued after Aug 10 and a third batch is live.` },
     { date: 'Sep 15', text: 'PRORATION CLIFF — the date that actually binds our award, not the ~Sep 24 window end. Confirmed after Sep 15 and the second installment drops to 75%; after Jan 15 the final drops to 50%.' },
     { date: 'Oct 1', text: 'Second installment pays, if enrollment was confirmed in time. Do not spend it before it lands, and do not treat it as savings until the NBCA aid question is answered.' },
   ];
@@ -1672,15 +1685,16 @@ const TefaView = () => {
         </h2>
         <div className="rounded-lg bg-tefa-navy/[0.03] border border-tefa-navy/10 p-4 font-mono text-[12px] leading-6 text-tefa-body/90 overflow-x-auto">
           <div>our gap was <strong>{gapBand}</strong> (Odyssey, Aug 11) · Brad Fleury&rsquo;s was 4,000–5,000 (Aug 12) · <strong>both awarded Aug 27</strong></div>
-          <div>so batch 1 closed <strong>≥{k.batch1Observed.toLocaleString()} positions in one cut</strong> — a gap statement, independent of where the line absolutely sits</div>
+          <div>batch 1 sized <strong>OFFICIALLY</strong> the next morning: <strong>&ldquo;over {k.batch1Observed.toLocaleString()} additional waitlisted students&rdquo;</strong> (TEFA post, Aug 28)</div>
           <div>closed-pool check FAILS: that needs <strong>{k.impliedLapsePct}% of the {k.pool.toLocaleString()} pool</strong> to lapse in 6 of 13 days (ceiling at an impossible 100%: {k.batch1Ceiling.toLocaleString()})</div>
           <div>→ the pool REFILLED — awards kept issuing after the Aug 10 fact sheet, so batch 2 is scaled off batch 1, not off the dials</div>
           <div>batch 2 ≈ ({k.batch1Observed.toLocaleString()} − {k.revokedSeats.toLocaleString()} revoked) × 7/6 = <strong>≥{k.batch2Floor.toLocaleString()} more</strong>, ~{fmtChartDate(Date.parse(BATCH2))} · line reaches <strong>≥{k.terminalFloor.toLocaleString()}</strong></div>
         </div>
         <p className="text-[11px] text-tefa-body/55 mt-2">
-          Every figure here is a <strong>floor</strong>. A batch tells you who it reached, never where it stopped, and nobody in the
-          Aug&nbsp;27 threads reported being passed over — so there is no upper anchor, and everything scaled off batch 1 inherits that.
-          If awards did keep flowing after Aug&nbsp;10, the pool refills again and a <em>third</em> batch in late September is live.
+          The forward figures are still <strong>floors</strong>, but tight ones now: the Aug&nbsp;28 official count replaced the
+          open-ended who-it-reached bound with &ldquo;over 4,500&rdquo; — a slight floor by its own phrasing, not an unbounded one.
+          What still points up: if awards kept flowing after Aug&nbsp;10 — the reading this page now favours — the pool refills
+          again and a <em>third</em> batch in late September is live.
         </p>
       </section>
 
@@ -1720,8 +1734,8 @@ const TefaView = () => {
               <tr className="border-b border-gray-100 align-top">
                 <td className="py-2 pr-3 font-bold text-tefa-navy">Batch 1 size</td>
                 <td className="py-2 pr-3">2,618 / 3,154 / 3,689 seats (25 / 35 / 45% lapse)</td>
-                <td className="py-2 pr-3">≥{k.batch1Observed.toLocaleString()} positions</td>
-                <td className="py-2 font-semibold text-tefa-red">Wrong — low by ~60%</td>
+                <td className="py-2 pr-3">{k.batch1Observed.toLocaleString()}+ — official (Aug 28 post)</td>
+                <td className="py-2 font-semibold text-tefa-red">Wrong — low by ~43%</td>
               </tr>
               <tr className="border-b border-gray-100 align-top">
                 <td className="py-2 pr-3 font-bold text-tefa-navy">Pool size</td>
@@ -1789,8 +1803,9 @@ const TefaView = () => {
           Fuel accrues continuously in the gold band as four-week windows expire (Aug 26 → Sep 7), but the waitlist only <em>moves</em> when the
           Comptroller cuts a batch — Odyssey confirmed awards go out in batches tied to announcements, and every advance this summer arrived that
           way. The first batch landed <strong>Aug 27</strong>, one day after the earliest windows expired and one day inside the model&rsquo;s
-          Aug 28–Sep 3 estimate, clearing our band. The dashed line is the <strong>floor</strong> for batch 2, scaled off the size of batch 1
-          rather than off the lapse dials — it is where the line reaches <em>at least</em>, not where it is expected to stop.
+          Aug 28–Sep 3 estimate, clearing our band, and was sized officially the next morning (&ldquo;over 4,500&rdquo;). The dashed line is the{' '}
+          <strong>floor</strong> for batch 2, scaled off that official count rather than off the lapse dials — it is where the line reaches{' '}
+          <em>at least</em>, not where it is expected to stop.
         </p>
       </section>
 
@@ -1817,10 +1832,10 @@ const TefaView = () => {
       {/* PROVENANCE */}
       <section className="rounded-xl border border-gray-200 bg-tefa-light/50 p-4 text-[11px] text-tefa-body/60 space-y-1.5">
         <div className="font-bold text-tefa-navy text-xs">What this rests on</div>
-        <p><strong>Published:</strong> 118,441 awarded (Aug 10 fact sheet) · 109,000+ funded (Aug 20 Comptroller deck) · four-week opt-in window (Aug 13 release) · Sep 15 proration (Jun 4 release) · removal of public-school enrollees (Jun 4 release).</p>
+        <p><strong>Published:</strong> 118,441 awarded (Aug 10 fact sheet) · 109,000+ funded (Aug 20 Comptroller deck) · <strong>&ldquo;over 4,500 additional waitlisted students&rdquo; awarded — batch 1&rsquo;s official size</strong> (TEFA post, Aug 28) · four-week opt-in window (Aug 13 release) · Sep 15 proration (Jun 4 release) · removal of public-school enrollees (Jun 4 release).</p>
         <p><strong>Official to us:</strong> gap {gapBand} (Odyssey ticket #727303, Aug 11) · <strong>awarded {fmtChartDate(Date.parse(k.awardDate))}, all three kids</strong> — the reading that closed the question.</p>
-        <p><strong>Observed, not published:</strong> batch 1&rsquo;s size. It rests on two gaps Odyssey stated directly — ours ({gapBand}, Aug 11) and Brad Fleury&rsquo;s (4,000–5,000, Aug 12) — both cleared in the same cut, giving ≥{k.batch1Observed.toLocaleString()} positions. No Comptroller document states a cascade depth, and none states this batch&rsquo;s size.</p>
-        <p><strong>Assumed:</strong> a lower bound is the honest reading of a batch (nobody reported being passed over, so there is no upper anchor) · four-week windows expire roughly uniformly Aug 26 → Sep 7, which is what lets batch 2 be scaled 7/6 off batch 1 · the ~{k.revokedSeats.toLocaleString()} revoked seats rode in batch 1 and do not recur. <strong>Retired:</strong> the 25/35/45 lapse dials and the closed-{k.pool.toLocaleString()} pool they multiplied — see the scorecard.</p>
+        <p><strong>Corroborating, not load-bearing anymore:</strong> the two gaps that sized the batch for its first day — ours ({gapBand}, Aug 11) and Brad Fleury&rsquo;s (4,000–5,000, Aug 12), both cleared in the same cut. They implied ≥5,000; the official 4,500 says Brad&rsquo;s gap sat in the lower half of his band. Still no Comptroller document states a cascade DEPTH — the ~50,500 frontier is 46,000 (Aug 11 estimate) plus the official batch count.</p>
+        <p><strong>Assumed:</strong> &ldquo;over 4,500&rdquo; is read at 4,500 — a tight floor, per the announced count · four-week windows expire roughly uniformly Aug 26 → Sep 7, which is what lets batch 2 be scaled 7/6 off batch 1 · the ~{k.revokedSeats.toLocaleString()} revoked seats rode in batch 1 and do not recur. <strong>Retired:</strong> the 25/35/45 lapse dials and the closed-{k.pool.toLocaleString()} pool they multiplied — see the scorecard.</p>
       </section>
     </div>
   );
