@@ -46,7 +46,7 @@ import FallPlanView from './FallPlanView';
 // shows is derived from the data in this block — update here if a figure changes.
 // ---------------------------------------------------------------------------
 
-const TODAY = '2026-08-13';
+const TODAY = '2026-08-27';
 
 // Per-child 2026-27 gross tuition and the NBCA financial aid already granted.
 const STUDENTS = [
@@ -76,6 +76,76 @@ const TEFA = {
   bandHi: 50000,
   notifiedOn: '2026-05-13',
 };
+
+// ---------------------------------------------------------------------------
+// AWARDED — Aug 27, 2026. The question this tab existed to answer is CLOSED.
+// All three kids received TEFA awards in the FIRST post-expiry batch, one day inside
+// the near edge of the model's Aug 28–Sep 3 batch-1 estimate. The mechanism called it
+// too: the Jul 29-dated awards' four-week windows expired Aug 26, and the batch cut the
+// next day.
+//
+// What this resolves, and what it does NOT:
+//   ✅ RESOLVED — does an offer reach us in Year 1. Yes, out of the AUGUST window
+//      expiries, not the September ones. The forward model below is kept (it is the
+//      record of the call) and re-pointed at the question the community still has.
+//   ⚠ NOT RESOLVED — what we actually OWE. An award is an offer, not money, and NBCA
+//      has said aid would be reduced if TEFA landed. See NBCA_AID_QUESTION: the
+//      $31,422 is GROSS fuel, not savings, and the two readings of Nanette's "10% of
+//      tuition" differ by ~$13,500.
+//
+// ⚠ THE BINDING DATE IS SEP 15, NOT THE FOUR-WEEK WINDOW. The award carries a four-week
+// opt-in window (~Sep 24, Aug 13 release), but the Jun 4 funding-timelines release
+// prorates anyone confirming after Sep 15 to 75% of the second installment. Sep 15
+// governs, and it is 19 days from the award.
+// ---------------------------------------------------------------------------
+const AWARD = {
+  received: '2026-08-27',
+  students: STUDENTS.length,        // all three — Cassius, Dorothy, Sebastian
+  perStudent: 10474,                // asserted equal to FULL_AWARD below
+  optInWindowEnds: '2026-09-24',    // four weeks from award
+  prorationCliff: '2026-09-15',     // Jun 4 release — the date that actually binds
+  batch: 1,                         // the Aug 26 expiry batch, est. Aug 28–Sep 3
+};
+const AWARD_TOTAL = AWARD.students * AWARD.perStudent;   // $31,422 gross
+
+// ---------------------------------------------------------------------------
+// ⚠ THE OPEN MONEY QUESTION — what the award is actually WORTH to us. This, not the
+// waitlist, is now the largest unresolved number in the file.
+//
+// Nanette (NBCA) said on the Jun 26 call that if TEFA came through, aid and
+// scholarships would be reduced so we pay "10% of tuition". That phrase was never
+// disambiguated: the Jun 28 email (`nanette-aid-commitment-tefa-scenario.md`) laid out
+// both readings side by side and NO ANSWER WAS EVER RECORDED. The award makes it live.
+//
+//   GROSS reading — we pay 10% of GROSS tuition ($4,802.50) and TEFA covers most of the
+//                   rest. We save ~$13,504 against today's net. NBCA's own support drops
+//                   from $29,718.50 to ~$11,800.50.
+//   NET reading   — aid is clawed back until we pay roughly today's NET ($18,306.50),
+//                   i.e. the award lands on the SCHOOL's side of the ledger, not ours.
+//                   We save ~$0.
+//
+// ⚠ THE NET READING IS ARITHMETICALLY IMPOSSIBLE AT THE FULL AWARD, and that is the
+// strongest thing we have to say to Nanette. Our $18,306.50 plus the $31,422 award is
+// $49,728.50 against $48,025 of GROSS tuition — the school would collect $1,703.50 MORE
+// than full sticker price for three kids while still nominally granting aid. Whatever
+// "10% of tuition" meant, it cannot mean that. The real question is where between the
+// two readings NBCA intends to land.
+//
+// NOTHING on the money tab may be presented as savings until Nanette answers IN WRITING.
+// ---------------------------------------------------------------------------
+const GROSS_TUITION = STUDENTS.reduce((a, s) => a + s.tuition, 0);          // $48,025
+const NET_TODAY = PENALTY_BASE;                                            // $18,306.50
+const NBCA_SUPPORT_TODAY = GROSS_TUITION - NET_TODAY;                      // $29,718.50
+const NBCA_AID_QUESTION = {
+  asked: '2026-06-28',
+  answered: false,
+  grossReading: GROSS_TUITION * 0.1,                                       // $4,802.50 we pay
+  netReading: NET_TODAY,                                                   // $18,306.50 we pay
+  // Support NBCA would still have to grant under each reading, after the award.
+  schoolGivesUnderGross: GROSS_TUITION - GROSS_TUITION * 0.1 - AWARD_TOTAL, // ~$11,800.50
+  overCollection: NET_TODAY + AWARD_TOTAL - GROSS_TUITION,                 // $1,703.50 — see ⚠
+};
+const NBCA_AID_SPREAD = NBCA_AID_QUESTION.netReading - NBCA_AID_QUESTION.grossReading; // ~$13,504
 
 // ---------------------------------------------------------------------------
 // OUR ORIGINAL POSITION — 49,001 – 50,000. An ESTIMATE, not a fact. ⚠ Read this before
@@ -612,7 +682,34 @@ const T2_OBSERVATIONS = [
   // made") and that "more than 100,000 students remain on the program waitlist", so the frontier
   // has probably moved a little past 46,000 since Aug 11 and our official 3,001–4,000 gap is if
   // anything slightly stale in our favour. Neither is quantified, so neither is modelled.
+  //
+  // Aug 27: THE RESOLVING BATCH. All three of our kids awarded, and Brad Fleury in the same
+  // cut (original band 50,001–100,000, gap 4,000–5,000 on his Aug 12 email). Recorded as a
+  // LOWER BOUND — the only point in this series that is one. A batch tells you who it
+  // REACHED, never where it stopped, and nobody in the Aug 27 threads reported being passed
+  // over, so there is no upper anchor. The frontier is AT LEAST 46,000 + Brad's 5,000.
+  //
+  // THE ANCHOR-INDEPENDENT STATEMENT, which is the one to quote anywhere: BATCH 1 CLOSED A
+  // GAP OF AT LEAST 5,000 POSITIONS IN A SINGLE CUT. That survives every dispute about
+  // absolute depth (see the ⚠ on YOUR_POS), because both inputs are gaps Odyssey measured
+  // directly rather than positions anyone inferred.
+  //
+  // ⚠ THIS FALSIFIES THE CLOSED-POOL ARITHMETIC — see BATCH1_OBSERVED below for the working.
+  // Freeing 5,000 positions in batch 1 needs ~70% of the 8,503-award POOL to lapse in the
+  // first 6 of 13 spread days: above the `aggressive` 45% dial, above Milwaukee's 30%, and
+  // ~5× the program-wide rate. Even an impossible 100% lapse caps batch 1 at 6,634. So the
+  // pool was BIGGER than AWARDED_AUG10 − REVOKED − FUNDED_AUG20 implied. That is precisely
+  // the refill mechanism this file documented in July ("⚠ THE POOL DOES NOT DRAIN — it
+  // REFILLS") and the Aug 20 pass overrode: awards kept being issued after the Aug 10 fact
+  // sheet, which the Aug 13 release states verbatim ("expected to increase as additional
+  // awards are made") and the model declined to quantify. That decision, not the lapse dial,
+  // is what was wrong — and raising the dial to fit would assert behaviour nobody has
+  // measured, so the forward number is re-anchored on the observation instead.
+  { date: '2026-08-27', frontier: 51000, lowerBound: true, resolving: true },
 ];
+// The pre-award anchor, kept as a named constant because the historical consistency guards
+// below are all statements about the Aug 11 reading and must not drift onto the new point.
+const FRONTIER_AT_AUG11 = 46000;
 
 // The frontier band, DERIVED from the official Odyssey reading rather than triangulated:
 // frontier = our ESTIMATED position − families still ahead of us. Width ~±1,000 reflects only
@@ -661,27 +758,37 @@ const GAP_RANGE = { best: CURRENT_GAP.lo, worst: CURRENT_GAP.hi };
 // to know where the frontier is: the observation series, and (our estimated position − the
 // official Odyssey gap). They should agree. If a future edit moves one without the other,
 // say so loudly rather than letting the model quietly describe two different worlds.
-if (FRONTIER_NOW < AUG11_TRIANGULATION.lo || FRONTIER_NOW > AUG11_TRIANGULATION.hi) {
+if (FRONTIER_AT_AUG11 < AUG11_TRIANGULATION.lo || FRONTIER_AT_AUG11 > AUG11_TRIANGULATION.hi) {
   console.warn(
-    `[TEFA] Frontier observation (${FRONTIER_NOW.toLocaleString()}) is outside the band implied by ` +
+    `[TEFA] Aug 11 frontier (${FRONTIER_AT_AUG11.toLocaleString()}) is outside the band implied by ` +
     `the ${ODYSSEY_READING.asOf} Odyssey reading (${AUG11_TRIANGULATION.lo.toLocaleString()}–` +
-    `${AUG11_TRIANGULATION.hi.toLocaleString()}). One of YOUR_POS, ODYSSEY_READING, or the newest ` +
+    `${AUG11_TRIANGULATION.hi.toLocaleString()}). One of YOUR_POS, ODYSSEY_READING, or the Aug 11 ` +
     `T2_OBSERVATIONS entry is out of date.`
   );
 }
 // Third, INDEPENDENT check: the Aug 10 fact sheet's tier split implies a cascade depth with no
 // community input in it at all. Warn if the model's frontier drifts far from it.
-if (Math.abs(FRONTIER_NOW - FRONTIER_FROM_FACTSHEET) > 2500) {
+if (Math.abs(FRONTIER_AT_AUG11 - FRONTIER_FROM_FACTSHEET) > 2500) {
   console.warn(
-    `[TEFA] Frontier (${FRONTIER_NOW.toLocaleString()}) disagrees with the Aug 10 fact-sheet ` +
+    `[TEFA] Aug 11 frontier (${FRONTIER_AT_AUG11.toLocaleString()}) disagrees with the Aug 10 fact-sheet ` +
     `derivation (${FRONTIER_FROM_FACTSHEET.toLocaleString()}) by more than 2,500. The fact sheet ` +
     `is the only frontier evidence with no community input — reconcile before trusting the model.`
   );
 }
-if (Date.parse(ODYSSEY_READING.asOf) < Date.parse(T2_OBSERVATIONS[T2_OBSERVATIONS.length - 1].date)) {
+// Only meaningful while we were still waiting: once awarded, our own gap stops being the
+// question and a stale Odyssey reading costs nothing.
+if (!AWARD.received &&
+    Date.parse(ODYSSEY_READING.asOf) < Date.parse(T2_OBSERVATIONS[T2_OBSERVATIONS.length - 1].date)) {
   console.warn(
     `[TEFA] Odyssey reading (${ODYSSEY_READING.asOf}) is older than the newest frontier ` +
     `observation (${T2_OBSERVATIONS[T2_OBSERVATIONS.length - 1].date}) — refresh it.`
+  );
+}
+// The award amount must agree with the model's ESA figure, or the money tab and the fuel
+// model are describing different programs.
+if (AWARD.perStudent !== FULL_AWARD) {
+  console.warn(
+    `[TEFA] AWARD.perStudent (${AWARD.perStudent}) !== FULL_AWARD (${FULL_AWARD}).`
   );
 }
 
@@ -746,6 +853,48 @@ const BATCH2 = '2026-09-11';
 const BATCH1_SHARE = 6 / 13;
 
 // ---------------------------------------------------------------------------
+// BATCH 2 — RE-ANCHORED ON THE OBSERVATION (Aug 27 revision). The lapse dials below are
+// retired as the BASIS for the forward number and kept only as the record of the call.
+// Batch 1 outran the central dial by ~60%, and the pool arithmetic those dials multiply is
+// falsified (see the Aug 27 observation). Estimating batch 2 off the dials would repeat the
+// same error in the same direction; estimating it off the measured batch 1 does not.
+//
+// The one structural assumption kept — because it is a claim about the CALENDAR, not about
+// behaviour — is the uniform expiry spread: four-week windows expire roughly evenly across
+// Aug 26 → Sep 7, so batch 1 processed 6 of the 13 spread days and batch 2 processes the
+// remaining 7.
+//
+//   batch-2 seats ≈ (observed batch-1 seats − revoked-money baseline) × 7/6
+//
+// The revoked-award money is netted out first because it needed no window to come loose: it
+// rode in batch 1 as a one-off and does not recur.
+//
+// TWO ROUTES, ONE ANSWER — which is the reason to state a number at all. Keeping the closed
+// pool and solving for the lapse rate that FITS batch 1 (~70%) yields the same batch-2
+// figure, because both routes reduce to "the remaining 7/13 of whatever batch 1's lapse
+// component actually was". The estimate is therefore robust to which explanation of the
+// overshoot turns out to be right.
+//
+// ⚠ IT IS A FLOOR, NOT A CENTRAL CASE, for two compounding reasons. Batch 1 is itself a lower
+// bound (nobody reported being passed over), so everything scaled off it inherits that. And
+// if awards did keep flowing after Aug 10 — the explanation this file now favours — the pool
+// refills again and a THIRD batch in late September is live, which the two-batch frame had
+// ruled out. Both point the same way: batch 2 should be at least this big.
+// ---------------------------------------------------------------------------
+const BATCH1_OBSERVED = FRONTIER_NOW - FRONTIER_AT_AUG11;         // ≥5,000 positions closed
+const BATCH1_LAPSE_COMPONENT = BATCH1_OBSERVED - REVOKED_SEATS;   // ≥3,720 from expiries
+const BATCH2_EXPIRY_RATIO = (13 - 6) / 6;                         // remaining ÷ elapsed spread days
+const BATCH2_FLOOR = Math.round(BATCH1_LAPSE_COMPONENT * BATCH2_EXPIRY_RATIO);  // ≥~4,340
+const TERMINAL_FLOOR = FRONTIER_NOW + BATCH2_FLOOR;               // ≥~55,340
+// The lapse rate batch 1 implies IF the closed pool were right — the falsification receipt.
+// Not a dial: no benchmark in this file, or in the literature it cites, supports it.
+const IMPLIED_BATCH1_LAPSE = BATCH1_LAPSE_COMPONENT / (POOL * BATCH1_SHARE * SEATS_PER_LAPSE);
+// What batch 1 could have delivered at a literally impossible 100% lapse of the closed pool.
+// Observed sits under it, so the pool is not merely mis-sized by a rounding error — but the
+// rate required to get there is the part that does not survive contact with any benchmark.
+const CLOSED_POOL_BATCH1_CEILING = Math.round(REVOKED_SEATS + POOL * BATCH1_SHARE * SEATS_PER_LAPSE);
+
+// ---------------------------------------------------------------------------
 // SCENARIOS — component framing: revoked (baseline) + lapsed + opted-out = seats freed.
 //   REVOKED_SEATS  1,280 baseline in EVERY scenario (the assumed ~940 revocations above),
 //                  riding in batch 1 — that money needs no window to free.
@@ -785,7 +934,7 @@ const BREAKEVEN_NEAR = netLapsesFor(CURRENT_GAP.lo) / POOL;   // ~14.8% — reac
 const BREAKEVEN_FAR = netLapsesFor(CURRENT_GAP.hi) / POOL;    // ~23.5% — clears the far end of the gap
 
 // Chart window: lottery through the Sep 15 proration deadline.
-const FRONTIER_WINDOW = { chartStart: '2026-05-04', today: '2026-08-20', end: '2026-09-15' };
+const FRONTIER_WINDOW = { chartStart: '2026-05-04', today: AWARD.received, end: '2026-09-15' };
 
 // ---------------------------------------------------------------------------
 // Projection: observed frontier through Aug 11, then anchor + seats × ramp(t) per scenario.
@@ -811,11 +960,11 @@ function buildCascadeProjection() {
     return pts[pts.length - 1].f;
   };
 
-  // Two steps, flat in between — the waitlist moves when a batch is cut, not as lapses
-  // accrue. Right-continuous: the jump lands ON the estimated batch day.
-  const b1 = dayOf(BATCH1);
+  // ONE step now, not two. Batch 1 is no longer projected — it is the Aug 27 observation the
+  // line already ends on. What remains forward is batch 2, and it is drawn as a FLOOR rather
+  // than a scenario fan: the three lapse dials are falsified (see BATCH1_OBSERVED) and
+  // charting them would show three wrong answers instead of one honest bound.
   const b2 = dayOf(BATCH2);
-  const ramp = (t) => (t >= b2 ? 1 : t >= b1 ? BATCH1_SHARE : 0);
 
   const series = [];
   const tEnd = dayOf(FRONTIER_WINDOW.end);
@@ -824,13 +973,23 @@ function buildCascadeProjection() {
     if (t <= last.t) row.observedLine = Math.round(interp(obsF, t));
     const hit = obsF.find((o) => o.t === t);
     if (hit) row.observed = hit.f;
-    if (t >= last.t) for (const s of SCENARIOS) row[s.key] = Math.round(last.f + seatsOf(s) * ramp(t));
+    if (t >= last.t) row.floorLine = t >= b2 ? TERMINAL_FLOOR : last.f;
     series.push(row);
   }
 
   const kpis = {
     asOf: FRONTIER_WINDOW.today,
     frontierNow: FRONTIER_NOW,
+    // Batch 1 as MEASURED, and batch 2 re-anchored on it. Both are floors.
+    frontierAtAug11: FRONTIER_AT_AUG11,
+    batch1Observed: BATCH1_OBSERVED,
+    batch1LapseComponent: BATCH1_LAPSE_COMPONENT,
+    batch1Ceiling: CLOSED_POOL_BATCH1_CEILING,
+    impliedLapsePct: Math.round(IMPLIED_BATCH1_LAPSE * 1000) / 10,
+    batch2Floor: BATCH2_FLOOR,
+    terminalFloor: TERMINAL_FLOOR,
+    awardDate: AWARD.received,
+    awardTotal: AWARD_TOTAL,
     gapLo: CURRENT_GAP.lo,
     gapHi: CURRENT_GAP.hi,
     gapAsOf: ODYSSEY_READING.asOf,
@@ -871,15 +1030,13 @@ const fmtChartDate = (ts) => {
 // axis. No Aug 31 (marks nothing) and no Sep 15: Sep 15 sits 8 days from Sep 7, close enough
 // that Recharts silently drops the colliding tick — and the one it drops is Sep 7, the date
 // that matters. The axis still RUNS to Sep 15; only its label is gone.
-const FRONTIER_TICKS = ['2026-05-04', '2026-06-01', '2026-07-01', '2026-07-29', '2026-08-11', BATCH1, BATCH2].map(Date.parse);
+const FRONTIER_TICKS = ['2026-05-04', '2026-06-01', '2026-07-01', '2026-07-29', '2026-08-11', AWARD.received, BATCH2].map(Date.parse);
 
 // Plain-language tooltip for the frontier chart. Whitelisting by dataKey also
 // drops the raw `ts` the Scatter series would otherwise inject.
 const FRONTIER_SERIES = {
   observedLine: 'Pulled off the waitlist so far',
-  cautious: 'Cautious — 25% lapse',
-  central: 'Central — 35% lapse',
-  aggressive: 'Aggressive — 45% lapse',
+  floorLine: 'Batch 2 floor — at least this deep',
 };
 
 const FrontierTooltip = ({ active, payload, label }) => {
@@ -928,14 +1085,16 @@ const TIMELINE = [
     detail: 'Odyssey Parent Support replied to a direct question (ticket #727303, 3:25 PM): "your student currently falls within the 3,001-4,000 range on the waitlist. This is a band, not an exact position, since agents don\'t have visibility into individual rankings, only management can confirm ranges." This is the single most reliable datapoint we have — official and specific to our family — and it replaces every community estimate for the number that decides our outcome. On Jul 29 the same reading was 15,001–20,000, so ~11,000–17,000 families cleared in thirteen days, matching the Comptroller\'s "almost 15,000 additional" post independently. Our position has not moved (49,001–50,000), so the frontier is 45,001–46,999 — confirming the ~46,000 central estimate and retiring the competing ~49,000 read. The email also confirms three mechanics the model assumes: awards go out in BATCHES tied to Comptroller announcements with no fixed schedule; spots open as families opt out, switch to homeschool, or win appeals; and no action is needed on our end — they notify directly. On the numbers available that day the likely case cleared our seat by ~2,200; the Aug 13 funded count has since cut that to ~450.' },
   { date: 'Aug 13', iso: '2026-08-13', title: 'OFFICIAL — 101,600 students funded. The fuel just halved.', kind: 'info',
     detail: 'Comptroller press release, "Huffines Announces 100,000 Students Receiving Texas Education Freedom Accounts": funding has been delivered to 101,600 students, up from the "more than 85,000" announced in the annual report — about 16,600 families claimed their awards in a fortnight. It also restates the mechanic precisely: four weeks from the award date to opt in and confirm enrollment, and only then does a child "receive funding in their account and count as a participant". Consequence for us, and it is not the good kind: the model runs on awarded minus funded, so the pool of unconfirmed awards fell from ~33,441 to ~16,841. Claimed money can never be released to the waitlist. Expected terminal ~52,800 → ~49,450 (clears our estimated seat by ~450 instead of ~2,200), pessimistic ~49,650 → ~47,850 (now misses), break-even 8.8% → 17.4% of the pool. Two offsets: 85.8% of all awards issued are already funded, so the break-even is only ~2.5% of everyone awarded — well inside any published attrition rate; and the release says awards are still going out, which the model does not count. Also stated: "more than 100,000 students remain on the program waitlist."' },
+  { date: 'Aug 27', iso: '2026-08-27', title: 'AWARDED — all three kids. The waitlist question is closed.', kind: 'do',
+    detail: 'The first batch after the four-week windows began expiring landed on Aug 27 \u2014 one day after the Aug 26 expiries and one day inside the model\u2019s Aug 28\u2013Sep 3 batch-1 estimate. Cassius, Dorothy and Sebastian all awarded: $31,422 gross. Corroborated in the same cut by Brad Fleury (original band 50,001\u2013100,000, gap 4,000\u20135,000 on his Aug 12 email), which is what makes the batch measurable: it closed AT LEAST 5,000 positions in one cut, against a central batch-1 estimate of ~3,150. ACTION, and it is the only time-critical item on this page: opt in, select NBCA, and get enrollment confirmed before Sep 15 \u2014 not the Sep 24 window end. Separately, get Nanette\u2019s answer on the \u201c10% of tuition\u201d aid reduction in writing; ~$13,500 of the award\u2019s value to us turns on it.' },
   { date: 'Aug 26 – Sep 7', iso: '2026-08-26', title: 'TEFA — the pool\u2019s four-week windows expire, continuously', kind: 'info',
     detail: 'The ~9,441 unconfirmed awards (118,441 awarded \u2212 109,000 funded, Aug 20) were issued continuously from late July through Aug 10, so their four-week opt-in windows expire continuously from ~Aug 26 through ~Sep 7 \u2014 so fuel accrues as a ramp. But the waitlist itself moves in Comptroller BATCHES (Odyssey, Aug 11 email) \u2014 expect ~two more, est. ~Aug 28\u2013Sep 3 and ~Sep 11. Every window that lapses returns the full $10,474 and funds ~1.36 new offers. Watch email AND text, including spam \u2014 awards land at odd hours.' },
-  { date: 'Sep 8–14', iso: '2026-09-08', title: 'TEFA — the decisive week: batch 2', kind: 'do',
-    detail: 'By Sep 7 the pool is fully resolved, and the final batch \u2014 est. ~Sep 11, plausibly cut just before the proration cliff \u2014 delivers it. We plan at the deep end of our 3,001\u20134,000 gap: with ~1,280 revoked seats credited, reaching 4,000 takes ~23% of the pool lapsing \u2014 under our cautious 25%; central 35% clears. Without the revocation credit, or at program-average lapse rates, it misses \u2014 batch 1\u2019s size settles which. If we are getting funded this year, it shows up this week. If nothing lands by ~Sep 14, it missed \u2014 re-anchor on Year 2.' },
+  { date: 'Sep 8–14', iso: '2026-09-08', title: 'TEFA — batch 2 (no longer our decision point)', kind: 'info',
+    detail: 'The Sep 7 expiries deliver as a second batch, est. ~Sep 11, plausibly cut just before the proration cliff. This no longer decides anything for us \u2014 batch 1 did that on Aug 27 \u2014 but it is what the families still waiting are asking about. Estimate, scaled off the MEASURED size of batch 1 rather than the lapse dials the batch falsified: at least ~4,340 further positions, taking the line to ~55,000+. Two reasons to read that as a floor: batch 1 is itself a lower bound (nobody reported being passed over, so there is no upper anchor), and if awards kept issuing after Aug 10 the pool refills and a third batch in late September is live.' },
   { date: 'Sep 15', iso: '2026-09-15', title: 'TEFA — proration cliff: confirm same-day or lose 25%', kind: 'do',
     detail: 'Waitlist families must confirm enrollment by Sep 15 to keep the full award (Jun 4 funding-timelines release); after that the second installment drops to 75%, and after Jan 15 the final drops to 50%. An offer arriving in the decisive week must be acted on immediately \u2014 have the school selection ready in advance.' },
   { date: 'Oct 1', iso: '2026-10-01', title: 'TEFA 2nd installment (if funded)', kind: 'info',
-    detail: 'Only relevant if a waitlist offer reached us and we opted in. As of the Aug 13 revision that is a live chance leaning our way rather than either a long shot or a safe bet. Still not money to spend before it lands.' },
+    detail: 'Now live: the offer reached us on Aug 27. The second installment pays in full ONLY if enrollment was confirmed by Sep 15 \u2014 after that it prorates to 75% (Jun 4 release). Still not money to spend before it lands, and how much of it we actually keep depends on the unresolved NBCA aid reduction.' },
   { date: 'Feb 1', iso: '2027-02-01', title: 'TEFA final installment (if funded)', kind: 'info',
     detail: 'Final 50% of a TEFA award, if one arrives.' },
 ];
@@ -1077,9 +1236,10 @@ const NowView = ({ balanceDue, perStudent, setTab }) => {
         </h2>
         <p className="text-sm text-tefa-body/80 mb-4">
           This decision had to be made back in June, when TEFA looked out of reach — and it had to be made
-          without knowing what August would bring. It is now genuinely in reach (see below), but every TEFA
-          date lands <em>after</em> June 30, so the choice was always whether to commit to NBCA and pay tuition
-          out of pocket. Kept here as the record of a call made on the information available at the time.
+          without knowing what August would bring. <strong>It came through on Aug 27</strong> (see below), but every
+          TEFA date landed <em>after</em> June 30, so the choice was always whether to commit to NBCA and pay
+          tuition out of pocket without knowing. Kept here as the record of a call made on the information
+          available at the time — and it was the right one.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
           <div className="rounded-lg border border-tefa-green/30 bg-tefa-green/5 p-4">
@@ -1203,41 +1363,36 @@ const NowView = ({ balanceDue, perStudent, setTab }) => {
         </button>
       </section>
 
-      {/* TEFA outlook — the Aug-or-Sep verdict, mirrored from the TEFA tab */}
-      <section className="bg-amber-50 rounded-xl shadow-md border border-amber-300 p-6">
-        <h2 className="text-lg font-bold text-amber-800 flex items-center gap-2 mb-2">
-          <AlertCircle size={20} /> TEFA: September is the window — check the portal now
+      {/* TEFA outlook — resolved Aug 27, mirrored from the TEFA tab */}
+      <section className="bg-tefa-green/[0.06] rounded-xl shadow-md border-2 border-tefa-green/40 p-6">
+        <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2 mb-2">
+          <CheckCircle size={20} className="text-tefa-green" /> TEFA: awarded Aug 27 — now confirm by Sep 15
         </h2>
-        <p className="text-sm text-amber-900 mb-3 font-semibold">
-          Odyssey confirmed on Aug 11 (ticket #727303) that <strong>{k.gapLo.toLocaleString()}–{k.gapHi.toLocaleString()}</strong> families
-          sit between the funded frontier and us — and we plan at the deep end: <strong>assume ~4,000 ahead</strong>. The fuel:
-          ~{k.revokedSeats.toLocaleString()} seats of revoked-award money already loose (assumed from the Aug 20 deck&rsquo;s
-          &ldquo;117,000+&rdquo;), plus <strong>{k.pool.toLocaleString()}</strong> still-unconfirmed awards, windows expiring{' '}
-          <strong>Aug 26 → Sep 7</strong>, delivered in ~two Comptroller batches (est. ~Aug 28–Sep 3 and ~Sep 11).
+        <p className="text-sm text-tefa-body/85 mb-3 font-semibold">
+          All three kids were awarded in the first batch after the four-week windows began expiring — {usd(k.awardTotal)} gross.
+          Our Aug 11 gap was {k.gapLo.toLocaleString()}–{k.gapHi.toLocaleString()}; the batch closed at least{' '}
+          {k.batch1Observed.toLocaleString()} positions in a single cut.
         </p>
-        <p className="text-sm text-amber-900/90 mb-3">
-          <strong>August: close, but short at the deep end.</strong> Batch 1 (~Aug 28–Sep 3) carries roughly 2,600–3,700 seats
-          against the 4,000 we plan on — aggressive falls ~300 short. August happens only if the gap has <em>already</em> burned
-          below the stale reading (awards kept going out after Aug 11). That is why the action is checking the portal, not
-          waiting.
+        <p className="text-sm text-tefa-body/80 mb-3">
+          <strong>The one time-critical thing.</strong> An award is an offer, not money. The four-week opt-in window runs to
+          ~Sep 24, but <strong>Sep 15 is the date that binds</strong>: confirm after it and the second installment drops to 75%
+          (Jun 4 release), and after Jan 15 the final drops to 50%. Opt in, select NBCA, get enrollment confirmed — well inside it.
         </p>
-        <p className="text-sm text-amber-900/90 mb-3">
-          <strong>September: leaning our way, decided by batch 2 (~Sep 11).</strong> Reaching the deep-end 4,000 takes{' '}
-          <strong>{k.breakevenFarPct}%</strong> of the pool lapsing net of revocations — under our cautious 25%. Central and
-          aggressive clear it. Two kill-switches: an official awarded count ≥118,000 deletes the revocation credit, and a
-          lapse rate near the program-wide average misses entirely — batch 1&rsquo;s size will tell us which world we are in. And the{' '}
-          <strong>Sep 15 proration cliff</strong> sits right behind the decisive week — an offer that lands must be confirmed
-          same-day or the award shrinks 25%.
+        <p className="text-sm text-tefa-body/80 mb-3">
+          <strong>What we do not yet know is what it is worth.</strong> Nanette said aid would be reduced so we pay &ldquo;10% of
+          tuition&rdquo;, and that was never disambiguated — {usd2(NBCA_AID_QUESTION.grossReading)} out of pocket under one reading,
+          today&rsquo;s {usd2(NBCA_AID_QUESTION.netReading)} under the other, ~{usd(NBCA_AID_SPREAD)} apart. Until she answers in
+          writing, <strong>keep budgeting the full balance</strong>.
         </p>
-        <p className="text-sm text-amber-900/90">
-          If nothing has landed by ~Sep 14, it missed this year. Until money actually arrives,{' '}
-          <strong>keep budgeting the full balance</strong>.
+        <p className="text-sm text-tefa-body/80">
+          For everyone still waiting: batch 2 (~Sep 11) should carry <strong>at least {k.batch2Floor.toLocaleString()} more
+          positions</strong>, scaled off the size of batch 1 rather than off the old lapse dials.
         </p>
         <button
           onClick={() => setTab('tefa')}
           className="mt-3 text-sm font-bold text-amber-800 underline decoration-amber-800/40 hover:text-tefa-navy"
         >
-          See the scenarios, the chart, and the watch list →
+          See what batch 1 measured, the chart, and what to do →
         </button>
       </section>
     </div>
@@ -1257,6 +1412,42 @@ const MoneyView = ({ tuition, nbcaAid, scholarship, balanceDue, perStudent, sche
 
   return (
     <div className="space-y-6">
+      {/* TEFA landed — and deliberately does NOT appear in the balance below yet. */}
+      <section className="bg-amber-50 rounded-xl shadow-md border border-amber-300 p-6">
+        <h2 className="text-lg font-bold text-amber-800 flex items-center gap-2 mb-2">
+          <AlertCircle size={20} /> TEFA awarded Aug 27 — why the balance below has not moved
+        </h2>
+        <p className="text-sm text-amber-900/90 mb-3">
+          All three kids were awarded {usd(AWARD_TOTAL)} gross. None of it is netted off the balance below, on purpose:
+          NBCA said aid would be reduced if TEFA landed, and <strong>how much we actually save is unresolved</strong>.
+          Subtracting the award now would show a number we have no basis for.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm mb-3">
+          <div className="rounded-lg border border-amber-300 bg-white/60 p-3">
+            <div className="font-bold text-tefa-navy mb-1">&ldquo;10% of gross&rdquo; reading</div>
+            <div className="font-mono font-bold text-tefa-green text-base">{usd2(NBCA_AID_QUESTION.grossReading)}</div>
+            <p className="text-amber-900/70 text-xs mt-1">
+              We pay 10% of the {usd(GROSS_TUITION)} sticker price; TEFA covers most of the rest and NBCA still grants
+              ~{usd2(NBCA_AID_QUESTION.schoolGivesUnderGross)}. Saves ~{usd(NBCA_AID_SPREAD)} against today.
+            </p>
+          </div>
+          <div className="rounded-lg border border-amber-300 bg-white/60 p-3">
+            <div className="font-bold text-tefa-navy mb-1">&ldquo;back to today&rsquo;s net&rdquo; reading</div>
+            <div className="font-mono font-bold text-tefa-red text-base">{usd2(NBCA_AID_QUESTION.netReading)}</div>
+            <p className="text-amber-900/70 text-xs mt-1">
+              Aid is clawed back until we owe what we owe now. We save nothing and the award lands on the school&rsquo;s
+              side of the ledger.
+            </p>
+          </div>
+        </div>
+        <p className="text-sm text-amber-900/90">
+          <strong>The argument to make.</strong> The second reading cannot be what was meant: {usd2(NBCA_AID_QUESTION.netReading)} from
+          us plus {usd(AWARD_TOTAL)} from TEFA is {usd2(NBCA_AID_QUESTION.netReading + AWARD_TOTAL)} against {usd(GROSS_TUITION)} of
+          gross tuition — NBCA would collect {usd2(NBCA_AID_QUESTION.overCollection)} <em>more than full sticker price</em> for three
+          kids while still calling part of it aid. Get Nanette&rsquo;s answer in writing, and budget the full balance below until then.
+        </p>
+      </section>
+
       {/* Breakdown */}
       <section className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
         <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2 mb-4">
@@ -1277,8 +1468,9 @@ const MoneyView = ({ tuition, nbcaAid, scholarship, balanceDue, perStudent, sche
           </div>
         </div>
         <p className="text-xs text-tefa-body/50 mt-2">
-          TEFA is not included — it's waitlisted and not expected this year. If a voucher ever arrives it would
-          credit against this balance.
+          TEFA is awarded but deliberately not included here — see above. How much of the {usd(AWARD_TOTAL)} credits
+          against this balance rather than against NBCA&rsquo;s own aid is the unresolved question, so this stays the
+          number to budget.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-5">
@@ -1414,180 +1606,147 @@ const TimelineView = () => {
 // ---------------------------------------------------------------------------
 const TefaView = () => {
   const { series: cascadeSeries, kpis: k } = useMemo(() => buildCascadeProjection(), []);
-  const [cautious, central, aggressive] = k.scenarios;
   const frontierYMax = useMemo(
-    () => Math.ceil(Math.max(BAND_HI, ...cascadeSeries.map((r) => r.aggressive ?? 0)) * 1.05 / 1000) * 1000,
+    () => Math.ceil(Math.max(BAND_HI, ...cascadeSeries.map((r) => r.floorLine ?? 0)) * 1.05 / 1000) * 1000,
     [cascadeSeries]
   );
-  const todayTs = Date.parse(FRONTIER_WINDOW.today);
   const gapBand = `${k.gapLo.toLocaleString()}–${k.gapHi.toLocaleString()}`;
 
   const watch = [
-    { date: 'Now', text: 'Check the Odyssey parent portal, email, and texts (including spam). Awards have continued going out since the Aug 11 gap reading, so the 3,001–4,000 may already be smaller — this is the only way August happens. Awards land at odd hours.' },
-    { date: 'Now', text: 'Open a fresh Odyssey support ticket for a new waitlist range. The Aug 11 reading is the number this whole page turns on, and it is nine days stale.' },
-    { date: 'Aug 26', text: 'First windows expire — fuel starts accruing. The waitlist itself will NOT move yet (awards go out in Comptroller batches); the tell this week is the AWARDED count dropping, which would mean revocations are real.' },
-    { date: 'Aug 28–Sep 3', text: 'Estimated BATCH 1 — next beat of the all-summer 1–2-week announcement cadence: the ~1,280 revoked seats plus the August expiries. Its SIZE is the measurement: near ~3,000+ seats and the deep-end gap is nearly shut before batch 2; low hundreds and temper expectations.' },
-    { date: 'Sep 7', text: 'Last windows expire — the Aug 10-dated awards. The pool is fully resolved; whatever fuel exists, exists now.' },
-    { date: '~Sep 11', text: 'Estimated BATCH 2 — the decisive one, processing the Sep 7 tail, plausibly cut just before the proration cliff. If we are getting funded this year, it almost certainly shows up here.' },
-    { date: 'Sep 15', text: 'PRORATION CLIFF: waitlist families must confirm by Sep 15 for the full award — after that the second installment drops to 75% (Jun 4 release). An offer that arrives in the decisive week must be acted on same-day.' },
+    { date: 'NOW', text: 'Opt in and select NBCA in the Odyssey parent portal, then get NBCA to confirm enrollment. This is the only time-critical item on the page — everything else can wait.' },
+    { date: 'NOW', text: 'Email Nanette and get the "10% of tuition" aid reduction answered IN WRITING before the school re-cuts the award letters. Gross reading vs net reading is ~$13,500 to us, and the net reading would have NBCA collecting more than full sticker tuition for three kids — say that plainly.' },
+    { date: 'Sep 7', text: 'Last four-week windows expire — the Aug 10-dated awards. Whatever fuel batch 2 carries is fixed at this point.' },
+    { date: '~Sep 11', text: 'Batch 2, for the families still waiting. Floor of ~4,340 further positions, scaled off the measured size of batch 1. If it lands materially larger, awards were still being issued after Aug 10 and a third batch is live.' },
+    { date: 'Sep 15', text: 'PRORATION CLIFF — the date that actually binds our award, not the ~Sep 24 window end. Confirmed after Sep 15 and the second installment drops to 75%; after Jan 15 the final drops to 50%.' },
+    { date: 'Oct 1', text: 'Second installment pays, if enrollment was confirmed in time. Do not spend it before it lands, and do not treat it as savings until the NBCA aid question is answered.' },
   ];
 
   return (
     <div className="space-y-6">
-      {/* THE ANSWER */}
-      <section className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+      {/* THE ANSWER — resolved Aug 27 */}
+      <section className="bg-white rounded-xl shadow-md border-2 border-tefa-green/40 p-6 ring-1 ring-tefa-green/20">
         <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2 mb-2">
-          <Clock size={20} /> August or September?
+          <CheckCircle size={20} className="text-tefa-green" /> Awarded — {fmtChartDate(Date.parse(k.awardDate))}
         </h2>
         <p className="text-sm text-tefa-body/80 mb-4">
-          Odyssey confirmed on {fmtChartDate(Date.parse(k.gapAsOf))} (ticket #727303) that <strong>{gapBand}</strong> families
-          sit between the funded frontier and us. <strong>We plan at the deep end — assume ~4,000 ahead</strong> (position
-          ~49,999); ~3,001 (position ~49,000) is the lucky case, never the base case. The fuel: <strong>~{k.revokedSeats.toLocaleString()} seats
-          of revoked-award money already loose</strong> (the assumed ~{k.revokedAwards.toLocaleString()} revocations behind the deck&rsquo;s
-          &ldquo;117,000+&rdquo;), plus the pool of <strong>{k.pool.toLocaleString()}</strong> unconfirmed awards — all deep Tier 3, windows
-          expiring continuously <strong>Aug 26 → Sep 7</strong>.
+          All three kids, in the <strong>first batch after the four-week windows started expiring</strong> — one day after the
+          Aug&nbsp;26 expiries and one day inside this model&rsquo;s Aug&nbsp;28–Sep&nbsp;3 estimate. {usd(k.awardTotal)} gross
+          ({usd(AWARD.perStudent)} × {AWARD.students} kids). The question this tab was built to
+          answer is closed. Two are still open, and the second one is worth more money than the first.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-          <div className="rounded-lg border border-gray-300 bg-gray-50 p-4">
+          <div className="rounded-lg border-2 border-tefa-red/40 bg-tefa-red/[0.04] p-4">
             <div className="flex items-center justify-between mb-1">
-              <span className="font-bold text-tefa-navy">August</span>
-              <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800 uppercase tracking-wide">Close — not quite, at the deep end</span>
+              <span className="font-bold text-tefa-navy">Confirm by Sep 15</span>
+              <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-tefa-red/15 text-tefa-red uppercase tracking-wide">Do this first</span>
             </div>
             <p className="text-tefa-body/70 text-xs">
-              The announcement cadence (every 1–2 weeks all summer) puts <strong>batch 1 at ~Aug 28–Sep 3</strong>, carrying the
-              ~{k.revokedSeats.toLocaleString()} revoked seats plus the early expiries: {cautious.batch1Seats.toLocaleString()}–{aggressive.batch1Seats.toLocaleString()} seats.
-              Against the deep-end 4,000 that leaves <strong>{(k.gapHi - aggressive.batch1Seats).toLocaleString()}–{(k.gapHi - cautious.batch1Seats).toLocaleString()} still ahead</strong> —
-              aggressive falls ~{(k.gapHi - aggressive.batch1Seats).toLocaleString()} short. August happens only if the gap has <em>already</em> burned below the stale
-              Aug 11 reading (awards kept going out after it) — real, unquantified, and checkable at the portal today.
+              An award is an <em>offer</em>, not money. The four-week opt-in window runs to ~{fmtChartDate(Date.parse(AWARD.optInWindowEnds))},
+              but that is <strong>not the binding date</strong> — the Jun&nbsp;4 funding-timelines release prorates anyone confirming
+              after <strong>Sep&nbsp;15</strong> down to 75% of the second installment, and after Jan&nbsp;15 the final drops to 50%.
+              Opt in, select NBCA, and get enrollment confirmed well inside that. Nothing else on this page is time-critical; this is.
             </p>
           </div>
-          <div className="rounded-lg border-2 border-tefa-navy/40 bg-tefa-light p-4 ring-1 ring-tefa-sky/40">
+          <div className="rounded-lg border border-amber-300 bg-amber-50 p-4">
             <div className="flex items-center justify-between mb-1">
-              <span className="font-bold text-tefa-navy">September</span>
-              <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-tefa-green/15 text-tefa-green uppercase tracking-wide">Leaning our way — decisive</span>
+              <span className="font-bold text-tefa-navy">What it is actually worth</span>
+              <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800 uppercase tracking-wide">Unresolved — ~{usd(NBCA_AID_SPREAD)} at stake</span>
             </div>
             <p className="text-tefa-body/70 text-xs">
-              Batch 2 (~Sep 11) delivers the rest. Reaching the deep-end 4,000 takes <strong>{k.breakevenFarPct}%</strong> of the pool
-              lapsing ({k.lapsesNeededFar.toLocaleString()} families, net of revocations) — under our cautious 25%. Totals run{' '}
-              {cautious.seats.toLocaleString()} / {central.seats.toLocaleString()} / {aggressive.seats.toLocaleString()}: cautious reaches 4,000 with no margin, central and
-              aggressive clear it. Two kill-switches, stated plainly: an official awarded count ≥118,000 deletes the{' '}
-              {k.revokedSeats.toLocaleString()} credit (break-even back to ~31%), and a lapse rate near the program-wide average misses
-              entirely. <strong>Sep 15 proration cliff</strong> right behind batch 2 — confirm same-day.
+              Nanette said on Jun&nbsp;26 that aid would be reduced so we pay &ldquo;10% of tuition&rdquo;. That was never
+              disambiguated and the Jun&nbsp;28 email was never answered. Gross reading: we pay {usd2(NBCA_AID_QUESTION.grossReading)} and
+              save ~{usd(NBCA_AID_SPREAD)}. Net reading: aid is clawed back to today&rsquo;s {usd2(NBCA_AID_QUESTION.netReading)} and we save
+              nothing. <strong>The net reading is arithmetically impossible at the full award</strong> — our{' '}
+              {usd2(NBCA_AID_QUESTION.netReading)} plus {usd(k.awardTotal)} is {usd2(NBCA_AID_QUESTION.netReading + k.awardTotal)} against{' '}
+              {usd(GROSS_TUITION)} of gross tuition, i.e. the school would collect {usd2(NBCA_AID_QUESTION.overCollection)} more than
+              full sticker price while still nominally granting aid. Get the answer in writing.
             </p>
           </div>
         </div>
       </section>
 
-      {/* THE MATH */}
+      {/* THE MATH — re-anchored on the observation */}
       <section className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
         <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2 mb-3">
-          <Scale size={20} /> The whole model in five lines
+          <Scale size={20} /> What batch 1 measured, in five lines
         </h2>
         <div className="rounded-lg bg-tefa-navy/[0.03] border border-tefa-navy/10 p-4 font-mono text-[12px] leading-6 text-tefa-body/90 overflow-x-auto">
-          <div>{k.awarded.toLocaleString()} awarded − ~{k.revokedAwards.toLocaleString()} revoked (assumed) − {k.fundedNow.toLocaleString()} funded = <strong>{k.pool.toLocaleString()} unconfirmed awards</strong> — all deep Tier 3</div>
-          <div>revoked money is already loose: <strong>~{k.revokedSeats.toLocaleString()} seats</strong> in every scenario, riding in batch 1 — no window needed</div>
-          <div>each lapse returns ${FULL_AWARD.toLocaleString()} → funds ~{SEATS_PER_LAPSE.toFixed(2)} new offers · gap to us: <strong>{gapBand}</strong> (Odyssey, Aug 11 — stale in our favour)</div>
-          <div>break-even net of revocations: {k.lapsesNeededNear.toLocaleString()}–{k.lapsesNeededFar.toLocaleString()} lapses = <strong>{k.breakevenNearPct}–{k.breakevenFarPct}% of the pool</strong></div>
-          <div>windows expire Aug 26 → Sep 7 · delivered as ~2 batches, est. Aug 28–Sep 3 + ~Sep 11 · confirm by Sep 15 or lose 25%</div>
+          <div>our gap was <strong>{gapBand}</strong> (Odyssey, Aug 11) · Brad Fleury&rsquo;s was 4,000–5,000 (Aug 12) · <strong>both awarded Aug 27</strong></div>
+          <div>so batch 1 closed <strong>≥{k.batch1Observed.toLocaleString()} positions in one cut</strong> — a gap statement, independent of where the line absolutely sits</div>
+          <div>closed-pool check FAILS: that needs <strong>{k.impliedLapsePct}% of the {k.pool.toLocaleString()} pool</strong> to lapse in 6 of 13 days (ceiling at an impossible 100%: {k.batch1Ceiling.toLocaleString()})</div>
+          <div>→ the pool REFILLED — awards kept issuing after the Aug 10 fact sheet, so batch 2 is scaled off batch 1, not off the dials</div>
+          <div>batch 2 ≈ ({k.batch1Observed.toLocaleString()} − {k.revokedSeats.toLocaleString()} revoked) × 7/6 = <strong>≥{k.batch2Floor.toLocaleString()} more</strong>, ~{fmtChartDate(Date.parse(BATCH2))} · line reaches <strong>≥{k.terminalFloor.toLocaleString()}</strong></div>
         </div>
+        <p className="text-[11px] text-tefa-body/55 mt-2">
+          Every figure here is a <strong>floor</strong>. A batch tells you who it reached, never where it stopped, and nobody in the
+          Aug&nbsp;27 threads reported being passed over — so there is no upper anchor, and everything scaled off batch 1 inherits that.
+          If awards did keep flowing after Aug&nbsp;10, the pool refills again and a <em>third</em> batch in late September is live.
+        </p>
       </section>
 
-      {/* SCENARIOS — component sums */}
+      {/* SCORECARD — what the model said, and what actually happened */}
       <section className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
         <h2 className="text-lg font-bold text-tefa-navy flex items-center gap-2 mb-2">
-          <Layers size={20} /> Three scenarios — lapses + opt-outs/revocations = seats freed
+          <Layers size={20} /> The scorecard — what the model said, and what happened
         </h2>
         <p className="text-sm text-tefa-body/80 mb-4">
-          One dial decides everything: what share of the {k.pool.toLocaleString()} lets the window expire. The second
-          component (voluntary opt-outs at the observed trickle, plus double-enrollment audit removals now that public
-          school has started) is shown separately so nothing hides inside the rate — it is real but small, and the
-          audit piece is a confirmed <em>mechanism</em> with an unobserved <em>magnitude</em>.
+          The three lapse scenarios that drove this page are <strong>retired</strong>, not merely updated. They got the
+          mechanism and the timing right and the size badly wrong, and the reason matters for reading the batch-2 number
+          above: they multiplied a pool that turned out not to be closed.
         </p>
-        {/* BATCH 1 — the fuel accrued through end of August (~46% of deadlines) */}
-        <div className="text-xs font-bold text-tefa-navy mb-1">Batch 1 (~Aug 28–Sep 3) — revoked money + the August expiries. Sets up batch 2; reaches our deep-end seat only if the gap has already burned down.</div>
         <div className="overflow-x-auto mb-4">
           <table className="w-full text-xs">
             <thead>
               <tr className="text-left text-tefa-body/50 border-b border-gray-200">
-                <th className="py-2 pr-3 font-semibold">Scenario</th>
-                <th className="py-2 pr-3 font-semibold">Lapse rate</th>
-                <th className="py-2 pr-3 font-semibold">Seats freed</th>
-                <th className="py-2 pr-3 font-semibold">Frontier reaches</th>
-                <th className="py-2 font-semibold">Still ahead (deep end · lucky case)</th>
+                <th className="py-2 pr-3 font-semibold">Call</th>
+                <th className="py-2 pr-3 font-semibold">Model said</th>
+                <th className="py-2 pr-3 font-semibold">Happened</th>
+                <th className="py-2 font-semibold">Verdict</th>
               </tr>
             </thead>
             <tbody>
-              {k.scenarios.map((sc) => {
-                // Planning number first (deep end, 4,000); the lucky case (3,001) second.
-                const leftHi = Math.max(0, k.gapHi - sc.batch1Seats);
-                const leftLo = Math.max(0, k.gapLo - sc.batch1Seats);
-                return (
-                  <tr key={sc.key} className="border-b border-gray-100 align-top">
-                    <td className="py-2 pr-3 font-bold text-tefa-navy">{sc.label}</td>
-                    <td className="py-2 pr-3 tabular-nums">{sc.lapsePct}%</td>
-                    <td className="py-2 pr-3 tabular-nums font-bold">{sc.batch1Seats.toLocaleString()}</td>
-                    <td className="py-2 pr-3 tabular-nums">~{(k.frontierNow + sc.batch1Seats).toLocaleString()}</td>
-                    <td className={`py-2 font-semibold ${leftHi === 0 ? 'text-tefa-green' : 'text-amber-700'}`}>
-                      {leftHi === 0 ? 'Reaches us even at the deep end'
-                        : `~${leftHi.toLocaleString()} families${leftLo === 0 ? ' (lucky case: reached)' : ` (lucky case ${leftLo.toLocaleString()})`}`}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        {/* BATCH 2 — the Sep 7 tail; cumulative verdicts */}
-        <div className="text-xs font-bold text-tefa-navy mb-1">Batch 2 (~Sep 11) — processes the Sep 7 tail. The decisive one; cumulative totals below.</div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="text-left text-tefa-body/50 border-b border-gray-200">
-                <th className="py-2 pr-3 font-semibold">Scenario</th>
-                <th className="py-2 pr-3 font-semibold">Lapsed → seats</th>
-                <th className="py-2 pr-3 font-semibold">Opt-out / revoked</th>
-                <th className="py-2 pr-3 font-semibold">Batch 2 seats</th>
-                <th className="py-2 pr-3 font-semibold">Total by ~Sep 11</th>
-                <th className="py-2 font-semibold">vs the {gapBand} gap</th>
+              <tr className="border-b border-gray-100 align-top">
+                <td className="py-2 pr-3 font-bold text-tefa-navy">Mechanism</td>
+                <td className="py-2 pr-3">Nothing moves until four-week windows expire; first ones close Aug 26</td>
+                <td className="py-2 pr-3">Batch cut Aug 27, the day after</td>
+                <td className="py-2 font-semibold text-tefa-green">Right</td>
               </tr>
-            </thead>
-            <tbody>
-              {k.scenarios.map((sc) => {
-                // Verdicts anchor on the DEEP END (4,000 — we plan at ~49,999). Reaching only
-                // the 3,001 shallow end is the lucky case and is labelled as such, never as a
-                // win. A "clear" additionally needs ~10% margin — the seat counts carry
-                // hundreds of seats of rounding (floors on both published counts).
-                const clearsDeep = sc.seats >= k.gapHi * 1.1;
-                const reachesDeep = sc.seats >= k.gapHi;
-                const luckyOnly = sc.seats >= k.gapLo && !reachesDeep;
-                const verdict = clearsDeep
-                  ? 'Clears our deep-end seat with margin'
-                  : reachesDeep
-                    ? 'Reaches the deep end — right at the line, no margin'
-                    : luckyOnly
-                      ? `Lucky case only — misses the deep end by ${(k.gapHi - sc.seats).toLocaleString()}`
-                      : `Misses by ${(k.gapLo - sc.seats).toLocaleString()}–${(k.gapHi - sc.seats).toLocaleString()}`;
-                const tone = clearsDeep ? 'text-tefa-green' : reachesDeep ? 'text-amber-700' : 'text-tefa-red';
-                return (
-                  <tr key={sc.key} className="border-b border-gray-100 align-top">
-                    <td className="py-2 pr-3 font-bold text-tefa-navy">{sc.label}</td>
-                    <td className="py-2 pr-3 tabular-nums">{sc.lapses.toLocaleString()} → {sc.lapseSeats.toLocaleString()}</td>
-                    <td className="py-2 pr-3 tabular-nums">{sc.extraSeats.toLocaleString()}</td>
-                    <td className="py-2 pr-3 tabular-nums">{(sc.seats - sc.batch1Seats).toLocaleString()}</td>
-                    <td className="py-2 pr-3 tabular-nums font-bold">{sc.seats.toLocaleString()}</td>
-                    <td className={`py-2 font-semibold ${tone}`}>{verdict}</td>
-                  </tr>
-                );
-              })}
+              <tr className="border-b border-gray-100 align-top">
+                <td className="py-2 pr-3 font-bold text-tefa-navy">Batch 1 timing</td>
+                <td className="py-2 pr-3">Est. Aug 28 – Sep 3 (charted Aug 31)</td>
+                <td className="py-2 pr-3">Aug 27</td>
+                <td className="py-2 font-semibold text-tefa-green">Right — 1 day early</td>
+              </tr>
+              <tr className="border-b border-gray-100 align-top">
+                <td className="py-2 pr-3 font-bold text-tefa-navy">Batch 1 size</td>
+                <td className="py-2 pr-3">2,618 / 3,154 / 3,689 seats (25 / 35 / 45% lapse)</td>
+                <td className="py-2 pr-3">≥{k.batch1Observed.toLocaleString()} positions</td>
+                <td className="py-2 font-semibold text-tefa-red">Wrong — low by ~60%</td>
+              </tr>
+              <tr className="border-b border-gray-100 align-top">
+                <td className="py-2 pr-3 font-bold text-tefa-navy">Pool size</td>
+                <td className="py-2 pr-3">{k.pool.toLocaleString()} unconfirmed awards, closed and draining</td>
+                <td className="py-2 pr-3">Too small — batch 1 alone needs {k.impliedLapsePct}% of it</td>
+                <td className="py-2 font-semibold text-tefa-red">Wrong — the pool refilled</td>
+              </tr>
+              <tr className="align-top">
+                <td className="py-2 pr-3 font-bold text-tefa-navy">Our outcome</td>
+                <td className="py-2 pr-3">September, and only if lapses beat ~23%</td>
+                <td className="py-2 pr-3">August, out of batch 1</td>
+                <td className="py-2 font-semibold text-amber-700">Right answer, wrong month</td>
+              </tr>
             </tbody>
           </table>
         </div>
-        <div className="mt-3 space-y-1.5">
-          {k.scenarios.map((sc) => (
-            <p key={sc.key} className="text-[11px] text-tefa-body/55"><strong className="text-tefa-body/75">{sc.label}:</strong> {sc.basis}</p>
-          ))}
-        </div>
+        <p className="text-[11px] text-tefa-body/55">
+          <strong>The instructive part.</strong> This file argued in July that &ldquo;the pool does not drain — it refills&rdquo;,
+          because every award wave replenishes the unconfirmed pool as fast as it empties. The Aug 20 revision overrode that,
+          recomputing the pool as awarded − revoked − funded and shrinking it to {k.pool.toLocaleString()}. Batch 1 says the July
+          reading was right and the override was the error: awards kept issuing after the Aug 10 fact sheet, exactly as the Aug 13
+          release said they would, and the model declined to quantify it. Raising the lapse dial to {k.impliedLapsePct}% would
+          &ldquo;fix&rdquo; the fit while asserting behaviour no benchmark in this file supports — which is why batch 2 above is
+          scaled off the observation instead.
+        </p>
       </section>
 
       {/* THE CHART */}
@@ -1605,23 +1764,23 @@ const TefaView = () => {
                      label={{ value: 'Waitlist position reached', angle: -90, position: 'insideLeft', fontSize: 11 }} />
               <ChartTooltip content={<FrontierTooltip />} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <ReferenceLine x={todayTs} stroke="#94a3b8" strokeDasharray="2 2"
-                  label={{ value: 'Today', fontSize: 10, fill: '#64748b', position: 'insideTopLeft' }} />
+              {/* No separate "Today" line — today IS the award date, and two labels on the same
+                  x-value overprint each other. The AWARDED marker below carries both meanings. */}
               {/* Fuel accrues in the shaded expiry band; the waitlist MOVES at the two batch lines. */}
               <ReferenceArea x1={Date.parse(EXPIRY_START)} x2={Date.parse(EXPIRY_END)}
                   fill="#b08a3e" fillOpacity={0.10} stroke="none"
                   label={{ value: 'WINDOWS EXPIRE', position: 'insideBottom', fontSize: 8, fontWeight: 700, fill: '#8a6b2f' }} />
               {/* Batch lines carry no labels — the axis ticks name the dates, and two labels
                   8 days apart collide at this chart width. */}
-              <ReferenceLine x={Date.parse(BATCH1)} stroke="#b08a3e" strokeWidth={1.5} strokeDasharray="5 3" />
+              {/* The award, not the old Aug 31 estimate — batch 1 is observed now. */}
+              <ReferenceLine x={Date.parse(AWARD.received)} stroke="#2e7d5b" strokeWidth={2}
+                  label={{ value: 'AWARDED', position: 'insideTopLeft', fontSize: 10, fontWeight: 700, fill: '#2e7d5b' }} />
               <ReferenceLine x={Date.parse(BATCH2)} stroke="#b08a3e" strokeWidth={1.5} strokeDasharray="5 3" />
-              <ReferenceArea y1={YOUR_POS.lo} y2={YOUR_POS.hi} fill="#aa2142" fillOpacity={0.18}
-                  label={{ value: `US — ${YOUR_POS.lo.toLocaleString()}–${YOUR_POS.hi.toLocaleString()}`, position: 'insideTopRight', fontSize: 10, fontWeight: 700, fill: '#aa2142' }} />
-              <ReferenceLine y={YOUR_POS.lo} stroke="#aa2142" strokeWidth={1.5} />
+              <ReferenceArea y1={YOUR_POS.lo} y2={YOUR_POS.hi} fill="#2e7d5b" fillOpacity={0.15}
+                  label={{ value: `US — CLEARED ${fmtChartDate(Date.parse(AWARD.received))}`, position: 'insideTopRight', fontSize: 10, fontWeight: 700, fill: '#2e7d5b' }} />
+              <ReferenceLine y={YOUR_POS.lo} stroke="#2e7d5b" strokeWidth={1.5} />
               <Line type="linear" dataKey="observedLine" name="Pulled off so far" stroke="#202562" strokeWidth={2.5} dot={false} legendType="none" isAnimationActive={false} />
-              <Line type="linear" dataKey="cautious" name="Cautious — 25% lapse" stroke="#2e7d5b" strokeWidth={2} dot={false} isAnimationActive={false} />
-              <Line type="linear" dataKey="central" name="Central — 35% lapse" stroke="#202562" strokeWidth={2.5} dot={false} isAnimationActive={false} />
-              <Line type="linear" dataKey="aggressive" name="Aggressive — 45% lapse" stroke="#aa2142" strokeWidth={2.5} dot={false} isAnimationActive={false} />
+              <Line type="linear" dataKey="floorLine" name="Batch 2 floor (~Sep 11) — at least this deep" stroke="#b08a3e" strokeWidth={2.5} strokeDasharray="6 3" dot={false} isAnimationActive={false} />
               <Scatter dataKey="observed" name="Published data" fill="#202562" isAnimationActive={false} />
             </ComposedChart>
           </ResponsiveContainer>
@@ -1629,8 +1788,9 @@ const TefaView = () => {
         <p className="text-[10px] text-tefa-body/45 mt-1">
           Fuel accrues continuously in the gold band as four-week windows expire (Aug 26 → Sep 7), but the waitlist only <em>moves</em> when the
           Comptroller cuts a batch — Odyssey confirmed awards go out in batches tied to announcements, and every advance this summer arrived that
-          way. Hence flat lines with two steps at the estimated batch dates (dates soft ± a few days; the two-batch count is the solid part).
-          When a line enters the red band, an offer has reached us.
+          way. The first batch landed <strong>Aug 27</strong>, one day after the earliest windows expired and one day inside the model&rsquo;s
+          Aug 28–Sep 3 estimate, clearing our band. The dashed line is the <strong>floor</strong> for batch 2, scaled off the size of batch 1
+          rather than off the lapse dials — it is where the line reaches <em>at least</em>, not where it is expected to stop.
         </p>
       </section>
 
@@ -1648,8 +1808,9 @@ const TefaView = () => {
           ))}
         </ul>
         <p className="text-xs text-tefa-body/50 mt-4">
-          Falsification: if nothing has landed by <strong>~Sep 14</strong>, the wave was too small and this year is over —
-          re-anchor on Year 2. <strong>Keep budgeting the full balance until money actually arrives.</strong>
+          The waitlist falsifier has been spent — the award landed. The one that still bites is financial:{' '}
+          <strong>keep budgeting the full balance</strong> until the money is in the account AND Nanette has answered the aid
+          question in writing. An award that arrives and is then netted out by an aid reduction changes nothing we owe.
         </p>
       </section>
 
@@ -1657,8 +1818,9 @@ const TefaView = () => {
       <section className="rounded-xl border border-gray-200 bg-tefa-light/50 p-4 text-[11px] text-tefa-body/60 space-y-1.5">
         <div className="font-bold text-tefa-navy text-xs">What this rests on</div>
         <p><strong>Published:</strong> 118,441 awarded (Aug 10 fact sheet) · 109,000+ funded (Aug 20 Comptroller deck) · four-week opt-in window (Aug 13 release) · Sep 15 proration (Jun 4 release) · removal of public-school enrollees (Jun 4 release).</p>
-        <p><strong>Official to us:</strong> gap {gapBand} (Odyssey ticket #727303, Aug 11 — stale, in our favour if anything).</p>
-        <p><strong>Assumed (all family decisions, Aug 20):</strong> the deck&rsquo;s &ldquo;117,000+&rdquo; is a REAL decline — ~{k.revokedAwards.toLocaleString()} awards revoked, ~{k.revokedSeats.toLocaleString()} seats already re-cascading (falsifier: any official awarded count ≥118,000) · award dates spread continuously late Jul → Aug 10 (drives the batch split, not the total) · <strong>our seat at the deep end, ~49,999</strong> — ~49,000 is the lucky case, never the base case · dials 25/35/45 · the lapse dial itself, which is still the whole question.</p>
+        <p><strong>Official to us:</strong> gap {gapBand} (Odyssey ticket #727303, Aug 11) · <strong>awarded {fmtChartDate(Date.parse(k.awardDate))}, all three kids</strong> — the reading that closed the question.</p>
+        <p><strong>Observed, not published:</strong> batch 1&rsquo;s size. It rests on two gaps Odyssey stated directly — ours ({gapBand}, Aug 11) and Brad Fleury&rsquo;s (4,000–5,000, Aug 12) — both cleared in the same cut, giving ≥{k.batch1Observed.toLocaleString()} positions. No Comptroller document states a cascade depth, and none states this batch&rsquo;s size.</p>
+        <p><strong>Assumed:</strong> a lower bound is the honest reading of a batch (nobody reported being passed over, so there is no upper anchor) · four-week windows expire roughly uniformly Aug 26 → Sep 7, which is what lets batch 2 be scaled 7/6 off batch 1 · the ~{k.revokedSeats.toLocaleString()} revoked seats rode in batch 1 and do not recur. <strong>Retired:</strong> the 25/35/45 lapse dials and the closed-{k.pool.toLocaleString()} pool they multiplied — see the scorecard.</p>
       </section>
     </div>
   );
