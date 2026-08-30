@@ -201,7 +201,7 @@ const GC=[[/Woodland/,6.9],[/Sienna/,6.3],[/Odyssey/,4.9],[/Pacifica/,5.1],[/Car
  [/Telluride X-Line/,8.4],[/Telluride Hybrid/,8.0],[/Telluride/,8.4],[/Palisade/,7.9],
  [/Grand Highlander/,8.0],[/Pilot TrailSport/,8.3],[/Ascent/,8.7],[/CX-90/,8.0],
  [/Highlander Hybrid/,8.0],[/EV9/,7.8],[/R1S/,9.9],[/Model X/,5.4],[/Defender/,8.5],
- [/Wagoneer/,8.3],[/Tahoe|Suburban|Yukon/,8.0],[/Sequoia/,8.6],[/Expedition/,8.6]];
+ [/Wagoneer/,8.3],[/Tahoe|Suburban|Yukon/,8.0],[/Sequoia/,8.6],[/Expedition/,8.6],[/Pathfinder/,7.0]];
 const OWN=[[/Woodland|Sienna/,4.4,600],[/Odyssey/,4.3,550],[/Pacifica/,3.8,690],[/Carnival Hybrid/,4.5,520],
  [/Carnival/,4.3,520],[/Telluride/,4.1,520],[/Palisade/,4.2,550],[/Grand Highlander/,4.5,510],
  [/Highlander Hybrid/,4.4,490],[/Pilot/,4.4,540],[/Ascent/,4.2,590],[/CX-90/,3.9,640],
@@ -284,10 +284,51 @@ const FINANCE_OFFERS = [
 ];
 
 const LEASES = [
-  ['Sienna LE, $319/mo', '$15,483', '$35,733'],
-  ['Grand Highlander XLE, $439/mo', '$19,803', '$40,053'],
-  ['Carnival LX, $399/mo', '$18,363', '$35,175'],
-  ['Kia EV9 LR, $419/mo (24 mo)', '$14,055', '$27,555'],
+  ['Sienna LE, $319/mo', '$15,483', '$22,233'],
+  ['Grand Highlander XLE, $439/mo', '$19,803', '$26,553'],
+  ['Carnival LX, $399/mo', '$18,363', '$29,613'],
+  ['Kia EV9 LR, $419/mo (24 mo)', '$14,055', '$21,555'],
+];
+
+// The pre-purchase checklist, grouped as it is on the page.
+const CHECKS = [
+  {
+    g: 'Answer these first — they move the decision most',
+    items: [
+      'Is that 2025 Sienna XLE at $40,499 actually all-wheel drive? It tops the list and the drivetrain is unverified.',
+      'Get three real insurance quotes. I used $11,500–$13,500 over five years as a type-based estimate; a real Texas number could swing $4,000 either way, which is more than the gap between your top three.',
+      'Does the Pathfinder’s CVT shudder, hesitate or whine? That is the difference between $8,000 of car and $2,000 of car.',
+      'Check your odometer against a year ago. If it is 15,000 miles a year rather than 25,000, the whole ranking compresses and older cars come back.',
+    ],
+  },
+  {
+    g: 'On any used listing',
+    items: [
+      'Drivetrain: front-wheel or all-wheel? Do not trust the trim name.',
+      'Second row: captain’s chairs or a bench? Especially Wagoneer Series II, Carnival LX and LXS, Tahoe LS.',
+      'Accident history, number of owners, and how much factory warranty remains.',
+      'Tyre and brake life — a set of tyres on any of these runs $900–$1,400.',
+      'Open recalls, free to check by VIN at nhtsa.gov.',
+    ],
+  },
+  {
+    g: 'At a dealer',
+    items: [
+      'Ask for the out-the-door price in writing by email before visiting. Refuse to discuss monthly payment.',
+      'Ask what add-ons are on the car. Paint protection, VIN etching and market adjustments are where $2,000–$4,000 hides.',
+      'Ask whether taking the promotional APR forfeits a cash rebate. On the EV9 you must choose one.',
+      'Walk in with a credit union pre-approval. It costs nothing and it is the only leverage that reliably works.',
+    ],
+  },
+  {
+    g: 'On the test drive — bring the car seats and all three kids',
+    items: [
+      'Can a child reach the third row with a car seat still installed in the second? This is the most useful thing you will learn all day.',
+      'Does your actual stroller fit behind the third row with every seat up?',
+      'Sit in the third row yourself for five minutes.',
+      'Open the doors in a tight space. Sliding versus hinged is a daily thing you will either love or resent.',
+    ],
+  },
 ];
 
 const SOURCE_ROWS = [
@@ -952,6 +993,73 @@ const VehicleCostView = () => {
           </p>
 
           <section>
+            <h2>What this is</h2>
+            <div className="tldr">
+              <p style={{ fontSize: '14px', margin: '0 0 10px' }}>
+                <b>The brief.</b> A family of five in New Braunfels replacing a 2017 Nissan Pathfinder with 100,000
+                miles and an ageing CVT. Three kids, so seven seats with second-row captain&rsquo;s chairs, which puts
+                two in the middle with a walkway and one in the back. Roughly 25,000 miles a year. Regular runs to the
+                Gulf Coast, including drive-on beaches at Port Aransas. A liking for the lifted, all-wheel-drive look.
+              </p>
+              <p style={{ fontSize: '14px', margin: '0 0 10px' }}>
+                <b>What I did.</b> Started from every three-row vehicle that offers second-row captain&rsquo;s chairs,
+                then priced 40 specific configurations &mdash; real listings where I could find them, market estimates
+                where I could not &mdash; against five years of ownership at your actual mileage, your actual
+                electricity rate, and Texas tax and fee rules. Costs recalculate live from the sliders, so nothing here
+                is a fixed answer.
+              </p>
+              <p style={{ fontSize: '14px', margin: 0 }}>
+                <b>What it is not.</b> Not a quote. Insurance, maintenance and resale are the three softest inputs and
+                together they move the total more than anything else. Treat any gap under about $3,000 as a tie and
+                decide on the test drive.
+              </p>
+            </div>
+          </section>
+
+          <section>
+            <h2>Seven things the research turned up</h2>
+            <div className="tldr">
+              <ul>
+                <li>
+                  <b>At 25,000 miles a year, fuel is the deciding variable.</b> Five years is 125,000 miles. The spread
+                  between a 36 mpg Sienna and a 22 mpg Odyssey is about $6,600, and against a 17 mpg Tahoe it is
+                  $11,600. Efficiency matters roughly 1.7 times more for you than for an average driver.
+                </li>
+                <li>
+                  <b>Minivans give more space per dollar than SUVs, without exception.</b> The cheapest seven-seat SUV
+                  near you starts at $59,699 and offers five fewer inches of third-row legroom and thirteen fewer cubic
+                  feet than a Sienna costing $12,000 less. No SUV on this page beats a Sienna on five-year cost.
+                </li>
+                <li>
+                  <b>Resale is the largest single lever, bigger than price.</b> The Sienna loses only 29% over five
+                  years against a class average of 46%. That is why a $47,504 new Sienna costs less to own than a
+                  $40,499 used one over the same period.
+                </li>
+                <li>
+                  <b>No electric vehicle can give you seven seats with captain&rsquo;s chairs.</b> The EV9, Rivian R1S,
+                  Tesla Model X, Volvo EX90 and Ionic 9 all have two-seat third rows, so captain&rsquo;s chairs cap them
+                  at six. It is a structural limit of the segment, not a trim choice.
+                </li>
+                <li>
+                  <b>Leasing does not work at your mileage.</b> Every offer caps you at 10,000 miles a year. At 25,000
+                  you end a three-year term 45,000 miles over, costing $6,750 in penalties at Toyota&rsquo;s $0.15 a
+                  mile or $11,250 at Kia&rsquo;s $0.25 &mdash; and you finish owning nothing.
+                </li>
+                <li>
+                  <b>Buying older does not save money here.</b> A 2017 Sienna at $27,590 costs about $4,000 more over
+                  five years than a 2025 at $40,499, because 22 mpg and $9,000 of maintenance on a van heading to
+                  187,000 miles consume the entire saving.
+                </li>
+                <li>
+                  <b>Cost and reliability point in opposite directions at the bottom.</b> The cheapest option here is a
+                  Pacifica Hybrid at $21,990, and it is also the least reliable vehicle on the page. That is one
+                  sentence, not two.
+                </li>
+              </ul>
+            </div>
+          </section>
+
+          <section>
             <h2>The short version</h2>
             <div className="tldr">
               <ul>
@@ -994,9 +1102,9 @@ const VehicleCostView = () => {
                   only 32% of its price, the worst on this page.
                 </li>
                 <li>
-                  <b>Leasing doesn&rsquo;t work at your mileage.</b> Every lease caps you at 10,000&ndash;12,000 miles a
-                  year and charges $0.15&ndash;$0.25 for each extra one. At 25,000 miles that&rsquo;s $20,000 of overage
-                  on a three-year Sienna lease, and you end with nothing.
+                  <b>Leasing doesn&rsquo;t work at your mileage.</b> Every lease caps you at 10,000 miles a year. At
+                  25,000 you finish a three-year term 45,000 miles over, which is $6,750 in penalties on a Toyota and
+                  $11,250 on a Kia &mdash; and you end owning nothing.
                 </li>
                 <li>
                   <b>Rivian and Tesla are in as six-seaters, and both are expensive.</b> The cheapest R1S is $60,590 and
@@ -1247,8 +1355,8 @@ const VehicleCostView = () => {
           <section>
             <h2>Leasing, and why it fails here</h2>
             <p className="fine" style={{ marginBottom: '10px' }}>
-              Every advertised lease caps you at 10,000&ndash;12,000 miles a year. You drive 25,000. Overage runs
-              $0.15&ndash;$0.25 a mile.
+              Every advertised lease caps you at 10,000 miles a year. You drive 25,000, so a 36-month lease runs
+              45,000 miles over. Toyota charges $0.15 a mile, Kia $0.25.
             </p>
             <div className="card" style={{ padding: '14px 16px' }}>
               <div className="lgline" style={{ gridTemplateColumns: '1fr 92px 92px', marginBottom: '8px' }}>
@@ -1274,10 +1382,11 @@ const VehicleCostView = () => {
               Figures are due-at-signing plus payments, then plus mileage overage at 25,000 miles a year. Fuel,
               insurance and tax are extra on both sides. At the end you own nothing and start again.{' '}
               <b>
-                A Sienna lease costs about $11,900 a year in payments and overage alone; buying the same van outright
-                works out to roughly $11,700 a year including fuel, insurance and maintenance &mdash; and you keep a
-                $32,000 asset.
-              </b>
+                A Sienna lease runs about $7,400 a year in payments and overage, before fuel and insurance. Buying works
+                out to roughly $11,700 a year with everything included &mdash; and you finish holding a $25,000 asset
+                instead of nothing.
+              </b>{' '}
+              Leasing looks cheaper per year only because the comparison leaves out the equity.
             </p>
           </section>
 
@@ -1692,6 +1801,24 @@ const VehicleCostView = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </section>
+
+          <section>
+            <h2>What to check before you buy</h2>
+            <div className="tldr">
+              {CHECKS.map((grp, i) => (
+                <Fragment key={grp.g}>
+                  <p className="fine" style={{ margin: '0 0 8px' }}>
+                    <b>{grp.g}</b>
+                  </p>
+                  <ul style={i === CHECKS.length - 1 ? { margin: 0 } : { marginBottom: '14px' }}>
+                    {grp.items.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </Fragment>
+              ))}
             </div>
           </section>
 
