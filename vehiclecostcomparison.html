@@ -1,0 +1,1048 @@
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --surface-0:#f0efec; --surface-1:#fcfcfb; --surface-2:#ffffff;
+  --text-primary:#0b0b0b; --text-secondary:#52514e; --text-muted:#898781;
+  --border:rgba(11,11,11,0.10); --border-strong:rgba(11,11,11,0.22);
+  --track:#e6e5e0;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#898781; --s6:#6250d6;
+  --accent-bg:#e6f1fb; --accent-text:#0c447c;
+  --warn-bg:#faece7; --warn-text:#993c1d;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --surface-0:#141413; --surface-1:#1a1a19; --surface-2:#212120;
+    --text-primary:#f0efec; --text-secondary:#c3c2b7; --text-muted:#898781;
+    --border:rgba(255,255,255,0.10); --border-strong:rgba(255,255,255,0.22);
+    --track:#2c2c2a;
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#898781; --s6:#9085e9;
+    --accent-bg:#0c447c; --accent-text:#b5d4f4;
+    --warn-bg:#712b13; --warn-text:#f5c4b3;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--surface-0);color:var(--text-primary);
+  font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.7;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:24px 16px 56px}
+h1{font-size:22px;font-weight:500;margin:0 0 8px;line-height:1.3}
+h2{font-size:18px;font-weight:500;margin:0 0 4px}
+h3{font-size:16px;font-weight:500;margin:24px 0 10px;color:var(--text-secondary)}
+p{margin:0 0 12px}
+.sub{color:var(--text-secondary);font-size:15px}
+section{margin-top:32px}
+.fine{font-size:13px;color:var(--text-secondary)}
+.fine b{color:var(--text-primary);font-weight:500}
+
+.stick{position:sticky;top:0;z-index:20;background:var(--surface-0);
+  padding:10px 0 8px;margin:0 -16px 0;border-bottom:0.5px solid var(--border)}
+.stickin{max-width:760px;margin:0 auto;padding:0 16px;display:flex;align-items:center;
+  justify-content:space-between;gap:10px}
+.stickv{font-size:13px;color:var(--text-secondary);font-variant-numeric:tabular-nums;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stickb{font:inherit;font-size:13px;padding:6px 12px;background:var(--accent-bg);color:var(--accent-text);
+  border:none;border-radius:8px;cursor:pointer;font-weight:500;flex:none}
+#panel[hidden]{display:none}
+#panel{margin-top:10px}
+.tldr{background:var(--surface-2);border:0.5px solid var(--border);border-radius:12px;padding:16px 18px}
+.tldr ul{margin:0;padding-left:18px}
+.tldr li{margin-bottom:9px;font-size:14px;line-height:1.6}
+.tldr li:last-child{margin-bottom:0}
+.tldr b{font-weight:500}
+select,input[type=number]{font:inherit;font-size:14px;width:100%;padding:8px 10px;
+  background:var(--surface-2);color:var(--text-primary);border:0.5px solid var(--border-strong);
+  border-radius:8px}
+.bgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
+.bgrid label{font-size:12px;color:var(--text-muted);display:block}
+.lg{background:var(--surface-2);border:0.5px solid var(--border);border-radius:12px;padding:14px 14px 6px}
+.lgrow{margin-bottom:14px}
+.lgname{font-size:13px;font-weight:500;margin-bottom:5px}
+.lgline{display:grid;grid-template-columns:34px 1fr 52px;gap:8px;align-items:center;margin-bottom:4px}
+.lglab{font-size:11px;color:var(--text-muted)}
+.lgtrack{height:13px;background:var(--track);border-radius:4px;position:relative;overflow:hidden}
+.lgbase{position:absolute;left:0;top:0;height:100%;background:var(--s5);opacity:.5}
+.lggain{position:absolute;top:0;height:100%;background:var(--s1)}
+.lggain.r3{background:var(--s3)}
+.lgv{font-size:12px;font-variant-numeric:tabular-nums;color:var(--text-secondary);text-align:right}
+.grp{display:inline-block;font-size:12px;padding:2px 10px;border-radius:8px;
+  background:var(--accent-bg);color:var(--accent-text);font-weight:500;letter-spacing:.02em}
+
+/* overview matrix */
+.mx{background:var(--surface-2);border:0.5px solid var(--border);border-radius:12px;
+  padding:14px 12px;overflow-x:auto}
+.mxg{display:grid;grid-template-columns:112px repeat(4,1fr);gap:6px 8px;min-width:440px;align-items:center}
+.mxh{font-size:12px;color:var(--text-secondary)}
+button.mxh{background:transparent;border:none;padding:2px 0;cursor:pointer;font:inherit;
+  font-size:12px;color:var(--text-secondary);text-align:left}
+button.mxh[aria-pressed=true]{color:var(--text-primary);font-weight:500}
+button.mxh::after{content:" \2193";opacity:0}
+button.mxh[aria-pressed=true]::after{opacity:.6}
+.mxn{font-size:13px;line-height:1.35;padding-right:4px}
+.mxb{height:11px;background:var(--track);border-radius:6px;overflow:hidden}
+.mxb i{display:block;height:100%;border-radius:6px}
+.mxe{font-size:12px;color:var(--text-muted);text-align:center}
+.mxrule{grid-column:1/-1;height:0.5px;background:var(--border);margin:6px 0}
+.mxsec{grid-column:1/-1;font-size:12px;font-weight:500;color:var(--text-secondary);
+  letter-spacing:.06em;text-transform:uppercase;margin-top:4px}
+
+.card{background:var(--surface-2);border:0.5px solid var(--border);border-radius:12px;
+  padding:16px;margin-bottom:12px;position:relative}
+.card.best{border:2px solid var(--border-strong);padding:15px}
+.note{background:var(--warn-bg);color:var(--warn-text);border-radius:8px;padding:12px 14px;
+  font-size:14px;line-height:1.6}
+.note b{font-weight:500}
+
+.ctrl{margin-bottom:18px}
+.ctrl:last-child{margin-bottom:0}
+.ctrl label{display:flex;justify-content:space-between;align-items:baseline;
+  font-size:13px;color:var(--text-secondary)}
+.ctrl output{font-size:15px;font-weight:500;color:var(--text-primary);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;margin:6px 0 0;accent-color:var(--s1);height:22px}
+.seg{display:flex;gap:8px;margin-top:6px}
+.seg button{flex:1;font:inherit;font-size:14px;padding:8px 0;background:transparent;
+  border:0.5px solid var(--border-strong);border-radius:8px;cursor:pointer;color:var(--text-secondary)}
+.seg button[aria-pressed=true]{background:var(--accent-bg);color:var(--accent-text);
+  border-color:transparent;font-weight:500}
+button:focus-visible,input:focus-visible{outline:2px solid var(--s1);outline-offset:2px}
+
+.offers{display:grid;gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.offer{background:var(--surface-1);border-radius:8px;padding:10px 12px;font-size:13px}
+.offer b{display:block;font-weight:500;font-size:14px}
+.offer em{display:block;font-style:normal;font-variant-numeric:tabular-nums;font-weight:500;margin:1px 0}
+.offer span{color:var(--text-secondary);font-size:12px;line-height:1.45;display:block}
+
+.head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.nm{font-size:16px;font-weight:500;line-height:1.35}
+.meta{font-size:13px;color:var(--text-secondary);margin-top:1px}
+.net{font-size:22px;font-weight:500;text-align:right;font-variant-numeric:tabular-nums;line-height:1.2}
+.netlab{font-size:12px;color:var(--text-secondary);text-align:right;margin-top:2px;white-space:nowrap}
+.pill{display:inline-block;font-size:12px;padding:1px 8px;border-radius:8px;
+  background:var(--accent-bg);color:var(--accent-text);margin-left:6px;vertical-align:2px}
+.pill.six{background:var(--warn-bg);color:var(--warn-text)}
+.cond{display:inline-block;font-size:11px;font-weight:500;letter-spacing:.08em;
+  padding:1px 8px;border-radius:8px;margin-left:6px;vertical-align:2px;
+  background:var(--track);color:var(--text-secondary)}
+.cond.nw{background:var(--s3);color:#fff}
+.awd{display:inline-block;font-size:11px;font-weight:500;letter-spacing:.06em;
+  padding:1px 8px;border-radius:8px;margin-left:6px;vertical-align:2px;
+  background:var(--accent-bg);color:var(--accent-text)}
+.award{display:flex;align-items:center;gap:6px;margin-top:11px;font-size:12.5px;
+  background:var(--warn-bg);color:var(--warn-text);border-radius:8px;padding:6px 10px;text-decoration:none}
+.award svg{flex:none}
+.lnk{display:inline-block;margin-top:12px;font-size:13px;color:var(--s1);text-decoration:none;
+  border-bottom:0.5px solid var(--s1)}
+.tag{display:inline-block;font-size:12px;padding:2px 10px;border-radius:8px;
+  background:var(--accent-bg);color:var(--accent-text);margin-bottom:10px}
+
+.stack{display:flex;height:14px;border-radius:4px;overflow:hidden;margin:14px 0 8px;gap:2px}
+.stack i{display:block;height:100%}
+.key{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--text-secondary)}
+.key span{display:flex;align-items:center;gap:5px}
+.sw{width:10px;height:10px;border-radius:2px;flex:none}
+
+.specs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 16px;
+  margin-top:14px;padding-top:12px;border-top:0.5px solid var(--border)}
+.spec .k{font-size:12px;color:var(--text-muted)}
+[data-why]{cursor:help}
+[data-why] .k::after,.q::after{content:"?";font-size:9px;vertical-align:3px;margin-left:3px;
+  display:inline-block;width:11px;height:11px;line-height:11px;text-align:center;
+  border-radius:50%;background:var(--track);color:var(--text-secondary)}
+.q{cursor:help;border:none;background:none;font:inherit;padding:0}
+.whybox{font-size:12.5px;line-height:1.55;color:var(--text-secondary);background:var(--surface-1);
+  border-left:2px solid var(--s1);border-radius:0 6px 6px 0;padding:8px 10px;margin:8px 0;
+  grid-column:1/-1}
+.spec .v{font-size:15px;font-weight:500;font-variant-numeric:tabular-nums}
+.bar{height:4px;background:var(--track);border-radius:2px;margin-top:5px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--s1);border-radius:2px}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:right;padding:8px 4px;border-bottom:0.5px solid var(--border)}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:500;color:var(--text-secondary);font-size:12px}
+td.n{font-variant-numeric:tabular-nums}
+tr.grouprow td{font-weight:500;color:var(--text-secondary);font-size:12px;
+  text-transform:uppercase;letter-spacing:.06em;border-bottom:0.5px solid var(--border-strong)}
+tr.six td:first-child{color:var(--warn-text)}
+.scroller{overflow-x:auto;-webkit-overflow-scrolling:touch}
+</style>
+
+<div class="wrap">
+  <div class="stick"><div class="stickin">
+    <div class="stickv" id="stickv"></div>
+    <button class="stickb" id="stickb" aria-expanded="false">Assumptions</button>
+  </div><div id="panel" hidden></div></div>
+  <h1 style="margin-top:20px">Three-row family vehicle</h1>
+  <p class="sub">Seven seats with second-row captain's chairs, priced against real listings near 78130. Minivans and SUVs kept separate throughout.</p>
+
+  <section>
+    <h2>What this is</h2>
+    <div class="tldr">
+      <p style="font-size:14px;margin:0 0 10px"><b>The brief.</b> A family of five in New Braunfels replacing a 2017 Nissan Pathfinder with 100,000 miles and an ageing CVT. Three kids, so seven seats with second-row captain's chairs, which puts two in the middle with a walkway and one in the back. Roughly 25,000 miles a year. Regular runs to the Gulf Coast, including drive-on beaches at Port Aransas. A liking for the lifted, all-wheel-drive look.</p>
+      <p style="font-size:14px;margin:0 0 10px"><b>What I did.</b> Started from every three-row vehicle that offers second-row captain's chairs, then priced 40 specific configurations &mdash; real listings where I could find them, market estimates where I could not &mdash; against five years of ownership at your actual mileage, your actual electricity rate, and Texas tax and fee rules. Costs recalculate live from the sliders, so nothing here is a fixed answer.</p>
+      <p style="font-size:14px;margin:0"><b>What it is not.</b> Not a quote. Insurance, maintenance and resale are the three softest inputs and together they move the total more than anything else. Treat any gap under about $3,000 as a tie and decide on the test drive.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Seven things the research turned up</h2>
+    <div class="tldr"><ul>
+      <li><b>At 25,000 miles a year, fuel is the deciding variable.</b> Five years is 125,000 miles. The spread between a 36 mpg Sienna and a 22 mpg Odyssey is about $6,600, and against a 17 mpg Tahoe it is $11,600. Efficiency matters roughly 1.7 times more for you than for an average driver.</li>
+      <li><b>Minivans give more space per dollar than SUVs, without exception.</b> The cheapest seven-seat SUV near you starts at $59,699 and offers five fewer inches of third-row legroom and thirteen fewer cubic feet than a Sienna costing $12,000 less. No SUV on this page beats a Sienna on five-year cost.</li>
+      <li><b>Resale is the largest single lever, bigger than price.</b> The Sienna loses only 29% over five years against a class average of 46%. That is why a $47,504 new Sienna costs less to own than a $40,499 used one over the same period.</li>
+      <li><b>No electric vehicle can give you seven seats with captain's chairs.</b> The EV9, Rivian R1S, Tesla Model X, Volvo EX90 and Ionic 9 all have two-seat third rows, so captain's chairs cap them at six. It is a structural limit of the segment, not a trim choice.</li>
+      <li><b>Leasing does not work at your mileage.</b> Every offer caps you at 10,000 miles a year. At 25,000 you end a three-year term 45,000 miles over, costing $6,750 in penalties at Toyota's $0.15 a mile or $11,250 at Kia's $0.25 &mdash; and you finish owning nothing.</li>
+      <li><b>Buying older does not save money here.</b> A 2017 Sienna at $27,590 costs about $4,000 more over five years than a 2025 at $40,499, because 22 mpg and $9,000 of maintenance on a van heading to 187,000 miles consume the entire saving.</li>
+      <li><b>Cost and reliability point in opposite directions at the bottom.</b> The cheapest option here is a Pacifica Hybrid at $21,990, and it is also the least reliable vehicle on the page. That is one sentence, not two.</li>
+    </ul></div>
+  </section>
+
+  <section>
+    <h2>The short version</h2>
+    <div class="tldr"><ul>
+      <li><b>At 25,000 miles a year, fuel decides it.</b> 36 mpg versus 22 mpg is about $6,600 over five years. That knocks the Odyssey and gas Carnival out of contention despite their low prices.</li>
+      <li><b>Cheapest overall: 2024 Pacifica Hybrid Select, $21,990</b> — roughly $47.9k over five years, $276 a month. It is also the least reliable vehicle here, at 68,000 miles heading to 190,000. Lowest cost and highest risk are the same car.</li>
+      <li><b>Safest pick: Toyota Sienna.</b> New at $47,504 or a 2025 with 59k miles at $40,499. Best resale in the segment by a wide margin, average-or-better reliability, the biggest third row of anything on this list, and the only hybrid minivan offering AWD.</li>
+      <li><b>If you want the AWD stance: Sienna Woodland Edition, $55,750.</b> Standard AWD, 6.9 inches of clearance, matte-black wheels, and all-weather mats included, which fixes the Sienna's one real weakness.</li>
+      <li><b>SUVs cost more and give less.</b> The cheapest seven-seat SUV near you is a Grand Highlander Hybrid Limited at $59,699 — more money than any minivan here, with five fewer inches of third-row legroom and thirteen fewer cubic feet of cargo.</li>
+      <li><b>Your 2017 Pathfinder already has a good second row.</b> At 41.7" it beats the Sienna, Odyssey, Carnival and Pacifica. What you're really buying is third row and boot: the Sienna adds 8.0" behind and 17.5 cu ft, while the Telluride adds only 1.4" and 5.3 cu ft.</li>
+      <li><b>Going older doesn't pay here.</b> A 2017 Sienna at $27,590 costs about $61.5k over five years &mdash; more than a 2025 at $40,499 &mdash; because 22 mpg, higher interest, and $9,000 of maintenance on a 187,000-mile van eat the whole saving. Your mileage is what makes cheap old cars expensive.</li>
+      <li><b>The Kia EV9 seats six.</b> Cheapest to fuel by far, but its third row holds two people and it keeps only 32% of its price, the worst on this page.</li>
+      <li><b>Leasing doesn't work at your mileage.</b> Every lease caps you at 10,000 miles a year. At 25,000 you finish a three-year term 45,000 miles over, which is $6,750 in penalties on a Toyota and $11,250 on a Kia &mdash; and you end owning nothing.</li>
+      <li><b>Rivian and Tesla are in as six-seaters, and both are expensive.</b> The cheapest R1S is $60,590 and lands near $92k over five years; the best-value Model X is a 2017 at $31,590 and still hits $63k because of battery-age risk and repair costs. The Land Rover Defender 130 is $126k over five years and uses a bench second row anyway. The Ineos Grenadier has no third row at all.</li>
+      <li><b>Hyundai's 2026 Palisade Hybrid is the value pick of the new SUVs.</b> 34 mpg, 43" second row, captain's chairs standard on every seven-seat trim, and about $4,400 less than the Telluride Hybrid for the same platform and the same 10-year powertrain warranty.</li>
+      <li><b>For the off-road look with a hybrid, look at the Telluride X-Line SX.</b> $56,035, AWD standard, rugged styling, 33 mpg. It is the only vehicle here that pairs the lifted stance you want with efficiency that survives 25,000 miles a year, other than the Sienna Woodland.</li>
+      <li><b>Honda Pilot TrailSport is the real off-road trim.</b> Standard AWD, all-terrain tires, steel skid plates, and a 32.5" third row. But 21 mpg costs you $6,700 more in fuel than a Sienna over five years.</li>
+      <li><b>If you drive on the beach, the minivans need care.</b> The Odyssey at 4.9" and Pacifica at 5.1" of clearance are the wrong tool for soft sand. A Sienna Woodland has 6.9" and standard AWD; the Telluride X-Line has 8.4". Both work; neither has a low range.</li>
+      <li><b>Texas charges EVs $200 a year.</b> That is $1,000 over five years on the EV9, Rivian and Tesla, now included below. Hybrids and plug-ins are exempt.</li>
+      <li><b>Sequoia is out on cost.</b> Both used ones land above $93k over five years — the highest here by $12,000 — because they start near $68,000 and hold only 11.5 cu ft behind the third row.</li>
+      <li><b>The 2027 Telluride Hybrid is the most interesting new option.</b> $50,035 with AWD, 34 mpg, a redesigned cabin with 43" of second-row legroom, and about $63k over five years. It beats the Grand Highlander by $7,000.</li>
+    </ul></div>
+  </section>
+
+  <section>
+    <h2>Versus your current car</h2>
+    <div class="card" style="margin-bottom:14px">
+      <div class="ctrl"><label for="baseSel">Your current car</label>
+        <select id="baseSel" style="margin-top:6px"></select></div>
+      <div class="bgrid">
+        <div><label for="b2">2nd row, in</label><input type="number" id="b2" step="0.1"></div>
+        <div><label for="b3">3rd row, in</label><input type="number" id="b3" step="0.1"></div>
+        <div><label for="bc">Boot, cu ft</label><input type="number" id="bc" step="0.1"></div>
+      </div>
+      <p class="fine" style="margin:10px 0 0">Pick a preset or type your own numbers. Everything below, and the "vs yours" figures on each card, update to match.</p>
+    </div>
+    <p class="fine" style="margin-bottom:10px">Grey is what your 2024 Pathfinder gives you today — 35.5" in the second row, 28.0" in the third. Colour is what you would gain.</p>
+    <div class="lg" id="legroom"></div>
+  </section>
+
+  <section>
+    <h2>At a glance</h2>
+    <p class="fine" style="margin-bottom:10px">Longer bar is better. Tap a column heading to sort by it. Room combines second- and third-row legroom; Value is the share of price still there at year five.</p>
+    <div class="key" style="margin-bottom:12px">
+      <span><i class="sw" style="background:var(--s1)"></i>Room</span>
+      <span><i class="sw" style="background:var(--s2)"></i>Cargo</span>
+      <span><i class="sw" style="background:var(--s3)"></i>MPG</span>
+      <span><i class="sw" style="background:var(--s4)"></i>Value kept</span>
+    </div>
+    <div class="mx"><div class="mxg" id="matrix"></div></div>
+  </section>
+
+  <section>
+    <h2>Seat count and cleanability</h2>
+    <div class="note"><b>The Kia EV9 seats six, not seven.</b> Its third row holds two, so captain's chairs make it a six-seater. No three-row EV on sale gives seven seats with captain's chairs.<br><br>
+    <b>The Sienna is the hardest to clean.</b> Its second-row seats slide but don't come out, and there's carpet underneath. The Carnival and Odyssey both beat it: wipeable synthetic leather, third rows that fold into a floor well, and second rows you can remove or slide clear.<br><br>
+    <b>Check the second row on any listing.</b> Wagoneer Series II ships with a bench as standard. Carnival LX and LXS are bench-only, so you need EX or above. Carnival SX Prestige lounge seats don't fold or remove, which cancels its cargo advantage.</div>
+  </section>
+
+  <section>
+    <h2>Two traps in the older listings</h2>
+    <div class="note"><b>2017&ndash;2020 Sienna is the V6, not the hybrid.</b> The hybrid arrived in 2021. The older van gets 22 mpg instead of 36, which at 25,000 miles a year costs $6,600 more in fuel over five years. It does have <b>more</b> cargo though &mdash; 39.1 cu ft behind the third row versus 33.5 &mdash; and AWD was available.<br><br>
+    <b>Tahoe LS ships with a second-row bench.</b> Captain's chairs are an option on that trim, so confirm on the specific car before you get attached to it.</div>
+  </section>
+
+  <section id="assumptions">
+    <h2>Your assumptions</h2>
+    <div class="card" id="panelsrc">
+      <div class="ctrl"><label for="down" class="q" data-why="Cash you put in on day one. It reduces the loan and therefore the interest, but not the total cost of the car. Your Pathfinder sale should fund most of this.">Down payment <output id="downOut">$10,000</output></label>
+        <input type="range" id="down" min="0" max="25000" step="500" value="10000"></div>
+      <div class="ctrl"><label for="miles" class="q" data-why="Drives fuel cost and the resale discount. At 25,000 a year you cover 125,000 miles in five years, which is why efficient cars pull ahead and older cars fall behind.">Miles per year <output id="milesOut">25,000</output></label>
+        <input type="range" id="miles" min="6000" max="35000" step="1000" value="25000"></div>
+      <div class="ctrl"><label for="gas" class="q" data-why="Price per gallon of regular. Diesel is calculated at 22% above this. Texas averages below the national figure.">Gasoline <output id="gasOut">$3.00 / gal</output></label>
+        <input type="range" id="gas" min="2" max="6" step="0.05" value="3.00"></div>
+      <div class="ctrl"><label for="kwh" class="q" data-why="Your GVEC marginal rate from the August bill: $0.085 generation plus $0.0238 distribution, then the 2% franchise fee and 1.5% city tax. The $25 service charge is fixed so it is excluded.">Electricity <output id="kwhOut">$0.113 / kWh</output></label>
+        <input type="range" id="kwh" min="0.08" max="0.50" step="0.001" value="0.113"></div>
+      <div class="ctrl"><label for="elec" class="q" data-why="Applies to the Pacifica and CX-90 plug-in hybrids only. With 26-32 miles of electric range, this is the share of your driving that never touches petrol. Drag it to zero to see them as ordinary hybrids.">Plug-in miles on battery <output id="elecOut">55%</output></label>
+        <input type="range" id="elec" min="0" max="100" step="5" value="55"></div>
+      <div class="ctrl"><label for="chg" class="q" data-why="Level 2 install runs $1,200-1,800 typically, or $3,000-6,000 if your panel needs upgrading. GVEC rebates 50% up to $600. The federal 30C credit expired 30 June 2026.">Home charger install <output id="chgOut">$1,000</output></label>
+        <input type="range" id="chg" min="0" max="6000" step="100" value="1000"></div>
+      <div class="ctrl"><label>Loan term</label>
+        <div class="seg" id="terms">
+          <button data-t="48" aria-pressed="false">48 mo</button>
+          <button data-t="60" aria-pressed="true">60 mo</button>
+          <button data-t="72" aria-pressed="false">72 mo</button>
+        </div></div>
+    </div>
+    <p class="fine" style="margin-top:10px">Default is 25,000 miles a year, so 125,000 miles over five years. Resale is discounted for that extra wear, roughly 11% per additional 25,000 miles. Electricity is your GVEC marginal rate: $0.085 generation plus $0.0238 distribution, then the 2% franchise fee and 1.5% city tax. The $25 service charge is fixed, so it isn't counted. Charger default is a typical $1,600 install less GVEC's $600 rebate.</p>
+  </section>
+
+  <section>
+    <h2>Leasing, and why it fails here</h2>
+    <p class="fine" style="margin-bottom:10px">Every advertised lease caps you at 10,000 miles a year. You drive 25,000, so a 36-month lease runs 45,000 miles over. Toyota charges $0.15 a mile, Kia $0.25.</p>
+    <div class="card" style="padding:14px 16px">
+      <div class="lgline" style="grid-template-columns:1fr 92px 92px;margin-bottom:8px">
+        <div class="lglab">36-month lease</div><div class="lgv" style="text-align:right">Advertised</div><div class="lgv" style="text-align:right">Your miles</div>
+      </div>
+      <div class="lgline" style="grid-template-columns:1fr 92px 92px"><div style="font-size:13px">Sienna LE, $319/mo</div>
+        <div class="lgv">$15,483</div><div class="lgv" style="color:var(--warn-text)">$22,233</div></div>
+      <div class="lgline" style="grid-template-columns:1fr 92px 92px"><div style="font-size:13px">Grand Highlander XLE, $439/mo</div>
+        <div class="lgv">$19,803</div><div class="lgv" style="color:var(--warn-text)">$26,553</div></div>
+      <div class="lgline" style="grid-template-columns:1fr 92px 92px"><div style="font-size:13px">Carnival LX, $399/mo</div>
+        <div class="lgv">$18,363</div><div class="lgv" style="color:var(--warn-text)">$29,613</div></div>
+      <div class="lgline" style="grid-template-columns:1fr 92px 92px"><div style="font-size:13px">Kia EV9 LR, $419/mo (24 mo)</div>
+        <div class="lgv">$14,055</div><div class="lgv" style="color:var(--warn-text)">$21,555</div></div>
+    </div>
+    <p class="fine" style="margin-top:10px">Figures are due-at-signing plus payments, then plus mileage overage at 25,000 miles a year. Fuel, insurance and tax are extra on both sides. At the end you own nothing and start again. <b>A Sienna lease runs about $7,400 a year in payments and overage, before fuel and insurance. Buying works out to roughly $11,700 a year with everything included &mdash; and you finish holding a $25,000 asset instead of nothing.</b> Leasing looks cheaper per year only because the comparison leaves out the equity.</p>
+  </section>
+
+  <section>
+    <h2>Rivian, Tesla, Land Rover, Ineos</h2>
+    <div class="note"><b>Six seats is fine, so Rivian and Tesla are in.</b> Both are below, cheapest and best of each. Like the EV9, their third rows hold two, so captain's chairs make them six-seaters.<br><br>
+    <b>Rivian R1S</b> just added second-row captain's chairs as an option, but that makes it a six-seater; seven requires the bench. Third row is two seats, 17.6 cu ft behind it, and the option runs $4,000&ndash;$6,000 because it forces package bundling.<br><br>
+    <b>Tesla Model X</b> is the same: six with captain's chairs, seven with a bench. Starts around $89,990, and the second-row chairs don't fold flat.<br><br>
+    <b>Land Rover Discovery and Defender 130</b> do seat seven and eight, but with a bench second row &mdash; I could not find a captain's-chair option on either, so confirm before you fall for one. A 2025 Defender 130 S is in the list below anyway, and it comes out around $126k over five years, by far the most expensive thing here.<br><br>
+    <b>The British Land Rover lookalike is the Ineos Grenadier</b> &mdash; built by a chemicals company to replace the old Defender. It's a five-seater with no third row at all, so it's out on the first filter.</div>
+  </section>
+
+  <section>
+    <h2>What owners say, and what repairs cost</h2>
+    <p class="fine" style="margin-bottom:10px">Owner ratings are averaged from Kelley Blue Book, Edmunds and CarGurus consumer scores. Repair figures are RepairPal-style averages for unscheduled repairs and maintenance across all model years, so they describe the model over a lifetime rather than any one car.</p>
+    <div class="scroller"><table>
+      <thead><tr><th>Vehicle</th><th>Owners</th><th>Repairs/yr</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr class="grouprow"><td colspan="4">Cheapest to keep running</td></tr>
+        <tr><td>Kia EV9</td><td class="n">4.6</td><td class="n">$450</td><td style="text-align:left">No oil, no belts, no exhaust</td></tr>
+        <tr><td>Highlander Hybrid</td><td class="n">4.4</td><td class="n">$490</td><td style="text-align:left">Toyota hybrid, simple</td></tr>
+        <tr><td>Grand Highlander</td><td class="n">4.5</td><td class="n">$510</td><td style="text-align:left">Owners rate it highly</td></tr>
+        <tr><td>Kia Carnival</td><td class="n">4.3</td><td class="n">$520</td><td style="text-align:left">10yr powertrain warranty</td></tr>
+        <tr><td>Kia Telluride</td><td class="n">4.1</td><td class="n">$520</td><td style="text-align:left">Same warranty</td></tr>
+        <tr><td>Honda Pilot</td><td class="n">4.4</td><td class="n">$540</td><td style="text-align:left">Parts everywhere</td></tr>
+        <tr><td>Nissan Pathfinder</td><td class="n">3.9</td><td class="n">$542</td><td style="text-align:left">Your car; CVT is the risk</td></tr>
+        <tr><td>Honda Odyssey</td><td class="n">4.3</td><td class="n">$550</td><td style="text-align:left">Sliding door motors fail</td></tr>
+        <tr><td>Hyundai Palisade</td><td class="n">4.2</td><td class="n">$550</td><td style="text-align:left">Mixed early reviews</td></tr>
+        <tr><td>Toyota Sienna</td><td class="n">4.4</td><td class="n">$600</td><td style="text-align:left">$6,500&ndash;7,500 over 10 yrs</td></tr>
+        <tr class="grouprow"><td colspan="4">Gets expensive</td></tr>
+        <tr><td>Toyota Sequoia</td><td class="n">4.2</td><td class="n">$650</td><td style="text-align:left">Big parts, big tyres</td></tr>
+        <tr><td>Pacifica Hybrid</td><td class="n">3.8</td><td class="n">$690</td><td style="text-align:left">Powertrain + electronics</td></tr>
+        <tr><td>Tahoe / Suburban</td><td class="n">3.4</td><td class="n">$744</td><td style="text-align:left">Severe when it goes</td></tr>
+        <tr><td>Ford Expedition</td><td class="n">3.7</td><td class="n">$861</td><td style="text-align:left">EcoBoost turbos</td></tr>
+        <tr><td>Rivian R1S</td><td class="n">4.3</td><td class="n">$900</td><td style="text-align:left">Loved, but few shops</td></tr>
+        <tr><td>Tesla Model X</td><td class="n">4.0</td><td class="n">$950</td><td style="text-align:left">Falcon doors, air suspension</td></tr>
+        <tr><td>Jeep Wagoneer</td><td class="n">2.7</td><td class="n">$1,150</td><td style="text-align:left">Worst owner score here</td></tr>
+        <tr><td>Land Rover Defender</td><td class="n">3.6</td><td class="n">$1,250</td><td style="text-align:left">Dealer-only work</td></tr>
+      </tbody>
+    </table></div>
+    <p class="fine" style="margin-top:10px"><b>Older isn't automatically cheaper.</b> An older car has cheap parts and any independent shop can work on it, but the repair <b>frequency</b> climbs. A 2017 Sienna costs less per visit than a 2026 one and visits far more often, which is why I load $9,000 into its five-year maintenance line versus $3,000 for the new one. The sweet spot is a 3&ndash;5 year old mainstream car: past the depreciation cliff, still inside the wear curve, parts still cheap.</p>
+    <p class="fine"><b>Where old genuinely wins:</b> no dealer-only diagnostics, no proprietary modules, no battery pack with an expiry date. Where it loses at your mileage: you reach 187,000 miles in five years, and that is transmission, suspension and A/C compressor territory on anything.</p>
+  </section>
+
+  <section>
+    <h2>Driving on the beach</h2>
+    <div class="note"><b>Port Aransas and Mustang Island are drive-on beaches</b>, about two and a half hours from New Braunfels. Soft dry sand above the tide line is where two-wheel-drive vehicles get stuck, and a tow off the sand runs $150&ndash;$300. That makes AWD and ground clearance a real requirement rather than a styling preference.<br><br>
+    <b>Clearance is the number to watch, not the badge.</b> The Odyssey sits at 4.9 inches and the Pacifica at 5.1 &mdash; both will drag on soft ruts. A standard Sienna has 6.3, the Woodland 6.9, the Carnival 6.8. The SUVs sit at 7.8&ndash;8.7, and the Telluride X-Pro reaches 9.1. Every card below now lists its figure.<br><br>
+    <b>AWD is not 4WD.</b> None of these have a low range or a locking differential. On sand that means airing tyres down to about 20 psi, keeping momentum, and not stopping on the soft stuff. Bring a pressure gauge and a way to reinflate.<br><br>
+    <b>Salt is the hidden cost.</b> Rinse the underbody after every beach trip. Salt corrosion is a leading reason older Gulf Coast cars fail inspection early, and it will show up in your resale figure. Nueces County also requires a beach parking permit, currently around $12 a year.<br><br>
+    <b>Sand makes cleanability matter more.</b> This is where the Woodland's standard all-weather floor and cargo mats earn their keep, and where the Sienna's non-removable second row with carpet underneath is the real drawback.</div>
+  </section>
+
+  <section>
+    <h2>Texas rules that change the maths</h2>
+    <div class="note"><b>Battery EVs owe $200 a year in road-use fees.</b> Senate Bill 505, in effect since September 2023, adds $400 up front on a new EV's two-year registration and $200 at each renewal. Over five years that's $1,000, and it's now built into the EV9, Rivian and Tesla figures below. It does <b>not</b> apply to hybrids or plug-in hybrids, so the Sienna, Pacifica and CX-90 are exempt.<br><br>
+    <b>Sales tax is a flat 6.25% statewide, minus your trade-in.</b> No county or city add-on, unlike ordinary Texas sales tax. The trade-in credit only applies when the sale and the trade happen in the same transaction at a licensed dealer.<br><br>
+    <b>Buying from a private seller? Watch the SPV rule.</b> Tax is charged on the higher of what you paid or 80% of the state's Standard Presumptive Value. Agreeing on a low price with a private seller doesn't lower your tax bill. Dealer and Carvana purchases are taxed on the actual price.<br><br>
+    <b>Comal County has no emissions test.</b> Texas dropped annual safety inspections in January 2025, replacing them with a $7.50 fee at registration. Emissions testing still applies in 17 counties &mdash; Travis and Bexar among them, but not Comal. If you register in New Braunfels you skip it entirely.<br><br>
+    <b>No annual vehicle property tax.</b> Registration runs about $75&ndash;$90 a year regardless of what the car is worth, so an expensive car costs no more to keep on the road than a cheap one.</div>
+  </section>
+
+  <section>
+    <h2>Financing found, August 2026</h2>
+    <div class="offers">
+      <div class="offer"><b>Kia EV9</b><em>0% / 60 mo</em><span>Or $10,000 cash back.</span></div>
+      <div class="offer"><b>Kia Carnival</b><em>4.49% / 60 mo</em><span>1.9–3.99% at 48 months.</span></div>
+      <div class="offer"><b>Grand Highlander</b><em>4.99% / 60 mo</em><span>Also at 72 months.</span></div>
+      <div class="offer"><b>Chevy Suburban</b><em>5.9% / 60 mo</em><span>No cash back.</span></div>
+      <div class="offer"><b>Toyota Sienna</b><em>No APR special</em><span>Lease offer only.</span></div>
+      <div class="offer"><b>Used, any brand</b><em>7.0–10.5%</em><span>Credit unions lowest.</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Five-year cost</h2>
+    <p class="fine" style="margin-bottom:10px">Large figure is the asking price. Underneath it is the net five-year cost after you sell. Each card also shows what it should be worth at year five, adjusted for your mileage. The bar shows where each dollar goes.</p>
+    <div class="key" style="margin-bottom:8px">
+      <span class="q" data-why="Asking price plus 6.25% Texas sales tax and $400 of title and registration fees, minus what the car should be worth at year five. Usually the biggest single number on this page."><i class="sw" style="background:var(--s1)"></i>Depreciation + tax</span>
+      <span class="q" data-why="Total interest over the loan term at the APR shown on each card. New cars often get manufacturer rates of 0-5%; used cars run 7-10.5% from a bank or credit union."><i class="sw" style="background:var(--s2)"></i>Interest</span>
+      <span class="q" data-why="Your miles per year times five, at the petrol or electricity price you set in Assumptions. Plug-ins blend the two using the battery-share slider."><i class="sw" style="background:var(--s3)"></i>Fuel</span>
+      <span class="q" data-why="Five-year estimate scaled by vehicle type and value, not a quote. Texas rates run above the national average, and EVs and large SUVs cost more to insure."><i class="sw" style="background:var(--s4)"></i>Insurance</span>
+      <span class="q" data-why="Five-year estimate reflecting the car's age and the mileage you will add. Older and higher-mileage cars carry much larger figures because repair frequency climbs with wear."><i class="sw" style="background:var(--s5)"></i>Maintenance</span>
+      <span class="q" data-why="One-time Level 2 charger installation, charged only to the electrics and the plug-in Pacifica. Default is a typical $1,600 job less GVEC's $600 rebate."><i class="sw" style="background:var(--s6)"></i>Charger</span>
+      <span class="q" data-why="Texas Senate Bill 505 charges battery EVs $200 a year in road-use fees, $1,000 over five years. Hybrids and plug-in hybrids are exempt."><i class="sw" style="background:var(--s5)"></i>TX EV fee</span>
+    </div>
+    <div class="card" id="reco" style="margin-bottom:12px;border:2px solid var(--border-strong);padding:15px"></div>
+    <div class="card" id="filters" style="margin-bottom:16px">
+      <div class="ctrl"><label>Body</label><div class="seg" data-f="cat">
+        <button data-v="all" aria-pressed="true">All</button>
+        <button data-v="van" aria-pressed="false">Minivan</button>
+        <button data-v="suv" aria-pressed="false">SUV</button></div></div>
+      <div class="ctrl"><label>Condition</label><div class="seg" data-f="cond">
+        <button data-v="all" aria-pressed="true">All</button>
+        <button data-v="new" aria-pressed="false">New</button>
+        <button data-v="used" aria-pressed="false">Used</button></div></div>
+      <div class="ctrl"><label>Must have</label><div class="seg" data-f="must">
+        <button data-v="awd" aria-pressed="false" data-why="AWD is optional here. Turn it on and the recommendation above recalculates, and tells you what you would have picked without it. Note this matches cars where AWD is available, not necessarily fitted \u2014 check each used listing.">AWD</button>
+        <button data-v="s7" aria-pressed="false">7 seats</button>
+        <button data-v="eff" aria-pressed="false">30+ mpg</button></div></div>
+      <div class="ctrl"><label for="maxp">Max asking price <output id="maxpOut">Any</output></label>
+        <input type="range" id="maxp" min="20000" max="80000" step="1000" value="80000"></div>
+      <div class="ctrl"><label>Sort by</label><div class="seg" data-f="sort">
+        <button data-v="net" aria-pressed="true">5-yr cost</button>
+        <button data-v="pmt" aria-pressed="false">Payment</button>
+        <button data-v="leg3" aria-pressed="false">3rd row</button>
+        <button data-v="cargo" aria-pressed="false">Cargo</button>
+        <button data-v="res" aria-pressed="false">Resale</button></div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;
+        margin-top:14px;padding-top:12px;border-top:0.5px solid var(--border)">
+        <span class="fine" id="fcount"></span>
+        <button class="stickb" id="freset">Reset</button></div>
+    </div>
+    <h3 id="hVan">Minivans</h3><div id="cardsVan"></div>
+    <h3 id="hSuv">SUVs</h3><div id="cardsSuv"></div>
+  </section>
+
+  <section>
+    <h2>All-wheel drive</h2>
+    <div class="note"><b>AWD narrows the minivans to one.</b> The Sienna is the only hybrid minivan offering it, at $890&ndash;$2,000 depending on trim and costing 1 mpg. Carnival and Odyssey are front-drive only. The Pacifica offers AWD but <b>not</b> on the plug-in hybrid, so you'd give up the electric range to get it.<br><br>
+    <b>The Woodland Edition is the one to look at.</b> Standard AWD, 6.9 inches of ground clearance instead of 6.3, matte-black wheels, black badging, roof rails, and a 3,500-lb tow hitch. It also comes standard with all-weather floor and cargo mats, which helps the Sienna's one real weakness. $52,695 new.<br><br>
+    Every SUV here offers AWD or 4WD. On the EV9, the base Light is rear-drive &mdash; AWD starts at the Wind trim, which is also where the price climbs.</div>
+  </section>
+
+  <section>
+    <h2>Reliability, cleanability, resale</h2>
+    <p class="fine" style="margin-bottom:8px">Reliability follows Consumer Reports predicted ratings and recall history. Cleanability weighs wipeable seat material, seats that stow or remove, a low flat floor, and a built-in vacuum.</p>
+    <div class="scroller"><table>
+      <thead><tr><th>Vehicle</th><th>Reliab.</th><th>Clean</th><th>Keeps</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr class="grouprow"><td colspan="5">Minivans</td></tr>
+        <tr><td>Toyota Sienna</td><td class="n">4.0</td><td class="n">3.0</td><td class="n">71%</td><td style="text-align:left">2nd row won't come out</td></tr>
+        <tr><td>Honda Odyssey</td><td class="n">3.0</td><td class="n">4.0</td><td class="n">60%</td><td style="text-align:left">Best minivan resale</td></tr>
+        <tr><td>Kia Carnival</td><td class="n">3.0</td><td class="n">4.0</td><td class="n">55%</td><td style="text-align:left">SynTex vinyl, seats stow</td></tr>
+        <tr><td>Carnival Hybrid</td><td class="n">4.5</td><td class="n">4.0</td><td class="n">55%</td><td style="text-align:left">CR's top minivan, 2025+</td></tr>
+        <tr><td>Pacifica Hybrid</td><td class="n">1.5</td><td class="n">4.0</td><td class="n">45%</td><td style="text-align:left">Last in class, CR</td></tr>
+        <tr class="grouprow"><td colspan="5">SUVs</td></tr>
+        <tr><td>Grand Highlander Hyb</td><td class="n">4.5</td><td class="n">3.5</td><td class="n">62%</td><td style="text-align:left">Toyota hybrid, SofTex</td></tr>
+        <tr><td>Chevy Tahoe / Yukon</td><td class="n">3.0</td><td class="n">3.0</td><td class="n">57%</td><td style="text-align:left">Solid, thirsty</td></tr>
+        <tr><td>Kia Telluride</td><td class="n">3.5</td><td class="n">3.5</td><td class="n">55%</td><td style="text-align:left">Small third row</td></tr>
+        <tr><td>Ford Expedition</td><td class="n">2.5</td><td class="n">3.0</td><td class="n">48%</td><td style="text-align:left">Big 3rd row, small boot</td></tr>
+        <tr><td>Jeep Wagoneer</td><td class="n">2.0</td><td class="n">2.5</td><td class="n">42%</td><td style="text-align:left">Carpet, weak record</td></tr>
+        <tr class="six"><td>Kia EV9</td><td class="n">1.5</td><td class="n">4.0</td><td class="n">37%</td><td style="text-align:left">Kia's least reliable</td></tr>
+      </tbody>
+    </table></div>
+    <p class="fine" style="margin-top:8px">Resale figures for the Sienna, Odyssey, Carnival, Pacifica and EV9 come from iSeeCars five-year depreciation data. The rest are my estimates from segment averages.</p>
+  </section>
+
+  <section>
+    <h2>Every vehicle considered</h2>
+    <p class="fine" style="margin-bottom:6px">Inches and cubic feet, with second-row captain's chairs. Any of these can be set as your comparison car above.</p>
+    <div class="scroller"><table>
+      <thead><tr><th>Vehicle</th><th>Seats</th><th>2nd leg</th><th>3rd leg</th><th>Cargo</th><th>MPG</th></tr></thead>
+      <tbody id="specTable"></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2>What to check before you buy</h2>
+    <div class="tldr">
+      <p class="fine" style="margin:0 0 8px"><b>Answer these first &mdash; they move the decision most</b></p>
+      <ul style="margin-bottom:14px">
+        <li>Is that 2025 Sienna XLE at $40,499 actually all-wheel drive? It tops the list and the drivetrain is unverified.</li>
+        <li>Get three real insurance quotes. I used $11,500&ndash;$13,500 over five years as a type-based estimate; a real Texas number could swing $4,000 either way, which is more than the gap between your top three.</li>
+        <li>Does the Pathfinder's CVT shudder, hesitate or whine? That is the difference between $8,000 of car and $2,000 of car.</li>
+        <li>Check your odometer against a year ago. If it is 15,000 miles a year rather than 25,000, the whole ranking compresses and older cars come back.</li>
+      </ul>
+      <p class="fine" style="margin:0 0 8px"><b>On any used listing</b></p>
+      <ul style="margin-bottom:14px">
+        <li>Drivetrain: front-wheel or all-wheel? Do not trust the trim name.</li>
+        <li>Second row: captain's chairs or a bench? Especially Wagoneer Series II, Carnival LX and LXS, Tahoe LS.</li>
+        <li>Accident history, number of owners, and how much factory warranty remains.</li>
+        <li>Tyre and brake life &mdash; a set of tyres on any of these runs $900&ndash;$1,400.</li>
+        <li>Open recalls, free to check by VIN at nhtsa.gov.</li>
+      </ul>
+      <p class="fine" style="margin:0 0 8px"><b>At a dealer</b></p>
+      <ul style="margin-bottom:14px">
+        <li>Ask for the out-the-door price in writing by email before visiting. Refuse to discuss monthly payment.</li>
+        <li>Ask what add-ons are on the car. Paint protection, VIN etching and market adjustments are where $2,000&ndash;$4,000 hides.</li>
+        <li>Ask whether taking the promotional APR forfeits a cash rebate. On the EV9 you must choose one.</li>
+        <li>Walk in with a credit union pre-approval. It costs nothing and it is the only leverage that reliably works.</li>
+      </ul>
+      <p class="fine" style="margin:0 0 8px"><b>On the test drive &mdash; bring the car seats and all three kids</b></p>
+      <ul style="margin:0">
+        <li>Can a child reach the third row with a car seat still installed in the second? This is the most useful thing you will learn all day.</li>
+        <li>Does your actual stroller fit behind the third row with every seat up?</li>
+        <li>Sit in the third row yourself for five minutes.</li>
+        <li>Open the doors in a tight space. Sliding versus hinged is a daily thing you will either love or resent.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>Where every number comes from</h2>
+    <div class="scroller"><table>
+      <thead><tr><th>Figure</th><th>Source</th><th>Confidence</th></tr></thead>
+      <tbody>
+        <tr><td>Used prices and links</td><td style="text-align:left">Carvana listings, 30 Aug 2026</td><td style="text-align:left">Actual cars</td></tr>
+        <tr><td>New prices and links</td><td style="text-align:left">Dealer inventory, San Antonio to Bryan</td><td style="text-align:left">Actual cars</td></tr>
+        <tr><td>Legroom, cargo, clearance</td><td style="text-align:left">Manufacturer specs</td><td style="text-align:left">Published</td></tr>
+        <tr><td>MPG and MPGe</td><td style="text-align:left">EPA combined ratings</td><td style="text-align:left">Published</td></tr>
+        <tr><td>Finance offers</td><td style="text-align:left">Kia, Toyota, GM, August 2026</td><td style="text-align:left">Expire 31 Aug</td></tr>
+        <tr><td>Electricity rate</td><td style="text-align:left">Your GVEC bill, Aug 2026</td><td style="text-align:left">Your actual rate</td></tr>
+        <tr><td>Charger rebate</td><td style="text-align:left">GVEC EV charger programme</td><td style="text-align:left">Published</td></tr>
+        <tr><td>EV road fee, sales tax</td><td style="text-align:left">Texas SB 505, Comptroller</td><td style="text-align:left">Statute</td></tr>
+        <tr><td>Depreciation</td><td style="text-align:left">iSeeCars 5-year study</td><td style="text-align:left">Model average</td></tr>
+        <tr><td>Repairs per year</td><td style="text-align:left">RepairPal-style averages</td><td style="text-align:left">Model average</td></tr>
+        <tr><td>Owner ratings</td><td style="text-align:left">KBB, Edmunds, CarGurus</td><td style="text-align:left">Model average</td></tr>
+        <tr><td>Reliability score</td><td style="text-align:left">Consumer Reports + recalls</td><td style="text-align:left">My judgement</td></tr>
+        <tr><td>Cleanability score</td><td style="text-align:left">Interior features</td><td style="text-align:left">My judgement</td></tr>
+        <tr><td>Insurance, maintenance</td><td style="text-align:left">Type-based estimates</td><td style="text-align:left">Estimate, not a quote</td></tr>
+        <tr><td>Resale dollars</td><td style="text-align:left">Depreciation + mileage discount</td><td style="text-align:left">Estimate</td></tr>
+      </tbody>
+    </table></div>
+    <p class="fine" style="margin-top:10px">The three softest lines are insurance, maintenance and resale, and together they move the five-year total more than anything else. Treat gaps under about $3,000 between two options as a tie.</p>
+  </section>
+
+  <section>
+    <h2>Before you decide</h2>
+    <p class="fine"><b>Older cars lose on your mileage.</b> The 2017 Expedition at $24,990 has the second-lowest payment on this page at $369, and lands at roughly $68.7k over five years &mdash; $10,000 worse than a brand-new Sienna. At 17 mpg and 125,000 miles you'd burn $22,059 in fuel alone. The 2023 Tahoe LS is worse still at about $81.5k. Cheap purchase price stops mattering when you drive this much.</p>
+    <p class="fine"><b>Of the older options, the 2017 Sienna is the only defensible one.</b> $27,590, an $417 payment, and Toyota's most reliable minivan generation. It still costs $4,000 more over five years than a 2025 hybrid, but if the monthly number is what matters, that's the one to look at.</p>
+    <p class="fine"><b>25,000 miles a year changes the question.</b> That's 125,000 miles in five years, which does two things: fuel becomes the dominant running cost, and every car's resale takes a hit for the mileage. Efficiency now matters roughly 1.7x more than it did at 15,000, and the gap between a 36 mpg Sienna and a 22 mpg Odyssey widens to about $8,900 in fuel alone.</p>
+    <p class="fine"><b>The new Grand Highlander is pricier than I modeled.</b> Local inventory starts at $59,699 for the Limited, which is the cheapest trim with captain's chairs &mdash; not the $50,000 base I used. That pushes the best SUV well clear of every minivan.</p>
+    <p class="fine"><b>The used Pacifica Hybrids are far cheaper than I assumed.</b> A 2024 Select with 68k miles is listed at $21,990 &mdash; roughly $10,000 under my earlier estimate. That makes it the cheapest thing on the list at about $42k net, with a $276 payment. It is also the least reliable vehicle here, at 68,000 miles heading to 143,000, which is why I raised its maintenance line to $7,500. This is the highest-risk, lowest-cost option and you should treat those as the same sentence.</p>
+    <p class="fine"><b>Resale reorders everything.</b> The Sienna loses only 29% over five years, best in the segment by a wide margin, so a $47,000 new one is worth roughly $32,000 when you sell. That makes the new Sienna the cheapest thing on this list despite the highest sticker and no factory financing.</p>
+    <p class="fine"><b>If you want the AWD stance, the Woodland Edition is the answer.</b> It costs about $3,700 more over five years than the plain XLE and still beats every SUV on the list. You get the lifted look, standard all-weather mats, and a tow hitch, and you keep the Sienna's resale and reliability.</p>
+    <p class="fine"><b>No SUV beats a minivan here.</b> The best SUV on five-year cost is the new Grand Highlander Hybrid, and it still trails both Siennas while offering 5 fewer inches of third-row legroom and 13 fewer cubic feet of cargo.</p>
+    <p class="fine"><b>The EV9 is the opposite bet from the Sienna.</b> It depreciates 63% in five years, the worst here, and Consumer Reports rates it Kia's least reliable model. Cheap to run, expensive to own, six seats.</p>
+    <p class="fine"><b>The Pacifica Hybrid is the risk you'd take for a low payment.</b> Cheapest monthly, great to clean, best fuel cost of the seven-seaters, and dead last in CR's minivan reliability on powertrain and electronics. The $5,500 maintenance figure may be optimistic.</p>
+    <p class="fine"><b>The cheap Wagoneers stay a trap.</b> Best room of anything here and a low payment, but 70,000 miles at 20 mpg, a weak record, carpet everywhere, and 42% retention put them last.</p>
+    <p class="fine"><b>The Carnival Hybrid is the reliability winner but not the value one.</b> A 2025 SX with 17k miles is listed at $48,590 &mdash; Consumer Reports' top-rated minivan, but you pay nearly new-car money for a used one, and it comes out around $61k. Worth watching as prices fall.</p>
+    <p class="fine"><b>Resale is an estimate, not a promise.</b> Each card's year-five figure starts from published five-year depreciation data for that model, then discounts it about 11% per extra 25,000 miles you drive. At 25,000 a year everything here is marked down 22% from what it would fetch at normal mileage. Condition, accident history and colour move it further.</p>
+    <p class="fine"><b>Why "value kept" flatters used cars.</b> The percentage is measured against what <b>you</b> pay, not the original sticker. A used EV9 keeps 32% of $37,990 because the first owner already absorbed the drop from $56,000. A new Sienna keeps 53% of $47,504. Kia's EV9 still has the worst depreciation of anything here in absolute terms &mdash; roughly 63% from new over five years &mdash; it just doesn't look that way when you buy it second-hand.</p>
+    <p class="fine"><b>Where this is soft.</b> Reliability and cleanability are my scores from published ratings and interior features, not measurements. Insurance and maintenance are type-based estimates, not quotes.</p>
+  </section>
+</div>
+
+<script>
+var OPTIONS=[
+ {n:"Toyota Sienna XLE",y:"2026 \u00b7 $47,504",cat:"van",cond:"new",seats:7,sticker:47504,cash:0,apr:.060,offer:"North Park Toyota, 42 mi",
+  awd:"AWD +$1,000",mpg:36,mpgLab:"36",ins:12500,mnt:3000,res:32000,rel:4.0,cln:3.0,leg2:39.9,leg3:38.7,cargo:33.5,
+  url:"https://www.northparktoyota.com/new-inventory/index.htm?model=Sienna",lt:"View this listing"},
+ {n:"Sienna Woodland Edition",y:"2026 \u00b7 lifted, AWD standard \u00b7 $55,750",cat:"van",cond:"new",seats:7,sticker:55750,cash:0,apr:.060,offer:"Bryan College Station, 124 mi",
+  awd:"AWD standard, 6.9\" clearance",mpg:35,mpgLab:"35",ins:13000,mnt:3000,res:38000,rel:4.0,cln:3.5,leg2:39.9,leg3:38.7,cargo:33.5,
+  url:"https://www.bcstoyota.com/new-inventory/index.htm?model=Sienna",lt:"View this listing"},
+ {n:"Toyota Sienna XLE",y:"2025 \u00b7 59k mi \u00b7 $40,499",cat:"van",cond:"used",seats:7,sticker:40499,cash:0,apr:.075,offer:"Bank loan",
+  awd:"AWD if optioned",mpg:36,mpgLab:"36",ins:11500,mnt:4000,res:24000,rel:4.0,cln:3.0,leg2:39.9,leg3:38.7,cargo:33.5,
+  url:"https://www.carvana.com/vehicle/4683855",lt:"View this listing"},
+ {n:"Pacifica Hybrid Select",y:"2024 \u00b7 68k mi \u00b7 $21,990",cat:"van",cond:"used",seats:7,sticker:21990,cash:0,apr:.075,offer:"Plug-in",
+  awd:"FWD only on hybrid",mpg:30,mpgLab:"82 MPGe",mpgBar:40,kwh100:41,phev:true,charger:true,aw:"2017 N. American Utility of the Year",awUrl:"https://www.torquenews.com/106/chrysler-pacifica-wins-first-ever-north-american-utility-year-award",ins:11500,mnt:7500,res:9500,rel:1.5,cln:4.0,
+  leg2:39.0,leg3:36.5,cargo:32.3,url:"https://www.carvana.com/vehicle/4401364",lt:"View this listing"},
+ {n:"Pacifica Hybrid Touring L",y:"2023 \u00b7 31k mi \u00b7 $28,590",cat:"van",cond:"used",seats:7,sticker:28590,cash:0,apr:.075,offer:"Plug-in",
+  awd:"FWD only on hybrid",mpg:30,mpgLab:"82 MPGe",mpgBar:40,kwh100:41,phev:true,charger:true,aw:"2017 N. American Utility of the Year",awUrl:"https://www.torquenews.com/106/chrysler-pacifica-wins-first-ever-north-american-utility-year-award",ins:11500,mnt:6000,res:12500,rel:1.5,cln:4.0,
+  leg2:39.0,leg3:36.5,cargo:32.3,url:"https://www.carvana.com/vehicle/4660545",lt:"View this listing"},
+ {n:"Honda Odyssey EX-L",y:"2022 \u00b7 63k mi \u00b7 $31,590",cat:"van",cond:"used",seats:7,sticker:31590,cash:0,apr:.075,offer:"Bank loan",
+  awd:"No AWD offered",mpg:22,mpgLab:"22",ins:11000,mnt:4200,res:15000,rel:3.0,cln:4.0,leg2:40.9,leg3:38.1,cargo:32.8,
+  url:"https://www.carvana.com/vehicle/4651723",lt:"View this listing"},
+ {n:"Kia Carnival EX",y:"2023 \u00b7 60k mi \u00b7 $31,590",cat:"van",cond:"used",seats:7,sticker:31590,cash:0,apr:.075,offer:"Bank loan",
+  awd:"No AWD offered",mpg:22,mpgLab:"22",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",ins:11000,mnt:4500,res:12500,rel:3.0,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
+  url:"https://www.carvana.com/vehicle/4357538",lt:"View this listing"},
+ {n:"Kia Carnival EX",y:"2024 \u00b7 20k mi \u00b7 $38,590",cat:"van",cond:"used",seats:7,sticker:38590,cash:0,apr:.075,offer:"Bank loan",
+  awd:"No AWD offered",mpg:22,mpgLab:"22",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",ins:11500,mnt:3800,res:17500,rel:3.0,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
+  url:"https://www.carvana.com/vehicle/4673591",lt:"View this listing"},
+ {n:"Kia Carnival Hybrid SX",y:"2025 \u00b7 17k mi \u00b7 $48,590",cat:"van",cond:"used",seats:7,sticker:48590,cash:0,apr:.075,offer:"Most reliable minivan",
+  awd:"No AWD offered",mpg:33,mpgLab:"33",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",ins:12500,mnt:3500,res:22000,rel:4.5,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
+  url:"https://www.carvana.com/vehicle/4691317",lt:"View this listing"},
+ {n:"Toyota Sienna XLE",y:"2017 \u00b7 62k mi \u00b7 V6, not hybrid",cat:"van",cond:"used",seats:7,sticker:27590,ship:590,cash:0,apr:.085,offer:"Older-car rate",
+  awd:"AWD if optioned",mpg:22,mpgLab:"22",ins:9000,mnt:9000,res:11000,rel:4.5,cln:3.0,leg2:37.6,leg3:36.3,cargo:39.1,
+  url:"https://www.carvana.com/vehicle/4517273",lt:"View this listing"},
+ {n:"Toyota Sienna XLE",y:"2020 \u00b7 75k mi \u00b7 V6, not hybrid",cat:"van",cond:"used",seats:7,sticker:32990,cash:0,apr:.080,offer:"Older-car rate",
+  awd:"AWD if optioned",mpg:22,mpgLab:"22",ins:9500,mnt:8500,res:12500,rel:4.5,cln:3.0,leg2:37.6,leg3:36.3,cargo:39.1,
+  url:"https://www.carvana.com/vehicle/4578369",lt:"View this listing"},
+ {n:"Honda Odyssey EX-L",y:"2019 \u00b7 37k mi",cat:"van",cond:"used",seats:7,sticker:31990,cash:0,apr:.080,offer:"Older-car rate",
+  awd:"No AWD offered",mpg:22,mpgLab:"22",ins:9500,mnt:9500,res:13000,rel:3.0,cln:4.0,leg2:40.9,leg3:38.1,cargo:32.8,
+  url:"https://www.carvana.com/vehicle/4651600",lt:"View this listing"},
+ {n:"Toyota Sienna XLE",y:"2023 \u00b7 67k mi \u00b7 hybrid",cat:"van",cond:"used",seats:7,sticker:39590,cash:0,apr:.075,offer:"Bank loan",
+  awd:"AWD if optioned",mpg:36,mpgLab:"36",ins:11500,mnt:4500,res:22000,rel:4.0,cln:3.0,leg2:39.9,leg3:38.7,cargo:33.5,
+  url:"https://www.carvana.com/vehicle/4554451",lt:"View this listing"},
+ {n:"Toyota Sienna XSE",y:"2022 \u00b7 32k mi \u00b7 20\" wheels",cat:"van",cond:"used",seats:7,sticker:45990,cash:0,apr:.075,offer:"Sport trim",
+  awd:"AWD if optioned",mpg:36,mpgLab:"36",ins:12000,mnt:4500,res:24000,rel:4.0,cln:3.0,leg2:39.9,leg3:38.7,cargo:33.5,
+  url:"https://www.carvana.com/vehicle/4485668",lt:"View this listing"},
+ {n:"Pacifica Hybrid Select",y:"2024 \u00b7 57k mi",cat:"van",cond:"used",seats:7,sticker:22990,cash:0,apr:.075,offer:"Plug-in",
+  awd:"FWD only on hybrid",mpg:30,mpgLab:"82 MPGe",mpgBar:40,kwh100:41,phev:true,charger:true,
+  aw:"2017 N. American Utility of the Year",awUrl:"https://www.torquenews.com/106/chrysler-pacifica-wins-first-ever-north-american-utility-year-award",ins:11500,mnt:7000,res:10500,rel:1.5,cln:4.0,
+  leg2:39.0,leg3:36.5,cargo:32.3,url:"https://www.carvana.com/vehicle/4418299",lt:"View this listing"},
+ {n:"Kia Carnival EX",y:"2025 \u00b7 33k mi",cat:"van",cond:"used",seats:7,sticker:38990,cash:0,apr:.075,offer:"Bank loan",
+  awd:"No AWD offered",mpg:22,mpgLab:"22",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
+  ins:11500,mnt:3600,res:19000,rel:3.0,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
+  url:"https://www.carvana.com/vehicle/4611470",lt:"View this listing"},
+ {n:"Honda Odyssey EX-L",y:"2024 \u00b7 34k mi",cat:"van",cond:"used",seats:7,sticker:37590,cash:0,apr:.075,offer:"Bank loan",
+  awd:"No AWD offered",mpg:22,mpgLab:"22",ins:11500,mnt:3800,res:19000,rel:3.0,cln:4.0,leg2:40.9,leg3:38.1,cargo:32.8,
+  url:"https://www.carvana.com/vehicle/4674135",lt:"View this listing"},
+ {n:"Grand Highlander Hybrid Ltd",y:"2026 \u00b7 $59,699",cat:"suv",cond:"new",seats:7,sticker:59699,cash:0,apr:.0499,offer:"Toyota of Cedar Park, 62 mi",
+  awd:"AWD available",mpg:36,mpgLab:"36",ins:13000,mnt:3000,res:35000,rel:4.5,cln:3.5,leg2:39.5,leg3:33.5,cargo:20.6,
+  url:"https://www.toyotacedarpark.com/new-inventory/index.htm?model=Grand+Highlander+Hybrid",lt:"View this listing"},
+ {n:"Honda Pilot TrailSport",y:"2026 \u00b7 AWD, skid plates \u00b7 ~$50,000",cat:"suv",cond:"new",seats:7,sticker:50000,cash:0,apr:.060,offer:"All-terrain tires std",
+  awd:"AWD standard",mpg:21,mpgLab:"21",ins:12500,mnt:3000,res:28000,rel:4.0,cln:3.5,leg2:40.8,leg3:32.5,cargo:18.6,
+  url:"https://automobiles.honda.com/pilot",lt:"Build and find one"},
+ {n:"Honda Pilot TrailSport",y:"2023 \u00b7 used \u00b7 market estimate",cat:"suv",cond:"used",seats:7,sticker:39000,cash:0,apr:.075,offer:"Bank loan",
+  awd:"AWD standard",mpg:21,mpgLab:"21",ins:11500,mnt:4200,res:18000,rel:4.0,cln:3.5,leg2:40.8,leg3:32.5,cargo:18.6,
+  url:"https://www.carvana.com/cars/honda-pilot",lt:"Browse listings"},
+ {n:"Telluride X-Line SX Hybrid",y:"2027 \u00b7 AWD, rugged trim \u00b7 $56,035",cat:"suv",cond:"new",seats:7,sticker:56035,cash:0,apr:.0449,offer:"Hybrid + off-road look",
+  awd:"AWD standard",mpg:33,mpgLab:"33",aw:"2020 N. American Utility of the Year",awUrl:"https://www.kia.com/sd/en/util/news/Kia-Telluride-wins-Triple-Crown.html",
+  ins:13500,mnt:3000,res:32000,rel:3.5,cln:3.5,leg2:43.0,leg3:32.1,cargo:21.3,
+  url:"https://www.kia.com/us/en/telluride",lt:"Build and find one"},
+ {n:"Mazda CX-90 PHEV Preferred",y:"2026 \u00b7 AWD std \u00b7 ~$51,000",cat:"suv",cond:"new",seats:7,sticker:51000,cash:0,apr:.060,offer:"26 mi electric",
+  awd:"AWD standard",mpg:25,mpgLab:"56 MPGe",mpgBar:38,kwh100:48,phev:true,charger:true,
+  ins:13000,mnt:3500,res:26000,rel:3.0,cln:3.5,leg2:39.4,leg3:30.4,cargo:14.9,
+  url:"https://www.mazdausa.com/vehicles/cx-90-phev",lt:"Build and find one"},
+ {n:"Subaru Ascent Onyx",y:"2026 \u00b7 AWD std \u00b7 ~$45,000",cat:"suv",cond:"new",seats:7,sticker:45000,cash:0,apr:.060,offer:"Rugged trim",
+  awd:"AWD standard",mpg:22,mpgLab:"22",ins:12000,mnt:3200,res:24000,rel:3.5,cln:3.5,leg2:38.6,leg3:31.7,cargo:17.6,
+  url:"https://www.subaru.com/vehicles/ascent",lt:"Build and find one"},
+ {n:"Highlander Hybrid XLE",y:"2026 \u00b7 AWD \u00b7 ~$48,000",cat:"suv",cond:"new",seats:7,sticker:48000,cash:0,apr:.0499,offer:"36 mpg, tiny 3rd row",
+  awd:"AWD available",mpg:35,mpgLab:"35",ins:12500,mnt:3000,res:28000,rel:4.5,cln:3.5,leg2:41.0,leg3:27.7,cargo:16.0,
+  url:"https://www.toyota.com/highlanderhybrid/",lt:"Build and find one"},
+ {n:"Palisade Hybrid SEL",y:"2026 \u00b7 FWD \u00b7 $45,660",cat:"suv",cond:"new",seats:7,sticker:45660,cash:0,apr:.0449,offer:"34 mpg, 10yr warranty",
+  awd:"AWD +$2,000",mpg:34,mpgLab:"34",ins:13000,mnt:3000,res:26000,rel:3.5,cln:3.5,leg2:43.0,leg3:32.1,cargo:19.1,
+  url:"https://www.hyundaiusa.com/us/en/vehicles/palisade-hybrid",lt:"Build and find one"},
+ {n:"Palisade Hybrid SEL AWD",y:"2026 \u00b7 AWD \u00b7 $47,660",cat:"suv",cond:"new",seats:7,sticker:47660,cash:0,apr:.0449,offer:"30 mpg with AWD",
+  awd:"AWD standard on this build",mpg:30,mpgLab:"30",ins:13000,mnt:3000,res:27000,rel:3.5,cln:3.5,leg2:43.0,leg3:32.1,cargo:19.1,
+  url:"https://www.hyundaiusa.com/us/en/vehicles/palisade-hybrid",lt:"Build and find one"},
+ {n:"Hyundai Palisade SEL",y:"2023 \u00b7 used \u00b7 market estimate",cat:"suv",cond:"used",seats:7,sticker:31500,cash:0,apr:.075,offer:"Telluride twin",
+  awd:"AWD if optioned",mpg:22,mpgLab:"22",ins:11500,mnt:4200,res:14500,rel:3.5,cln:3.5,leg2:42.4,leg3:31.4,cargo:18.0,
+  url:"https://www.carvana.com/cars/hyundai-palisade",lt:"Browse listings"},
+ {n:"Kia Telluride S",y:"2025 \u00b7 36k mi \u00b7 $32,590",cat:"suv",cond:"used",seats:7,sticker:32590,cash:0,apr:.075,offer:"Bank loan",
+  awd:"AWD available",mpg:22,mpgLab:"22",aw:"2020 N. American Utility of the Year",awUrl:"https://www.kia.com/sd/en/util/news/Kia-Telluride-wins-Triple-Crown.html",
+  ins:11500,mnt:4200,res:15500,rel:3.5,cln:3.5,leg2:42.4,leg3:31.4,cargo:21.0,
+  url:"https://www.carvana.com/vehicle/4650636",lt:"View this listing"},
+ {n:"Kia Telluride Hybrid EX",y:"2027 \u00b7 AWD \u00b7 $50,035",cat:"suv",cond:"new",seats:7,sticker:50035,cash:0,apr:.0449,offer:"Redesigned, 35 mpg",
+  awd:"AWD standard on this trim",mpg:34,mpgLab:"34",aw:"2020 N. American Utility of the Year",awUrl:"https://www.kia.com/sd/en/util/news/Kia-Telluride-wins-Triple-Crown.html",
+  ins:13000,mnt:3000,res:29000,rel:3.5,cln:3.5,leg2:43.0,leg3:32.1,cargo:21.3,
+  url:"https://www.kia.com/us/en/telluride",lt:"Build and find one"},
+ {n:"Toyota Sequoia Limited",y:"2023 \u00b7 17k mi \u00b7 $67,990",cat:"suv",cond:"used",seats:7,sticker:67990,cash:0,apr:.075,offer:"Hybrid V6",
+  awd:"4WD available",mpg:21,mpgLab:"21",ins:14000,mnt:4500,res:36000,rel:3.5,cln:3.0,leg2:39.2,leg3:33.7,cargo:11.5,
+  url:"https://www.carvana.com/vehicle/4665017",lt:"View this listing"},
+ {n:"Toyota Sequoia Platinum",y:"2023 \u00b7 34k mi \u00b7 $69,990",cat:"suv",cond:"used",seats:7,sticker:69990,cash:0,apr:.075,offer:"Hybrid V6",
+  awd:"4WD available",mpg:21,mpgLab:"21",ins:14000,mnt:4500,res:36500,rel:3.5,cln:3.0,leg2:39.2,leg3:33.7,cargo:11.5,
+  url:"https://www.carvana.com/vehicle/4658098",lt:"View this listing"},
+ {n:"Kia EV9 Light LR",y:"2024 \u00b7 27k mi \u00b7 +$1,290 shipping",cat:"suv",cond:"used",seats:6,sticker:37990,cash:0,apr:.075,offer:"Bank loan",
+  awd:"RWD \u2014 AWD starts at Wind",kwh100:34.5,mpgLab:"88 MPGe",mpgBar:40,ship:1290,ev:true,charger:true,aw:"2024 World Car of the Year",awUrl:"https://www.kbb.com/car-news/the-kia-ev9-is-the-2024-world-car-of-the-year",ins:13500,mnt:2200,res:15500,rel:1.5,cln:4.0,
+  leg2:42.8,leg3:32.0,cargo:20.2,url:"https://www.carvana.com/cars/kia-ev9",lt:"Browse EV9 listings"},
+ {n:"Ford Expedition Limited",y:"2017 \u00b7 70k mi \u00b7 old body style",cat:"suv",cond:"used",seats:7,sticker:24990,ship:990,cash:0,apr:.085,offer:"Older-car rate",
+  awd:"4WD available",mpg:17,mpgLab:"17",ins:9500,mnt:12000,res:9000,rel:2.5,cln:3.0,leg2:39.1,leg3:37.7,cargo:18.6,
+  url:"https://www.carvana.com/vehicle/4629379",lt:"View this listing"},
+ {n:"Chevy Tahoe LS",y:"2023 \u00b7 64k mi \u00b7 check 2nd row",cat:"suv",cond:"used",seats:7,sticker:39990,ship:1890,cash:0,apr:.075,offer:"LS ships with a bench",
+  awd:"4WD available",mpg:17,mpgLab:"17",ins:12500,mnt:9000,res:18000,rel:3.0,cln:3.0,leg2:42.0,leg3:34.9,cargo:25.5,
+  url:"https://www.carvana.com/vehicle/4434231",lt:"View this listing"},
+ {n:"Rivian R1S Adventure",y:"2023 \u00b7 63k mi \u00b7 $60,590",cat:"suv",cond:"used",seats:6,sticker:60590,cash:0,apr:.075,offer:"Quad-motor",
+  awd:"AWD standard",kwh100:49,mpgLab:"69 MPGe",mpgBar:34,ev:true,charger:true,ins:16000,mnt:4500,res:16000,rel:2.0,cln:4.0,
+  leg2:37.6,leg3:32.8,cargo:17.7,url:"https://www.carvana.com/vehicle/4549163",lt:"View this listing"},
+ {n:"Rivian R1S Dual Standard",y:"2024 \u00b7 33k mi \u00b7 $63,590",cat:"suv",cond:"used",seats:6,sticker:63590,cash:0,apr:.075,offer:"Longer range",
+  awd:"AWD standard",kwh100:49,mpgLab:"69 MPGe",mpgBar:34,ev:true,charger:true,ins:16000,mnt:4000,res:18000,rel:2.0,cln:4.0,
+  leg2:37.6,leg3:32.8,cargo:17.7,url:"https://www.carvana.com/vehicle/4460885",lt:"View this listing"},
+ {n:"Tesla Model X 100D",y:"2017 \u00b7 47k mi \u00b7 $31,590",cat:"suv",cond:"used",seats:6,sticker:31590,cash:0,apr:.085,offer:"Older-car rate",
+  awd:"AWD standard",kwh100:34,mpgLab:"100 MPGe",mpgBar:40,ev:true,charger:true,ins:14000,mnt:8000,res:6000,rel:2.5,cln:4.0,
+  leg2:38.5,leg3:32.2,cargo:15.0,url:"https://www.carvana.com/vehicle/4672369",lt:"View this listing"},
+ {n:"Tesla Model X Long Range",y:"2020 \u00b7 56k mi \u00b7 $39,590",cat:"suv",cond:"used",seats:6,sticker:39590,cash:0,apr:.080,offer:"Falcon doors",
+  awd:"AWD standard",kwh100:34,mpgLab:"100 MPGe",mpgBar:40,ev:true,charger:true,ins:15000,mnt:6000,res:9000,rel:2.5,cln:4.0,
+  leg2:38.5,leg3:32.2,cargo:15.0,url:"https://www.carvana.com/vehicle/4662079",lt:"View this listing"},
+ {n:"Land Rover Defender 130 S",y:"2025 \u00b7 12k mi \u00b7 bench 2nd row",cat:"suv",cond:"used",seats:8,sticker:74990,cash:0,apr:.075,offer:"No captain's chairs",
+  awd:"4WD standard",mpg:17,mpgLab:"17",ins:16000,mnt:14000,res:26000,rel:1.5,cln:3.0,
+  leg2:39.1,leg3:32.0,cargo:15.7,url:"https://www.carvana.com/vehicle/4632072",lt:"View this listing"},
+ {n:"Jeep Wagoneer Series II",y:"2024 \u00b7 76k mi \u00b7 $31,590",cat:"suv",cond:"used",seats:7,sticker:31590,cash:0,apr:.075,offer:"Bank loan",
+  awd:"4WD available",mpg:20,mpgLab:"20",ins:13000,mnt:9000,res:12000,rel:2.0,cln:2.5,leg2:42.7,leg3:36.6,cargo:27.4,
+  url:"https://www.carvana.com/vehicle/4676383",lt:"View this listing"}
+];
+
+var MATRIX=[
+ ["van","Toyota Sienna",78.6,33.5,36,71],
+ ["van","Honda Odyssey",79.0,32.8,22,60],
+ ["van","Kia Carnival",76.1,40.2,22,55],
+ ["van","Pacifica Hybrid",75.5,32.3,82,45],
+ ["suv","Grand Highlander Hyb",73.0,20.6,36,62],
+ ["suv","Toyota Sequoia",72.9,11.5,21,58],
+ ["suv","Chevy Tahoe / Yukon",76.9,25.5,17,57],
+ ["suv","Telluride Hyb (2027)",75.1,21.3,35,55],
+ ["suv","Chevy Suburban",78.7,41.5,17,55],
+ ["suv","Kia Telluride (2024)",73.8,21.0,22,55],
+ ["suv","Palisade Hybrid (2026)",75.1,19.1,34,57],
+ ["suv","Honda Pilot TrailSport",73.3,18.6,21,55],
+ ["suv","Subaru Ascent Onyx",70.3,17.6,22,52],
+ ["suv","Mazda CX-90 PHEV",69.8,14.9,56,45],
+ ["suv","Highlander Hybrid",68.7,16.0,35,58],
+ ["suv","Ford Expedition",77.6,20.9,19,48],
+ ["suv","Land Rover Defender 130",71.1,15.7,17,45],
+ ["suv","Jeep Wagoneer",79.3,27.4,20,42],
+ ["suv","Nissan Armada",69.4,16.5,16,42],
+ ["suv","Rivian R1S",70.4,17.7,null,40],
+ ["suv","Tesla Model X",70.7,15.0,null,38],
+ ["suv","Kia EV9",74.8,20.2,null,37]
+];
+
+var SPECS=[
+ ["van","Toyota Sienna",7,39.9,38.7,33.5,"36",0],
+ ["van","Honda Odyssey",7,40.9,38.1,32.8,"22",0],
+ ["van","Pacifica Hybrid",7,39.0,36.5,32.3,"82e",0],
+ ["van","Kia Carnival",7,40.5,35.6,40.2,"22",0],
+ ["suv","Chevy Suburban",7,42.0,36.7,41.5,"17",0],
+ ["suv","Jeep Wagoneer",7,42.7,36.6,27.4,"20",0],
+ ["suv","Ford Expedition",7,41.5,36.1,20.9,"19",0],
+ ["suv","GMC Yukon",7,42.0,34.9,25.5,"17",0],
+ ["suv","Chevy Tahoe",7,42.0,34.9,25.5,"17",0],
+ ["suv","Toyota Sequoia",7,39.2,33.7,11.5,"21",0],
+ ["suv","Grand Highlander",7,39.5,33.5,20.6,"36",0],
+ ["suv","Palisade Hybrid 2026",7,43.0,32.1,19.1,"34",0],
+ ["suv","Telluride Hybrid 2027",7,43.0,32.1,21.3,"35",0],
+ ["suv","Kia Telluride 2024",7,42.4,31.4,21.0,"22",0],
+ ["suv","Kia EV9",6,42.8,32.0,20.2,"88e",3.2],
+ ["suv","Rivian R1S",6,37.6,32.8,17.7,"69e",11.1],
+ ["suv","Tesla Model X",6,38.5,32.2,15.0,"100e",6.5],
+ ["suv","Defender 130 (bench)",8,39.1,32.0,15.7,"17",0],
+ ["suv","Nissan Armada",7,41.0,28.4,16.5,"16",0],
+ ["suv","Nissan Pathfinder 2024",7,35.5,28.0,16.6,"23",0],
+ ["suv","Honda Pilot TrailSport",7,40.8,32.5,18.6,"21",0],
+ ["suv","Subaru Ascent Onyx",7,38.6,31.7,17.6,"22",0],
+ ["suv","Mazda CX-90 PHEV",7,39.4,30.4,14.9,"56e",0],
+ ["suv","Highlander Hybrid",7,41.0,27.7,16.0,"35",0],
+ ["suv","Nissan Pathfinder 2017",7,41.7,30.7,16.0,"20",0]
+];
+
+var S={down:10000,miles:25000,gas:3.00,kwh:0.113,elec:0.55,charger:1000,term:60},TAX=.0625,FEES=400;
+function money(v){return "$"+Math.round(v).toLocaleString();}
+function pmt(P,a,n){if(P<=0)return 0;if(a===0)return P/n;var r=a/12;return P*r/(1-Math.pow(1+r,-n));}
+function perMile(o){var g=o.diesel?S.gas*1.22:S.gas;
+  if(o.ev)return o.kwh100/100*S.kwh;
+  if(o.phev)return S.elec*(o.kwh100/100*S.kwh)+(1-S.elec)*(g/o.mpg);
+  return g/o.mpg;}
+function compute(o){
+  var price=o.sticker+(o.ship||0);
+  var tax=price*TAX+FEES, loan=Math.max(0,price+tax-o.cash-S.down);
+  var m=pmt(loan,o.apr,S.term), interest=m*S.term-loan, pm=perMile(o);
+  var wear=Math.max(0.45,Math.min(1.15,1-0.11*((S.miles*5-75000)/25000)));
+  var res=o.res*wear;
+  var fuel=S.miles*5*pm, dep=price+tax-o.cash-res, chg=o.charger?S.charger:0;
+  var evfee=o.ev?1000:0;
+  return {net:dep+interest+fuel+o.ins+o.mnt+chg+evfee,evfee:evfee,dep:dep,interest:interest,fuel:fuel,
+          ins:o.ins,mnt:o.mnt,chg:chg,m:m,pm:pm,res:res};}
+var GC=[[/Woodland/,6.9],[/Sienna/,6.3],[/Odyssey/,4.9],[/Pacifica/,5.1],[/Carnival/,6.8],
+ [/Telluride X-Line/,8.4],[/Telluride Hybrid/,8.0],[/Telluride/,8.4],[/Palisade/,7.9],
+ [/Grand Highlander/,8.0],[/Pilot TrailSport/,8.3],[/Ascent/,8.7],[/CX-90/,8.0],
+ [/Highlander Hybrid/,8.0],[/EV9/,7.8],[/R1S/,9.9],[/Model X/,5.4],[/Defender/,8.5],
+ [/Wagoneer/,8.3],[/Tahoe|Suburban|Yukon/,8.0],[/Sequoia/,8.6],[/Expedition/,8.6],[/Pathfinder/,7.0]];
+var OWN=[[/Woodland|Sienna/,4.4,600],[/Odyssey/,4.3,550],[/Pacifica/,3.8,690],[/Carnival Hybrid/,4.5,520],
+ [/Carnival/,4.3,520],[/Telluride/,4.1,520],[/Palisade/,4.2,550],[/Grand Highlander/,4.5,510],
+ [/Highlander Hybrid/,4.4,490],[/Pilot/,4.4,540],[/Ascent/,4.2,590],[/CX-90/,3.9,640],
+ [/EV9/,4.6,450],[/R1S/,4.3,900],[/Model X/,4.0,950],[/Defender/,3.6,1250],
+ [/Wagoneer/,2.7,1150],[/Tahoe|Suburban|Yukon/,3.4,744],[/Sequoia/,4.2,650],[/Expedition/,3.7,861],
+ [/Pathfinder/,3.9,542]];
+function ownFor(o){for(var i=0;i<OWN.length;i++){if(OWN[i][0].test(o.n))return OWN[i];}return null;}
+function gcFor(o){for(var i=0;i<GC.length;i++){if(GC[i][0].test(o.n))return GC[i][1];}return null;}
+function dv(x){return x>0.05?' <span style="color:var(--s3)">+'+x.toFixed(1)+'</span>':(x<-0.05?' <span style="color:var(--warn-text)">'+x.toFixed(1)+'</span>':'');}
+function spec(k,v,f,why){
+  return '<div class="spec"'+(why?' data-why="'+why.replace(/"/g,"&quot;")+'"':'')+'>'+
+   '<div class="k">'+k+'</div><div class="v">'+v+'</div>'+
+   '<div class="bar"><i style="width:'+Math.max(2,Math.min(100,f*100)).toFixed(1)+'%"></i></div></div>';}
+
+function bar(frac,col){return '<div class="mxb"><i style="width:'+
+  Math.max(3,Math.min(100,frac*100)).toFixed(1)+'%;background:var(--'+col+')"></i></div>';}
+var MXSORT=5;
+function buildMatrix(){
+  function hd(lab,k){return '<button class="mxh" data-k="'+k+'" aria-pressed="'+(MXSORT===k)+'">'+lab+'</button>';}
+  var h='<div class="mxh"></div>'+hd("Room",2)+hd("Cargo",3)+hd("MPG",4)+hd("Value",5);
+  ["van","suv"].forEach(function(cat){
+    h+='<div class="mxsec">'+(cat==="van"?"Minivans":"SUVs")+'</div>';
+    MATRIX.filter(function(r){return r[0]===cat;})
+      .sort(function(a,b){var x=a[MXSORT],y=b[MXSORT];
+        if(x===null)return 1; if(y===null)return -1; return y-x;})
+      .forEach(function(r){
+        h+='<div class="mxn">'+r[1]+'</div>'+
+           bar((r[2]-62)/18,'s1')+bar((r[3]-10)/32,'s2')+
+           (r[4]===null?'<div class="mxe">electric</div>':bar((r[4]-14)/26,'s3'))+
+           bar((r[5]-30)/45,'s4');
+      });
+  });
+  var el=document.getElementById("matrix");
+  el.innerHTML=h;
+  [].forEach.call(el.querySelectorAll("button.mxh"),function(b){
+    b.addEventListener("click",function(){MXSORT=parseInt(b.dataset.k,10);buildMatrix();});
+  });
+}
+
+var F={cat:"all",cond:"all",must:{},sort:"net",maxp:80000};
+function hasAWD(o){return !/No AWD|FWD only|RWD/i.test(o.awd);}
+function isEff(o){return !!(o.ev||o.phev||(o.mpg&&o.mpg>=30));}
+function passes(o){
+  if(F.cat!=="all"&&o.cat!==F.cat)return false;
+  if(F.cond!=="all"&&o.cond!==F.cond)return false;
+  if(F.must.awd&&!hasAWD(o))return false;
+  if(F.must.s7&&o.seats<7)return false;
+  if(F.must.eff&&!isEff(o))return false;
+  if(o.sticker>F.maxp)return false;
+  return true;
+}
+function sortRows(a,b){
+  if(F.sort==="pmt")return a.c.m-b.c.m;
+  if(F.sort==="leg3")return b.o.leg3-a.o.leg3;
+  if(F.sort==="cargo")return b.o.cargo-a.o.cargo;
+  if(F.sort==="res")return b.c.res-a.c.res;
+  return a.c.net-b.c.net;
+}
+function renderGroup(cat,elId){
+  var rows=OPTIONS.filter(function(o){return o.cat===cat&&passes(o);})
+    .map(function(o){return {o:o,c:compute(o)};})
+    .sort(sortRows);
+  var best=0;
+  for(var k=0;k<rows.length;k++){if(rows[k].o.seats>=7){best=k;break;}}
+  document.getElementById(cat==="van"?"hVan":"hSuv").style.display=rows.length?"":"none";
+  document.getElementById(elId).innerHTML=rows.length?rows.map(function(r,i){
+    var o=r.o,c=r.c,seg=function(v){return (v/c.net*100).toFixed(2)+"%";};
+    var pill='<span class="pill'+(o.seats<7?' six':'')+'">'+o.seats+' seats</span>'+
+      '<span class="cond'+(o.cond==="new"?' nw':'')+'">'+o.cond.toUpperCase()+'</span>';
+    return '<div class="card'+(i===best?' best':'')+'">'+
+      (i===best?'<div class="tag">Best '+(cat==="van"?"minivan":"SUV")+' on cost</div>':'')+
+      '<div class="head"><div><div class="nm">'+o.n+pill+'</div>'+
+      '<div class="meta">'+o.y+' · '+o.offer+' · '+money(c.m)+'/mo</div></div>'+
+      '<div><div class="net">'+money(o.sticker)+'</div>'+
+      '<div class="netlab">'+money(c.net)+' over 5 yrs</div></div></div>'+
+      '<div class="stack">'+
+      '<i style="width:'+seg(c.dep)+';background:var(--s1)"></i>'+
+      '<i style="width:'+seg(c.interest)+';background:var(--s2)"></i>'+
+      '<i style="width:'+seg(c.fuel)+';background:var(--s3)"></i>'+
+      '<i style="width:'+seg(c.ins)+';background:var(--s4)"></i>'+
+      '<i style="width:'+seg(c.mnt)+';background:var(--s5)"></i>'+
+      (c.chg?'<i style="width:'+seg(c.chg)+';background:var(--s6)"></i>':'')+'</div>'+
+      '<div class="key"><span>Depreciation '+money(c.dep)+'</span>'+
+      '<span>Interest '+money(c.interest)+'</span><span>Fuel '+money(c.fuel)+'</span>'+
+      '<span>Sell for '+money(c.res)+'</span>'+
+      (c.chg?'<span>Charger '+money(c.chg)+'</span>':'')+
+      (c.evfee?'<span>TX EV fee '+money(c.evfee)+'</span>':'')+'</div>'+
+      '<div class="specs">'+
+      spec("2nd row vs yours",o.leg2.toFixed(1)+'"'+dv(o.leg2-BASE.leg2),o.leg2/43.0,"Manufacturer second-row legroom, measured with the seat all the way back. Green is the gain over your comparison car, red a loss. Bar is scaled against the roomiest here, the 43-inch Telluride and Palisade.")+
+      spec("3rd row vs yours",o.leg3.toFixed(1)+'"'+dv(o.leg3-BASE.leg3),o.leg3/38.7,"Third-row legroom. This is the figure that separates a usable back seat from a jump seat. Under about 31 inches is children only; the Sienna's 38.7 is the most on this page.")+
+      spec("Cargo vs yours",o.cargo.toFixed(1)+" cu ft"+dv(o.cargo-BASE.cargo),o.cargo/41.5,"Cubic feet behind the third row with all seats up. Frunks are not counted here; the three EVs add 3.2 to 11.1 cu ft up front, shown in the comparison chart above.")+
+      spec("MPG combined",o.mpgLab,Math.min(1,(o.mpgBar||o.mpg)/40),"EPA combined rating. MPGe for electrics and plug-ins is not comparable to petrol mpg, so the fuel cost in the bar above uses your actual electricity and petrol prices instead.")+
+      spec("Resale at year 5",money(c.res)+' <span style="font-size:12px;color:var(--text-muted)">'+
+        Math.round(c.res/o.sticker*100)+'% kept</span>',c.res/o.sticker/0.72,"Starts from iSeeCars five-year depreciation for the model, then discounts about 11% per extra 25,000 miles a year. Percentage is against what you pay, so used cars look better than new ones on this line.")+
+      spec("Reliability",o.rel.toFixed(1)+" / 5",o.rel/5,"My score from Consumer Reports predicted reliability plus recall history. 4.5 means CR rates it above average; 1.5 means bottom of its class. This is a judgement, not a measurement.")+
+      spec("Easy to clean",o.cln.toFixed(1)+" / 5",o.cln/5,"Weighs wipeable synthetic leather over cloth, seats that fold into the floor or come out, a low flat load floor, a built-in vacuum, and standard all-weather mats. The Sienna loses points because its second row cannot be removed and there is carpet underneath.")+
+      (ownFor(o)?spec("Owner rating",ownFor(o)[1].toFixed(1)+" / 5",ownFor(o)[1]/5,"Averaged consumer scores from Kelley Blue Book, Edmunds and CarGurus. Owners rate how much they enjoy the car, which is why the EV9 scores 4.6 despite poor reliability data."):"")+
+      (ownFor(o)?spec("Repairs per year","$"+ownFor(o)[2],1-(ownFor(o)[2]-450)/900,"RepairPal-style average for unscheduled repairs and maintenance across all model years of the model. It describes the nameplate over a lifetime, not this particular car. Longer bar is cheaper."):"")+
+      '</div>'+
+      '<div style="font-size:13px;color:var(--text-secondary);margin-top:10px">Drive: '+o.awd+
+        (gcFor(o)?' \u00b7 '+gcFor(o).toFixed(1)+'" clearance':'')+'</div>'+
+      (o.aw?'<a class="award" href="'+o.awUrl+'"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.5 13.5 17 22l-5-3-5 3 1.5-8.5"/></svg>'+o.aw+'</a>':'')+
+      '<a class="lnk" href="'+o.url+'">'+o.lt+'</a>'+
+      '</div>';
+  }).join(""):"";
+  return rows.length;
+}
+function scoreRow(r,lo,hi){
+  var cost=hi>lo?1-(r.c.net-lo)/(hi-lo):1;
+  var own=ownFor(r.o)?ownFor(r.o)[1]/5:0.7;
+  return cost*0.35 + (r.o.rel/5)*0.20 + own*0.10
+       + Math.min(1,r.o.leg3/38.7)*0.15 + Math.min(1,r.o.cargo/41.5)*0.15
+       + (r.o.cln/5)*0.05;
+}
+function bestOf(list){
+  if(!list.length)return null;
+  var lo=Infinity,hi=-Infinity;
+  list.forEach(function(r){if(r.c.net<lo)lo=r.c.net;if(r.c.net>hi)hi=r.c.net;});
+  return list.map(function(r){return {r:r,s:scoreRow(r,lo,hi)};})
+    .sort(function(a,b){return b.s-a.s;});
+}
+function label(r){return r.o.n+" \u2014 "+money(r.o.sticker)+", "+money(r.c.net)+" over 5 yrs";}
+function recommend(){
+  var el=document.getElementById("reco"); if(!el)return;
+  var all=OPTIONS.map(function(o){return {o:o,c:compute(o)};});
+  var cur=all.filter(function(r){return passes(r.o);});
+  if(!cur.length){el.innerHTML='<div class="nm">Nothing matches</div><div class="meta">Loosen a filter above.</div>';return;}
+  var ranked=bestOf(cur), top=ranked[0].r, second=ranked[1]?ranked[1].r:null;
+  var cheap=cur.slice().sort(function(a,b){return a.c.net-b.c.net;})[0];
+  var awdOn=!!F.must.awd;
+  var alt=null;
+  if(awdOn){
+    var save=F.must.awd; F.must.awd=false;
+    var wide=all.filter(function(r){return passes(r.o);});
+    F.must.awd=save;
+    var wr=bestOf(wide);
+    if(wr&&wr[0].r.o.n!==top.o.n)alt=wr[0].r;
+  }
+  el.innerHTML='<div class="tag">Best overall'+(awdOn?" with AWD":"")+'</div>'+
+    '<div class="nm">'+top.o.n+'</div>'+
+    '<div class="meta">'+top.o.y+' \u00b7 '+money(top.c.m)+'/mo \u00b7 '+money(top.c.net)+' over five years</div>'+
+    '<div class="specs" style="grid-template-columns:repeat(2,minmax(0,1fr))">'+
+      spec("3rd row",top.o.leg3.toFixed(1)+'"',top.o.leg3/38.7)+
+      spec("Cargo",top.o.cargo.toFixed(1)+" cu ft",top.o.cargo/41.5)+
+      spec("Reliability",top.o.rel.toFixed(1)+" / 5",top.o.rel/5)+
+      spec("MPG",top.o.mpgLab,Math.min(1,(top.o.mpgBar||top.o.mpg)/40))+
+    '</div>'+
+    '<p class="fine" style="margin:12px 0 0">Scored 35% on five-year cost, 20% reliability, 15% third row, 15% cargo, 10% owner rating, 5% cleanability, across the '+cur.length+' vehicles matching your filters.</p>'+
+    (second?'<p class="fine" style="margin:6px 0 0"><b>Runner-up:</b> '+label(second)+'</p>':'')+
+    (cheap.o.n!==top.o.n?'<p class="fine" style="margin:6px 0 0"><b>Cheapest that matches:</b> '+label(cheap)+'</p>':'')+
+    (alt?'<p class="fine" style="margin:6px 0 0"><b>Drop the AWD requirement</b> and the pick becomes '+label(alt)+'.</p>':
+      (awdOn?'<p class="fine" style="margin:6px 0 0">Dropping the AWD requirement would not change the pick.</p>':''));
+}
+function render(){
+  var n=renderGroup("van","cardsVan")+renderGroup("suv","cardsSuv");
+  recommend();
+  var fc=document.getElementById("fcount");
+  if(fc)fc.textContent=n+" of "+OPTIONS.length+(n===1?" vehicle":" vehicles")+" match";
+}
+
+var st='';
+["van","suv"].forEach(function(cat){
+  st+='<tr class="grouprow"><td colspan="6">'+(cat==="van"?"Minivans":"SUVs")+'</td></tr>';
+  SPECS.filter(function(r){return r[0]===cat;}).forEach(function(r){
+    st+='<tr'+(r[2]<7?' class="six"':'')+'><td>'+r[1]+'</td><td class="n">'+r[2]+
+        '</td><td class="n">'+r[3].toFixed(1)+'</td><td class="n">'+r[4].toFixed(1)+
+        '</td><td class="n">'+r[5].toFixed(1)+'</td><td class="n">'+r[6]+'</td></tr>';
+  });
+});
+document.getElementById("specTable").innerHTML=st;
+
+function bind(id,oid,key,fmt,scale){
+  var el=document.getElementById(id),out=document.getElementById(oid);
+  el.addEventListener("input",function(){var raw=parseFloat(el.value);
+    S[key]=raw*(scale||1);out.textContent=fmt(raw);render();});
+}
+bind("down","downOut","down",function(v){return money(v);});
+bind("miles","milesOut","miles",function(v){return Math.round(v).toLocaleString();});
+bind("gas","gasOut","gas",function(v){return "$"+v.toFixed(2)+" / gal";});
+bind("kwh","kwhOut","kwh",function(v){return "$"+v.toFixed(3)+" / kWh";});
+bind("elec","elecOut","elec",function(v){return Math.round(v)+"%";},0.01);
+bind("chg","chgOut","charger",function(v){return money(v);});
+document.getElementById("terms").addEventListener("click",function(e){
+  var b=e.target.closest("button");if(!b)return;
+  [].forEach.call(this.querySelectorAll("button"),function(x){x.setAttribute("aria-pressed","false");});
+  b.setAttribute("aria-pressed","true");S.term=parseInt(b.dataset.t,10);render();});
+
+var PRESETS=[
+ ["Honda Pilot 2016-2022",38.4,31.9,16.5,22],
+ ["Toyota Highlander 2020-2024",41.0,27.7,16.0,24],
+ ["Chevy Traverse 2018-2023",38.4,33.5,23.0,21],
+ ["Ford Explorer 2020-2025",39.0,32.2,18.2,24],
+ ["Kia Sorento 2021-2025",41.7,29.6,12.6,26]
+];
+function specMpg(v){var n=parseFloat(v);return /e$/.test(v)?null:(isNaN(n)?null:n);}
+function baseFromSpec(r){return {name:r[1],leg2:r[3],leg3:r[4],cargo:r[5],mpg:specMpg(r[6]),frunk:r[7]||0};}
+var BASE=baseFromSpec(SPECS[SPECS.length-1]);
+var LGMAX=43.5,CGMAX=45;
+function lgline(lab,base,val,max,cls,unit,frunk){
+  var bw=(Math.min(base,val)/max*100).toFixed(1), gw=(Math.max(0,val-base)/max*100).toFixed(1);
+  var fw=((frunk||0)/max*100).toFixed(1), gain=val-base;
+  return '<div class="lgline"><div class="lglab">'+lab+'</div>'+
+   '<div class="lgtrack"><div class="lgbase" style="width:'+bw+'%"></div>'+
+   (gain>0.05?'<div class="lggain '+cls+'" style="left:'+bw+'%;width:'+gw+'%"></div>':'')+
+   (frunk?'<div class="lggain" style="left:'+(+bw + +gw)+'%;width:'+fw+'%;background:var(--s6)"></div>':'')+
+   '</div><div class="lgv">'+val.toFixed(1)+unit+
+   (gain>0.05?' <span style="color:var(--'+(cls==="r3"?"s3":(cls==="r4"?"s2":"s1"))+')">+'+gain.toFixed(1)+'</span>':
+    (gain<-0.05?' <span style="color:var(--warn-text)">'+gain.toFixed(1)+'</span>':''))+
+   '</div></div>';
+}
+function buildLegroom(){
+  var rows=SPECS.filter(function(r){return r[1]!==BASE.name;})
+    .map(function(r){return [r[1]+(r[2]<7?" ("+r[2]+" seats)":""),r[3],r[4],r[5],r[7]||0];})
+    .sort(function(x,y){return y[2]-x[2];});
+  rows.push([BASE.name+" \u2014 yours",BASE.leg2,BASE.leg3,BASE.cargo,BASE.frunk||0]);
+  document.getElementById("legroom").innerHTML=rows.map(function(r){
+    return '<div class="lgrow"><div class="lgname">'+r[0]+(r[4]?' \u00b7 +'+r[4].toFixed(1)+' frunk':'')+'</div>'+
+      lgline("2nd",BASE.leg2,r[1],LGMAX,"",'"',0)+
+      lgline("3rd",BASE.leg3,r[2],LGMAX,"r3",'"',0)+
+      lgline("boot",BASE.cargo,r[3],CGMAX,"r4"," cu ft",r[4])+'</div>';
+  }).join("");
+}
+function syncBase(){
+  MATRIX=MATRIX.filter(function(r){return r[1].indexOf("\u2014 yours")<0;});
+  MATRIX.push(["suv",BASE.name+" \u2014 yours",BASE.leg2+BASE.leg3,BASE.cargo,BASE.mpg,50]);
+  buildMatrix();buildLegroom();render();
+}
+(function(){
+  var sel=document.getElementById("baseSel"),
+      b2=document.getElementById("b2"),b3=document.getElementById("b3"),bc=document.getElementById("bc");
+  function group(lab,items){return '<optgroup label="'+lab+'">'+items.join("")+'</optgroup>';}
+  sel.innerHTML=
+    group("Minivans on this page",SPECS.map(function(r,i){return r[0]==="van"?'<option value="s'+i+'">'+r[1]+'</option>':'';}))+
+    group("SUVs on this page",SPECS.map(function(r,i){return r[0]==="suv"?'<option value="s'+i+'">'+r[1]+'</option>':'';}))+
+    group("Other common trade-ins",PRESETS.map(function(p,i){return '<option value="p'+i+'">'+p[0]+'</option>';}))+
+    '<optgroup label="Manual"><option value="x">Custom</option></optgroup>';
+  sel.value="s"+(SPECS.length-1);
+  function fill(){b2.value=BASE.leg2;b3.value=BASE.leg3;bc.value=BASE.cargo;}
+  sel.addEventListener("change",function(){
+    var v=sel.value;
+    if(v[0]==="s"){BASE=baseFromSpec(SPECS[+v.slice(1)]);}
+    else if(v[0]==="p"){var p=PRESETS[+v.slice(1)];BASE={name:p[0],leg2:p[1],leg3:p[2],cargo:p[3],mpg:p[4],frunk:0};}
+    fill();syncBase();
+  });
+  [b2,b3,bc].forEach(function(el){
+    el.addEventListener("input",function(){
+      BASE={name:"Your car",leg2:parseFloat(b2.value)||0,leg3:parseFloat(b3.value)||0,
+            cargo:parseFloat(bc.value)||0,mpg:BASE.mpg,frunk:0};
+      sel.value="x";syncBase();
+    });
+  });
+  fill();
+  MATRIX.push(["suv",BASE.name+" \u2014 yours",BASE.leg2+BASE.leg3,BASE.cargo,BASE.mpg,50]);
+  buildLegroom();
+})();
+(function(){
+  var fp=document.getElementById("filters");
+  if(!fp)return;
+  [].forEach.call(fp.querySelectorAll(".seg"),function(seg){
+    var f=seg.dataset.f;
+    seg.addEventListener("click",function(e){
+      var b=e.target.closest("button"); if(!b)return;
+      if(f==="must"){
+        var on=b.getAttribute("aria-pressed")!=="true";
+        b.setAttribute("aria-pressed",on?"true":"false");
+        F.must[b.dataset.v]=on;
+      }else{
+        [].forEach.call(seg.querySelectorAll("button"),function(x){x.setAttribute("aria-pressed","false");});
+        b.setAttribute("aria-pressed","true"); F[f]=b.dataset.v;
+      }
+      render();
+    });
+  });
+  var mp=document.getElementById("maxp"),mo=document.getElementById("maxpOut");
+  mp.addEventListener("input",function(){
+    F.maxp=parseInt(mp.value,10);
+    mo.textContent=F.maxp>=80000?"Any":money(F.maxp);
+    render();
+  });
+  document.getElementById("freset").addEventListener("click",function(){
+    F={cat:"all",cond:"all",must:{},sort:"net",maxp:80000};
+    mp.value=80000; mo.textContent="Any";
+    [].forEach.call(fp.querySelectorAll(".seg"),function(seg){
+      [].forEach.call(seg.querySelectorAll("button"),function(x,i){
+        x.setAttribute("aria-pressed", seg.dataset.f==="must"?"false":(i===0?"true":"false"));
+      });
+    });
+    render();
+  });
+})();
+document.addEventListener("click",function(e){
+  var t=e.target.closest?e.target.closest("[data-why]"):null;
+  if(!t)return;
+  var host=t.classList.contains("spec")?t:t.parentNode;
+  var nx=t.nextElementSibling;
+  if(nx&&nx.className==="whybox"){nx.parentNode.removeChild(nx);return;}
+  var old=document.querySelector(".whybox"); if(old)old.parentNode.removeChild(old);
+  var d=document.createElement("div");
+  d.className="whybox"; d.textContent=t.getAttribute("data-why");
+  t.parentNode.insertBefore(d,t.nextSibling);
+});
+buildMatrix();render();
+</script>

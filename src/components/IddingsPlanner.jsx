@@ -40,6 +40,7 @@ import {
   ReferenceArea,
 } from 'recharts';
 import FallPlanView from './FallPlanView';
+import VehicleCostView from './VehicleCostView';
 
 // ---------------------------------------------------------------------------
 // Single source of truth for the family's real numbers. Everything the page
@@ -1120,7 +1121,7 @@ const PAYMENT_PLAN = {
     'Dec 7, 2026', 'Jan 5, 2027', 'Feb 5, 2027', 'Mar 5, 2027', 'Apr 5, 2027'],
 };
 
-const VALID_TABS = ['now', 'money', 'timeline', 'nbca', 'supplies', 'fall', 'tefa'];
+const VALID_TABS = ['now', 'money', 'timeline', 'nbca', 'supplies', 'fall', 'vehicle', 'tefa'];
 const TAB_LABELS = {
   now: 'Now',
   money: 'Money',
@@ -1128,6 +1129,7 @@ const TAB_LABELS = {
   nbca: 'NBCA Prep',
   supplies: 'Supplies',
   fall: 'Fall Plan',
+  vehicle: 'Vehicle',
   tefa: 'TEFA',
 };
 
@@ -1183,12 +1185,16 @@ const IddingsPlanner = () => {
       </header>
 
       {/* The Fall Plan is a full-bleed call sheet with its own masthead and grid,
-          so it gets a wider container and no page padding of its own. */}
+          so it gets a wider container and no page padding of its own. The
+          Vehicle tab is the same story: its own .wrap handles width and
+          padding, and its background needs the full width of the page. */}
       <main
         className={
           activeTab === 'fall'
             ? 'max-w-6xl mx-auto'
-            : 'max-w-4xl mx-auto p-6 space-y-6'
+            : activeTab === 'vehicle'
+              ? ''
+              : 'max-w-4xl mx-auto p-6 space-y-6'
         }
       >
         {activeTab === 'now' && (
@@ -1208,6 +1214,7 @@ const IddingsPlanner = () => {
         {activeTab === 'nbca' && <NbcaPrepView setTab={setTab} />}
         {activeTab === 'supplies' && <SuppliesView setTab={setTab} />}
         {activeTab === 'fall' && <FallPlanView />}
+        {activeTab === 'vehicle' && <VehicleCostView />}
         {activeTab === 'tefa' && <TefaView />}
       </main>
 
