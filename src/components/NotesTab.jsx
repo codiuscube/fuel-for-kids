@@ -66,7 +66,10 @@ const NotesTab = () => (
         <li>
           <b>Minivans give more space per dollar than SUVs, without exception.</b> The cheapest seven-seat SUV
           near you starts at $59,699 and offers five fewer inches of third-row legroom and thirteen fewer cubic
-          feet than a Sienna costing $12,000 less. No SUV on this page beats a Sienna on five-year cost.
+          feet than a Sienna costing $12,000 less. No SUV on this page beats a Sienna on five-year cost. The one
+          thing an SUV wins outright is absolute boot space &mdash; a Suburban&rsquo;s 41.5 cu ft is the most
+          here &mdash; but a used Suburban asks about $16,000 more than a used Carnival for that one extra
+          cubic foot.
         </li>
         <li>
           <b>Resale is the largest single lever, bigger than price.</b> The Sienna loses only 29% over five
@@ -212,7 +215,44 @@ const NotesTab = () => (
       <br />
       <br />
       <b>Tahoe LS ships with a second-row bench.</b> Captain&rsquo;s chairs are an option on that trim, so
-      confirm on the specific car before you get attached to it.
+      confirm on the specific car before you get attached to it. The same applies to every Chevy and GMC
+      full-size below Premier and Denali &mdash; see the note directly below.
+    </div>
+    </Note>
+
+    <Note title="The GM full-size three" blurb="Tahoe, Suburban, Yukon: the most room and the highest running cost">
+    <div className="note">
+      <b>They are the same truck three ways.</b> Tahoe and Yukon are one vehicle with different badges &mdash;
+      42.0 inches of second-row legroom, 34.9 in the third, 25.5 cu ft behind it. Suburban and Yukon XL are the
+      long-wheelbase version of that same truck: the third row grows to 36.7 inches and the boot to{' '}
+      <b>41.5 cu ft, the most on this page</b>. Only the Kia Carnival comes close, at 40.2, and only the
+      Sienna gives the third row more legroom.
+      <br />
+      <br />
+      <b>Captain&rsquo;s chairs are an option, not a trim.</b> Buckets are standard on Tahoe and Suburban
+      Premier and High Country, on Suburban RST, on Yukon SLT and Denali. On LS, LT and Yukon Elevation they
+      are a box someone had to tick when the car was ordered, so check the specific VIN. That is why the used
+      picks here sit on LT and above.
+      <br />
+      <br />
+      <b>The running cost is the catch, and at 25,000 miles a year it is a big one.</b> 17 mpg means about
+      $22,000 of petrol over five years &mdash; roughly $11,600 more than a 36 mpg Sienna &mdash; and GM
+      full-size repairs average $744 a year, more than any minivan or Toyota here. A new Tahoe LT lands near
+      $94k over five years against about $58k for a new Sienna. You are buying the space, and the space costs
+      about $35,000.
+      <br />
+      <br />
+      <b>The 3.0L Duramax diesel does less than you would hope.</b> It is rated 22 mpg combined in four-wheel
+      drive against 17 for the 5.3 V8, but diesel is priced 22% above petrol, so 22 mpg of diesel costs nearly
+      what 17 mpg of petrol does &mdash; about $1,300 saved on fuel across five years, which the higher asking
+      price hands straight back. The used 2023 LT Duramax below finishes within $250 of the petrol LT. Buy it
+      for the torque and the towing, not the fuel bill &mdash; or, if diesel is running close to petrol when
+      you buy, change the petrol price in Assumptions and look again.
+      <br />
+      <br />
+      <b>What to skip.</b> Yukon Denali Ultimate and Tahoe High Country run past $83,000 new, which is beyond
+      the price filter and well past the point where a Sequoia or Grand Highlander makes more sense. The used
+      Denali below is the loaded version worth looking at.
     </div>
     </Note>
 

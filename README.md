@@ -1,8 +1,8 @@
 # Three-Row Family Vehicle Comparison
 
-A single-page React app that prices forty specific three-row vehicles — every
-one with second-row captain's chairs — over five years of ownership, and lets
-you sort and filter them on a phone.
+A single-page React app that prices fifty-three specific three-row vehicles —
+every one available with second-row captain's chairs — over five years of
+ownership, and lets you sort and filter them on a phone.
 
 This is the only front end in this repository. Everything else that used to
 live here (the TEFA planner, the Iddings fall plan, the NBCA school paperwork)
@@ -129,7 +129,10 @@ drive-on beaches at Port Aransas, and a liking for the lifted AWD look.
 2. **Minivans give more space per dollar than SUVs, without exception.** The
    cheapest seven-seat SUV nearby starts at $59,699 with five fewer inches of
    third-row legroom and thirteen fewer cubic feet than a Sienna costing
-   $12,000 less.
+   $12,000 less. The only thing an SUV wins outright is absolute boot space —
+   the Suburban and Yukon XL hold 41.5 cu ft behind the third row, the most
+   here — and a used one asks about $16,000 more than a used Carnival for that
+   one extra cubic foot.
 3. **Resale is the largest single lever, bigger than price.** The Sienna loses
    only 29% over five years against a class average of 46% — which is why a
    $47,504 new Sienna costs less to own than a $40,499 used one.
@@ -175,6 +178,7 @@ repair costs, and the long-form caveats — lives in the app's **Notes** tab.
 | --- | --- | --- |
 | Used prices and links | Carvana listings, 30 Aug 2026 | Actual cars |
 | New prices and links | Dealer inventory, San Antonio to Bryan | Actual cars |
+| Tahoe / Suburban / Yukon | 2026 MSRP by trim; used are market estimates | Trim-level, not a VIN |
 | Legroom, cargo, clearance | Manufacturer specs | Published |
 | MPG and MPGe | EPA combined ratings | Published |
 | Finance offers | Kia, Toyota, GM, August 2026 | Expire 31 Aug |
@@ -206,7 +210,7 @@ src/
   App.jsx                      renders the one view
   index.css                    global reset
   vehicle-cost.css             all styling, scoped under .vehcost, mobile first
-  data/vehicles.js             the 40 listings, spec tables, and explainer copy
+  data/vehicles.js             the 53 listings, spec tables, and explainer copy
   lib/cost.js                  the five-year cost model
   components/
     VehicleCostView.jsx        app shell, Cars tab, sheets, cards
