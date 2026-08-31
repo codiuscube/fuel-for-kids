@@ -257,9 +257,37 @@ const NotesTab = () => (
       mechanically the Grand Caravan that <b>is</b> on the list, so nothing is lost.
       <br />
       <br />
-      <b>One I could not price honestly.</b> The 2025 Armada was redesigned and I could not verify its
-      second-row and cargo figures, so the 2023 is here instead. If you like the shape, go and sit in the new
-      one before ruling either way.
+      <b>The one I had wrong.</b> I first left the redesigned Armada off because I could not verify its
+      figures. They check out and it is now on the list, both generations: Nissan added nearly five inches to
+      the third row (28.4 to 32.9) and four cubic feet behind it (16.5 to 20.4). See the note below &mdash; it
+      is the only car here holding a Texas award.
+    </div>
+    </Note>
+
+    <Note title="The Armada won SUV of Texas, twice" blurb="A local award, on the one car the brief was already asking for">
+    <div className="note">
+      <b>The Texas Auto Writers Association named the Armada PRO-4X the 2026 SUV of Texas</b> at the 32nd Texas
+      Truck Rodeo, held at Eagle Canyon Raceway in Decatur in September 2025. The 2025 PRO-4X had taken
+      Full-Size SUV of Texas the year before, so it is back-to-back. Of every award on this page it is the only
+      one handed out by people who drove the cars on Texas roads and dirt, which is worth more here than a
+      national gong.
+      <br />
+      <br />
+      <b>It also happens to match the brief.</b> The PRO-4X is the lifted, four-wheel-drive, off-road-trimmed
+      version, with 9.6 inches of clearance &mdash; the most of any petrol car on this list &mdash; which is
+      the Port Aransas beach-run answer as well as the look. And the redesign fixed the Armada's worst number:
+      the old third row was 28.4 inches, a jump seat, and the new one is 32.9.
+      <br />
+      <br />
+      <b>What it costs you to say yes.</b> 17 mpg, and $74,300 before destination for the PRO-4X. At 25,000
+      miles a year that is roughly $22,000 of petrol over five years and a five-year total of about $107k
+      &mdash; third dearest on the page, behind only the Defender 130 and the Escalade ESV. The SL 4x4 is on
+      the list too at $7,770 less for the same body, engine and third row, and comes out near $100k. The award
+      is real; so is the fuel bill.
+      <br />
+      <br />
+      <b>Check the second row before you fall for one.</b> Captain's chairs are an option on the PRO-4X, not
+      standard, so the seven-seat car you want is a specific build rather than a trim you can order blind.
     </div>
     </Note>
 
