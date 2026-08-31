@@ -78,8 +78,10 @@ const NotesTab = () => (
         </li>
         <li>
           <b>No electric vehicle can give you seven seats with captain&rsquo;s chairs.</b> The EV9, Rivian R1S,
-          Tesla Model X, Volvo EX90 and Ionic 9 all have two-seat third rows, so captain&rsquo;s chairs cap them
-          at six. It is a structural limit of the segment, not a trim choice.
+          Tesla Model X, Volvo EX90, Hyundai Ioniq 9, Cadillac Vistiq and VW ID. Buzz all pair captain&rsquo;s
+          chairs with a two-seat third row; the seven-seat version of each swaps in a bench. It is a structural
+          limit of the segment, not a trim choice. All seven are priced below as six-seaters, so you can see
+          what the missing seat costs.
         </li>
         <li>
           <b>Leasing does not work at your mileage.</b> Every offer caps you at 10,000 miles a year. At 25,000
@@ -87,9 +89,12 @@ const NotesTab = () => (
           mile or $11,250 at Kia&rsquo;s $0.25 &mdash; and you finish owning nothing.
         </li>
         <li>
-          <b>Buying older does not save money here.</b> A 2017 Sienna at $27,590 costs about $4,000 more over
-          five years than a 2025 at $40,499, because 22 mpg and $9,000 of maintenance on a van heading to
-          187,000 miles consume the entire saving.
+          <b>Buying older only saves money right at the bottom.</b> A 2017 Sienna at $27,590 still costs
+          about $4,000 more over five years than a 2025 at $40,499. But go far enough down &mdash; a 2016
+          Odyssey at $16,590 &mdash; and it wins outright at about $55.8k, cheaper than any Sienna on the
+          page, because there is almost no depreciation left to pay. What you are buying is a van that
+          finishes the five years at 220,000 miles with $13,000 budgeted for repairs. That is the whole
+          trade, and it is a real one.
         </li>
         <li>
           <b>Cost and reliability point in opposite directions at the bottom.</b> The cheapest option here is a
@@ -217,6 +222,44 @@ const NotesTab = () => (
       <b>Tahoe LS ships with a second-row bench.</b> Captain&rsquo;s chairs are an option on that trim, so
       confirm on the specific car before you get attached to it. The same applies to every Chevy and GMC
       full-size below Premier and Denali &mdash; see the note directly below.
+    </div>
+    </Note>
+
+    <Note title="Everything else that was checked" blurb="The full segment sweep, and what did not make the list">
+    <div className="note">
+      <b>The rule for getting on this page.</b> Three rows, seven seats or six with captain&rsquo;s chairs,
+      second-row captain&rsquo;s chairs available on some trim, sold in Texas, and under 100,000 miles if it is
+      used. Age is not a filter any more: a 2016 Odyssey is here because the reviews hold up and the price is
+      right. Every nameplate that clears that bar is now priced below, whether or not it wins.
+      <br />
+      <br />
+      <b>Ruled out on the second row &mdash; no captain&rsquo;s chairs at any trim.</b> Audi Q7 and Q8, whose
+      second row is a fixed three-place bench. Land Rover Discovery and Defender 130. Mitsubishi Outlander.
+      Ford Transit Connect and Mercedes Metris, which are commercial vans with bench seating. On the GM
+      crossovers the base trims (Traverse LS and equivalents) are bench-only, so the entries below start a trim
+      up.
+      <br />
+      <br />
+      <b>Ruled out on the third row.</b> Toyota Land Cruiser, which dropped the third row from the US car
+      entirely. Ineos Grenadier, a five-seater. Tesla Model Y, whose third row is for small children. Lexus GX
+      550, 28.6 inches and 17 mpg. Pre-2020 Highlanders and pre-2021 Sorentos, whose third rows are under 28
+      inches &mdash; the newer versions of both are on the list instead.
+      <br />
+      <br />
+      <b>Ruled out on price.</b> Cadillac Escalade IQ and Lexus LX 700h, both past $115,000. Tahoe High Country,
+      Yukon Denali Ultimate and Suburban High Country, all past $83,000 new. Their cheaper trims are here; if
+      you want one of those, buy it used.
+      <br />
+      <br />
+      <b>Ruled out on age or mileage.</b> Kia Sedona before 2018, Honda Odyssey before 2011, Toyota Sienna
+      before 2011, Chrysler Town &amp; Country: at a price worth paying they all arrive past 100,000 miles,
+      which puts them the wrong side of 225,000 by the end of five years. The Town &amp; Country is
+      mechanically the Grand Caravan that <b>is</b> on the list, so nothing is lost.
+      <br />
+      <br />
+      <b>One I could not price honestly.</b> The 2025 Armada was redesigned and I could not verify its
+      second-row and cargo figures, so the 2023 is here instead. If you like the shape, go and sit in the new
+      one before ruling either way.
     </div>
     </Note>
 
@@ -504,10 +547,13 @@ const NotesTab = () => (
 
     <Note title="Before you decide" blurb="The long-form caveats, one at a time">
     <p className="fine">
-      <b>Older cars lose on your mileage.</b> The 2017 Expedition at $24,990 has the second-lowest payment on
-      this page at $369, and lands at roughly $68.7k over five years &mdash; $10,000 worse than a brand-new
-      Sienna. At 17 mpg and 125,000 miles you&rsquo;d burn $22,059 in fuel alone. The 2023 Tahoe LS is worse
-      still at about $81.5k. Cheap purchase price stops mattering when you drive this much.
+      <b>Old and thirsty loses; old and frugal wins.</b> Those are two different bets and the page now holds
+      both. The 2017 Expedition at $24,990 lands at roughly $68.7k over five years &mdash; $10,000 worse than
+      a brand-new Sienna &mdash; because at 17 mpg and 125,000 miles you burn $22,059 in fuel alone. The 2023
+      Tahoe LS is worse still at about $81.5k. But the 2016 Odyssey at $16,590 and the 2019 Grand Caravan at
+      the same money come 4th and 7th cheapest on the whole list, because a $16,000 van has almost nothing
+      left to depreciate. Cheap purchase price stops mattering when the car drinks; it is decisive when it
+      doesn&rsquo;t.
     </p>
     <p className="fine">
       <b>Of the older options, the 2017 Sienna is the only defensible one.</b> $27,590, an $417 payment, and

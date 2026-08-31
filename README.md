@@ -1,8 +1,13 @@
 # Three-Row Family Vehicle Comparison
 
-A single-page React app that prices fifty-three specific three-row vehicles —
-every one available with second-row captain's chairs — over five years of
-ownership, and lets you sort and filter them on a phone.
+A single-page React app that prices one hundred and three specific three-row
+vehicles — every one available with second-row captain's chairs — over five
+years of ownership, and lets you sort and filter them on a phone.
+
+The list is a full sweep of the segment rather than a shortlist: every nameplate
+sold in Texas that can be had with captain's chairs is here, new and used, at
+any age, capped at 100,000 miles for the used ones. What was checked and left
+out, and why, is written down in the app's **Notes** tab.
 
 This is the only front end in this repository. Everything else that used to
 live here (the TEFA planner, the Iddings fall plan, the NBCA school paperwork)
@@ -142,9 +147,12 @@ drive-on beaches at Port Aransas, and a liking for the lifted AWD look.
 5. **Leasing does not work at this mileage.** Every offer caps at 10,000 miles a
    year. At 25,000 you end a three-year term 45,000 miles over — $6,750 in
    penalties at Toyota's $0.15/mile, $11,250 at Kia's $0.25 — and own nothing.
-6. **Buying older does not save money here.** A 2017 Sienna at $27,590 costs
-   about $4,000 more over five years than a 2025 at $40,499, because 22 mpg and
-   $9,000 of maintenance on a van heading to 187,000 miles eat the saving.
+6. **Buying older only saves money right at the bottom.** A 2017 Sienna at
+   $27,590 still costs about $4,000 more over five years than a 2025 at
+   $40,499. But a 2016 Odyssey at $16,590 wins outright at about $55.8k,
+   cheaper than any Sienna, because there is almost no depreciation left to
+   pay — and it finishes the five years at 220,000 miles with $13,000 budgeted
+   for repairs. Old and thirsty loses; old and frugal wins.
 7. **Cost and reliability point in opposite directions at the bottom.** The
    cheapest option is a Pacifica Hybrid at $21,990, and it is also the least
    reliable vehicle in the set.
@@ -177,6 +185,7 @@ repair costs, and the long-form caveats — lives in the app's **Notes** tab.
 | Figure | Source | Confidence |
 | --- | --- | --- |
 | Used prices and links | Carvana listings, 30 Aug 2026 | Actual cars |
+| Wider segment sweep | Trim MSRPs and market estimates | Trim-level, not a VIN |
 | New prices and links | Dealer inventory, San Antonio to Bryan | Actual cars |
 | Tahoe / Suburban / Yukon | 2026 MSRP by trim; used are market estimates | Trim-level, not a VIN |
 | Legroom, cargo, clearance | Manufacturer specs | Published |
@@ -210,7 +219,7 @@ src/
   App.jsx                      renders the one view
   index.css                    global reset
   vehicle-cost.css             all styling, scoped under .vehcost, mobile first
-  data/vehicles.js             the 53 listings, spec tables, and explainer copy
+  data/vehicles.js             the 103 listings, spec tables, and explainer copy
   lib/cost.js                  the five-year cost model
   components/
     VehicleCostView.jsx        app shell, Cars tab, sheets, cards
