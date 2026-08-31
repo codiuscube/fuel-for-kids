@@ -48,7 +48,8 @@ The default view, and the one built for a phone.
 | --- | --- |
 | Search | Matches name, year, mileage, drivetrain, body and condition — `sienna`, `hybrid`, `2024`, `awd` all work |
 | Sort sheet | Five-year cost, monthly payment, asking price, third-row legroom, cargo, MPG, reliability, resale |
-| Filter sheet | Condition, must-haves (AWD / 7 seats / 30+ mpg / minivan / SUV), max asking price, max monthly payment |
+| Filter sheet | Condition, must-haves (AWD / 7 seats / 30+ mpg / minivan / SUV), **more room than yours**, max asking price, max monthly payment |
+| More room than yours | Three sliders — second-row legroom, third-row legroom, cargo — each asking for a minimum *gain* over your current car rather than an absolute figure. `+5.0"` third row means five inches more than the 2017 Pathfinder, or whatever you have picked as yours on the Compare tab. Each slider stops at the biggest gain anything on the list actually offers, and greys out when nothing beats your car on that measure; swapping the comparison car pulls any filter now out of reach back down |
 | Filter pills | Every active filter shows as a chip under the toolbar; tap the × to drop just that one |
 | Gear icon | The assumptions — down payment, miles per year, fuel price, electricity rate, plug-in share, charger install, loan term |
 

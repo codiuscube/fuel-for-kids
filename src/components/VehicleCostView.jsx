@@ -56,6 +56,29 @@ const MUSTS = [
 const PRICE_MAX = 80000;
 const PMT_MAX = 1600;
 
+// The three "more room than yours" sliders. They filter on the gain over the
+// car selected on the Compare tab — the 2017 Pathfinder until you change it —
+// so the numbers stay meaningful when you swap the comparison car.
+const GAINS = [
+  { id: 'leg2', label: '2nd row legroom', short: '2nd row', unit: '"', step: 0.5, cap: 8 },
+  { id: 'leg3', label: '3rd row legroom', short: '3rd row', unit: '"', step: 0.5, cap: 12 },
+  { id: 'cargo', label: 'Cargo behind 3rd row', short: 'cargo', unit: ' cu ft', step: 1, cap: 30 },
+];
+
+// A gain of +1.5" reads better as +1.5"; +2.0 cu ft reads better as +2.
+const gainLabel = (g, v) => `+${g.step < 1 ? v.toFixed(1) : Math.round(v)}${g.unit}`;
+
+// The best gain any vehicle actually offers over your car, and the furthest the
+// slider can go and still match something: that best, rounded *down* to a step.
+// Anything beyond it empties the list, so the thumb never goes there — a max of
+// 0 means nothing on offer beats your car on that measure.
+const gainRange = (g, base) => {
+  const best = Math.max(...OPTIONS.map((o) => o[g.id])) - base[g.id];
+  // The 1e-9 keeps an exact 8.0" best from floating-point rounding down to 7.5".
+  const stops = Math.floor(best / g.step + 1e-9);
+  return { best, max: Math.max(0, Math.min(g.cap, stops * g.step)) };
+};
+
 // $58,231 reads as five separate digits on a phone; $58.2k reads as one number.
 const shortMoney = (v) => (v >= 10000 ? `$${(v / 1000).toFixed(1)}k` : money(v));
 
@@ -65,13 +88,15 @@ const bodyLabel = (cat) => (cat === 'van' ? 'Minivan' : 'SUV');
 // finance note and drivetrain text all live in different fields.
 const haystack = (o) => `${o.n} ${o.y} ${o.offer} ${o.awd} ${o.cat} ${o.cond}`.toLowerCase();
 
-const passesFilters = (o, F) => {
+const passesFilters = (o, F, base) => {
   if (F.cat !== 'all' && o.cat !== F.cat) return false;
   if (F.cond !== 'all' && o.cond !== F.cond) return false;
   if (F.must.awd && !hasAWD(o)) return false;
   if (F.must.s7 && o.seats < 7) return false;
   if (F.must.eff && !isEff(o)) return false;
   if (o.sticker > F.maxp) return false;
+  // A hair under, to keep floating point from rejecting an exact match.
+  if (GAINS.some((g) => F.gain[g.id] > 0 && o[g.id] - base[g.id] < F.gain[g.id] - 0.001)) return false;
   return true;
 };
 
@@ -80,7 +105,8 @@ const activeFilterCount = (F) =>
   (F.cond !== 'all' ? 1 : 0) +
   Object.values(F.must).filter(Boolean).length +
   (F.maxp < PRICE_MAX ? 1 : 0) +
-  (F.maxm < PMT_MAX ? 1 : 0);
+  (F.maxm < PMT_MAX ? 1 : 0) +
+  GAINS.filter((g) => F.gain[g.id] > 0).length;
 
 // ---------------------------------------------------------------------------
 // Chrome
@@ -353,7 +379,7 @@ const CostCard = ({ o, c, base, rank, badge, open, onToggle }) => {
 const VehicleCostView = () => {
   const [tab, setTab] = useState('cars');
   const [S, setS] = useState(DEFAULT_ASSUMPTIONS);
-  const [F, setF] = useState({ ...DEFAULT_FILTERS, maxm: PMT_MAX, q: '' });
+  const [F, setF] = useState({ ...DEFAULT_FILTERS, gain: { ...DEFAULT_FILTERS.gain }, maxm: PMT_MAX, q: '' });
   const [base, setBase] = useState(() => baseFromSpec(SPECS[SPECS.length - 1]));
   const [baseSel, setBaseSel] = useState(`s${SPECS.length - 1}`);
   const [why, setWhy] = useState(null);
@@ -377,9 +403,9 @@ const VehicleCostView = () => {
   const matching = useMemo(() => {
     const q = F.q.trim().toLowerCase();
     return priced.filter(
-      (r) => passesFilters(r.o, F) && r.c.m <= F.maxm && (!q || haystack(r.o).includes(q)),
+      (r) => passesFilters(r.o, F, base) && r.c.m <= F.maxm && (!q || haystack(r.o).includes(q)),
     );
-  }, [priced, F]);
+  }, [priced, F, base]);
 
   const sortDef = SORTS.find((s) => s.id === F.sort) || SORTS[0];
   const rows = useMemo(
@@ -394,6 +420,23 @@ const VehicleCostView = () => {
   const topKey = top ? `${top.o.n} ${top.o.y}` : null;
   const cheapest = matching.length ? matching.slice().sort((a, b) => a.c.net - b.c.net)[0] : null;
   const nFilters = activeFilterCount(F);
+
+  // Swapping the comparison car moves every gain: a filter that made sense
+  // against the Pathfinder can be beyond anything on the list against a
+  // Suburban, so pull each slider back to what is still reachable.
+  const gainRanges = useMemo(() => GAINS.map((g) => gainRange(g, base)), [base]);
+  useEffect(() => {
+    setF((p) => {
+      const next = {};
+      let changed = false;
+      GAINS.forEach((g, i) => {
+        const v = Math.min(p.gain[g.id], gainRanges[i].max);
+        next[g.id] = v;
+        if (v !== p.gain[g.id]) changed = true;
+      });
+      return changed ? { ...p, gain: next } : p;
+    });
+  }, [gainRanges]);
 
   const setBaseFromSelect = (v) => {
     setBaseSel(v);
@@ -416,7 +459,15 @@ const VehicleCostView = () => {
     setF((p) => ({ ...p, must: { ...p.must, [id]: !p.must[id] } }));
   };
   const mustOn = (id) => (id === 'van' || id === 'suv' ? F.cat === id : !!F.must[id]);
-  const resetFilters = () => setF((p) => ({ ...DEFAULT_FILTERS, maxm: PMT_MAX, q: p.q, sort: p.sort }));
+  const resetFilters = () =>
+    setF((p) => ({
+      ...DEFAULT_FILTERS,
+      gain: { ...DEFAULT_FILTERS.gain },
+      maxm: PMT_MAX,
+      q: p.q,
+      sort: p.sort,
+    }));
+  const setGain = (id, v) => setF((p) => ({ ...p, gain: { ...p.gain, [id]: v } }));
 
   return (
     <WhyContext.Provider value={whyCtx}>
@@ -523,6 +574,11 @@ const VehicleCostView = () => {
                       Under {money(F.maxm)}/mo <CloseIcon />
                     </button>
                   )}
+                  {GAINS.filter((g) => F.gain[g.id] > 0).map((g) => (
+                    <button key={g.id} type="button" className="fpill" onClick={() => setGain(g.id, 0)}>
+                      {gainLabel(g, F.gain[g.id])} {g.short} <CloseIcon />
+                    </button>
+                  ))}
                   <button type="button" className="fpill clear" onClick={resetFilters}>
                     Clear all
                   </button>
@@ -670,6 +726,36 @@ const VehicleCostView = () => {
             <h3>Must have</h3>
             {MUSTS.map((m) => (
               <Toggle key={m.id} on={mustOn(m.id)} label={m.label} hint={m.hint} onClick={() => setMust(m.id)} />
+            ))}
+          </div>
+
+          <div className="fgroup">
+            <h3>More room than yours</h3>
+            <p className="fine gainnote">
+              Measured against the {base.name}. Change the car you are comparing to on the Compare tab.
+            </p>
+            {GAINS.map((g, i) => (
+              <div key={g.id} className="gainrow">
+                <label htmlFor={`gain-${g.id}`}>
+                  {g.label}
+                  <output>{F.gain[g.id] > 0 ? gainLabel(g, F.gain[g.id]) : 'Any'}</output>
+                </label>
+                <input
+                  id={`gain-${g.id}`}
+                  type="range"
+                  min={0}
+                  max={gainRanges[i].max || g.step}
+                  step={g.step}
+                  value={F.gain[g.id]}
+                  disabled={!gainRanges[i].max}
+                  onChange={(e) => setGain(g.id, parseFloat(e.target.value))}
+                />
+                <span className="fine">
+                  {gainRanges[i].max
+                    ? `Most on offer is ${gainLabel(g, gainRanges[i].best)}`
+                    : 'Nothing on the list beats yours here'}
+                </span>
+              </div>
             ))}
           </div>
 

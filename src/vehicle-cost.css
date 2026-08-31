@@ -768,6 +768,40 @@
 .vehcost .fgroup .fine {
   margin: 8px 0 0;
 }
+.vehcost .fgroup .gainnote {
+  margin: -3px 0 4px;
+}
+
+/* One "more room than yours" slider: its own label, value and headroom note. */
+.vehcost .gainrow {
+  padding: 10px 0;
+}
+.vehcost .gainrow > label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+.vehcost .gainrow > label output {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.vehcost .gainrow > .fine {
+  display: block;
+  margin-top: 5px;
+}
+/* No vehicle beats your car on this measure, so there is nothing to ask for. */
+.vehcost .gainrow:has(input:disabled) {
+  opacity: 0.5;
+}
+.vehcost .gainrow input:disabled {
+  cursor: default;
+}
 
 .vehcost .toggle {
   display: flex;
