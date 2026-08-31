@@ -124,5 +124,6 @@ export const baseFromSpec = (r) => ({
   frunk: r[7] || 0,
 });
 
-export const LGMAX = 43.5;
+// The Ford Flex's 44.3in second row is the longest measurement on the page.
+export const LGMAX = 44.5;
 export const CGMAX = 45;

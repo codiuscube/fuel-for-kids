@@ -66,7 +66,10 @@ const NotesTab = () => (
         <li>
           <b>Minivans give more space per dollar than SUVs, without exception.</b> The cheapest seven-seat SUV
           near you starts at $59,699 and offers five fewer inches of third-row legroom and thirteen fewer cubic
-          feet than a Sienna costing $12,000 less. No SUV on this page beats a Sienna on five-year cost.
+          feet than a Sienna costing $12,000 less. No SUV on this page beats a Sienna on five-year cost. The one
+          thing an SUV wins outright is absolute boot space &mdash; a Suburban&rsquo;s 41.5 cu ft is the most
+          here &mdash; but a used Suburban asks about $16,000 more than a used Carnival for that one extra
+          cubic foot.
         </li>
         <li>
           <b>Resale is the largest single lever, bigger than price.</b> The Sienna loses only 29% over five
@@ -75,8 +78,10 @@ const NotesTab = () => (
         </li>
         <li>
           <b>No electric vehicle can give you seven seats with captain&rsquo;s chairs.</b> The EV9, Rivian R1S,
-          Tesla Model X, Volvo EX90 and Ionic 9 all have two-seat third rows, so captain&rsquo;s chairs cap them
-          at six. It is a structural limit of the segment, not a trim choice.
+          Tesla Model X, Volvo EX90, Hyundai Ioniq 9, Cadillac Vistiq and VW ID. Buzz all pair captain&rsquo;s
+          chairs with a two-seat third row; the seven-seat version of each swaps in a bench. It is a structural
+          limit of the segment, not a trim choice. All seven are priced below as six-seaters, so you can see
+          what the missing seat costs.
         </li>
         <li>
           <b>Leasing does not work at your mileage.</b> Every offer caps you at 10,000 miles a year. At 25,000
@@ -84,9 +89,12 @@ const NotesTab = () => (
           mile or $11,250 at Kia&rsquo;s $0.25 &mdash; and you finish owning nothing.
         </li>
         <li>
-          <b>Buying older does not save money here.</b> A 2017 Sienna at $27,590 costs about $4,000 more over
-          five years than a 2025 at $40,499, because 22 mpg and $9,000 of maintenance on a van heading to
-          187,000 miles consume the entire saving.
+          <b>Buying older only saves money right at the bottom.</b> A 2017 Sienna at $27,590 still costs
+          about $4,000 more over five years than a 2025 at $40,499. But go far enough down &mdash; a 2016
+          Odyssey at $16,590 &mdash; and it wins outright at about $55.8k, cheaper than any Sienna on the
+          page, because there is almost no depreciation left to pay. What you are buying is a van that
+          finishes the five years at 220,000 miles with $13,000 budgeted for repairs. That is the whole
+          trade, and it is a real one.
         </li>
         <li>
           <b>Cost and reliability point in opposite directions at the bottom.</b> The cheapest option here is a
@@ -212,7 +220,110 @@ const NotesTab = () => (
       <br />
       <br />
       <b>Tahoe LS ships with a second-row bench.</b> Captain&rsquo;s chairs are an option on that trim, so
-      confirm on the specific car before you get attached to it.
+      confirm on the specific car before you get attached to it. The same applies to every Chevy and GMC
+      full-size below Premier and Denali &mdash; see the note directly below.
+    </div>
+    </Note>
+
+    <Note title="Everything else that was checked" blurb="The full segment sweep, and what did not make the list">
+    <div className="note">
+      <b>The rule for getting on this page.</b> Three rows, seven seats or six with captain&rsquo;s chairs,
+      second-row captain&rsquo;s chairs available on some trim, sold in Texas, and under 100,000 miles if it is
+      used. Age is not a filter any more: a 2016 Odyssey is here because the reviews hold up and the price is
+      right. Every nameplate that clears that bar is now priced below, whether or not it wins.
+      <br />
+      <br />
+      <b>Ruled out on the second row &mdash; no captain&rsquo;s chairs at any trim.</b> Audi Q7 and Q8, whose
+      second row is a fixed three-place bench. Land Rover Discovery and Defender 130. Mitsubishi Outlander.
+      Ford Transit Connect and Mercedes Metris, which are commercial vans with bench seating. On the GM
+      crossovers the base trims (Traverse LS and equivalents) are bench-only, so the entries below start a trim
+      up.
+      <br />
+      <br />
+      <b>Ruled out on the third row.</b> Toyota Land Cruiser, which dropped the third row from the US car
+      entirely. Ineos Grenadier, a five-seater. Tesla Model Y, whose third row is for small children. Lexus GX
+      550, 28.6 inches and 17 mpg. Pre-2020 Highlanders and pre-2021 Sorentos, whose third rows are under 28
+      inches &mdash; the newer versions of both are on the list instead.
+      <br />
+      <br />
+      <b>Ruled out on price.</b> Cadillac Escalade IQ and Lexus LX 700h, both past $115,000. Tahoe High Country,
+      Yukon Denali Ultimate and Suburban High Country, all past $83,000 new. Their cheaper trims are here; if
+      you want one of those, buy it used.
+      <br />
+      <br />
+      <b>Ruled out on age or mileage.</b> Kia Sedona before 2018, Honda Odyssey before 2011, Toyota Sienna
+      before 2011, Chrysler Town &amp; Country: at a price worth paying they all arrive past 100,000 miles,
+      which puts them the wrong side of 225,000 by the end of five years. The Town &amp; Country is
+      mechanically the Grand Caravan that <b>is</b> on the list, so nothing is lost.
+      <br />
+      <br />
+      <b>The one I had wrong.</b> I first left the redesigned Armada off because I could not verify its
+      figures. They check out and it is now on the list, both generations: Nissan added nearly five inches to
+      the third row (28.4 to 32.9) and four cubic feet behind it (16.5 to 20.4). See the note below &mdash; it
+      is the only car here holding a Texas award.
+    </div>
+    </Note>
+
+    <Note title="The Armada won SUV of Texas, twice" blurb="A local award, on the one car the brief was already asking for">
+    <div className="note">
+      <b>The Texas Auto Writers Association named the Armada PRO-4X the 2026 SUV of Texas</b> at the 32nd Texas
+      Truck Rodeo, held at Eagle Canyon Raceway in Decatur in September 2025. The 2025 PRO-4X had taken
+      Full-Size SUV of Texas the year before, so it is back-to-back. Of every award on this page it is the only
+      one handed out by people who drove the cars on Texas roads and dirt, which is worth more here than a
+      national gong.
+      <br />
+      <br />
+      <b>It also happens to match the brief.</b> The PRO-4X is the lifted, four-wheel-drive, off-road-trimmed
+      version, with 9.6 inches of clearance &mdash; the most of any petrol car on this list &mdash; which is
+      the Port Aransas beach-run answer as well as the look. And the redesign fixed the Armada's worst number:
+      the old third row was 28.4 inches, a jump seat, and the new one is 32.9.
+      <br />
+      <br />
+      <b>What it costs you to say yes.</b> 17 mpg, and $74,300 before destination for the PRO-4X. At 25,000
+      miles a year that is roughly $22,000 of petrol over five years and a five-year total of about $107k
+      &mdash; third dearest on the page, behind only the Defender 130 and the Escalade ESV. The SL 4x4 is on
+      the list too at $7,770 less for the same body, engine and third row, and comes out near $100k. The award
+      is real; so is the fuel bill.
+      <br />
+      <br />
+      <b>Check the second row before you fall for one.</b> Captain's chairs are an option on the PRO-4X, not
+      standard, so the seven-seat car you want is a specific build rather than a trim you can order blind.
+    </div>
+    </Note>
+
+    <Note title="The GM full-size three" blurb="Tahoe, Suburban, Yukon: the most room and the highest running cost">
+    <div className="note">
+      <b>They are the same truck three ways.</b> Tahoe and Yukon are one vehicle with different badges &mdash;
+      42.0 inches of second-row legroom, 34.9 in the third, 25.5 cu ft behind it. Suburban and Yukon XL are the
+      long-wheelbase version of that same truck: the third row grows to 36.7 inches and the boot to{' '}
+      <b>41.5 cu ft, the most on this page</b>. Only the Kia Carnival comes close, at 40.2, and only the
+      Sienna gives the third row more legroom.
+      <br />
+      <br />
+      <b>Captain&rsquo;s chairs are an option, not a trim.</b> Buckets are standard on Tahoe and Suburban
+      Premier and High Country, on Suburban RST, on Yukon SLT and Denali. On LS, LT and Yukon Elevation they
+      are a box someone had to tick when the car was ordered, so check the specific VIN. That is why the used
+      picks here sit on LT and above.
+      <br />
+      <br />
+      <b>The running cost is the catch, and at 25,000 miles a year it is a big one.</b> 17 mpg means about
+      $22,000 of petrol over five years &mdash; roughly $11,600 more than a 36 mpg Sienna &mdash; and GM
+      full-size repairs average $744 a year, more than any minivan or Toyota here. A new Tahoe LT lands near
+      $94k over five years against about $58k for a new Sienna. You are buying the space, and the space costs
+      about $35,000.
+      <br />
+      <br />
+      <b>The 3.0L Duramax diesel does less than you would hope.</b> It is rated 22 mpg combined in four-wheel
+      drive against 17 for the 5.3 V8, but diesel is priced 22% above petrol, so 22 mpg of diesel costs nearly
+      what 17 mpg of petrol does &mdash; about $1,300 saved on fuel across five years, which the higher asking
+      price hands straight back. The used 2023 LT Duramax below finishes within $250 of the petrol LT. Buy it
+      for the torque and the towing, not the fuel bill &mdash; or, if diesel is running close to petrol when
+      you buy, change the petrol price in Assumptions and look again.
+      <br />
+      <br />
+      <b>What to skip.</b> Yukon Denali Ultimate and Tahoe High Country run past $83,000 new, which is beyond
+      the price filter and well past the point where a Sequoia or Grand Highlander makes more sense. The used
+      Denali below is the loaded version worth looking at.
     </div>
     </Note>
 
@@ -464,10 +575,13 @@ const NotesTab = () => (
 
     <Note title="Before you decide" blurb="The long-form caveats, one at a time">
     <p className="fine">
-      <b>Older cars lose on your mileage.</b> The 2017 Expedition at $24,990 has the second-lowest payment on
-      this page at $369, and lands at roughly $68.7k over five years &mdash; $10,000 worse than a brand-new
-      Sienna. At 17 mpg and 125,000 miles you&rsquo;d burn $22,059 in fuel alone. The 2023 Tahoe LS is worse
-      still at about $81.5k. Cheap purchase price stops mattering when you drive this much.
+      <b>Old and thirsty loses; old and frugal wins.</b> Those are two different bets and the page now holds
+      both. The 2017 Expedition at $24,990 lands at roughly $68.7k over five years &mdash; $10,000 worse than
+      a brand-new Sienna &mdash; because at 17 mpg and 125,000 miles you burn $22,059 in fuel alone. The 2023
+      Tahoe LS is worse still at about $81.5k. But the 2016 Odyssey at $16,590 and the 2019 Grand Caravan at
+      the same money come 4th and 7th cheapest on the whole list, because a $16,000 van has almost nothing
+      left to depreciate. Cheap purchase price stops mattering when the car drinks; it is decisive when it
+      doesn&rsquo;t.
     </p>
     <p className="fine">
       <b>Of the older options, the 2017 Sienna is the only defensible one.</b> $27,590, an $417 payment, and
