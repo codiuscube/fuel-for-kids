@@ -142,8 +142,15 @@ export const OPTIONS=[
   awd:"4WD standard on this build",mpg:17,mpgLab:"17",ins:12500,mnt:9000,res:22000,rel:3.0,cln:3.0,leg2:42.0,leg3:36.7,cargo:41.5,
   url:"https://www.carvana.com/cars/gmc-yukon-xl",lt:"Browse listings"},
  {n:"GMC Yukon Denali 4WD",y:"2024 \u00b7 ~41k mi \u00b7 6.2L V8",cat:"suv",cond:"used",seats:7,sticker:61590,cash:0,apr:.075,offer:"Air ride, 16 mpg",
-  awd:"4WD standard on this build",mpg:16,mpgLab:"16",ins:13500,mnt:7500,res:29000,rel:3.0,cln:3.0,leg2:42.0,leg3:34.9,cargo:25.5,
+  awd:"4WD standard on this build",mpg:16,mpgLab:"16",ins:13500,mnt:7500,res:29000,rel:2.5,cln:3.0,leg2:42.0,leg3:34.9,cargo:25.5,
   url:"https://www.carvana.com/cars/gmc-yukon",lt:"Browse listings"},
+ // A real Facebook Marketplace car, and the only private-party listing here.
+ // Priced, rated and fuelled as it actually sits: 6.2L L87 under recall 25V274,
+ // 87k miles on the clock, and a 6" lift on 35s that costs mpg and resale
+ // rather than adding either. See the note "The lifted AT4" for the working.
+ {n:"GMC Yukon AT4 4WD",y:"2022 \u00b7 87k mi \u00b7 6\" lift on 35s \u00b7 $51,500",cat:"suv",cond:"used",seats:7,sticker:51500,cash:0,apr:.080,offer:"Private seller \u00b7 check for buckets",
+  awd:"4WD standard on AT4",mpg:14,mpgLab:"14",ins:13500,mnt:13000,res:15000,rel:2.0,cln:3.0,leg2:42.0,leg3:34.9,cargo:25.5,
+  url:"https://www.facebook.com/marketplace/item/1037812272478124/",lt:"View this listing"},
  {n:"Chevy Tahoe LT 4WD",y:"2026 \u00b7 4WD, buckets optional \u00b7 $68,995",cat:"suv",cond:"new",seats:7,sticker:68995,cash:0,apr:.059,offer:"GM 5.9% for 60 months",
   awd:"4WD standard on this build",mpg:17,mpgLab:"17",ins:13500,mnt:5000,res:39000,rel:3.0,cln:3.0,leg2:42.0,leg3:34.9,cargo:25.5,
   url:"https://www.chevrolet.com/suvs/tahoe",lt:"Build and find one"},
@@ -486,7 +493,7 @@ export const GC=[[/Woodland/,6.9],[/Sienna/,6.3],[/Odyssey/,4.9],[/Pacifica/,5.1
  [/Telluride X-Line/,8.4],[/Telluride Hybrid/,8.0],[/Telluride/,8.4],[/Palisade/,7.9],
  [/Grand Highlander/,8.0],[/Pilot TrailSport/,8.3],[/Ascent/,8.7],[/CX-90/,8.0],
  [/Highlander Hybrid/,8.0],[/EV9/,7.8],[/R1S/,9.9],[/Model X/,5.4],[/Defender/,8.5],
- [/Grand Wagoneer/,8.3],[/Wagoneer/,8.3],[/Tahoe|Suburban|Yukon/,8.0],[/Sequoia/,8.6],[/Expedition/,8.6],[/Pathfinder/,7.0],
+ [/Grand Wagoneer/,8.3],[/Wagoneer/,8.3],[/Yukon AT4/,9.0],[/Tahoe|Suburban|Yukon/,8.0],[/Sequoia/,8.6],[/Expedition/,8.6],[/Pathfinder/,7.0],
  [/CX-9/,8.8],[/Traverse/,7.6],[/Acadia/,8.0],[/Enclave/,7.6],[/Atlas/,8.0],[/Explorer/,8.2],
  [/Grand Cherokee/,8.5],[/Durango/,8.1],[/Armada PRO-4X/,9.6],[/Armada/,9.2],[/Santa Fe/,8.2],[/Sorento/,8.2],[/Flex/,5.9],
  [/Escalade/,8.0],[/Navigator/,9.0],[/QX80/,9.2],[/QX60/,7.0],[/MDX/,7.3],[/Lexus TX/,8.0],
@@ -606,7 +613,17 @@ export const CHECKS = [
       'Second row: captain’s chairs or a bench? Especially Wagoneer Series II, Carnival LX and LXS, and any Tahoe, Suburban or Yukon below Premier / Denali — GM sells buckets as an option, not a trim.',
       'Accident history, number of owners, and how much factory warranty remains.',
       'Tyre and brake life — a set of tyres on any of these runs $900–$1,400.',
-      'Open recalls, free to check by VIN at nhtsa.gov.',
+      'Open recalls, free to check by VIN at nhtsa.gov. On the 2022 Yukon AT4 there are two that matter: 25V274, the 6.2L L87 engine, and 26V085, the ten-speed transmission. Ask the seller for proof both were done.',
+    ],
+  },
+  {
+    g: 'On a lifted or modified car',
+    items: [
+      'Ask for the invoice for the lift. Who fitted it, when, and at what mileage.',
+      'Was the speedometer recalibrated for the taller tyres? If not the odometer under-reads by about 6%, and the car has more miles on it than the clock says.',
+      'Tell your insurer about the modification before you buy, not after. Undeclared aftermarket parts are a common reason a claim gets reduced.',
+      'Check ball joints, wheel bearings, CV boots and tyre wear pattern. A lift loads all four harder, and uneven wear on a $1,600 set of tyres is the tell.',
+      'Ask what remains of the factory powertrain warranty, and whether the dealer has ever pushed back on a claim because of the lift.',
     ],
   },
   {
@@ -633,6 +650,8 @@ export const SOURCE_ROWS = [
   ['Used prices and links', 'Carvana listings, 30 Aug 2026', 'Actual cars'],
   ['New prices and links', 'Dealer inventory, San Antonio to Bryan', 'Actual cars'],
   ['Tahoe / Suburban / Yukon', '2026 MSRP by trim; used are market estimates', 'Trim-level, not a VIN'],
+  ['2022 Yukon AT4', 'The Facebook Marketplace listing, as posted', 'One actual car'],
+  ['Recalls 25V274, 26V085', 'NHTSA recall API, by make/model/year', 'Federal record'],
   ['Legroom, cargo, clearance', 'Manufacturer specs', 'Published'],
   ['MPG and MPGe', 'EPA combined ratings', 'Published'],
   ['Finance offers', 'Kia, Toyota, GM, August 2026', 'Expire 31 Aug'],

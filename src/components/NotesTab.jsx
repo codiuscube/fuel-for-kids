@@ -327,6 +327,65 @@ const NotesTab = () => (
     </div>
     </Note>
 
+    <Note title="The lifted AT4, and why it finishes 104th" blurb="The one Facebook car on the list, priced as it actually sits">
+    <div className="note">
+      <b>This is the 2022 Yukon AT4 from Facebook Marketplace</b> &mdash; 87,000 miles, 6.2L V8, professionally
+      lifted six inches on 35-inch tyres, $51,500. It is the only private-party listing on the page, and it is
+      on the list because you asked for it, not because it scored its way on. Run through the same model as
+      everything else it lands <b>104th of 107 on five-year cost at $106,476</b>, about $915 a month, and second
+      from last on the recommendation. Here is where that comes from, because none of it is the lift being ugly.
+      <br />
+      <br />
+      <b>The engine is under an open safety recall, and the fix is under investigation.</b> NHTSA campaign{' '}
+      <b>25V274</b> covers 2021&ndash;2024 Yukons with the 6.2L L87 for connecting-rod and crankshaft defects
+      that lead to engine failure; the remedy is an inspection, then either heavier 0W-40 oil or a whole new
+      engine. In August 2026 NHTSA opened engineering analysis <b>EA26005</b> because engines were still failing
+      after that remedy. This exact car, this exact engine. There is a second one too: <b>26V085</b>, a 2026
+      recall on the 2022 ten-speed, where the transmission control valve can lock the rear wheels. Both are free
+      to fix and both are checkable by VIN in about thirty seconds &mdash; but they are why this car carries a
+      2.0 reliability score instead of the 3.0 the rest of the GM full-size group gets. The 2024 Denali on the
+      list runs the same engine, so I have marked it down to 2.5 as well.
+      <br />
+      <br />
+      <b>The lift costs mpg and it does not buy ground clearance.</b> A 4WD 6.2 is EPA-rated 16 combined; on a
+      six-inch lift and 35s, 14 is the honest number, and at your 25,000 miles a year those two mpg are{' '}
+      <b>$3,350 of petrol over five years</b>. The clearance is the part worth being clear about: a suspension
+      lift raises the body and the frame, not the axles. The lowest thing under a Yukon is the differential, and
+      its height is set by the tyre radius. Going from the stock 33-inch tyre to a 35 lifts the diff about an
+      inch. So the car sits six inches taller and clears about one inch more &mdash; 9.0 inches against 8.0
+      stock, which is what the card shows. The stance is real; the capability mostly is not. The Armada PRO-4X
+      offers 9.6 inches with no modifications at all.
+      <br />
+      <br />
+      <b>The price is above market, and the lift does not add to it.</b> Kelley Blue Book puts a 2022 AT4 around
+      $45,300 in resale condition at typical mileage, and 87,000 is well above typical. Modifications almost
+      never return their cost on resale &mdash; they narrow the buyer pool instead &mdash; so the $51,500 is
+      being asked partly for the lift, and the lift is the part the next buyer will discount. That flows
+      straight into the biggest line on the card: $43,400 of depreciation.
+      <br />
+      <br />
+      <b>The mileage is the quiet one.</b> At 25,000 miles a year you would hand this car back at roughly{' '}
+      <b>212,000 miles</b>. That is why maintenance is set at $13,000, the same as the 2018 Tahoe on the list
+      and near the top of the page. And 35-inch tyres are a $1,600&ndash;$2,000 set rather than $1,200, wearing
+      faster because of the alignment a lift lives with.
+      <br />
+      <br />
+      <b>What it actually costs against its own siblings.</b> The unlifted 2023 Yukon SLT, a year newer with
+      32,000 fewer miles, comes in <b>$18,400 cheaper</b> over five years. A brand-new 2026 Yukon Elevation, with
+      a warranty and no recall history to chase, is <b>$7,400 cheaper</b>. The 2025 Sienna at the top of the
+      recommendation is $49,100 cheaper. If what you want is the GM full-size, one of the other seven on this
+      page gets you there for less.
+      <br />
+      <br />
+      <b>Two things I could not verify from the listing.</b> It does not say whether the second row is captain&rsquo;s
+      chairs or a bench &mdash; buckets are an option on the AT4, not standard equipment, so the seven-seat car
+      is a specific build. I have listed it as seven seats on the assumption it has them; if it is a bench it
+      does not belong on this list at all. And the odometer: 35s are about 6% taller than stock, so unless the
+      speedometer was recalibrated when the lift went on, the clock has been under-counting. The true mileage is
+      higher than 87,000 by 6% of however far it has run on those tyres.
+    </div>
+    </Note>
+
     <Note title="Leasing, and why it fails here" blurb="Every lease caps you at 10,000 miles a year">
     <p className="fine" style={{ marginBottom: '10px' }}>
       Every advertised lease caps you at 10,000 miles a year. You drive 25,000, so a 36-month lease runs
