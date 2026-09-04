@@ -281,13 +281,50 @@ const NotesTab = () => (
       <br />
       <b>What it costs you to say yes.</b> 17 mpg, and $74,300 before destination for the PRO-4X. At 25,000
       miles a year that is roughly $22,000 of petrol over five years and a five-year total of about $107k
-      &mdash; third dearest on the page, behind only the Defender 130 and the Escalade ESV. The SL 4x4 is on
-      the list too at $7,770 less for the same body, engine and third row, and comes out near $100k. The award
-      is real; so is the fuel bill.
+      &mdash; still near the top of the page on cost. The SL 4x4 is on the list too at $7,770 less for the same
+      body, engine and third row. As of 3 Sep 2026 Nissan is also advertising the base SV 4x2 at $58,840 with
+      2.9% for 72 months, or $3,500 customer cash &mdash; not both. That is the cheapest new Armada on the
+      page, and it is still rear-drive. Captain&rsquo;s chairs are an option on SV and PRO-4X, not standard.
+      The award is real; so is the fuel bill.
       <br />
       <br />
       <b>Check the second row before you fall for one.</b> Captain's chairs are an option on the PRO-4X, not
       standard, so the seven-seat car you want is a specific build rather than a trim you can order blind.
+    </div>
+    </Note>
+
+    <Note title="The Armada SV vs the EV9 fire sale" blurb="September 2026 offers, and three Carvana cars">
+    <div className="note">
+      <b>Nissan&rsquo;s cash does not stack with 2.9%.</b> On 3 Sep 2026 the Armada page for zip 78253 showed
+      $58,840 starting MSRP, $3,500 customer cash, $2,000 NMAC loyalty, and 2.9% for 72 months. The $3,500 is
+      not compatible with the special APR or the advertised lease. Loyalty only applies if you already own or
+      lease a Nissan and finance with NMAC. Grad and military are $500 each on top when you qualify. The
+      advertised lease is $819 a month plus $6,219 due at signing on an SV 4x2 &mdash; $35,703 pretax over 36
+      months, before the 10,000-mile cap blows up at your mileage.
+      <br />
+      <br />
+      <b>Kia is in a different incentive tier.</b> Zip 78130 showed $10,000 customer cash on a 2026 EV9, or 0%
+      for 60 months plus $5,000 APR bonus cash, or $439 a month plus $3,999 down on a Light Long Range RWD.
+      The 0% path is the one on the card: Light Long Range nets $52,900 over 60 months with no interest, Land
+      AWD nets $63,900. Taking the full $10,000 and a bank rate costs more if you qualify for 0%. The lease
+      cash-out is $19,803 over 36 months, about $15,900 under the Armada lease, and still a bad idea at 25,000
+      miles a year because Kia charges $0.25 a mile over.
+      <br />
+      <br />
+      <b>Three Carvana cars from the same shop.</b> A 2024 EV9 Land AWD at $45,990 with 15,489 miles (VIP second
+      row, Ocean Blue) is new-Light money for last year&rsquo;s loaded trim &mdash; confirm in writing whether
+      Kia&rsquo;s 10/100 powertrain still applies, because subsequent owners often drop to 5/60. A 2021
+      Suburban Z71 at $44,990 with 82,000 miles is the real full-size boot (41.5 cu ft) with no factory warranty
+      left; buckets are not guaranteed on Z71. A 2020 Expedition MAX XLT at $32,990 with 80,000 miles is the
+      cheapest eight-seat hauler here by a wide margin, with $9,200 in factory options on the listing, and the
+      same second-row question. Both trucks belong on a PPI, not a one-click buy.
+      <br />
+      <br />
+      <b>These are not the same job.</b> The Armada is a body-on-frame full-size that tows 8,500 lb and seats
+      eight with a bench, but it is Tahoe-sized, not Suburban-sized. The EV9 is a unibody six-seater with
+      captains, 20 cu ft behind the third row, and 2,000&ndash;5,000 lb of tow depending on trim. If you need
+      the truck, the $32,990 MAX is the price winner and the new Armada is the warranty winner. If you can
+      charge at home and can live with six seats, the EV9 offer is the one that actually moved.
     </div>
     </Note>
 
@@ -389,7 +426,7 @@ const NotesTab = () => (
     <Note title="Leasing, and why it fails here" blurb="Every lease caps you at 10,000 miles a year">
     <p className="fine" style={{ marginBottom: '10px' }}>
       Every advertised lease caps you at 10,000 miles a year. You drive 25,000, so a 36-month lease runs
-      45,000 miles over. Toyota charges $0.15 a mile, Kia $0.25.
+      45,000 miles over. Toyota charges $0.15 a mile, Kia $0.25, Nissan about $0.20.
     </p>
     <div className="card" style={{ padding: '14px 16px' }}>
       <div className="lgline" style={{ gridTemplateColumns: '1fr 92px 92px', marginBottom: '8px' }}>
@@ -557,7 +594,7 @@ const NotesTab = () => (
     </div>
     </Note>
 
-    <Note title="Financing found, August 2026" blurb="Manufacturer APR offers and used-car rates">
+    <Note title="Financing found, September 2026" blurb="Manufacturer APR offers and used-car rates">
     <div className="offers">
       {FINANCE_OFFERS.map(([brand, rate, note]) => (
         <div className="offer" key={brand + rate}>

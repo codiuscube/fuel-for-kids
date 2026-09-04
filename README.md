@@ -1,6 +1,6 @@
 # Three-Row Family Vehicle Comparison
 
-A single-page React app that prices one hundred and seven specific three-row
+A single-page React app that prices one hundred and thirteen specific three-row
 vehicles — every one available with second-row captain's chairs — over five
 years of ownership, and lets you sort and filter them on a phone.
 
@@ -219,7 +219,7 @@ src/
   App.jsx                      renders the one view
   index.css                    global reset
   vehicle-cost.css             all styling, scoped under .vehcost, mobile first
-  data/vehicles.js             the 107 listings, spec tables, and explainer copy
+  data/vehicles.js             the 113 listings, spec tables, and explainer copy
   lib/cost.js                  the five-year cost model
   components/
     VehicleCostView.jsx        app shell, Cars tab, sheets, cards

@@ -2,9 +2,11 @@
 // Data for the three-row family vehicle comparison.
 //
 // Prices are real listings near 78130 as of 30 Aug 2026: Carvana for used,
-// dealer inventory for new. Legroom, cargo and MPG are manufacturer/EPA
-// figures; insurance, maintenance and resale are estimates, which is why the
-// page says to treat sub-$3,000 gaps as ties.
+// dealer inventory for new. The Armada SV, new EV9 incentives, and three
+// Carvana VINs were added 3 Sep 2026 from manufacturer offer pages (zips
+// 78253 / 78130) and the listings linked from those offers. Legroom, cargo
+// and MPG are manufacturer/EPA figures; insurance, maintenance and resale
+// are estimates, which is why the page says to treat sub-$3,000 gaps as ties.
 // ---------------------------------------------------------------------------
 
 export const OPTIONS=[
@@ -110,6 +112,17 @@ export const OPTIONS=[
  {n:"Kia EV9 Light LR",y:"2024 \u00b7 27k mi \u00b7 +$1,290 shipping",cat:"suv",cond:"used",seats:6,sticker:37990,cash:0,apr:.075,offer:"Bank loan",
   awd:"RWD \u2014 AWD starts at Wind",kwh100:34.5,mpgLab:"88 MPGe",mpgBar:40,ship:1290,ev:true,charger:true,aw:"2024 World Car of the Year",awUrl:"https://www.kbb.com/car-news/the-kia-ev9-is-the-2024-world-car-of-the-year",ins:13500,mnt:2200,res:15500,rel:1.5,cln:4.0,
   leg2:42.8,leg3:32.0,cargo:20.2,url:"https://www.carvana.com/cars/kia-ev9",lt:"Browse EV9 listings"},
+ // Sep 2026 EV9 fire sale and a loaded used Land. 0% + $5,000 is the financed
+ // path; $10,000 cash does not stack with it. Land is six seats with captains.
+ {n:"Kia EV9 Light LR",y:"2026 \u00b7 0% + $5k \u00b7 $57,900",cat:"suv",cond:"new",seats:6,sticker:57900,cash:5000,apr:0,offer:"0% / 60 mo + $5,000 \u00b7 or $10,000 cash",
+  awd:"RWD \u2014 AWD starts at Wind",kwh100:32.7,mpgLab:"97 MPGe",mpgBar:40,ev:true,charger:true,aw:"2024 World Car of the Year",awUrl:"https://www.kbb.com/car-news/the-kia-ev9-is-the-2024-world-car-of-the-year",ins:13500,mnt:2200,res:21500,rel:1.5,cln:4.0,
+  leg2:42.8,leg3:32.0,cargo:20.2,url:"https://www.kia.com/us/en/ev9",lt:"Build and find one"},
+ {n:"Kia EV9 Land AWD",y:"2026 \u00b7 0% + $5k \u00b7 $68,900",cat:"suv",cond:"new",seats:6,sticker:68900,cash:5000,apr:0,offer:"0% / 60 mo + $5,000 \u00b7 or $10,000 cash",
+  awd:"AWD standard",kwh100:35.6,mpgLab:"88 MPGe",mpgBar:40,ev:true,charger:true,aw:"2024 World Car of the Year",awUrl:"https://www.kbb.com/car-news/the-kia-ev9-is-the-2024-world-car-of-the-year",ins:14000,mnt:2400,res:25500,rel:1.5,cln:4.0,
+  leg2:42.8,leg3:32.0,cargo:20.2,url:"https://www.kia.com/us/en/ev9",lt:"Build and find one"},
+ {n:"Kia EV9 Land AWD",y:"2024 \u00b7 15k mi \u00b7 $45,990",cat:"suv",cond:"used",seats:6,sticker:45990,cash:0,apr:.075,offer:"VIP 2nd row \u00b7 Carvana",
+  awd:"AWD standard",kwh100:35.6,mpgLab:"88 MPGe",mpgBar:40,ev:true,charger:true,aw:"2024 World Car of the Year",awUrl:"https://www.kbb.com/car-news/the-kia-ev9-is-the-2024-world-car-of-the-year",ins:13500,mnt:2200,res:20000,rel:1.5,cln:4.0,
+  leg2:42.8,leg3:32.0,cargo:20.2,url:"https://www.carvana.com/vehicle/4709411",lt:"View this listing"},
  {n:"Ford Expedition Limited",y:"2017 \u00b7 70k mi \u00b7 old body style",cat:"suv",cond:"used",seats:7,sticker:24990,ship:990,cash:0,apr:.085,offer:"Older-car rate",
   awd:"4WD available",mpg:17,mpgLab:"17",ins:9500,mnt:12000,res:9000,rel:2.5,cln:3.0,leg2:39.1,leg3:37.7,cargo:18.6,
   url:"https://www.carvana.com/vehicle/4629379",lt:"View this listing"},
@@ -135,6 +148,9 @@ export const OPTIONS=[
  {n:"Chevy Suburban RST 4WD",y:"2024 \u00b7 ~47k mi \u00b7 market estimate",cat:"suv",cond:"used",seats:7,sticker:55590,cash:0,apr:.075,offer:"Buckets standard on RST",
   awd:"4WD standard on this build",mpg:17,mpgLab:"17",ins:13000,mnt:7500,res:26000,rel:3.0,cln:3.0,leg2:42.0,leg3:36.7,cargo:41.5,
   url:"https://www.carvana.com/cars/chevrolet-suburban",lt:"Browse listings"},
+ {n:"Chevy Suburban Z71",y:"2021 \u00b7 82k mi \u00b7 $44,990",cat:"suv",cond:"used",seats:7,sticker:44990,cash:0,apr:.075,offer:"Check for buckets \u00b7 Carvana",
+  awd:"4WD standard on Z71",mpg:16,mpgLab:"16",ins:12000,mnt:11000,res:14000,rel:3.0,cln:3.0,leg2:42.0,leg3:36.7,cargo:41.5,
+  url:"https://www.carvana.com/vehicle/4684382",lt:"View this listing"},
  {n:"GMC Yukon SLT 4WD",y:"2023 \u00b7 ~55k mi \u00b7 market estimate",cat:"suv",cond:"used",seats:7,sticker:48590,ship:1290,cash:0,apr:.075,offer:"Captain's chairs standard",
   awd:"4WD standard on this build",mpg:17,mpgLab:"17",ins:12500,mnt:8500,res:22000,rel:3.0,cln:3.0,leg2:42.0,leg3:34.9,cargo:25.5,
   url:"https://www.carvana.com/cars/gmc-yukon",lt:"Browse listings"},
@@ -237,6 +253,9 @@ export const OPTIONS=[
  {n:"Expedition MAX Limited 4WD",y:"2023 \u00b7 ~61k mi \u00b7 long wheelbase",cat:"suv",cond:"used",seats:7,sticker:52590,cash:0,apr:.075,offer:"36 cu ft behind row three",
   awd:"4WD standard on this build",mpg:18,mpgLab:"18",ins:13000,mnt:9000,res:23000,rel:2.5,cln:3.0,leg2:41.5,leg3:36.1,cargo:36.0,
   url:"https://www.carvana.com/cars/ford-expedition-max",lt:"Browse listings"},
+ {n:"Expedition MAX XLT",y:"2020 \u00b7 80k mi \u00b7 $32,990",cat:"suv",cond:"used",seats:7,sticker:32990,cash:0,apr:.075,offer:"$9,200 factory options \u00b7 check buckets",
+  awd:"4WD if optioned",mpg:18,mpgLab:"18",ins:11000,mnt:12000,res:11000,rel:2.5,cln:3.0,leg2:41.5,leg3:36.1,cargo:36.0,
+  url:"https://www.carvana.com/vehicle/4714436",lt:"View this listing"},
  {n:"Expedition MAX Active 4WD",y:"2026 \u00b7 redesigned \u00b7 $75,690",cat:"suv",cond:"new",seats:7,sticker:75690,cash:0,apr:.059,offer:"37.4 cu ft, 36.5in third row",
   awd:"4WD standard on this build",mpg:18,mpgLab:"18",ins:13500,mnt:6000,res:41000,rel:3.0,cln:3.0,leg2:41.5,leg3:36.5,cargo:37.4,
   url:"https://www.ford.com/suvs/expedition/",lt:"Build and find one"},
@@ -257,10 +276,13 @@ export const OPTIONS=[
   url:"https://www.carvana.com/cars/nissan-armada",lt:"Browse listings"},
  // The redesigned Armada. Nissan added nearly five inches to the third row and
  // four cubic feet behind it, and the PRO-4X took SUV of Texas two years running.
- {n:"Nissan Armada PRO-4X",y:"2026 \u00b7 4WD std \u00b7 $76,490",cat:"suv",cond:"new",seats:7,sticker:76490,cash:0,apr:.059,offer:"Check for buckets",
+ {n:"Nissan Armada SV 4x2",y:"2026 \u00b7 advertised offer \u00b7 $58,840",cat:"suv",cond:"new",seats:7,sticker:58840,cash:0,apr:.029,offer:"2.9% / 72 mo \u00b7 $3,500 cash does not stack",
+  awd:"RWD on this build \u2014 4x4 extra",mpg:18,mpgLab:"18",aw:"2026 SUV of Texas, Texas Auto Writers",awUrl:"https://usa.nissannews.com/en-US/releases/nissan-armada-pro-4x-named-2026-suv-of-texas",ins:13000,mnt:5000,res:26500,rel:2.5,cln:3.0,leg2:39.2,leg3:32.9,cargo:20.4,
+  url:"https://www.nissanusa.com/vehicles/crossovers-suvs/armada/deals-incentives-offers.html",lt:"View this offer"},
+ {n:"Nissan Armada PRO-4X",y:"2026 \u00b7 4WD std \u00b7 $76,490",cat:"suv",cond:"new",seats:7,sticker:76490,cash:0,apr:.029,offer:"2.9% / 72 mo \u00b7 check for buckets",
   awd:"4WD standard",mpg:17,mpgLab:"17",aw:"2026 SUV of Texas, Texas Auto Writers",awUrl:"https://usa.nissannews.com/en-US/releases/nissan-armada-pro-4x-named-2026-suv-of-texas",ins:13500,mnt:5500,res:34500,rel:2.5,cln:3.0,leg2:39.2,leg3:32.9,cargo:20.4,
   url:"https://www.nissanusa.com/vehicles/crossovers-suvs/armada.html",lt:"Build and find one"},
- {n:"Nissan Armada SL 4x4",y:"2026 \u00b7 4WD \u00b7 $68,720",cat:"suv",cond:"new",seats:7,sticker:68720,cash:0,apr:.059,offer:"$7,770 under the PRO-4X",
+ {n:"Nissan Armada SL 4x4",y:"2026 \u00b7 4WD \u00b7 $68,720",cat:"suv",cond:"new",seats:7,sticker:68720,cash:0,apr:.029,offer:"2.9% / 72 mo \u00b7 $7,770 under the PRO-4X",
   awd:"4WD standard on this build",mpg:17,mpgLab:"17",aw:"2026 SUV of Texas, Texas Auto Writers",awUrl:"https://usa.nissannews.com/en-US/releases/nissan-armada-pro-4x-named-2026-suv-of-texas",ins:13500,mnt:5500,res:31000,rel:2.5,cln:3.0,leg2:39.2,leg3:32.9,cargo:20.4,
   url:"https://www.nissanusa.com/vehicles/crossovers-suvs/armada.html",lt:"Build and find one"},
  {n:"Nissan Armada SL 4x4",y:"2025 \u00b7 ~31k mi \u00b7 redesigned body",cat:"suv",cond:"used",seats:7,sticker:52590,cash:0,apr:.075,offer:"The redesign, used",
@@ -580,7 +602,8 @@ export const RELIABILITY_GROUPS = [
 ];
 
 export const FINANCE_OFFERS = [
-  ['Kia EV9', '0% / 60 mo', 'Or $10,000 cash back.'],
+  ['Kia EV9', '0% / 60 mo + $5,000', 'Or $10,000 cash. Do not stack.'],
+  ['Nissan Armada', '2.9% / 72 mo', 'Or $3,500 cash. Loyalty $2,000 with NMAC.'],
   ['Kia Carnival', '4.49% / 60 mo', '1.9–3.99% at 48 months.'],
   ['Grand Highlander', '4.99% / 60 mo', 'Also at 72 months.'],
   ['Chevy / GMC full-size', '5.9% / 60 mo', 'Tahoe, Suburban, Yukon. No cash back.'],
@@ -592,7 +615,8 @@ export const LEASES = [
   ['Sienna LE, $319/mo', '$15,483', '$22,233'],
   ['Grand Highlander XLE, $439/mo', '$19,803', '$26,553'],
   ['Carnival LX, $399/mo', '$18,363', '$29,613'],
-  ['Kia EV9 LR, $419/mo (24 mo)', '$14,055', '$21,555'],
+  ['Kia EV9 Light LR, $439/mo', '$19,803', '$31,053'],
+  ['Armada SV 4x2, $819/mo', '$35,703', '$44,703'],
 ];
 
 // The pre-purchase checklist, grouped as it is on the page.
@@ -631,7 +655,7 @@ export const CHECKS = [
     items: [
       'Ask for the out-the-door price in writing by email before visiting. Refuse to discuss monthly payment.',
       'Ask what add-ons are on the car. Paint protection, VIN etching and market adjustments are where $2,000–$4,000 hides.',
-      'Ask whether taking the promotional APR forfeits a cash rebate. On the EV9 you must choose one.',
+      'Ask whether taking the promotional APR forfeits a cash rebate. On the EV9 and the Armada you must choose one.',
       'Walk in with a credit union pre-approval. It costs nothing and it is the only leverage that reliably works.',
     ],
   },
@@ -647,14 +671,15 @@ export const CHECKS = [
 ];
 
 export const SOURCE_ROWS = [
-  ['Used prices and links', 'Carvana listings, 30 Aug 2026', 'Actual cars'],
+  ['Used prices and links', 'Carvana listings, 30 Aug 2026; three VINs added 3 Sep', 'Actual cars'],
   ['New prices and links', 'Dealer inventory, San Antonio to Bryan', 'Actual cars'],
+  ['2026 Armada SV / EV9 offers', 'Nissan USA zip 78253 and Kia zip 78130, 3 Sep 2026', 'Manufacturer specials'],
   ['Tahoe / Suburban / Yukon', '2026 MSRP by trim; used are market estimates', 'Trim-level, not a VIN'],
   ['2022 Yukon AT4', 'The Facebook Marketplace listing, as posted', 'One actual car'],
   ['Recalls 25V274, 26V085', 'NHTSA recall API, by make/model/year', 'Federal record'],
   ['Legroom, cargo, clearance', 'Manufacturer specs', 'Published'],
   ['MPG and MPGe', 'EPA combined ratings', 'Published'],
-  ['Finance offers', 'Kia, Toyota, GM, August 2026', 'Expire 31 Aug'],
+  ['Finance offers', 'Kia, Nissan, Toyota, GM, September 2026', 'EV9 and Armada checked 3 Sep'],
   ['Electricity rate', 'Your GVEC bill, Aug 2026', 'Your actual rate'],
   ['Charger rebate', 'GVEC EV charger programme', 'Published'],
   ['EV road fee, sales tax', 'Texas SB 505, Comptroller', 'Statute'],
