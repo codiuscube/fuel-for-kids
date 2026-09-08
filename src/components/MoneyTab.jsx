@@ -301,6 +301,14 @@ const MoneyTab = () => (
         <b>Whichever you buy, none of this is worth your emergency fund.</b> Cash in a van cannot be got back
         without selling the van, and the whole spread between the best and worst answer here is a few hundred
         dollars over five years.
+        <br />
+        <br />
+        <b>The Cars tab does not know about any of this.</b> Every total on it is computed at $10,000 down,
+        which is the figure this page has just argued you should not use. Open Assumptions on that tab and set
+        the deposit to $4,500 to match: each car gets about $650 more expensive, near enough uniformly, so the
+        order barely moves but the numbers become yours. The rate is not adjustable at all &mdash; it is fixed
+        at 4.490% on every card &mdash; so if the pre-approval comes back higher, that correction has to be done
+        in your head.
       </div>
     </Note>
 
