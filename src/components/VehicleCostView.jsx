@@ -17,6 +17,7 @@ import {
 import { Assumptions, Spec, TrophyIcon, WhyContext, delta } from './pieces';
 import CompareTab from './CompareTab';
 import NotesTab from './NotesTab';
+import MoneyTab from './MoneyTab';
 
 // ---------------------------------------------------------------------------
 // Three-row family vehicle comparison, rebuilt for a phone.
@@ -31,6 +32,7 @@ import NotesTab from './NotesTab';
 const TABS = [
   { id: 'cars', label: 'Cars' },
   { id: 'compare', label: 'Compare' },
+  { id: 'money', label: 'Money' },
   { id: 'notes', label: 'Notes' },
 ];
 
@@ -653,6 +655,12 @@ const VehicleCostView = () => {
               setBaseFromSelect={setBaseFromSelect}
               setBaseField={setBaseField}
             />
+          </main>
+        )}
+
+        {tab === 'money' && (
+          <main className="wrap">
+            <MoneyTab />
           </main>
         )}
 

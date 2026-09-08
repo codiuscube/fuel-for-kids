@@ -1,30 +1,12 @@
 import { Fragment } from 'react';
 import { OWNER_GROUPS, FINANCE_OFFERS, LEASES, CHECKS, SOURCE_ROWS } from '../data/vehicles';
+import { Note } from './pieces';
 
 // ---------------------------------------------------------------------------
 // Everything that used to sit between you and the cars. Same words, now folded
 // into accordions so the page opens as a list of headlines you can scan in a
 // couple of thumb-flicks rather than a wall you have to scroll past.
 // ---------------------------------------------------------------------------
-
-const Chevron = () => (
-  <svg className="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="m6 9 6 6 6-6" />
-  </svg>
-);
-
-const Note = ({ title, blurb, children }) => (
-  <details className="acc">
-    <summary>
-      <span className="acctxt">
-        <span className="acct">{title}</span>
-        <span className="accb">{blurb}</span>
-      </span>
-      <Chevron />
-    </summary>
-    <div className="accbody">{children}</div>
-  </details>
-);
 
 const NotesTab = () => (
   <div className="notes">

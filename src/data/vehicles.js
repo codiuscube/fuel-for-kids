@@ -810,3 +810,84 @@ export const WHY = {
   awdFilter:
     'AWD is optional here. Turn it on and the recommendation above recalculates, and tells you what you would have picked without it. Note this matches cars where AWD is available, not necessarily fitted — check each used listing.',
 };
+
+// ---------------------------------------------------------------------------
+// Money tab. Three transactions happen at once when you buy this van: the
+// Pathfinder leaves, the van is financed, and the Silverado loan carries on.
+// They interact — the Texas trade-in credit only exists if the Pathfinder goes
+// to the same dealer, and cash can only be spent once — so they are priced
+// together here rather than one at a time.
+//
+// Figures use the same arithmetic as the cost model: 6.25% Texas tax, $400 of
+// fees, 60-month amortisation. Pathfinder values are published KBB / Edmunds /
+// CarMax ranges for a 2017 at ~100k miles in Texas, not an appraisal of the
+// actual car; trim and the condition of the CVT move them more than anything
+// else. Rates are RBFCU's published Auto/Truck sheet, read 8 Sep 2026.
+// ---------------------------------------------------------------------------
+
+// Route, what you are offered, whether the Texas trade-in credit applies, what
+// it is actually worth once tax is counted, and what it costs you in effort.
+export const PATHFINDER_ROUTES = [
+  ['Trade at the Kia dealer', '$3,500–$4,500', '+6.25%', '$3,719–$4,781', 'One signature'],
+  ['CarMax / Carvana offer', '$4,000–$5,200', 'None', '$4,000–$5,200', 'One appointment'],
+  ['Private sale', '$6,500–$7,500', 'None', '$6,500–$7,500', '8–15 hours'],
+];
+
+// RBFCU's Auto/Truck sheet as published. Every row is "as low as" against a
+// ceiling of 18.000%, and there is no new/used split and no age or mileage
+// tier anywhere on it — the only thing that moves the rate is the term.
+export const RBFCU_TIERS = [
+  ['24–36 months', '4.490%', '$29.74–$49.92'],
+  ['37–48 months', '4.490%', '$22.80–$35.41'],
+  ['49–60 months', '4.490%', '$18.64–$28.96'],
+  ['61–66 months', '4.750%', '$17.25–$25.14'],
+  ['67–72 months', '4.750%', '$15.99–$23.76'],
+  ['73–78 months', '6.000%', '$15.51–$22.63'],
+  ['79–84 months', '6.000%', '$14.61–$21.69'],
+];
+
+// Carnival EX two ways, over 60 months: RBFCU at 4.49% after the $1,500 dealer
+// discount and $750 bonus cash, against Kia's bought-down 2.99% at full MSRP,
+// which the discounts cannot be combined with. Total cash out, so it counts the
+// price and the interest together.
+export const VAN_PATHS = [
+  ['$0', '$46,768', '$47,603', '$834'],
+  ['$5,000', '$46,177', '$47,214', '$1,037'],
+  ['$10,000', '$45,585', '$46,824', '$1,239'],
+  ['$15,000', '$44,994', '$46,435', '$1,441'],
+  ['$20,000', '$44,402', '$46,046', '$1,644'],
+  ['$26,000', '$43,692', '$45,579', '$1,886'],
+];
+
+// The Silverado at 5.79% has 50 payments and $2,041 of interest left. Every row
+// below is cheaper per month than the $360 being paid now, and only the top
+// three are cheaper overall. The term, not the rate, is what decides it.
+export const TRUCK_REFI = [
+  ['36 months', '4.49%', '$475', '$1,129', 'Saves $912'],
+  ['48 months', '4.49%', '$364', '$1,506', 'Saves $535'],
+  ['50 months — same term', '4.49%', '$351', '$1,569', 'Saves $472'],
+  ['60 months', '4.49%', '$298', '$1,889', 'Saves $153'],
+  ['72 months', '4.75%', '$255', '$2,414', 'Costs $373'],
+  ['84 months', '6.00%', '$233', '$3,625', 'Costs $1,584'],
+];
+
+// Cash can only be spent once. The refinance is the odd one out because it
+// needs none, which is why it stacks with whatever you do with the money.
+export const CASH_MOVES = [
+  ['Refinance the truck to 4.49%', '$472', 'None', true],
+  ['$4,000 into the van (trade money)', '$473', '$4,000'],
+  ['$7,000 into the van (private-sale money)', '$828', '$7,000'],
+  ['$15,963 into the van', '$1,889', '$15,963'],
+  ['Pay the truck off outright', '$2,041', '$15,963'],
+];
+
+// The order matters more than any single number in it: every step below is
+// something that gets harder or impossible once the step after it has happened.
+export const DEAL_ORDER = [
+  'Get an RBFCU pre-approval in writing, before you talk to anyone. It costs nothing, it is the only leverage that reliably works, and it tells you whether 4.490% is actually your rate or whether you are somewhere higher up a sheet that runs to 18%.',
+  'Get a CarMax or Carvana offer on the Pathfinder. Free, twenty minutes online and one appointment, no obligation. Even if you end up trading it at the Kia store, this is the number that gets you the top of the range rather than the bottom.',
+  'Settle the van’s out-the-door price in writing, by email, before the Pathfinder is mentioned. A trade discussed at the same time as the price is a trade you cannot see the value of.',
+  'Then introduce the trade, with the CarMax number in hand. Ask them to beat it. The Texas credit means they only have to come within 6.25% to win.',
+  'Confirm the discounts and the rate are the ones you agreed. Taking Kia’s 2.99% forfeits the $1,500 and the $750, and at RBFCU’s rate that trade is worth $1,239 against you.',
+  'Ask RBFCU whether they will re-rate the existing Silverado loan. It is their own paper, so they may decline; if they do, the $472 is off the table and paying the truck off becomes the better use of cash.',
+];

@@ -216,3 +216,24 @@ export const Assumptions = ({ S, setS, idp }) => {
     </div>
   );
 };
+
+// The accordion used by the Notes and Money tabs. Both pages are long-form, and
+// on a phone they need to open as a list of headlines rather than a wall.
+export const Chevron = () => (
+  <svg className="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="m6 9 6 6 6-6" />
+  </svg>
+);
+
+export const Note = ({ title, blurb, open, children }) => (
+  <details className="acc" open={open}>
+    <summary>
+      <span className="acctxt">
+        <span className="acct">{title}</span>
+        <span className="accb">{blurb}</span>
+      </span>
+      <Chevron />
+    </summary>
+    <div className="accbody">{children}</div>
+  </details>
+);

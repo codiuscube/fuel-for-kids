@@ -1204,9 +1204,17 @@
   font-size: 14px;
   line-height: 1.6;
 }
-.vehcost .tldr ul {
+.vehcost .tldr ul,
+.vehcost .tldr ol {
   margin: 0;
   padding-left: 19px;
+}
+.vehcost .tldr ol {
+  padding-left: 21px;
+}
+.vehcost .tldr ol li::marker {
+  font-weight: 600;
+  color: var(--text-muted);
 }
 .vehcost .tldr li {
   margin-bottom: 9px;

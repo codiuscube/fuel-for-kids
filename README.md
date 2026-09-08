@@ -76,6 +76,25 @@ rating, 5% cleanability, across whatever currently matches your filters.
 - **At a glance** — room, cargo, MPG and value-kept as sortable bars.
 - **Tables** — reliability/cleanability/resale, and the full spec list.
 
+### Money tab
+
+The side of the purchase the Cars tab leaves out. Those five-year totals assume
+the car is bought at its asking price with $10,000 down at the APR on its card;
+this tab is where those three assumptions get argued with. Six accordions,
+opening on the running order:
+
+| Section | What's in it |
+| --- | --- |
+| The running order | Six steps for the day, sequenced so each one stays possible |
+| Selling the Pathfinder | Trade / instant offer / private, priced against the 6.25% trade credit, and why the CVT decides it |
+| What RBFCU actually charges | The published Auto/Truck sheet, and what a rate above the floor would do to the Cars tab |
+| Which van financing path | The dealer discounts against Kia's 2.99%, by down payment |
+| The Silverado | 50 payments left, and why a refinance term longer than that costs money |
+| Where the cash goes | What a dollar saves in each place, and which moves stack |
+
+Nothing here changes which van is cheapest to own. It changes what the day
+costs.
+
 ### Notes tab
 
 All the long-form reasoning, folded into accordions so it reads as a list of
@@ -259,8 +278,9 @@ src/
   components/
     VehicleCostView.jsx        app shell, Cars tab, sheets, cards
     CompareTab.jsx             vs-yours, at-a-glance, tables
+    MoneyTab.jsx               selling the Pathfinder, financing, the truck loan
     NotesTab.jsx               long-form reasoning, in accordions
-    pieces.jsx                 shared bars, popovers, assumptions panel
+    pieces.jsx                 shared bars, popovers, accordion, assumptions panel
 ```
 
 ---
