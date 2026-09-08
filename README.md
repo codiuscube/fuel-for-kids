@@ -1,6 +1,6 @@
 # Three-Row Family Vehicle Comparison
 
-A single-page React app that prices one hundred and thirteen specific three-row
+A single-page React app that prices one hundred and twenty-two specific three-row
 vehicles — every one available with second-row captain's chairs — over five
 years of ownership, and lets you sort and filter them on a phone.
 
@@ -141,19 +141,33 @@ drive-on beaches at Port Aransas, and a liking for the lifted AWD look.
 3. **Resale is the largest single lever, bigger than price.** The Sienna loses
    only 29% over five years against a class average of 46% — which is why a
    $47,504 new Sienna costs less to own than a $40,499 used one.
-4. **No EV can give seven seats with captain's chairs.** EV9, Rivian R1S, Tesla
+4. **The Carnival Hybrid ties the Sienna; the V6 Carnival does not.** A
+   discounted 2026 Carnival Hybrid EX at $42,090 lands 11th of 122 at about
+   $58.8k over five years, $424 from a new Sienna XLE and $126 a month cheaper —
+   a tie under this page's own $3,000 rule. Every V6 Carnival burns $17,045 of
+   petrol over 125,000 miles against the hybrid's $11,364, which is worth more
+   than any discount offered on the car. Used is not the cheaper way in: the
+   used hybrids ask new-car money, and the cheap used ones are all V6.
+5. **No federal purchase credit exists on any car bought in 2026.** The clean
+   vehicle credits ended for vehicles acquired after 30 September 2025, and a
+   Carnival never qualified anyway — it is not a plug-in. The one incentive
+   left on a new car is the OBBBA auto-loan interest deduction, up to $10,000 a
+   year of interest for tax years 2025–2028, and it requires **final assembly in
+   the United States**. The Sienna is built in Princeton, Indiana and qualifies.
+   The Carnival is built in Gwangmyeong, South Korea and does not.
+6. **No EV can give seven seats with captain's chairs.** EV9, Rivian R1S, Tesla
    Model X, Volvo EX90 and Ioniq 9 all have two-seat third rows. It is a
    structural limit of the segment.
-5. **Leasing does not work at this mileage.** Every offer caps at 10,000 miles a
+7. **Leasing does not work at this mileage.** Every offer caps at 10,000 miles a
    year. At 25,000 you end a three-year term 45,000 miles over — $6,750 in
    penalties at Toyota's $0.15/mile, $11,250 at Kia's $0.25 — and own nothing.
-6. **Buying older only saves money right at the bottom.** A 2017 Sienna at
+8. **Buying older only saves money right at the bottom.** A 2017 Sienna at
    $27,590 still costs about $4,000 more over five years than a 2025 at
    $40,499. But a 2016 Odyssey at $16,590 wins outright at about $55.8k,
    cheaper than any Sienna, because there is almost no depreciation left to
    pay — and it finishes the five years at 220,000 miles with $13,000 budgeted
    for repairs. Old and thirsty loses; old and frugal wins.
-7. **Cost and reliability point in opposite directions at the bottom.** The
+9. **Cost and reliability point in opposite directions at the bottom.** The
    cheapest option is a Pacifica Hybrid at $21,990, and it is also the least
    reliable vehicle in the set.
 
@@ -191,6 +205,10 @@ repair costs, and the long-form caveats — lives in the app's **Notes** tab.
 | Legroom, cargo, clearance | Manufacturer specs | Published |
 | MPG and MPGe | EPA combined ratings | Published |
 | Finance offers | Kia, Toyota, GM, August 2026 | Expire 31 Aug |
+| Carnival prices and offers | Kia MSRP, corridor dealer listings, 8 Sep 2026 | Trim-level, not a VIN |
+| Used Carnival listings | Carvana San Antonio search page, 8 Sep 2026 | Listed cars, VIN not opened |
+| Final assembly points | Kia Gwangmyeong; Toyota Indiana, Princeton | Manufacturer |
+| Auto-loan interest deduction | OBBBA, tax years 2025–2028 | Statute, not tax advice |
 | Electricity rate | GVEC bill, Aug 2026 | Actual rate |
 | Charger rebate | GVEC EV charger programme | Published |
 | EV road fee, sales tax | Texas SB 505, Comptroller | Statute |
@@ -219,7 +237,7 @@ src/
   App.jsx                      renders the one view
   index.css                    global reset
   vehicle-cost.css             all styling, scoped under .vehcost, mobile first
-  data/vehicles.js             the 113 listings, spec tables, and explainer copy
+  data/vehicles.js             the 122 listings, spec tables, and explainer copy
   lib/cost.js                  the five-year cost model
   components/
     VehicleCostView.jsx        app shell, Cars tab, sheets, cards

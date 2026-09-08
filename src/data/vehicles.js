@@ -4,7 +4,10 @@
 // Prices are real listings near 78130 as of 30 Aug 2026: Carvana for used,
 // dealer inventory for new. The Armada SV, new EV9 incentives, and three
 // Carvana VINs were added 3 Sep 2026 from manufacturer offer pages (zips
-// 78253 / 78130) and the listings linked from those offers. Legroom, cargo
+// 78253 / 78130) and the listings linked from those offers. Nine Kia Carnivals
+// were added 8 Sep 2026 from a sweep of Austin, New Braunfels and San Antonio
+// stock; those carry search-page links rather than VIN links, because the
+// individual cars were read from listing summaries and not opened. Legroom, cargo
 // and MPG are manufacturer/EPA figures; insurance, maintenance and resale
 // are estimates, which is why the page says to treat sub-$3,000 gaps as ties.
 // ---------------------------------------------------------------------------
@@ -378,7 +381,54 @@ export const OPTIONS=[
   url:"https://www.cadillac.com/electric/vistiq",lt:"Build and find one"},
  {n:"Volvo EX90 Twin Motor Plus",y:"2025 \u00b7 ~24k mi \u00b7 6 seats",cat:"suv",cond:"used",seats:6,sticker:54590,cash:0,apr:.075,offer:"Smallest boot on this page",
   awd:"AWD standard on this build",mpgLab:"79 MPGe",kwh100:43,mpgBar:35,ev:true,charger:true,ins:14500,mnt:5000,res:20000,rel:1.5,cln:3.5,leg2:36.5,leg3:31.9,cargo:12.9,
-  url:"https://www.carvana.com/cars/volvo-ex90",lt:"Browse listings"}
+  url:"https://www.carvana.com/cars/volvo-ex90",lt:"Browse listings"},
+// ---------------------------------------------------------------------------
+// Kia Carnival sweep, 8 Sep 2026. Every Carnival offered between Austin, New
+// Braunfels and San Antonio, new and used. LX and LXS are bench-only, so the
+// list starts at EX. Every one is front-wheel drive; Kia has never built an
+// AWD Carnival. New prices are MSRP less the dealer discounts advertised in
+// the corridor (KFA Dealer Choice $1,500-$2,000) and Kia's $750 Sticker Sales
+// Event bonus cash. The 2.99%/72 rate is a bought-down Kia Motor Finance rate
+// that cannot be combined with those discounts, so it is priced as its own
+// card at full MSRP. Used cars are Carvana San Antonio stock; mileage is from
+// the listing, the exact VIN was not opened, so the link is the search page.
+// ---------------------------------------------------------------------------
+ {n:"Kia Carnival EX",y:"2026 \u00b7 $1,500 off + $750 \u00b7 $39,690",cat:"van",cond:"new",seats:7,sticker:39690,cash:750,apr:.060,offer:"World Car Kia, New Braunfels",
+  awd:"No AWD offered",mpg:22,mpgLab:"22",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
+  ins:12000,mnt:3000,res:20500,rel:3.0,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
+  url:"https://www.worldcarkianorth.com/search/new-kia-carnival-san-antonio-tx/?cy=78201&md=10821&tp=new",lt:"Browse New Braunfels / SA stock"},
+ {n:"Kia Carnival EX",y:"2026 \u00b7 2.99% / 72 mo \u00b7 $41,190",cat:"van",cond:"new",seats:7,sticker:41190,cash:0,apr:.0299,offer:"Cheap rate, no discounts stack",
+  awd:"No AWD offered",mpg:22,mpgLab:"22",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
+  ins:12000,mnt:3000,res:20500,rel:3.0,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
+  url:"https://www.worldcarkianorth.com/search/new-kia-carnival-san-antonio-tx/?cy=78201&md=10821&tp=new",lt:"Browse New Braunfels / SA stock"},
+ {n:"Kia Carnival Hybrid EX",y:"2026 \u00b7 $1,500 off + $750 \u00b7 $42,090",cat:"van",cond:"new",seats:7,sticker:42090,cash:750,apr:.060,offer:"The Carnival that competes",
+  awd:"No AWD offered",mpg:33,mpgLab:"33",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
+  ins:12500,mnt:3000,res:23000,rel:4.5,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
+  url:"https://www.kiaworldcar.com/search/new-kia-carnival-hybrid-san-antonio-tx/?cy=78201&md=22648&tp=new",lt:"Browse hybrid stock"},
+ {n:"Kia Carnival Hybrid SX",y:"2026 \u00b7 $2,000 off + $750 \u00b7 $46,490",cat:"van",cond:"new",seats:7,sticker:46490,cash:750,apr:.060,offer:"World Car Kia South, \u224845 mi",
+  awd:"No AWD offered",mpg:33,mpgLab:"33",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
+  ins:12500,mnt:3000,res:25500,rel:4.5,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
+  url:"https://www.kiaworldcar.com/search/new-kia-carnival-hybrid-san-antonio-tx/?cy=78201&md=22648&tp=new",lt:"Browse hybrid stock"},
+ {n:"Kia Carnival Hybrid EX",y:"2027 \u00b7 just landed \u00b7 $43,690",cat:"van",cond:"new",seats:7,sticker:43690,cash:0,apr:.0599,offer:"Kia of North Austin, \u224865 mi",
+  awd:"No AWD offered",mpg:33,mpgLab:"33",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
+  ins:12500,mnt:3000,res:23500,rel:4.5,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
+  url:"https://www.kianorthaustin.com/new-kia/carnival-north-austin-tx.htm",lt:"Browse Austin stock"},
+ {n:"Kia Carnival SX",y:"2023 \u00b7 28k mi \u00b7 $38,590",cat:"van",cond:"used",seats:7,sticker:38590,cash:0,apr:.075,offer:"Carvana San Antonio",
+  awd:"No AWD offered",mpg:22,mpgLab:"22",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
+  ins:11500,mnt:4000,res:16000,rel:3.0,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
+  url:"https://www.carvana.com/cars/kia-carnival-in-san-antonio-tx",lt:"Browse San Antonio listings"},
+ {n:"Kia Carnival EX",y:"2024 \u00b7 56k mi \u00b7 $33,590",cat:"van",cond:"used",seats:7,sticker:33590,cash:0,apr:.075,offer:"Cheapest EX in the corridor",
+  awd:"No AWD offered",mpg:22,mpgLab:"22",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
+  ins:11000,mnt:4600,res:13500,rel:3.0,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
+  url:"https://www.carvana.com/cars/kia-carnival-in-san-antonio-tx",lt:"Browse San Antonio listings"},
+ {n:"Kia Carnival SX",y:"2024 \u00b7 61k mi \u00b7 $37,990",cat:"van",cond:"used",seats:7,sticker:37990,cash:0,apr:.075,offer:"Carvana San Antonio",
+  awd:"No AWD offered",mpg:22,mpgLab:"22",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
+  ins:11500,mnt:4600,res:14000,rel:3.0,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
+  url:"https://www.carvana.com/cars/kia-carnival-in-san-antonio-tx",lt:"Browse San Antonio listings"},
+ {n:"Kia Carnival Hybrid EX",y:"2025 \u00b7 hybrid \u00b7 $42,590",cat:"van",cond:"used",seats:7,sticker:42590,cash:0,apr:.075,offer:"Mileage not shown \u2014 ask",
+  awd:"No AWD offered",mpg:33,mpgLab:"33",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
+  ins:12000,mnt:3500,res:20000,rel:4.5,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
+  url:"https://www.carvana.com/cars/kia-carnival-in-san-antonio-tx",lt:"Browse San Antonio listings"}
 ];
 
 export const MATRIX=[
@@ -604,7 +654,8 @@ export const RELIABILITY_GROUPS = [
 export const FINANCE_OFFERS = [
   ['Kia EV9', '0% / 60 mo + $5,000', 'Or $10,000 cash. Do not stack.'],
   ['Nissan Armada', '2.9% / 72 mo', 'Or $3,500 cash. Loyalty $2,000 with NMAC.'],
-  ['Kia Carnival', '4.49% / 60 mo', '1.9–3.99% at 48 months.'],
+  ['Kia Carnival', '2.99% / 72 mo', '1.9% at 48. Bought down — no discounts stack.'],
+  ['Carnival, discount path', '$1,500–$2,000 off', 'KFA Dealer Choice + $750 bonus cash. Bank rate.'],
   ['Grand Highlander', '4.99% / 60 mo', 'Also at 72 months.'],
   ['Chevy / GMC full-size', '5.9% / 60 mo', 'Tahoe, Suburban, Yukon. No cash back.'],
   ['Toyota Sienna', 'No APR special', 'Lease offer only.'],
@@ -614,7 +665,7 @@ export const FINANCE_OFFERS = [
 export const LEASES = [
   ['Sienna LE, $319/mo', '$15,483', '$22,233'],
   ['Grand Highlander XLE, $439/mo', '$19,803', '$26,553'],
-  ['Carnival LX, $399/mo', '$18,363', '$29,613'],
+  ['Carnival Hybrid LXS, $459/mo', '$20,523', '$31,773'],
   ['Kia EV9 Light LR, $439/mo', '$19,803', '$31,053'],
   ['Armada SV 4x2, $819/mo', '$35,703', '$44,703'],
 ];
@@ -655,7 +706,8 @@ export const CHECKS = [
     items: [
       'Ask for the out-the-door price in writing by email before visiting. Refuse to discuss monthly payment.',
       'Ask what add-ons are on the car. Paint protection, VIN etching and market adjustments are where $2,000–$4,000 hides.',
-      'Ask whether taking the promotional APR forfeits a cash rebate. On the EV9 and the Armada you must choose one.',
+      'Ask whether taking the promotional APR forfeits a cash rebate. On the EV9, the Armada and the Carnival you must choose one.',
+      'On a new car, read the Final Assembly Point line on the window sticker. It decides whether your loan interest is deductible, and it varies by trim and model year — check the actual car, not the model name.',
       'Walk in with a credit union pre-approval. It costs nothing and it is the only leverage that reliably works.',
     ],
   },
@@ -680,6 +732,11 @@ export const SOURCE_ROWS = [
   ['Legroom, cargo, clearance', 'Manufacturer specs', 'Published'],
   ['MPG and MPGe', 'EPA combined ratings', 'Published'],
   ['Finance offers', 'Kia, Nissan, Toyota, GM, September 2026', 'EV9 and Armada checked 3 Sep'],
+  ['Carnival prices and offers', 'Kia MSRP, corridor dealer listings, 8 Sep 2026', 'Trim-level, not a VIN'],
+  ['Used Carnival listings', 'Carvana San Antonio search page, 8 Sep 2026', 'Listed cars, VIN not opened'],
+  ['Carnival vs Sienna depreciation', 'iSeeCars: 50.1% vs 38.6% over five years', 'Model average'],
+  ['Final assembly points', 'Kia Gwangmyeong; Toyota Indiana, Princeton', 'Manufacturer'],
+  ['Auto-loan interest deduction', 'OBBBA, tax years 2025–2028', 'Statute, not tax advice'],
   ['Electricity rate', 'Your GVEC bill, Aug 2026', 'Your actual rate'],
   ['Charger rebate', 'GVEC EV charger programme', 'Published'],
   ['EV road fee, sales tax', 'Texas SB 505, Comptroller', 'Statute'],
