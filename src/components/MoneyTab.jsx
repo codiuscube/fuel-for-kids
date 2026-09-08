@@ -6,6 +6,8 @@ import {
   TRUCK_REFI,
   CASH_MOVES,
   DEAL_ORDER,
+  DOWN_FLOORS,
+  CASH_YIELDS,
 } from '../data/vehicles';
 
 // ---------------------------------------------------------------------------
@@ -218,6 +220,87 @@ const MoneyTab = () => (
         their own paper &mdash; the refinance product is aimed at loans from other lenders, and the &ldquo;cash
         out&rdquo; option on the account is a different thing. Ask directly: <i>will you re-rate my existing
         auto loan to the current 4.49%?</i> If the answer is no, the $472 disappears.
+      </div>
+    </Note>
+
+    <Note title="How much to put down" blurb="$4,500 on a Carnival, and not a dollar more">
+      <div className="note" style={{ marginBottom: '12px' }}>
+        <b>The down payment does not buy you a rate.</b> RBFCU&rsquo;s sheet has no loan-to-value band and no
+        deposit tier &mdash; nothing on it moves except the term. Nought down and $26,000 down both get 4.490%
+        over 60 months. There is no deposit that unlocks a better number, so there is nothing to optimise on that
+        front.
+        <br />
+        <br />
+        <b>And it barely buys you interest either.</b> Each $1,000 down saves $118 across the whole five years.
+        That is real but it is not a reason to choose one figure over another, which leaves exactly one thing the
+        deposit is actually for: staying right-side-up.
+      </div>
+      <div className="scroller">
+        <table>
+          <thead>
+            <tr>
+              <th>Car</th>
+              <th>Price</th>
+              <th>Smallest safe deposit</th>
+            </tr>
+          </thead>
+          <tbody>
+            {DOWN_FLOORS.map(([car, price, down]) => (
+              <tr key={car}>
+                <td>{car}</td>
+                <td className="n">{price}</td>
+                <td className="n">{down}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="note" style={{ margin: '12px 0' }}>
+        <b>Below the floor you owe more than the van is worth.</b> At $4,000 down a Carnival is upside down for
+        thirteen months; at $2,000, twenty-one months; at nothing down, twenty-five months and $3,474 under at
+        the worst point. That is the window in which a write-off leaves you paying for a van you no longer have.
+        The Carnival needs more than the Sienna because it sheds value faster, and 25,000 miles a year makes both
+        curves steeper.
+        <br />
+        <br />
+        <b>Above the floor, the truck outbids the van.</b> A dollar in the Silverado earns 5.79%; a dollar in a
+        Carnival earns 4.49%. So the floor is also the ceiling.
+      </div>
+      <div className="scroller">
+        <table>
+          <thead>
+            <tr>
+              <th>A dollar put here</th>
+              <th>Earns</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            {CASH_YIELDS.map(([where, rate, note]) => (
+              <tr key={where}>
+                <td>{where}</td>
+                <td className="n">{rate}</td>
+                <td>{note}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="note" style={{ marginTop: '12px' }}>
+        <b>So: $4,500 down on a Carnival, and everything else at the Silverado.</b> Round the $4,250 up for
+        margin, because the depreciation curve behind it is an estimate rather than a measurement. Once the truck
+        is gone, further cash goes back to the van.
+        <br />
+        <br />
+        <b>The Sienna inverts it.</b> Built in Indiana, so its loan interest is deductible &mdash; which drops
+        the effective rate to about 3.41% and makes it the cheapest money on the page, below the truck and below
+        what savings pay after tax. On a Sienna, put down the $3,750 that clears negative equity, borrow the
+        rest deliberately, and put the cash at the truck.
+        <br />
+        <br />
+        <b>Whichever you buy, none of this is worth your emergency fund.</b> Cash in a van cannot be got back
+        without selling the van, and the whole spread between the best and worst answer here is a few hundred
+        dollars over five years.
       </div>
     </Note>
 

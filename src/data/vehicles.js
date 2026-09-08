@@ -891,3 +891,25 @@ export const DEAL_ORDER = [
   'Confirm the discounts and the rate are the ones you agreed. Taking Kia’s 2.99% forfeits the $1,500 and the $750, and at RBFCU’s rate that trade is worth $1,239 against you.',
   'Ask RBFCU whether they will re-rate the existing Silverado loan. It is their own paper, so they may decline; if they do, the $472 is off the table and paying the truck off becomes the better use of cash.',
 ];
+
+// The down payment does not buy a rate — RBFCU's sheet has no LTV or
+// down-payment tier — so the only thing it buys is protection from negative
+// equity. This is the smallest deposit that keeps the loan under the car's
+// value for all sixty months at 25,000 miles a year, which is the point at
+// which more cash stops doing anything the truck could not do better.
+export const DOWN_FLOORS = [
+  ['Carnival EX, new', '$39,690', '$4,250'],
+  ['Carnival Hybrid EX, new', '$42,090', '$4,250'],
+  ['Sienna XLE, new', '$47,504', '$3,750'],
+  ['Sienna XLE 2025, 59k mi', '$40,499', '$3,000'],
+];
+
+// What a dollar earns depending on where it is put. The Sienna row is the odd
+// one: it is built in Indiana, so its loan interest is deductible and the
+// effective rate falls below everything else here.
+export const CASH_YIELDS = [
+  ['Silverado loan', '5.79%', 'Guaranteed, tax-free'],
+  ['Van loan — Carnival', '4.49%', 'Guaranteed, tax-free. No deduction: built in Korea'],
+  ['Van loan — Sienna', '3.41%', 'After a 24% marginal rate; interest is deductible'],
+  ['High-yield savings', '3.04%', 'Net of tax at 4.0% gross — but you can reach it'],
+];
