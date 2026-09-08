@@ -474,9 +474,13 @@ const NotesTab = () => (
       applies to a new purchase.
       <br />
       <br />
-      <b>Two things this page does not model.</b> Neither the deduction nor Texas&rsquo;s trade-in tax credit is
-      in the five-year totals, because both depend on your tax situation. Both favour the Sienna and both favour
-      buying new. Ask your accountant before you let a $696 gap decide anything.
+      <b>One thing this page does not model, and one that does not apply.</b> The interest deduction is not in
+      the five-year totals, because it depends on your tax situation &mdash; it favours the Sienna and it
+      favours buying new, so ask your accountant before you let a $696 gap decide anything. Texas&rsquo;s
+      trade-in tax credit is not in them either, but that one is moot here: the Pathfinder is being sold
+      privately for cash and the truck is being kept, so there is no trade and the full 6.25% is owed on the
+      whole price, exactly as modelled. If a dealer ever does offer to take the Pathfinder, the credit is worth
+      6.25% of whatever they allow for it &mdash; which is the margin a private sale has to beat.
     </div>
     </Note>
 
