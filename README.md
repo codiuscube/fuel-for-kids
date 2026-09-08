@@ -97,12 +97,20 @@ net = depreciation + interest + fuel + insurance + maintenance
 - **Price** is sticker plus shipping, then Texas sales tax at a flat **6.25%**
   plus **$400** in fees.
 - **Loan** is price + tax − cash − down payment, amortised over the chosen term
-  at the vehicle's APR. Every APR is capped at **RBFCU's 4.49% for 60 months**,
-  which they quote for used cars as well as new; a manufacturer promo is only
-  used where it beats that (0% EV9, 2.90% Armada, 2.99% Carnival, 3.99% Ioniq 9).
-  That rate is the well-qualified one at 60 months or less — the oldest and
-  highest-mileage listings may be tiered higher or declined, and are labelled to
-  check.
+  at the vehicle's APR. Every APR is capped at **RBFCU's 4.49%**; a manufacturer
+  promo is only used where it beats that (0% EV9, 2.90% Armada, 2.99% Carnival,
+  3.99% Ioniq 9). RBFCU's Auto/Truck sheet prices on **term alone** — no
+  new/used split and no age or mileage tier:
+
+  | Term | As low as |
+  | --- | --- |
+  | 24–60 months | 4.490% |
+  | 61–72 months | 4.750% |
+  | 73–84 months | 6.000% |
+
+  Those are floor rates on a sheet that runs to 18.000%, so they are the best
+  case for the strongest credit, not a quote. Past 60 months the model is 0.26
+  points optimistic.
 - **Fuel** is electricity for EVs, a blend for plug-ins at your assumed share of
   electric miles, petrol otherwise (diesel priced 22% higher).
 - **Resale** starts from published five-year depreciation and is discounted
@@ -213,7 +221,7 @@ repair costs, and the long-form caveats — lives in the app's **Notes** tab.
 | Legroom, cargo, clearance | Manufacturer specs | Published |
 | MPG and MPGe | EPA combined ratings | Published |
 | Finance offers | Kia, Toyota, GM, August 2026 | Expire 31 Aug |
-| Loan rate on every card | RBFCU 4.49%/60 mo, new and used alike | Advertised, not a pre-approval |
+| Loan rate on every card | RBFCU Auto/Truck sheet, 8 Sep 2026 | Floor rate, not a pre-approval |
 | Carnival prices and offers | Kia MSRP, corridor dealer listings, 8 Sep 2026 | Trim-level, not a VIN |
 | Used Carnival listings | Carvana San Antonio search page, 8 Sep 2026 | Listed cars, VIN not opened |
 | Final assembly points | Kia Gwangmyeong; Toyota Indiana, Princeton | Manufacturer |

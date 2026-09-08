@@ -11,10 +11,13 @@
 //
 // APRs are capped at RBFCU's 4.49% for 60 months, new or used alike, since that
 // is the buyer's actual financing. Manufacturer promos below it (0%, 2.90%,
-// 2.99%, 3.99%) are left alone because they still beat it. Note RBFCU quotes
-// 4.49% for well-qualified borrowers at 60 months or less; the oldest and
-// highest-mileage cars here may be tiered higher or declined outright, so the
-// pre-2020 listings are labelled to check. Legroom, cargo
+// 2.99%, 3.99%) are left alone because they still beat it. RBFCU's published
+// Auto/Truck sheet (read 8 Sep 2026) tiers purely by term and makes no
+// distinction between new and used, and no age or mileage tier at all:
+// 24-60 months 4.490%, 61-72 months 4.750%, 73-84 months 6.000%, all "as low
+// as" against a ceiling of 18.000%. So the term slider above 60 months is
+// modelled 0.26 points optimistic. 4.49% is the floor rate, not a quote.
+// Legroom, cargo
 // and MPG are manufacturer/EPA figures; insurance, maintenance and resale
 // are estimates, which is why the page says to treat sub-$3,000 gaps as ties.
 // ---------------------------------------------------------------------------
@@ -47,13 +50,13 @@ export const OPTIONS=[
  {n:"Kia Carnival Hybrid SX",y:"2025 \u00b7 17k mi \u00b7 $48,590",cat:"van",cond:"used",seats:7,sticker:48590,cash:0,apr:.0449,offer:"Most reliable minivan",
   awd:"No AWD offered",mpg:33,mpgLab:"33",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",ins:12500,mnt:3500,res:22000,rel:4.5,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
   url:"https://www.carvana.com/vehicle/4691317",lt:"View this listing"},
- {n:"Toyota Sienna XLE",y:"2017 \u00b7 62k mi \u00b7 V6, not hybrid",cat:"van",cond:"used",seats:7,sticker:27590,ship:590,cash:0,apr:.0449,offer:"RBFCU \u2014 check age limit",
+ {n:"Toyota Sienna XLE",y:"2017 \u00b7 62k mi \u00b7 V6, not hybrid",cat:"van",cond:"used",seats:7,sticker:27590,ship:590,cash:0,apr:.0449,offer:"RBFCU 4.49%",
   awd:"AWD if optioned",mpg:22,mpgLab:"22",ins:9000,mnt:9000,res:11000,rel:4.5,cln:3.0,leg2:37.6,leg3:36.3,cargo:39.1,
   url:"https://www.carvana.com/vehicle/4517273",lt:"View this listing"},
- {n:"Toyota Sienna XLE",y:"2020 \u00b7 75k mi \u00b7 V6, not hybrid",cat:"van",cond:"used",seats:7,sticker:32990,cash:0,apr:.0449,offer:"RBFCU \u2014 check age limit",
+ {n:"Toyota Sienna XLE",y:"2020 \u00b7 75k mi \u00b7 V6, not hybrid",cat:"van",cond:"used",seats:7,sticker:32990,cash:0,apr:.0449,offer:"RBFCU 4.49%",
   awd:"AWD if optioned",mpg:22,mpgLab:"22",ins:9500,mnt:8500,res:12500,rel:4.5,cln:3.0,leg2:37.6,leg3:36.3,cargo:39.1,
   url:"https://www.carvana.com/vehicle/4578369",lt:"View this listing"},
- {n:"Honda Odyssey EX-L",y:"2019 \u00b7 37k mi",cat:"van",cond:"used",seats:7,sticker:31990,cash:0,apr:.0449,offer:"RBFCU \u2014 check age limit",
+ {n:"Honda Odyssey EX-L",y:"2019 \u00b7 37k mi",cat:"van",cond:"used",seats:7,sticker:31990,cash:0,apr:.0449,offer:"RBFCU 4.49%",
   awd:"No AWD offered",mpg:22,mpgLab:"22",ins:9500,mnt:9500,res:13000,rel:3.0,cln:4.0,leg2:40.9,leg3:38.1,cargo:32.8,
   url:"https://www.carvana.com/vehicle/4651600",lt:"View this listing"},
  {n:"Toyota Sienna XLE",y:"2023 \u00b7 67k mi \u00b7 hybrid",cat:"van",cond:"used",seats:7,sticker:39590,cash:0,apr:.0449,offer:"RBFCU 4.49%",
@@ -133,7 +136,7 @@ export const OPTIONS=[
  {n:"Kia EV9 Land AWD",y:"2024 \u00b7 15k mi \u00b7 $45,990",cat:"suv",cond:"used",seats:6,sticker:45990,cash:0,apr:.0449,offer:"VIP 2nd row \u00b7 Carvana",
   awd:"AWD standard",kwh100:35.6,mpgLab:"88 MPGe",mpgBar:40,ev:true,charger:true,aw:"2024 World Car of the Year",awUrl:"https://www.kbb.com/car-news/the-kia-ev9-is-the-2024-world-car-of-the-year",ins:13500,mnt:2200,res:20000,rel:1.5,cln:4.0,
   leg2:42.8,leg3:32.0,cargo:20.2,url:"https://www.carvana.com/vehicle/4709411",lt:"View this listing"},
- {n:"Ford Expedition Limited",y:"2017 \u00b7 70k mi \u00b7 old body style",cat:"suv",cond:"used",seats:7,sticker:24990,ship:990,cash:0,apr:.0449,offer:"RBFCU \u2014 check age limit",
+ {n:"Ford Expedition Limited",y:"2017 \u00b7 70k mi \u00b7 old body style",cat:"suv",cond:"used",seats:7,sticker:24990,ship:990,cash:0,apr:.0449,offer:"RBFCU 4.49%",
   awd:"4WD available",mpg:17,mpgLab:"17",ins:9500,mnt:12000,res:9000,rel:2.5,cln:3.0,leg2:39.1,leg3:37.7,cargo:18.6,
   url:"https://www.carvana.com/vehicle/4629379",lt:"View this listing"},
  {n:"Chevy Tahoe LS",y:"2023 \u00b7 64k mi \u00b7 check 2nd row",cat:"suv",cond:"used",seats:7,sticker:39990,ship:1890,cash:0,apr:.0449,offer:"LS ships with a bench",
@@ -198,7 +201,7 @@ export const OPTIONS=[
  {n:"Rivian R1S Dual Standard",y:"2024 \u00b7 33k mi \u00b7 $63,590",cat:"suv",cond:"used",seats:6,sticker:63590,cash:0,apr:.0449,offer:"Longer range",
   awd:"AWD standard",kwh100:49,mpgLab:"69 MPGe",mpgBar:34,ev:true,charger:true,ins:16000,mnt:4000,res:18000,rel:2.0,cln:4.0,
   leg2:37.6,leg3:32.8,cargo:17.7,url:"https://www.carvana.com/vehicle/4460885",lt:"View this listing"},
- {n:"Tesla Model X 100D",y:"2017 \u00b7 47k mi \u00b7 $31,590",cat:"suv",cond:"used",seats:6,sticker:31590,cash:0,apr:.0449,offer:"RBFCU \u2014 check age limit",
+ {n:"Tesla Model X 100D",y:"2017 \u00b7 47k mi \u00b7 $31,590",cat:"suv",cond:"used",seats:6,sticker:31590,cash:0,apr:.0449,offer:"RBFCU 4.49%",
   awd:"AWD standard",kwh100:34,mpgLab:"100 MPGe",mpgBar:40,ev:true,charger:true,ins:14000,mnt:8000,res:6000,rel:2.5,cln:4.0,
   leg2:38.5,leg3:32.2,cargo:15.0,url:"https://www.carvana.com/vehicle/4672369",lt:"View this listing"},
  {n:"Tesla Model X Long Range",y:"2020 \u00b7 56k mi \u00b7 $39,590",cat:"suv",cond:"used",seats:6,sticker:39590,cash:0,apr:.0449,offer:"Falcon doors",
@@ -239,7 +242,7 @@ export const OPTIONS=[
  {n:"Chevy Traverse RS AWD",y:"2026 \u00b7 AWD \u00b7 $50,395",cat:"suv",cond:"new",seats:7,sticker:50395,cash:0,apr:.0449,offer:"GM 5.9% for 60 months",
   awd:"AWD standard on this build",mpg:21,mpgLab:"21",ins:12500,mnt:4500,res:26000,rel:3.0,cln:3.5,leg2:38.4,leg3:33.5,cargo:22.9,
   url:"https://www.chevrolet.com/suvs/traverse",lt:"Build and find one"},
- {n:"Chevy Traverse LT",y:"2021 \u00b7 ~78k mi \u00b7 old body style",cat:"suv",cond:"used",seats:7,sticker:24590,ship:1290,cash:0,apr:.0449,offer:"RBFCU \u2014 check age limit",
+ {n:"Chevy Traverse LT",y:"2021 \u00b7 ~78k mi \u00b7 old body style",cat:"suv",cond:"used",seats:7,sticker:24590,ship:1290,cash:0,apr:.0449,offer:"RBFCU 4.49%",
   awd:"AWD if optioned",mpg:21,mpgLab:"21",ins:10500,mnt:9500,res:9000,rel:2.5,cln:3.5,leg2:38.4,leg3:33.5,cargo:23.0,
   url:"https://www.carvana.com/cars/chevrolet-traverse",lt:"Browse listings"},
  {n:"GMC Acadia AT4 AWD",y:"2024 \u00b7 ~44k mi \u00b7 market estimate",cat:"suv",cond:"used",seats:7,sticker:40590,ship:1290,cash:0,apr:.0449,offer:"Bigger since the 2024 redesign",
@@ -328,7 +331,7 @@ export const OPTIONS=[
  {n:"Kia Sedona SX",y:"2020 \u00b7 ~79k mi \u00b7 the Carnival before it",cat:"van",cond:"used",seats:7,sticker:20590,ship:1290,cash:0,apr:.0449,offer:"Lounge seats, cheap",
   awd:"No AWD offered",mpg:21,mpgLab:"21",ins:9500,mnt:9000,res:7500,rel:3.0,cln:3.5,leg2:40.4,leg3:31.5,cargo:33.9,
   url:"https://www.carvana.com/cars/kia-sedona",lt:"Browse listings"},
- {n:"Honda Pilot EX-L AWD",y:"2021 \u00b7 ~78k mi \u00b7 old body style",cat:"suv",cond:"used",seats:7,sticker:26590,ship:1290,cash:0,apr:.0449,offer:"RBFCU \u2014 check age limit",
+ {n:"Honda Pilot EX-L AWD",y:"2021 \u00b7 ~78k mi \u00b7 old body style",cat:"suv",cond:"used",seats:7,sticker:26590,ship:1290,cash:0,apr:.0449,offer:"RBFCU 4.49%",
   awd:"AWD standard on this build",mpg:22,mpgLab:"22",ins:10500,mnt:8500,res:9500,rel:4.0,cln:3.5,leg2:38.4,leg3:31.9,cargo:16.5,
   url:"https://www.carvana.com/cars/honda-pilot",lt:"Browse listings"},
  {n:"Toyota Sequoia Platinum",y:"2019 \u00b7 ~88k mi \u00b7 old body style",cat:"suv",cond:"used",seats:7,sticker:38590,cash:0,apr:.0449,offer:"Bulletproof, and drinks it",
@@ -666,7 +669,7 @@ export const FINANCE_OFFERS = [
   ['Grand Highlander', '4.99% / 60 mo', 'Also at 72 months.'],
   ['Chevy / GMC full-size', '5.9% / 60 mo', 'Tahoe, Suburban, Yukon. No cash back.'],
   ['Toyota Sienna', 'No APR special', 'Lease offer only — so RBFCU 4.49%.'],
-  ['Used, any brand', 'RBFCU 4.49%', 'Same rate new or used, 60 mo or less.'],
+  ['Used, any brand', 'RBFCU 4.49%', 'No new/used split, no age tier. Term only.'],
 ];
 
 export const LEASES = [
@@ -739,7 +742,7 @@ export const SOURCE_ROWS = [
   ['Legroom, cargo, clearance', 'Manufacturer specs', 'Published'],
   ['MPG and MPGe', 'EPA combined ratings', 'Published'],
   ['Finance offers', 'Kia, Nissan, Toyota, GM, September 2026', 'EV9 and Armada checked 3 Sep'],
-  ['Loan rate on every card', 'RBFCU 4.49%/60 mo, new and used alike', 'Advertised, not a pre-approval'],
+  ['Loan rate on every card', 'RBFCU Auto/Truck sheet, 8 Sep 2026: 4.490% to 60 mo', 'Floor rate, not a pre-approval'],
   ['Carnival prices and offers', 'Kia MSRP, corridor dealer listings, 8 Sep 2026', 'Trim-level, not a VIN'],
   ['Used Carnival listings', 'Carvana San Antonio search page, 8 Sep 2026', 'Listed cars, VIN not opened'],
   ['Carnival vs Sienna depreciation', 'iSeeCars: 50.1% vs 38.6% over five years', 'Model average'],
@@ -781,7 +784,7 @@ export const WHY = {
   dep:
     'Asking price plus 6.25% Texas sales tax and $400 of title and registration fees, minus what the car should be worth at year five. Usually the biggest single number on this page.',
   interest:
-    "Total interest over the loan term at the APR shown on each card. Every card here is capped at RBFCU's 4.49% for 60 months, which they quote for used cars as well as new; a manufacturer promo is only used where it beats that, as on the 0% EV9 and the 2.99% Carnival. Two caveats: 4.49% is the well-qualified rate at 60 months or less, and the oldest, highest-mileage cars on this page may be tiered higher or declined, so treat those totals as optimistic until you have the pre-approval in writing.",
+    "Total interest over the loan term at the APR shown on each card. Every card here is capped at RBFCU's 4.49%, which their rate sheet applies to used cars and new alike with no age or mileage tier \u2014 it is priced on term alone: 4.490% to 60 months, 4.750% for 61-72, 6.000% beyond. A manufacturer promo is only used where it beats that, as on the 0% EV9 and the 2.99% Carnival. The one caveat: 4.490% is the \u2018as low as\u2019 floor on a sheet that runs up to 18.000%, so it is the best case for the strongest credit, not a quote. Push the term slider past 60 months and every figure here is 0.26 points optimistic.",
   fuel:
     'Your miles per year times five, at the petrol or electricity price you set in Assumptions. Plug-ins blend the two using the battery-share slider.',
   ins:
