@@ -97,7 +97,12 @@ net = depreciation + interest + fuel + insurance + maintenance
 - **Price** is sticker plus shipping, then Texas sales tax at a flat **6.25%**
   plus **$400** in fees.
 - **Loan** is price + tax − cash − down payment, amortised over the chosen term
-  at the vehicle's APR.
+  at the vehicle's APR. Every APR is capped at **RBFCU's 4.49% for 60 months**,
+  which they quote for used cars as well as new; a manufacturer promo is only
+  used where it beats that (0% EV9, 2.90% Armada, 2.99% Carnival, 3.99% Ioniq 9).
+  That rate is the well-qualified one at 60 months or less — the oldest and
+  highest-mileage listings may be tiered higher or declined, and are labelled to
+  check.
 - **Fuel** is electricity for EVs, a blend for plug-ins at your assumed share of
   electric miles, petrol otherwise (diesel priced 22% higher).
 - **Resale** starts from published five-year depreciation and is discounted
@@ -139,11 +144,14 @@ drive-on beaches at Port Aransas, and a liking for the lifted AWD look.
    here — and a used one asks about $16,000 more than a used Carnival for that
    one extra cubic foot.
 3. **Resale is the largest single lever, bigger than price.** The Sienna loses
-   only 29% over five years against a class average of 46% — which is why a
-   $47,504 new Sienna costs less to own than a $40,499 used one.
+   only 29% over five years against a class average of 46%, which is what keeps
+   a new Sienna competitive with a used one at all. At the 4.49% credit-union
+   rate the 2025 with 59k miles at $40,499 comes back ahead by about $2,100 —
+   cheap money helps a used car more than a new one, because the used car was
+   the one carrying the higher rate.
 4. **The Carnival Hybrid ties the Sienna; the V6 Carnival does not.** A
-   discounted 2026 Carnival Hybrid EX at $42,090 lands 11th of 122 at about
-   $58.8k over five years, $424 from a new Sienna XLE and $126 a month cheaper —
+   discounted 2026 Carnival Hybrid EX at $42,090 lands 13th of 122 at about
+   $57.4k over five years, $696 from a new Sienna XLE and $121 a month cheaper —
    a tie under this page's own $3,000 rule. Every V6 Carnival burns $17,045 of
    petrol over 125,000 miles against the hybrid's $11,364, which is worth more
    than any discount offered on the car. Used is not the cheaper way in: the
@@ -205,6 +213,7 @@ repair costs, and the long-form caveats — lives in the app's **Notes** tab.
 | Legroom, cargo, clearance | Manufacturer specs | Published |
 | MPG and MPGe | EPA combined ratings | Published |
 | Finance offers | Kia, Toyota, GM, August 2026 | Expire 31 Aug |
+| Loan rate on every card | RBFCU 4.49%/60 mo, new and used alike | Advertised, not a pre-approval |
 | Carnival prices and offers | Kia MSRP, corridor dealer listings, 8 Sep 2026 | Trim-level, not a VIN |
 | Used Carnival listings | Carvana San Antonio search page, 8 Sep 2026 | Listed cars, VIN not opened |
 | Final assembly points | Kia Gwangmyeong; Toyota Indiana, Princeton | Manufacturer |

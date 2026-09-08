@@ -73,13 +73,15 @@ const NotesTab = () => (
         </li>
         <li>
           <b>Resale is the largest single lever, bigger than price.</b> The Sienna loses only 29% over five
-          years against a class average of 46%. That is why a $47,504 new Sienna costs less to own than a
-          $40,499 used one over the same period.
+          years against a class average of 46%, which is what keeps a new Sienna competitive with a used one at
+          all. It used to win outright; at a 4.49% credit-union rate the 2025 with 59k miles at $40,499 comes
+          back ahead, by about $2,100. Cheap money helps a used car more than a new one, because the used car
+          was carrying the higher rate.
         </li>
         <li>
           <b>The Carnival Hybrid ties the Sienna. The V6 Carnival does not.</b> A discounted 2026 Carnival
-          Hybrid EX at $42,090 lands 11th of 122 at about $58.8k over five years &mdash; $424 from a new Sienna
-          XLE and $126 a month cheaper, which is a tie under the $3,000 rule above. But every V6 Carnival burns
+          Hybrid EX at $42,090 lands 13th of 122 at about $57.4k over five years &mdash; $696 from a new Sienna
+          XLE and $121 a month cheaper, which is a tie under the $3,000 rule above. But every V6 Carnival burns
           $17,045 of petrol over 125,000 miles against the hybrid&rsquo;s $11,364, and no discount on offer in
           the corridor is worth $5,700. If you want a Carnival, it has to be the hybrid.
         </li>
@@ -354,20 +356,21 @@ const NotesTab = () => (
       Choice Program at $1,500&ndash;$2,000 off, and Kia is adding $750 of Sticker Sales Event bonus cash. That
       takes a $41,190 Carnival EX to about $39,690 before the cash. Kia also has a bought-down 2.99% for 72
       months, and 1.90% for 48, but the cheap rate cannot be combined with the discounts &mdash; so both paths
-      are priced as separate cards. Over five years at 60 months the cheap-rate path comes out $86 ahead of the
-      discount path, which is to say they are the same deal and you should take whichever the dealer will
-      actually honour.
+      are priced as separate cards. Against RBFCU&rsquo;s 4.49% the discounts win outright: taking $1,500 off
+      plus the $750 and financing at the credit union comes out <b>$1,239 ahead</b> of Kia&rsquo;s 2.99% at full
+      MSRP, and the margin grows the more cash you put down. Kia&rsquo;s cheap rate only wins if your
+      alternative is a 6% bank loan.
       <br />
       <br />
-      <b>The buy is the 2026 Carnival Hybrid EX at about $42,090.</b> It finishes 11th of 122 at roughly $58.8k
-      over five years, $126 a month cheaper than a new Sienna XLE, and it is the only Carnival that survives
+      <b>The buy is the 2026 Carnival Hybrid EX at about $42,090.</b> It finishes 13th of 122 at roughly $57.4k
+      over five years, $121 a month cheaper than a new Sienna XLE, and it is the only Carnival that survives
       25,000 miles a year. Every V6 Carnival on the page &mdash; new or used &mdash; burns $17,045 of petrol
       over 125,000 miles against the hybrid&rsquo;s $11,364. That one line is worth more than any discount
       offered on the car.
       <br />
       <br />
       <b>Used is not the cheaper way into a Carnival.</b> The best used one found is a 2024 EX with 56k miles at
-      $33,590, and it still lands 32nd at $63.5k &mdash; about $4,700 worse than buying the new hybrid, because
+      $33,590, and it still lands 30th at $61.3k &mdash; about $3,900 worse than buying the new hybrid, because
       it is a V6. The used hybrids are priced almost at new-car money: $42,590 for a 2025 EX at Carvana against
       $42,090 for a brand-new 2026 with the full 10-year powertrain warranty. Buy the new one.
       <br />
@@ -402,8 +405,8 @@ const NotesTab = () => (
       over five years and the Carnival 55% &mdash; a 16-point gap, and the widest in the minivan table.
       iSeeCars&rsquo; current study says the same thing slightly more conservatively: 38.6% depreciation for the
       Sienna against 50.1% for the Carnival. Either way it is worth $4,800&ndash;$6,700 on a $42,000 van, handed
-      back at the end, on top of a Sienna that was worth more to begin with. It is the single reason a new
-      Sienna costs less to own than a used one.
+      back at the end, on top of a Sienna that was worth more to begin with. It is the reason a new Sienna
+      stays within touching distance of a used one at all.
       <br />
       <br />
       <b>All-wheel drive does not exist on a Carnival.</b> Not as an option, not on a trim, not in any model
@@ -434,8 +437,8 @@ const NotesTab = () => (
       <br />
       <br />
       <b>The honest verdict.</b> Against the <b>V6</b> Carnival the Sienna wins on cost by about $4,600 and it
-      is not close. Against the <b>Carnival Hybrid</b> the five-year totals are $58,792 and $58,368 &mdash;
-      $424 apart on a $58,000 number, which is a tie under this page&rsquo;s own rule that anything under
+      is not close. Against the <b>Carnival Hybrid</b> the five-year totals are $57,361 and $56,665 &mdash;
+      $696 apart on a $57,000 number, which is a tie under this page&rsquo;s own rule that anything under
       $3,000 is a tie. At that point it is not a spreadsheet question any more: the Sienna gives you AWD, the
       better third row (38.7 inches against 35.6) and the tax deduction; the Carnival gives you 6.7 cu ft more
       boot, twice the warranty and $5,400 less cash on the day. Drive both.
@@ -473,7 +476,7 @@ const NotesTab = () => (
       <br />
       <b>Two things this page does not model.</b> Neither the deduction nor Texas&rsquo;s trade-in tax credit is
       in the five-year totals, because both depend on your tax situation. Both favour the Sienna and both favour
-      buying new. Ask your accountant before you let a $424 gap decide anything.
+      buying new. Ask your accountant before you let a $696 gap decide anything.
     </div>
     </Note>
 
