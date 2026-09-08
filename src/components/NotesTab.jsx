@@ -55,7 +55,7 @@ const NotesTab = () => (
     </div>
     </Note>
 
-    <Note title="Seven things the research turned up" blurb="Fuel decides it; minivans win on space per dollar">
+    <Note title="Nine things the research turned up" blurb="Fuel decides it; minivans win on space per dollar">
     <div className="tldr">
       <ul>
         <li>
@@ -73,8 +73,25 @@ const NotesTab = () => (
         </li>
         <li>
           <b>Resale is the largest single lever, bigger than price.</b> The Sienna loses only 29% over five
-          years against a class average of 46%. That is why a $47,504 new Sienna costs less to own than a
-          $40,499 used one over the same period.
+          years against a class average of 46%, which is what keeps a new Sienna competitive with a used one at
+          all. It used to win outright; at a 4.49% credit-union rate the 2025 with 59k miles at $40,499 comes
+          back ahead, by about $2,100. Cheap money helps a used car more than a new one, because the used car
+          was carrying the higher rate.
+        </li>
+        <li>
+          <b>The Carnival Hybrid ties the Sienna. The V6 Carnival does not.</b> A discounted 2026 Carnival
+          Hybrid EX at $42,090 lands 13th of 122 at about $57.4k over five years &mdash; $696 from a new Sienna
+          XLE and $121 a month cheaper, which is a tie under the $3,000 rule above. But every V6 Carnival burns
+          $17,045 of petrol over 125,000 miles against the hybrid&rsquo;s $11,364, and no discount on offer in
+          the corridor is worth $5,700. If you want a Carnival, it has to be the hybrid.
+        </li>
+        <li>
+          <b>There is no government incentive on a Carnival, and there is one on a Sienna.</b> Every federal
+          clean-vehicle purchase credit ended for cars acquired after 30 September 2025, and a Carnival never
+          qualified regardless &mdash; it has no plug. What is left is the auto-loan interest deduction, up to
+          $10,000 a year for tax years 2025&ndash;2028, and it requires final assembly in the United States. The
+          Sienna is built in Princeton, Indiana. The Carnival is shipped from Gwangmyeong, South Korea, with a
+          15% tariff on it.
         </li>
         <li>
           <b>No electric vehicle can give you seven seats with captain&rsquo;s chairs.</b> The EV9, Rivian R1S,
@@ -325,6 +342,141 @@ const NotesTab = () => (
       captains, 20 cu ft behind the third row, and 2,000&ndash;5,000 lb of tow depending on trim. If you need
       the truck, the $32,990 MAX is the price winner and the new Armada is the warranty winner. If you can
       charge at home and can live with six seats, the EV9 offer is the one that actually moved.
+    </div>
+    </Note>
+
+    <Note title="Every Kia Carnival deal in the corridor" blurb="Austin to San Antonio, 8 Sep 2026 — and the hybrid is the one">
+    <div className="note">
+      <b>Nine Carnivals were added, five new and four used.</b> The sweep covered Austin, New Braunfels and
+      San Antonio. It starts at EX because LX and LXS ship with a second-row bench, and every single one is
+      front-wheel drive &mdash; Kia has never built an all-wheel-drive Carnival, in any year, on any trim.
+      <br />
+      <br />
+      <b>The new-car discounts are real but small.</b> Dealers in the corridor are advertising the KFA Dealer
+      Choice Program at $1,500&ndash;$2,000 off, and Kia is adding $750 of Sticker Sales Event bonus cash. That
+      takes a $41,190 Carnival EX to about $39,690 before the cash. Kia also has a bought-down 2.99% for 72
+      months, and 1.90% for 48, but the cheap rate cannot be combined with the discounts &mdash; so both paths
+      are priced as separate cards. Against RBFCU&rsquo;s 4.49% the discounts win outright: taking $1,500 off
+      plus the $750 and financing at the credit union comes out <b>$1,239 ahead</b> of Kia&rsquo;s 2.99% at full
+      MSRP, and the margin grows the more cash you put down. Kia&rsquo;s cheap rate only wins if your
+      alternative is a 6% bank loan.
+      <br />
+      <br />
+      <b>The buy is the 2026 Carnival Hybrid EX at about $42,090.</b> It finishes 13th of 122 at roughly $57.4k
+      over five years, $121 a month cheaper than a new Sienna XLE, and it is the only Carnival that survives
+      25,000 miles a year. Every V6 Carnival on the page &mdash; new or used &mdash; burns $17,045 of petrol
+      over 125,000 miles against the hybrid&rsquo;s $11,364. That one line is worth more than any discount
+      offered on the car.
+      <br />
+      <br />
+      <b>Used is not the cheaper way into a Carnival.</b> The best used one found is a 2024 EX with 56k miles at
+      $33,590, and it still lands 30th at $61.3k &mdash; about $3,900 worse than buying the new hybrid, because
+      it is a V6. The used hybrids are priced almost at new-car money: $42,590 for a 2025 EX at Carvana against
+      $42,090 for a brand-new 2026 with the full 10-year powertrain warranty. Buy the new one.
+      <br />
+      <br />
+      <b>Market context.</b> CarGurus has 2023 Carnivals averaging $34,496 around San Antonio and $30,535
+      around Austin; 2024s average $30,998. Anything on this page asking more than that for a V6 is priced
+      above its own market. Kia&rsquo;s CPO programme restores the 10-year / 100,000-mile powertrain warranty
+      from the original in-service date, which is the one genuine reason to pay a dealer premium over Carvana.
+      <br />
+      <br />
+      <b>The 2027s have landed and cost $100 more.</b> Every trim went up exactly $100. Kia is absorbing the
+      15% tariff that every Korean-built car now carries rather than putting it on the sticker &mdash; worth
+      knowing, because it is a discount that could disappear at any model-year change.
+    </div>
+    </Note>
+
+    <Note title="Why the Sienna outranks the Carnival" blurb="Fuel, resale, AWD and a tax break the Kia cannot claim">
+    <div className="note">
+      <b>The app is not favouring Toyota. Your mileage is.</b> The list sorts on five-year cost, and at 25,000
+      miles a year the two biggest lines in that total are fuel and resale. The Sienna wins both, and it wins
+      them by enough to cover being $7,800 more expensive to buy. Drop the mileage slider to 12,000 a year and
+      most of the gap closes; that one assumption is doing nearly all of the work.
+      <br />
+      <br />
+      <b>Fuel is the whole argument, and only against the V6.</b> Every Sienna since 2021 is a hybrid at 36 mpg.
+      The Carnival V6 gets 22. Over 125,000 miles at $3.00 a gallon that is $10,417 against $17,045 &mdash;
+      $6,628, before interest. But the Carnival Hybrid gets 33 mpg, which costs $11,364. Against the hybrid the
+      fuel argument is worth $947 and essentially evaporates.
+      <br />
+      <br />
+      <b>Resale is the lever that does not evaporate.</b> This page has the Sienna keeping 71% of its value
+      over five years and the Carnival 55% &mdash; a 16-point gap, and the widest in the minivan table.
+      iSeeCars&rsquo; current study says the same thing slightly more conservatively: 38.6% depreciation for the
+      Sienna against 50.1% for the Carnival. Either way it is worth $4,800&ndash;$6,700 on a $42,000 van, handed
+      back at the end, on top of a Sienna that was worth more to begin with. It is the reason a new Sienna
+      stays within touching distance of a used one at all.
+      <br />
+      <br />
+      <b>All-wheel drive does not exist on a Carnival.</b> Not as an option, not on a trim, not in any model
+      year. The Sienna offers it for $890&ndash;$2,000 at the cost of 1 mpg, and the Woodland Edition makes it
+      standard with 6.9 inches of clearance. Given Port Aransas, this is the difference between the two vans
+      that has nothing to do with money.
+      <br />
+      <br />
+      <b>The one federal incentive left on a new car, the Carnival cannot claim.</b> See the note below on
+      incentives. In short: the deduction requires final assembly in the United States. The Sienna is built in
+      Princeton, Indiana. The Carnival is built in Gwangmyeong, South Korea.
+      <br />
+      <br />
+      <b>And the powertrain is the known quantity.</b> Toyota&rsquo;s planetary-gear hybrid is the same basic
+      design that has been running in Priuses for two decades and routinely clears 250,000 miles on servicing
+      alone. The Carnival Hybrid&rsquo;s 1.6-litre turbo four with a six-speed automatic is a newer, more
+      complex way to move a 4,700-lb van, and it has no long-mileage record yet. At your rate you will ask it
+      for 125,000 miles in five years.
+      <br />
+      <br />
+      <b>Where the Carnival genuinely wins, and it is not nothing.</b> It holds <b>40.2 cu ft</b> behind the
+      third row against the Sienna&rsquo;s 33.5 &mdash; the most of any minivan here and 6.7 cu ft more van for
+      the same footprint. Its warranty is 10 years / 100,000 miles on the powertrain against Toyota&rsquo;s
+      5 / 60,000. J.D. Power scores it 76 for quality against the Sienna&rsquo;s 71, the 2025 Carnival carried
+      no NHTSA recalls while the 2025 Sienna was recalled five times, and its interior is easier to clean
+      &mdash; wipeable SynTex, a third row that folds into the floor, and a second row you can actually move.
+      The Sienna&rsquo;s second row does not come out and there is carpet under it.
+      <br />
+      <br />
+      <b>The honest verdict.</b> Against the <b>V6</b> Carnival the Sienna wins on cost by about $4,600 and it
+      is not close. Against the <b>Carnival Hybrid</b> the five-year totals are $57,361 and $56,665 &mdash;
+      $696 apart on a $57,000 number, which is a tie under this page&rsquo;s own rule that anything under
+      $3,000 is a tie. At that point it is not a spreadsheet question any more: the Sienna gives you AWD, the
+      better third row (38.7 inches against 35.6) and the tax deduction; the Carnival gives you 6.7 cu ft more
+      boot, twice the warranty and $5,400 less cash on the day. Drive both.
+    </div>
+    </Note>
+
+    <Note title="Government incentives on a new car in 2026" blurb="The EV credit is gone; one deduction is left, and it is assembly-gated">
+    <div className="note">
+      <b>There is no federal purchase credit on a Carnival. There never was.</b> The $7,500 clean-vehicle
+      credit under section 30D only ever applied to battery electrics and plug-in hybrids, and the Carnival is
+      neither &mdash; the hybrid charges itself and has no plug. The point is moot regardless: the new, used
+      and leased clean-vehicle credits all ended for vehicles acquired after <b>30 September 2025</b>. Nothing
+      bought in 2026 qualifies, on any vehicle, including the EV9 elsewhere on this page.
+      <br />
+      <br />
+      <b>What is left is the auto-loan interest deduction.</b> For tax years 2025 through 2028 you may deduct up
+      to <b>$10,000 a year</b> of interest on a loan for a <b>new</b>, personal-use vehicle under 14,000 lb. It
+      is available whether or not you itemise. It phases out above $100,000 of modified AGI single, $200,000
+      joint.
+      <br />
+      <br />
+      <b>It requires final assembly in the United States, and that is where the Carnival loses.</b> Congress
+      tied eligibility to the assembly point, not the brand. The Carnival is built at Kia&rsquo;s Gwangmyeong
+      plant in South Korea and shipped over &mdash; no deduction. The Sienna is built at Toyota Motor
+      Manufacturing Indiana in Princeton, and every US-market Sienna comes from there &mdash; deduction
+      available. On a $47,504 Sienna at 6% over 60 months that is roughly $6,000 of interest across the loan
+      that becomes deductible, worth $1,300&ndash;$1,500 in real money at a typical marginal rate.
+      <br />
+      <br />
+      <b>Check the actual car, not the model name.</b> The same nameplate can be built in different countries by
+      trim and model year. The Monroney sticker has a &ldquo;Final Assembly Point&rdquo; line, and NHTSA&rsquo;s
+      free VIN decoder confirms it. Used cars are excluded from the deduction entirely, so this only ever
+      applies to a new purchase.
+      <br />
+      <br />
+      <b>Two things this page does not model.</b> Neither the deduction nor Texas&rsquo;s trade-in tax credit is
+      in the five-year totals, because both depend on your tax situation. Both favour the Sienna and both favour
+      buying new. Ask your accountant before you let a $696 gap decide anything.
     </div>
     </Note>
 
