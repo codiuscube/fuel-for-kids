@@ -216,7 +216,7 @@ export const OPTIONS=[
  // 87k miles on the clock, and a 6" lift on 35s that costs mpg and resale
  // rather than adding either. See the note "The lifted AT4" for the working.
  {n:"GMC Yukon AT4 4WD",y:"2022 \u00b7 87k mi \u00b7 6\" lift on 35s \u00b7 $51,500",cat:"suv",cond:"used",seats:7,row2:"ask",sticker:51500,cash:0,apr:.0449,offer:"Private seller \u00b7 check for buckets",
-  awd:"4WD standard on AT4",mpg:14,mpgLab:"14",ins:13500,res:15000,rel:2.0,cln:3.0,leg2:42.0,leg3:34.9,cargo:25.5,
+  awd:"4WD standard on AT4",mpg:14,mpgLab:"14",ins:13500,res:15000,rel:2.5,cln:3.0,leg2:42.0,leg3:34.9,cargo:25.5,
   url:"https://www.facebook.com/marketplace/item/1037812272478124/",lt:"View this listing"},
  {n:"Chevy Tahoe LT 4WD",y:"2026 \u00b7 4WD, buckets optional \u00b7 $68,995",cat:"suv",cond:"new",seats:7,row2:"ask",sticker:68995,cash:0,apr:.0449,offer:"GM 5.9% for 60 months",
   awd:"4WD standard on this build",mpg:17,mpgLab:"17",ins:13500,res:39000,rel:3.0,cln:3.0,leg2:42.0,leg3:34.9,cargo:25.5,
@@ -553,7 +553,7 @@ export const OPTIONS=[
   leg2:42,leg3:34.9,cargo:25.5,url:"https://www.cars.com/vehicledetail/70264cc3-cd36-41e3-a4c0-9076b68af616/",lt:"View this listing"},
  // GMC Yukon XL Denali — “Power Release 2nd Row Bucket Seats”
  {n:"GMC Yukon XL Denali",y:"2019 \u00b7 97k mi \u00b7 $31,741",cat:"suv",cond:"used",seats:7,sticker:31741,cash:0,apr:.0449,offer:"Austin, 43 mi \u00b7 captains confirmed",
-  awd:"4WD on this listing",mpg:17,mpgLab:"17",ins:12500,res:14000,rel:3,cln:3,
+  awd:"4WD on this listing",mpg:17,mpgLab:"17",ins:12500,res:14000,rel:2.5,cln:3,
   leg2:42,leg3:36.7,cargo:41.5,url:"https://www.cars.com/vehicledetail/5a9739f9-5b6d-4115-89dd-3207e0e24961/",lt:"View this listing"},
 ];
 
@@ -709,8 +709,11 @@ export const GC=[[/Woodland/,6.9],[/Sienna/,6.3],[/Odyssey/,4.9],[/Pacifica/,5.1
 //   usd  Texas independent-shop price, parts and labour
 //   p    share of these cars that ever need it
 //   pt   true if factory powertrain coverage would pay for it
+//   cov  optional [years, miles]: this component has its own coverage window,
+//        longer than the powertrain warranty (a hybrid pack, for instance)
 //   eng  optional: only applies where this matches the name and year blob,
-//        for a failure tied to one engine rather than the whole nameplate
+//        for a failure tied to one engine or trim rather than the whole
+//        nameplate
 //   not  optional: never applies where this matches, for the same reason
 //   src  what makes it a pattern and not an anecdote
 //
@@ -720,7 +723,15 @@ export const GC=[[/Woodland/,6.9],[/Sienna/,6.3],[/Odyssey/,4.9],[/Pacifica/,5.1
 // through, so buying at 97,000 miles is not billed for a 70,000-mile failure.
 // It cannot know whether a used car has already had the work done; a service
 // record showing the repair is a genuine reason to discount these.
+//
+// Every entry a listing matches contributes its items, so a nameplate-wide
+// pattern and a year- or engine-specific one can both apply.
+//
+// A recall is deliberately not priced here. The remedy is free, so its cost is
+// zero and its weight belongs in the `rel` score instead. What does get priced
+// is a failure that lands after the free remedy — see the L87 entry.
 export const KNOWN=[
+ // --- GM full-size: Tahoe / Suburban / Yukon ---
  {m:/Tahoe|Suburban|Yukon/,y:[2015,2020],items:[
   {c:"8L90 torque converter",at:[60,150],usd:4200,p:.40,pt:true,
    src:"Certified class action over 8L45/8L90 shudder and hard shifts, naming 2015\u20132019 Yukon, Yukon XL and Yukon Denali XL"},
@@ -737,6 +748,77 @@ export const KNOWN=[
   {c:"A/C condenser",at:[50,130],usd:1300,p:.30,pt:false,
    src:"Condenser leaks continue on the 2019\u20132025 platform with TSBs but no special-coverage extension, so this one is yours to pay"},
  ]},
+
+ // --- Chrysler minivans: Pacifica / Voyager ---
+ {m:/Pacifica|Voyager/,y:[2017,2026],items:[
+  {c:"948TE nine-speed transmission",at:[60,150],usd:5500,p:.16,pt:true,
+   src:"Repeated software updates do not fix the underlying hardware, and owners report full replacements from the 60,000-mile mark; 2017\u20132023 vans also carry a defective internal transmission wiring harness that can shut the engine down while driving"},
+ ]},
+ {m:/Pacifica Hybrid/,y:[2017,2026],items:[
+  {c:"High-voltage battery pack",at:[80,200],usd:17000,p:.06,pt:true,cov:[10,100000],
+   src:"RepairPal puts the pack at roughly $17,000, and owners report battery and power-control-module failures from 22,000 miles up; Chrysler's 10-year / 100,000-mile hybrid warranty is what stands between you and that bill, and at 25,000 miles a year you pass the mileage half of it in four years"},
+ ]},
+
+ // --- Honda ---
+ {m:/Odyssey/,y:[2011,2026],items:[
+  {c:"Power sliding door motor",at:[60,160],usd:1400,p:.40,pt:false,
+   src:"RepairPal puts a single door motor at $1,127\u20131,669 and it is the Odyssey's signature out-of-warranty repair; there are two doors"},
+ ]},
+ {m:/Odyssey/,y:[2018,2019],items:[
+  {c:"ZF nine-speed transmission",at:[50,140],usd:6500,p:.15,pt:true,
+   src:"Class action over the ZF 9HP in 2018\u20132019 Odyssey for harsh and delayed shifting; one documented internal gear failure at 71,000 miles cost $7,619 out of pocket"},
+ ]},
+ {m:/Pilot/,y:[2016,2022],items:[
+  {c:"ZF nine-speed transmission",at:[50,140],usd:6500,p:.15,pt:true,eng:/Touring|Elite/i,
+   src:"Same ZF 9HP class action covers 2016\u20132022 Pilot, but only the Touring and Elite trims carried the nine-speed \u2014 EX and EX-L used the six-speed, so no Pilot currently on this list is exposed"},
+ ]},
+
+ // --- Ford ---
+ {m:/Expedition/,y:[2018,2024],items:[
+  {c:"10R80 clutch drum bushing",at:[70,170],usd:6500,p:.15,pt:true,
+   src:"A P2705 on a 2018\u20132023 Expedition is normally the CDF clutch drum bushing, which means a rebuild or replacement at $5,000\u20139,500; documented in Ford TSBs and the subject of several class actions"},
+ ]},
+ {m:/Expedition/,y:[2018,2020],items:[
+  {c:"3.5 EcoBoost cam phasers",at:[60,150],usd:3000,p:.30,pt:true,
+   src:"Second-generation 3.5 EcoBoost VCT units rattle on cold start and all four get replaced; Ford's Customer Satisfaction Program 21N03 covered this and expired on 1 January 2023, so it is now out of pocket"},
+ ]},
+ {m:/Explorer/,y:[2020,2025],items:[
+  {c:"10R80 clutch drum bushing",at:[70,170],usd:6500,p:.13,pt:true,
+   src:"Same 10R80 gearbox and the same harsh-shift and internal-failure TSBs and class actions as the Expedition"},
+ ]},
+ {m:/Flex/,y:[2009,2019],items:[
+  {c:"Internal water pump",at:[80,180],usd:4000,p:.35,pt:true,
+   src:"The 3.5 Duratec's water pump sits inside the engine driven off a chain, so replacing it means opening the engine: $3,000\u20135,000, and a great deal more if the failure has already put coolant into the oil. Ford was sued over it, with failures across the Duratec V6 estimated near 100,000 units"},
+ ]},
+
+ // --- Nissan ---
+ {m:/Armada/,y:[2017,2024],items:[
+  {c:"Radiator coolant into the gearbox",at:[70,160],usd:5000,p:.14,pt:true,
+   src:"The factory radiator lets coolant into the transmission cooler circuit on the RE5R05A / RE7R01A, which takes out the valve body and often the whole gearbox; replacement runs $4,500\u20139,500"},
+ ]},
+
+ // --- Toyota ---
+ {m:/Toyota Highlander/,y:[2020,2024],items:[
+  {c:"UA80 eight-speed transmission",at:[60,150],usd:8000,p:.08,pt:true,not:/Hybrid/i,
+   src:"NHTSA complaints of complete transmission failure at highway speed on the 2020\u20132024 V6, with replacements quoted at $8,000\u201312,000. The hybrids use an eCVT instead and are not exposed"},
+ ]},
+];
+
+// Nameplates checked for the same kind of documented pattern and found not to
+// have one that belongs in the cost model, so an empty Known issues panel on
+// these means "looked at", not "not looked at yet". Anything matching neither
+// KNOWN nor CLEAR simply has not been reviewed, and the card says so rather
+// than implying a clean bill of health.
+export const CLEAR=[
+ {m:/Carnival|Sedona/,note:"Recalls only \u2014 fuel pipe, roof moulding, sliding-door auto-reverse, tow-hitch harness \u2014 and every one of them is a free fix checkable by VIN. Owner complaints cluster on electrical and trim, not on a big-ticket mechanical failure."},
+ {m:/Sienna|Woodland/,note:"No named big-ticket pattern. The 2021-on vans are hybrid-only with an eCVT, which has a strong record; the earlier V6 has scattered transmission complaints but nothing that reads as a defect population."},
+ {m:/Sequoia/,note:"No named big-ticket pattern found on either the old 5.7 or the 2023-on i-Force Max."},
+ {m:/Pathfinder/,note:"The CVT that gives the Pathfinder its reputation was dropped after 2021. The 2022-on cars use a conventional nine-speed and are not exposed to it."},
+ {m:/Pilot/,note:"The ZF nine-speed class action only reaches 2016\u20132022 Touring and Elite trims; the EX-L here is the six-speed, and the 2023-on cars are a new ten-speed."},
+ {m:/Grand Highlander|Highlander Hybrid/,note:"The 2020\u20132024 eight-speed failures are a V6 problem. These are hybrids on an eCVT, and the Grand Highlander's own complaints are shift quality rather than failure."},
+ {m:/Telluride|Palisade/,note:"The 3.8 V6 does consume oil, carbon on the piston rings, and there is a transmission-cooler coolant leak on 2020\u20132022 Palisades under TSB 23-EM-003H. Neither has a repair cost or failure rate I could source well enough to price, and the 2023\u20132024 oil-pump recall is free. Worth an oil-consumption check on a test drive."},
+ {m:/EV9/,note:"The ICCU failure is real and will strand the car, but Kia service campaign SC327Y covers it and the pack carries 10 years / 100,000 miles, so the expected bill is close to zero."},
+ {m:/Traverse|Acadia|Enclave/,note:"The 3.6's timing-chain stretch belongs to the 2007\u20132012 engines, well before any of these."},
 ];
 
 export const OWN=[[/Woodland|Sienna/,4.4,600],[/Odyssey/,4.3,550],[/Pacifica/,3.8,690],[/Carnival Hybrid/,4.5,520],

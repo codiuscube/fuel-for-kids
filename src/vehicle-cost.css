@@ -756,6 +756,9 @@
 .vehcost .known .fine {
   margin: 6px 0 0;
 }
+.vehcost .knownclear {
+  margin: -4px 0 12px;
+}
 
 .vehcost .award,
 .vehcost .lnk {
@@ -1028,6 +1031,13 @@
   background: transparent;
   -webkit-appearance: none;
   appearance: none;
+  /* Every slider here is horizontal, and each one is a 30px-tall full-width
+     target sitting directly in the scroll path — the weight sliders under
+     "Adjust what matters", the gain sliders in Filters, the Assumptions panel.
+     Without this the browser hands a vertical swipe that starts on a slider to
+     the slider, so scrolling the page past one drags it instead. `pan-y` gives
+     vertical gestures back to the scroller and leaves horizontal ones here. */
+  touch-action: pan-y;
 }
 .vehcost input[type='range']::-webkit-slider-runnable-track {
   height: 5px;

@@ -577,8 +577,17 @@ const NotesTab = () => (
       after that remedy. This exact car, this exact engine. There is a second one too: <b>26V085</b>, a 2026
       recall on the 2022 ten-speed, where the transmission control valve can lock the rear wheels. Both are free
       to fix and both are checkable by VIN in about thirty seconds &mdash; but they are why this car carries a
-      2.0 reliability score instead of the 3.0 the rest of the GM full-size group gets. The 2024 Denali on the
-      list runs the same engine, so I have marked it down to 2.5 as well.
+      2.5 reliability score instead of the 3.0 the rest of the GM full-size group gets. The 2023 and 2024
+      Denalis on the list run the same engine and carry the same 2.5.
+      <br />
+      <br />
+      <b>One rule now sets that score, instead of three judgement calls.</b> Every GM full-size here starts at
+      3.0 and drops to 2.5 only where this listing&rsquo;s own engine or gearbox is named in an active federal
+      investigation or a certified class action &mdash; the 2021&ndash;2024 6.2L L87 cars, and the 2019 Yukon XL
+      Denali, which is named in the 8L90 class action and had been sitting at 3.0 by oversight. This car used to
+      carry 2.0, half a point of which was the ten-speed recall. That recall is free, and the money side of
+      these defects is now priced explicitly on every card under Known issues, so the reliability score is left
+      to do one job: how much risk and downtime you are signing up for, not what it costs.
       <br />
       <br />
       <b>The lift costs mpg and it does not buy ground clearance.</b> A 4WD 6.2 is EPA-rated 16 combined; on a

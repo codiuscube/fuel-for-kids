@@ -57,17 +57,33 @@ const KnownRow = ({ id, item }) => {
 // The known big-ticket failures for a listing. Only the ones whose odometer
 // window overlaps your five years are shown — a failure you will drive past
 // before you ever reach it is not a cost.
-export const KnownIssues = ({ cid, items = [], total = 0 }) => {
+export const KnownIssues = ({ cid, items = [], total = 0, status }) => {
   const live = items.filter((i) => i.inWindow);
-  if (!live.length) return null;
+  if (!live.length) {
+    // Say which kind of empty this is. "Nothing qualified" and "nobody has
+    // looked" are different facts, and only one of them is reassuring.
+    if (status?.state === 'clear') {
+      return (
+        <p className="fine knownclear">
+          <b>No big-ticket pattern found.</b> {status.note}
+        </p>
+      );
+    }
+    return (
+      <p className="fine knownclear">
+        <b>Not reviewed for known issues yet.</b> This nameplate has not been through the
+        documented-failure check, so read the blank as unknown rather than clean.
+      </p>
+    );
+  }
   return (
     <div className="known">
       <div className="knownhead">
         <span>Known issues</span>
         <b>{total > 0 ? money(total) : 'covered'}</b>
       </div>
-      {live.map((i) => (
-        <KnownRow key={i.c} id={`${cid} known ${i.c}`} item={i} />
+      {live.map((i, n) => (
+        <KnownRow key={`${i.c}-${n}`} id={`${cid} known ${i.c} ${n}`} item={i} />
       ))}
       <p className="fine">
         An expected cost, not a quote, and it is already inside the maintenance line above. Each

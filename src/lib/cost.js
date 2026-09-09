@@ -3,7 +3,7 @@
 // price, electricity rate, and Texas tax and fee rules.
 // ---------------------------------------------------------------------------
 
-import { GC, KNOWN, OWN } from '../data/vehicles';
+import { CLEAR, GC, KNOWN, OWN } from '../data/vehicles';
 
 export const TAX = 0.0625;
 export const FEES = 400;
@@ -177,12 +177,28 @@ const relAdj = (o) => clamp(1 + (3.2 - (o.rel || 3)) * 0.18, 0.75, 1.45);
 // model-year range. See KNOWN in the data file for what qualifies as one.
 export const knownFor = (o) => {
   const y = modelYearOf(o);
-  const hit = KNOWN.find((k) => k.m.test(o.n) && y >= k.y[0] && y <= k.y[1]);
-  if (!hit) return [];
-  // An item can be tied to one engine rather than the whole nameplate, so the
-  // 6.2 does not lend its failures to a 5.3 and the diesel keeps out of both.
-  const blob = `${o.n} ${o.y}`;
-  return hit.items.filter((it) => (!it.eng || it.eng.test(blob)) && !(it.not && it.not.test(blob)));
+  // Every matching entry contributes, so a nameplate-wide pattern and a year-
+  // or engine-specific one can both land on the same listing.
+  //
+  // `eng` and `not` are matched against the name alone, never the descriptive
+  // tail in `y`. That tail is prose — "petrol, not hybrid", "market estimate" —
+  // and matching it made the petrol Highlander exclude itself from a V6-only
+  // failure on the word "hybrid" inside "not hybrid". Engine and trim identity
+  // lives in the name: Denali, AT4, Duramax, Hybrid.
+  return KNOWN.filter((k) => k.m.test(o.n) && y >= k.y[0] && y <= k.y[1])
+    .flatMap((k) => k.items)
+    .filter((it) => (!it.eng || it.eng.test(o.n)) && !(it.not && it.not.test(o.n)));
+};
+
+// Whether this listing has been through the known-issue review at all. An empty
+// panel on a 'clear' car means nothing qualified; on an 'unreviewed' one it
+// means nobody has looked, which is not the same thing and should not read as
+// a clean bill of health.
+export const knownStatus = (o) => {
+  if (knownFor(o).length) return { state: 'charged' };
+  const hit = CLEAR.find((c) => c.m.test(o.n));
+  if (hit) return { state: 'clear', note: hit.note };
+  return { state: 'unreviewed' };
 };
 
 // Expected cost of the known failures over your five years, and the working
@@ -212,7 +228,10 @@ export const knownCostFor = (o, S) => {
     const odo = Math.max(lo, start) + overlap / 2;
     const age = miles ? startAge + (odo - start) / miles : startAge;
     const covered =
-      (age < w.bumperY && odo < w.bumperM) || (it.pt && age < w.ptY && odo < w.ptM);
+      (age < w.bumperY && odo < w.bumperM) ||
+      (it.pt && age < w.ptY && odo < w.ptM) ||
+      // A component with its own, longer coverage window: a hybrid pack.
+      (!!it.cov && age < it.cov[0] && odo < it.cov[1]);
 
     const expected = covered ? 0 : it.usd * it.p * share;
     return { ...it, share, expected, covered, inWindow: overlap > 0 };

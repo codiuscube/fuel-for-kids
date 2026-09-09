@@ -15,6 +15,7 @@ import {
   compute,
   covidLabel,
   covidScore,
+  knownStatus,
   gcFor,
   hasAWD,
   hasCaptains,
@@ -331,7 +332,7 @@ const CostCard = ({ o, c, base, rank, badge, badgeTone, open, onToggle, cid }) =
             {c.mntKnown > 0 ? ` · ${money(c.mntKnown)} known issues` : ''}
           </p>
 
-          <KnownIssues cid={key} items={c.knownItems} total={c.mntKnown} />
+          <KnownIssues cid={key} items={c.knownItems} total={c.mntKnown} status={knownStatus(o)} />
 
           <div className="specs">
             <Spec
