@@ -358,12 +358,20 @@ const REAR_SCORE = { Good: 1, Acceptable: 0.7, Marginal: 0.4, Poor: 0.1 };
 // NHTSA stars fill in where IIHS has not tested. Anything unknown scores as a
 // middling 0.4 rather than 0, so an untested car is not punished as though it
 // had failed, and an unverified entry is capped so it cannot win on a guess.
+//
+// Awards earned before the 2024 criteria are discounted by a fifth: until then
+// a Top Safety Pick did not have to pass the rear-seat test at all, so a 2016
+// badge and a 2026 badge are not the same claim. A car never run through the
+// rear-seat test gets the unknown 0.4 there, not credit borrowed from an older,
+// easier award.
 export const safeScore = (o) => {
   const e = safetyOf(o);
   if (!e) return 0.4;
-  const iihs = IIHS_SCORE[e.iihs] ?? 0.4;
-  const rear = e.rearSeat ? REAR_SCORE[e.rearSeat] ?? 0.4 : iihs;
-  const nhtsa = e.nhtsa === 5 ? 1 : e.nhtsa === 4 ? 0.7 : e.nhtsa ? 0.4 : iihs;
+  const awarded = e.iihs === 'TSP+' || e.iihs === 'TSP';
+  const old = awarded && e.iihsYear && e.iihsYear < 2024;
+  const iihs = (IIHS_SCORE[e.iihs] ?? 0.4) * (old ? 0.8 : 1);
+  const rear = e.rearSeat ? REAR_SCORE[e.rearSeat] ?? 0.4 : 0.4;
+  const nhtsa = e.nhtsa === 5 ? 1 : e.nhtsa === 4 ? 0.7 : e.nhtsa ? 0.4 : 0.4;
   const aeb = e.aeb === true ? 1 : e.aeb === false ? 0 : 0.4;
   const raw = 0.35 * iihs + 0.2 * rear + 0.2 * nhtsa + 0.25 * aeb;
   return e.conf === 'unverified' ? Math.min(raw, 0.6) : raw;
@@ -374,7 +382,7 @@ export const safeLabel = (o) => {
   const e = safetyOf(o);
   if (!e) return null;
   const bits = [];
-  if (e.iihs === 'TSP+' || e.iihs === 'TSP') bits.push(`IIHS ${e.iihs}`);
+  if (e.iihs === 'TSP+' || e.iihs === 'TSP') bits.push(`IIHS ${e.iihs}${e.iihsYear && e.iihsYear < 2024 ? ` ’${String(e.iihsYear).slice(2)}` : ''}`);
   if (e.aeb === false) bits.push('No auto braking');
   else if (e.rearSeat === 'Poor' || e.rearSeat === 'Marginal') bits.push(`Rear seat ${e.rearSeat.toLowerCase()}`);
   if (!bits.length && e.nhtsa) bits.push(`NHTSA ${e.nhtsa}★`);
@@ -395,6 +403,10 @@ export const gcFor = (o) => {
 };
 
 export const hasAWD = (o) => !/No AWD|FWD only|RWD/i.test(o.awd);
+
+// A listing re-checked and found sold. It stays on the list for the record,
+// but it should not win the podium — you cannot buy it.
+export const isSold = (o) => /\bSOLD\b/.test(o.offer || '');
 export const isEff = (o) => !!(o.ev || o.phev || (o.mpg && o.mpg >= 30));
 
 // Second-row type on each listing. Captains and lounge both put two in the

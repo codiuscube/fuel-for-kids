@@ -1,6 +1,7 @@
 import { Fragment } from 'react';
 import { OWNER_GROUPS, FINANCE_OFFERS, CHECKS, SOURCE_ROWS } from '../data/vehicles';
-import { DEFAULT_ASSUMPTIONS } from '../lib/cost';
+import { SAFETY } from '../data/safety';
+import { DEFAULT_ASSUMPTIONS, safetyOf } from '../lib/cost';
 import { FIG5, FIG15, leaseRows, overMiles } from '../lib/figures';
 
 // ---------------------------------------------------------------------------
@@ -54,6 +55,33 @@ const Note = ({ title, blurb, children }) => (
 
 const leases = leaseRows();
 const over = overMiles();
+
+// Safety coverage, counted from the same table the cards read.
+const SAFE = (() => {
+  const rows = F.live.map((r) => ({ r, e: safetyOf(r.o) }));
+  const looked = rows.filter((x) => x.e);
+  const byConf = (c) => looked.filter((x) => x.e.conf === c).length;
+  const noAeb = looked.filter((x) => x.e.aeb === false);
+  const rearWeak = looked.filter((x) => x.e.rearSeat === 'Poor' || x.e.rearSeat === 'Marginal');
+  const rearGood = looked.filter((x) => x.e.rearSeat === 'Good');
+  const tsp = looked.filter((x) => x.e.iihs === 'TSP+' || x.e.iihs === 'TSP');
+  const names = (list) => [...new Set(list.map((x) => x.r.o.n.replace(/\s+(4WD|AWD|FWD|RWD)$/, '')))];
+  return {
+    entries: SAFETY.length,
+    looked: looked.length,
+    total: rows.length,
+    verified: byConf('verified'),
+    likely: byConf('likely'),
+    unverified: byConf('unverified'),
+    noAeb: names(noAeb),
+    rearWeak: names(rearWeak),
+    rearGood: names(rearGood),
+    tsp: names(tsp),
+  };
+})();
+
+const list = (arr, max = 8) =>
+  arr.length <= max ? arr.join(', ') : `${arr.slice(0, max).join(', ')} and ${arr.length - max} more`;
 
 const NotesTab = () => (
   <div className="notes">
@@ -218,6 +246,56 @@ const NotesTab = () => (
       <b>Car seats are gone, so the checklist changed.</b> Nobody needs to climb past a booster. The test-drive
       question is whether the fifteen-year-old can sit in the third row for twenty minutes without complaint,
       and whether three tall kids can get in and out of a sliding door in a school car park.
+    </div>
+    </Note>
+
+    <Note title="Crash safety and automatic braking" blurb="IIHS, NHTSA and standard AEB, now in the score">
+    <div className="note">
+      <b>What is scored.</b> For each nameplate generation: the IIHS award for a representative model year, the
+      IIHS updated moderate-overlap front test with a dummy in the second row (the test that asks how the
+      back seats hold up, which is where your kids sit), the NHTSA overall star rating, and whether automatic
+      emergency braking is standard. Best overall gives it the same default weight as seven seats. Sort by
+      Safest to see it on its own. A car nobody has looked up scores a middling 0.4, not zero.
+      <br />
+      <br />
+      <b>Coverage.</b> {SAFE.looked} of {SAFE.total} listings for sale have a safety entry, from {SAFE.entries}{' '}
+      nameplate-generation rows: {SAFE.verified} verified against the IIHS or NHTSA page, {SAFE.likely} inferred
+      from a sibling model, {SAFE.unverified} unverified and capped so they cannot win on a guess. Each card says
+      which.
+      <br />
+      <br />
+      <b>No automatic braking as standard:</b> {SAFE.noAeb.length ? list(SAFE.noAeb) : 'none found yet'}. These are
+      the cars a teen driver should not learn in, and the model says so with a red chip.
+      <br />
+      <br />
+      <b>Weak in the rear-seat test:</b> {SAFE.rearWeak.length ? list(SAFE.rearWeak) : 'none recorded yet'}.{' '}
+      <b>Good in it:</b> {SAFE.rearGood.length ? list(SAFE.rearGood) : 'none recorded yet'}.{' '}
+      <b>IIHS Top Safety Pick or Pick+:</b> {SAFE.tsp.length ? list(SAFE.tsp) : 'none recorded yet'}.
+      <br />
+      <br />
+      <b>What the research found.</b> Every minivan fails the rear-seat test: Sienna, Carnival and Pacifica are
+      Marginal, the Odyssey is Poor, and IIHS&rsquo;s 2025 and 2026 minivan award lists are empty. The only van
+      rated Good for the rear passenger is the VW ID. Buzz, a six-seater. &ldquo;Big is safe&rdquo; does not hold
+      in the back seat either: the 2021-on Tahoe is Poor, the worst in the set, and its Suburban, Yukon and
+      Escalade siblings have never been tested. Where the Good results cluster is the midsize crossovers &mdash;
+      Telluride, 2026 Palisade, Grand Highlander, Explorer, CX-90, EV9, Ioniq 9 &mdash; which is exactly the group
+      whose third rows are too short for your kids. The 2025-on Armada is the one large vehicle that is Good in
+      the back and Top Safety Pick+. Several 2022&ndash;2023 TSP+ badges hide a Poor rear seat, because the award
+      did not require that test until 2024: Odyssey, first-generation Palisade, CX-9, Grand Cherokee L. The
+      Carnival&rsquo;s second-row captain&rsquo;s chair detached from the floor in the 2022&ndash;24 side test;
+      Kia fixed it for builds after August 2023, so check the build date on a used one.
+      <br />
+      <br />
+      <b>For three teenagers that is the uncomfortable finding.</b> The vans with the third rows they fit have
+      Marginal rear-seat protection, and the SUVs with Good rear-seat protection have third rows they do not fit.
+      Within the vans, the Sienna is Marginal with Good second-row belt reminders, the Odyssey is Poor. Within the
+      big trucks, the Armada is the only one with a clean rear-seat result, at 17 mpg.
+      <br />
+      <br />
+      <b>What the ratings do not tell you.</b> Awards are for a specific model year and often a specific
+      headlight package, so the trim on the lot may not carry the award on the page. Older generations were
+      tested to older, easier protocols; a 2016 "Top Safety Pick" is not a 2025 one. And none of this measures
+      the thing that matters most with a new driver, which is the driver.
     </div>
     </Note>
 

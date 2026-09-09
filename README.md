@@ -67,8 +67,11 @@ specs, drivetrain and ground clearance, and the listing link.
 
 A **Best overall** strip sits at the top of the list and can be hidden. It is
 a weighted mix you can drag: captain's chairs and skipping COVID build years
-lead the default, with seven seats, overall legroom, cost and reliability just
-behind, then cleanability, sunroof, fuel economy and clearance. Seven seats and
+lead the default, with seven seats, crash safety, overall legroom, cost and
+reliability just behind, then cleanability, sunroof, fuel economy and clearance.
+Safety is IIHS award, the IIHS rear-seat (updated moderate overlap) result, NHTSA
+stars and whether automatic emergency braking is standard, from
+`src/data/safety.js`, with a confidence label on every card. Seven seats and
 captain's chairs are weights, not filters, so six-seaters and benches stay on
 the list and are scored down rather than hidden.
 
@@ -198,7 +201,13 @@ computes the same figures live, so if they disagree, the app is right.
     at 170,000 miles. A 2017 Sienna V6 lands within $800 of a brand-new hybrid.
     What you give up is a decade of safety engineering, a warranty, and a teen
     driver's first car having automatic braking.
-11. **Cost and reliability point in opposite directions at the bottom.** The
+11. **Every minivan fails the IIHS rear-seat test.** Sienna, Carnival and
+    Pacifica are Marginal, the Odyssey is Poor, and the 2021-on Tahoe is Poor.
+    The Good results cluster in the midsize crossovers whose third rows the kids
+    will not fit, plus the 2025-on Armada. Twelve of the listings, all older,
+    lack standard automatic emergency braking; with a teen driver arriving, the
+    card flags those in red.
+12. **Cost and reliability point in opposite directions at the bottom.** The
     second-cheapest option is a Pacifica Hybrid at $22,990, and it is also the
     least reliable vehicle in the set, with a 6% chance of a $17,000 battery
     outside warranty that the total shows as about a thousand dollars.
@@ -270,7 +279,8 @@ src/
   App.jsx                      renders the one view
   index.css                    global reset
   vehicle-cost.css             all styling, scoped under .vehcost, mobile first
-  data/vehicles.js             the 122 listings, spec tables, and explainer copy
+  data/vehicles.js             the 138 listings, spec tables, and explainer copy
+  data/safety.js               IIHS / NHTSA / AEB by nameplate generation, with sources
   lib/cost.js                  the cost model, five or fifteen years
   lib/figures.js               the figures the Notes tab quotes, computed from the model
   components/

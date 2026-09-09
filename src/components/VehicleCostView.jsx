@@ -21,6 +21,7 @@ import {
   hasCaptains,
   hasPromoFinance,
   isEff,
+  isSold,
   money,
   normalizeWeights,
   ownFor,
@@ -288,6 +289,7 @@ const CostCard = ({ o, c, base, rank, badge, badgeTone, open, onToggle, cid }) =
           </span>
           <span className="vchips">
             <span className={o.cond === 'new' ? 'chip nw' : 'chip'}>{o.cond === 'new' ? 'New' : 'Used'}</span>
+            {isSold(o) && <span className="chip warn">Sold</span>}
             <span className="chip">{bodyLabel(o.cat)}</span>
             <span className={o.seats < 7 ? 'chip warn' : 'chip'}>{o.seats} seats</span>
             <span className={`chip ${row2.chip}`}>{row2.label}</span>
@@ -552,7 +554,7 @@ const VehicleCostView = () => {
 
   // The recommendation still runs, but it is a strip above the list rather
   // than a page of its own, and it can be folded away.
-  const ranked = bestOf(matching, W) || [];
+  const ranked = bestOf(matching.filter((r) => !isSold(r.o)), W) || [];
   const podium = ranked.slice(0, 3);
   const podiumById = new Map(
     podium.map((item, i) => [cardId(item.r.o), PODIUM[i]]),
