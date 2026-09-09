@@ -382,11 +382,15 @@ const NotesTab = () => (
       priced as separate cards, and cash plus RBFCU still wins.
       <br />
       <br />
-      <b>The 2026 Hybrid keeps both.</b> Kia Finance America is offering 1.90% for 48 months, 2.99% for
-      60, 3.49% for 66, 3.99% for 72, and 5.99% for 84, through 30 September 2026, for qualified buyers
-      &mdash; and that ladder stacks with the Kia cash. The cards keep the discounted price and pick
-      the rate from the term slider (48 / 60 / 72). 84 months at 5.99% is worse than RBFCU, so it is
-      not used. Flip the slider to 48 months if you want the 1.90% rung.
+      <b>The 2026 Hybrid keeps the dealer discount, not the Kia cash.</b> Kia Finance America is offering
+      1.90% for 48 months, 2.99% for 60, 3.49% for 66, 3.99% for 72, and 5.99% for 84, through 30 September
+      2026, for qualified buyers. The offer&rsquo;s own fine print says offers may not be combined except
+      where specified. Dealer contribution is specified &mdash; that is the $1,500&ndash;$2,000 off already
+      in the price. The $750 Sticker Sales Event cash is not counted on those cards, and neither is military
+      $500. Kia&rsquo;s payment estimator will show a Military checkbox next to a 4.49% <em>sell rate</em>;
+      that 4.49% is the ordinary KFA rate, the same number as RBFCU, not the 1.90% special. Tick Military
+      only if you actually qualify, and only after you confirm 1.90% is still the selected program. Flip
+      the slider to 48 months for the 1.90% rung. 84 months at 5.99% is worse than RBFCU, so it is not used.
       <br />
       <br />
       <b>The 2027 Hybrid is a different offer: 2.90% for 48 months.</b> That one is locked to 48 months

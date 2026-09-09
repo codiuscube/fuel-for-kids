@@ -34,9 +34,11 @@
 // to treat sub-$3,000 gaps as ties.
 // ---------------------------------------------------------------------------
 
-// 2026 Carnival Hybrid KFA, through 30 Sep 2026. Stacks with Kia cash. 66-month
-// 3.49% and 84-month 5.99% exist; 84 is worse than RBFCU, and the slider is
-// 48 / 60 / 72 only.
+// 2026 Carnival Hybrid KFA, through 30 Sep 2026. Dealer discount stays (Kia
+// calls that dealer contribution). Kia bonus cash and military are not counted
+// with the cheap APR — "offers may not be combined except where specified."
+// 66-month 3.49% and 84-month 5.99% exist; 84 is worse than RBFCU, and the
+// slider is 48 / 60 / 72 only.
 export const KFA_CARNIVAL_HYBRID_2026 = { 48: 0.019, 60: 0.0299, 72: 0.0399 };
 
 export const OPTIONS=[
@@ -433,13 +435,16 @@ export const OPTIONS=[
 // AWD Carnival. New prices are MSRP less the dealer discounts advertised in
 // the corridor (KFA Dealer Choice $1,500-$2,000) and Kia's $750 Sticker Sales
 // Event bonus cash. The 2026 Carnival Hybrid KFA ladder (1.90% / 48, 2.99% / 60,
-// 3.99% / 72, through 30 Sep 2026) stacks with that cash, so those two cards keep
-// the discounted price and pick the rate from the term slider. The 2.99%/72 V6
-// rate is a bought-down Kia Motor Finance rate that cannot be combined with
-// those discounts, so it is priced as its own card at full MSRP. New 2027
-// Carnival Hybrids carry Kia's 2.90% for 48 months (qualified) at the listed
-// price. Used cars are Carvana San Antonio stock; mileage is from the listing,
-// the exact VIN was not opened, so the link is the search page.
+// 3.99% / 72, through 30 Sep 2026) keeps the dealer discount — Kia's own
+// disclosure allows dealer contribution — but not the $750 bonus cash or
+// military $500. Fine print: offers may not be combined except where specified.
+// The Kia payment estimator's 4.49% "sell rate" is the ordinary KFA rate, not
+// the cheap APR, and that is why Military appears as a separate tick. The
+// 2.99%/72 V6 rate cannot be combined with discounts, so it is priced as its
+// own card at full MSRP. New 2027 Carnival Hybrids carry Kia's 2.90% for 48
+// months (qualified) at the listed price. Used cars are Carvana San Antonio
+// stock; mileage is from the listing, the exact VIN was not opened, so the
+// link is the search page.
 // ---------------------------------------------------------------------------
  {n:"Kia Carnival EX",y:"2026 \u00b7 $1,500 off + $750 \u00b7 $39,690",cat:"van",cond:"new",seats:7,row2:"bench",sticker:39690,cash:750,apr:.0449,offer:"World Car Kia, New Braunfels",
   awd:"No AWD offered",mpg:22,mpgLab:"22",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
@@ -449,11 +454,11 @@ export const OPTIONS=[
   awd:"No AWD offered",mpg:22,mpgLab:"22",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
   ins:12000,res:20500,rel:3.0,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
   url:"https://www.worldcarkianorth.com/search/new-kia-carnival-san-antonio-tx/?cy=78201&md=10821&tp=new",lt:"Browse New Braunfels / SA stock"},
- {n:"Kia Carnival Hybrid EX",y:"2026 \u00b7 $1,500 off + $750 \u00b7 KFA \u00b7 $42,090",cat:"van",cond:"new",seats:7,row2:"bench",sticker:42090,cash:750,apr:.0299,aprByTerm:KFA_CARNIVAL_HYBRID_2026,offer:"KFA 1.90–3.99% with Kia cash \u00b7 World Car",
+ {n:"Kia Carnival Hybrid EX",y:"2026 \u00b7 $1,500 off \u00b7 KFA \u00b7 $42,090",cat:"van",cond:"new",seats:7,row2:"bench",sticker:42090,cash:0,apr:.0299,aprByTerm:KFA_CARNIVAL_HYBRID_2026,offer:"KFA 1.90–3.99% + dealer off, no Kia cash \u00b7 World Car",
   awd:"No AWD offered",mpg:33,mpgLab:"33",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
   ins:12500,res:23000,rel:4.5,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
   url:"https://www.kiaworldcar.com/search/new-kia-carnival-hybrid-san-antonio-tx/?cy=78201&md=22648&tp=new",lt:"Browse hybrid stock"},
- {n:"Kia Carnival Hybrid SX",y:"2026 \u00b7 $2,000 off + $750 \u00b7 KFA \u00b7 $46,490",cat:"van",cond:"new",seats:7,row2:"bench",sticker:46490,cash:750,apr:.0299,aprByTerm:KFA_CARNIVAL_HYBRID_2026,offer:"KFA 1.90–3.99% with Kia cash \u00b7 World Car South",
+ {n:"Kia Carnival Hybrid SX",y:"2026 \u00b7 $2,000 off \u00b7 KFA \u00b7 $46,490",cat:"van",cond:"new",seats:7,row2:"bench",sticker:46490,cash:0,apr:.0299,aprByTerm:KFA_CARNIVAL_HYBRID_2026,offer:"KFA 1.90–3.99% + dealer off, no Kia cash \u00b7 World Car South",
   awd:"No AWD offered",mpg:33,mpgLab:"33",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
   ins:12500,res:25500,rel:4.5,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
   url:"https://www.kiaworldcar.com/search/new-kia-carnival-hybrid-san-antonio-tx/?cy=78201&md=22648&tp=new",lt:"Browse hybrid stock"},
@@ -710,10 +715,10 @@ export const RELIABILITY_GROUPS = [
 export const FINANCE_OFFERS = [
   ['Kia EV9', '0% / 60 mo + $5,000', 'Or $10,000 cash. Do not stack.'],
   ['Nissan Armada', '2.9% / 72 mo', 'Or $3,500 cash. Loyalty $2,000 with NMAC.'],
-  ['Carnival Hybrid 2026', '1.90–3.99% KFA', 'Stacks with Kia cash. 1.90%/48, 2.99%/60, 3.99%/72. Through 30 Sep.'],
+  ['Carnival Hybrid 2026', '1.90–3.99% KFA', 'Dealer off stays. Not the $750 Kia cash or military. Through 30 Sep.'],
   ['Carnival Hybrid 2027', '2.90% / 48 mo', 'Kia Finance, qualified. Separate 2027 offer.'],
   ['Carnival V6', '2.99% / 72 mo', 'Bought down — does not stack. Cash + RBFCU still wins on the V6.'],
-  ['Carnival, discount path', '$1,500–$2,000 off', 'KFA Dealer Choice + $750 bonus cash. Hybrid keeps KFA too.'],
+  ['Carnival, discount path', '$1,500–$2,000 off + $750', 'KFA Dealer Choice + bonus cash. Bank / KFA 4.49% sell rate.'],
   ['Grand Highlander', '4.99% / 60 mo', 'Also at 72 months.'],
   ['Chevy / GMC full-size', '5.9% / 60 mo', 'Tahoe, Suburban, Yukon. No cash back.'],
   ['Toyota Sienna', 'No APR special', 'Lease offer only — so RBFCU 4.49%.'],
@@ -765,7 +770,7 @@ export const CHECKS = [
     items: [
       'Ask for the out-the-door price in writing by email before visiting. Refuse to discuss monthly payment.',
       'Ask what add-ons are on the car. Paint protection, VIN etching and market adjustments are where $2,000–$4,000 hides.',
-      'Ask whether taking the promotional APR forfeits a cash rebate. On the EV9, the Armada and the Carnival V6 you must choose one. The 2026 Carnival Hybrid KFA ladder stacks with Kia cash.',
+      'Ask whether taking the promotional APR forfeits a cash rebate. On the EV9, the Armada and the Carnival V6 you must choose one. On the 2026 Carnival Hybrid, dealer discount can sit next to KFA 1.90–3.99%; Kia bonus cash and military $500 are not counted unless the contract shows them.',
       'On a new car, read the Final Assembly Point line on the window sticker. It decides whether your loan interest is deductible, and it varies by trim and model year — check the actual car, not the model name.',
       'Walk in with a credit union pre-approval. It costs nothing and it is the only leverage that reliably works.',
     ],
@@ -843,7 +848,7 @@ export const WHY = {
   dep:
     'Asking price plus 6.25% Texas sales tax and $400 of title and registration fees, minus what the car should be worth at year five. Usually the biggest single number on this page.',
   interest:
-    "Total interest over the loan term at the APR shown on each card. Every card here is capped at RBFCU's 4.49% for 60 months, which they quote for used cars as well as new; a manufacturer promo is only used where it beats that. The 2026 Carnival Hybrid keeps Kia cash and follows the KFA ladder: 1.90% at 48 months, 2.99% at 60, 3.99% at 72. The 2027 Hybrid is 2.90% locked to 48 months. The 0% EV9 and the 2.99%/72 Carnival V6 keep their advertised terms. Two caveats: 4.49% is the well-qualified rate at 60 months or less, and the oldest, highest-mileage cars on this page may be tiered higher or declined, so treat those totals as optimistic until you have the pre-approval in writing.",
+    "Total interest over the loan term at the APR shown on each card. Every card here is capped at RBFCU's 4.49% for 60 months, which they quote for used cars as well as new; a manufacturer promo is only used where it beats that. The 2026 Carnival Hybrid follows the KFA ladder (1.90% at 48, 2.99% at 60, 3.99% at 72) on the dealer-discounted price, without the $750 Kia cash. The 2027 Hybrid is 2.90% locked to 48 months. Kia's 4.49% sell rate is the ordinary KFA rate — same as RBFCU — and is why the payment estimator still shows a Military checkbox. The 0% EV9 and the 2.99%/72 Carnival V6 keep their advertised terms. Two caveats: 4.49% is the well-qualified rate at 60 months or less, and the oldest, highest-mileage cars on this page may be tiered higher or declined, so treat those totals as optimistic until you have the pre-approval in writing.",
   fuel:
     'Your miles per year times five, at the petrol or electricity price you set in Assumptions. Plug-ins blend the two using the battery-share slider.',
   ins:
