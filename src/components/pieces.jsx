@@ -1,6 +1,7 @@
 import { createContext, useContext } from 'react';
 import { WHY } from '../data/vehicles';
 import { HORIZONS, money } from '../lib/cost';
+import RangeInput from './RangeInput';
 
 // ---------------------------------------------------------------------------
 // Shared small pieces: the "why this number" popovers, the bar primitives, and
@@ -117,15 +118,7 @@ export const Slider = ({ id, label, why, out, min, max, step, value, onChange })
         {label} <output>{out}</output>
       </label>
       {open && <div className="whybox">{why}</div>}
-      <input
-        type="range"
-        id={id}
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(e) => onChange(parseFloat(e.target.value))}
-      />
+      <RangeInput id={id} min={min} max={max} step={step} value={value} onChange={onChange} />
     </div>
   );
 };

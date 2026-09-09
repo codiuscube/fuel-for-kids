@@ -247,8 +247,21 @@
   gap: 8px;
   margin-top: 8px;
 }
+.vehcost .ctlbtns {
+  display: flex;
+  flex: 1;
+  gap: 8px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.vehcost .ctlbtns::-webkit-scrollbar {
+  display: none;
+}
 .vehcost .ctlbtn {
   display: inline-flex;
+  flex: none;
   align-items: center;
   gap: 6px;
   min-height: 38px;
@@ -278,16 +291,26 @@
   font-weight: 700;
 }
 .vehcost .count {
-  margin-left: auto;
+  flex: none;
   font-size: 13px;
   color: var(--text-muted);
   white-space: nowrap;
 }
 
+/* Pills on the left in their own scroller, the result count pinned right. The
+   row is always there, so the toolbar does not change height when a filter
+   comes or goes. */
+.vehcost .resultrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
 .vehcost .activefilters {
   display: flex;
+  flex: 1;
   gap: 6px;
-  margin-top: 8px;
+  min-width: 0;
   overflow-x: auto;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
@@ -425,25 +448,24 @@
   margin: 10px 0 0;
   color: var(--text-secondary);
 }
-.vehcost .pickmix {
+.vehcost .pickmixbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
   margin-top: 10px;
-}
-.vehcost .pickmix > summary {
-  cursor: pointer;
+  padding: 0 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface-2);
   font-size: 13px;
   font-weight: 600;
+  color: var(--text-primary);
 }
+/* Thirteen of these stack up in the Mix sheet, so they sit tighter than the
+   filter sliders, which each carry a note underneath. */
 .vehcost .pickrow {
-  padding: 8px 0 0;
-}
-.vehcost .pickreset {
-  margin-top: 8px;
-  border: none;
-  background: none;
-  padding: 6px 0;
-  font-size: 13px;
-  text-decoration: underline;
-  color: var(--text-secondary);
+  padding: 6px 0 2px;
 }
 
 .vehcost .vcard.flagged.gold {
@@ -1032,12 +1054,23 @@
   -webkit-appearance: none;
   appearance: none;
   /* Every slider here is horizontal, and each one is a 30px-tall full-width
-     target sitting directly in the scroll path — the weight sliders under
-     "Adjust what matters", the gain sliders in Filters, the Assumptions panel.
+     target sitting directly in a scroll path — the weight sliders in the Mix
+     sheet, the gain and price sliders in Filters, the Assumptions panel.
      Without this the browser hands a vertical swipe that starts on a slider to
-     the slider, so scrolling the page past one drags it instead. `pan-y` gives
+     the slider, so scrolling the sheet past one drags it instead. `pan-y` gives
      vertical gestures back to the scroller and leaves horizontal ones here. */
   touch-action: pan-y;
+}
+/* `pan-y` gets the page moving, but the input still takes a value from wherever
+   the finger first landed, and a tap thrown down to arrest a flick lands on
+   whichever slider is under it. So while a scroll is in flight the sliders stop
+   being targets at all — the guard in lib/scrollGuard.js sets the attribute and
+   clears it a quarter second after the last scroll event. Coarse pointers only:
+   a mouse never has this problem, and wheel-then-click is ordinary. */
+@media (hover: none) and (pointer: coarse) {
+  html[data-scrolling] .vehcost input[type='range'] {
+    pointer-events: none;
+  }
 }
 .vehcost input[type='range']::-webkit-slider-runnable-track {
   height: 5px;
