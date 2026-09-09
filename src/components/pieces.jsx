@@ -29,6 +29,56 @@ export const Spec = ({ id, label, value, frac, why }) => {
   );
 };
 
+// One documented failure, with its source note behind the same tap-to-explain
+// affordance the spec bars use.
+const KnownRow = ({ id, item }) => {
+  const [open, toggle] = useWhy(id);
+  return (
+    <>
+      <div className="knownrow" onClick={toggle}>
+        <span className="kc">{item.c}</span>
+        <span className="ka">
+          {item.at[0]}&ndash;{item.at[1]}k mi
+        </span>
+        <span className="kv">{item.covered ? 'warranty' : money(item.expected)}</span>
+      </div>
+      {open && (
+        <div className="whybox">
+          {item.src}. The repair runs about {money(item.usd)}, roughly {Math.round(item.p * 100)}% of
+          these cars ever need it, and you will drive through {Math.round(item.share * 100)}% of the
+          window it lands in
+          {item.covered ? ' — though factory coverage would still be paying at that point' : ''}.
+        </div>
+      )}
+    </>
+  );
+};
+
+// The known big-ticket failures for a listing. Only the ones whose odometer
+// window overlaps your five years are shown — a failure you will drive past
+// before you ever reach it is not a cost.
+export const KnownIssues = ({ cid, items = [], total = 0 }) => {
+  const live = items.filter((i) => i.inWindow);
+  if (!live.length) return null;
+  return (
+    <div className="known">
+      <div className="knownhead">
+        <span>Known issues</span>
+        <b>{total > 0 ? money(total) : 'covered'}</b>
+      </div>
+      {live.map((i) => (
+        <KnownRow key={i.c} id={`${cid} known ${i.c}`} item={i} />
+      ))}
+      <p className="fine">
+        An expected cost, not a quote, and it is already inside the maintenance line above. Each
+        repair is charged at the share of its odometer window you will actually drive through, times
+        how often these cars need it at all. Tap a row for the source. A service record showing the
+        work already done is a fair reason to discount it.
+      </p>
+    </div>
+  );
+};
+
 // A legend swatch that explains the cost line it stands for.
 export const KeyItem = ({ id, color, label, why }) => {
   const [open, toggle] = useWhy(id);

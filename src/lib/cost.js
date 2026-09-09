@@ -3,7 +3,7 @@
 // price, electricity rate, and Texas tax and fee rules.
 // ---------------------------------------------------------------------------
 
-import { GC, OWN } from '../data/vehicles';
+import { GC, KNOWN, OWN } from '../data/vehicles';
 
 export const TAX = 0.0625;
 export const FEES = 400;
@@ -173,6 +173,54 @@ const scheduledCpm = (o) => {
 
 const relAdj = (o) => clamp(1 + (3.2 - (o.rel || 3)) * 0.18, 0.75, 1.45);
 
+// Known big-ticket failures that apply to this listing: nameplate regex plus
+// model-year range. See KNOWN in the data file for what qualifies as one.
+export const knownFor = (o) => {
+  const y = modelYearOf(o);
+  const hit = KNOWN.find((k) => k.m.test(o.n) && y >= k.y[0] && y <= k.y[1]);
+  if (!hit) return [];
+  // An item can be tied to one engine rather than the whole nameplate, so the
+  // 6.2 does not lend its failures to a 5.3 and the diesel keeps out of both.
+  const blob = `${o.n} ${o.y}`;
+  return hit.items.filter((it) => (!it.eng || it.eng.test(blob)) && !(it.not && it.not.test(blob)));
+};
+
+// Expected cost of the known failures over your five years, and the working
+// for each one so the card can show it.
+//
+// A failure is treated as equally likely anywhere in its odometer band, so you
+// are charged `p` of the repair for the fraction of that band you will drive
+// through — buy a car at 97,000 miles and the 60,000-mile half of the window
+// is somebody else's problem, already either survived or already fixed. Then
+// factory coverage is checked at the point in the band where it would land:
+// bumper-to-bumper pays for anything, powertrain only for the `pt` items.
+export const knownCostFor = (o, S) => {
+  const miles = Math.max(0, S.miles);
+  const start = startMilesOf(o);
+  const end = start + miles * 5;
+  const startAge = Math.max(0, COST_YEAR - modelYearOf(o));
+  const w = warrantyOf(o);
+
+  const items = knownFor(o).map((it) => {
+    const lo = it.at[0] * 1000;
+    const hi = it.at[1] * 1000;
+    const band = Math.max(1, hi - lo);
+    const overlap = Math.max(0, Math.min(hi, end) - Math.max(lo, start));
+    const share = overlap / band;
+
+    // Where in your ownership the middle of that overlap falls.
+    const odo = Math.max(lo, start) + overlap / 2;
+    const age = miles ? startAge + (odo - start) / miles : startAge;
+    const covered =
+      (age < w.bumperY && odo < w.bumperM) || (it.pt && age < w.ptY && odo < w.ptM);
+
+    const expected = covered ? 0 : it.usd * it.p * share;
+    return { ...it, share, expected, covered, inWindow: overlap > 0 };
+  });
+
+  return { total: items.reduce((t, i) => t + i.expected, 0), items };
+};
+
 // Five-year maintenance: wear items that scale with the miles slider, plus
 // unscheduled repairs that scale with age, odometer, remaining warranty,
 // and how hard you drive relative to RepairPal's 15,000-mile sample.
@@ -198,8 +246,10 @@ export const maintenanceFor = (o, S) => {
     unscheduled += base * 0.7 * wear * pay * drive * rel;
   }
 
-  const total = scheduled + unscheduled;
-  return { total, scheduled, unscheduled };
+  const known = knownCostFor(o, S);
+
+  const total = scheduled + unscheduled + known.total;
+  return { total, scheduled, unscheduled, known: known.total, knownItems: known.items };
 };
 
 // Five-year running total. Resale is marked down about 11% for every extra
@@ -229,6 +279,8 @@ export const compute = (o, S) => {
     mnt: mnt.total,
     mntWear: mnt.scheduled,
     mntRepair: mnt.unscheduled,
+    mntKnown: mnt.known,
+    knownItems: mnt.knownItems,
     chg,
     m,
     apr,
@@ -297,14 +349,19 @@ export const hasCaptains = (o) => {
   return id === 'captains' || id === 'lounge';
 };
 
-// Best overall is a weighted mix you set. Captain's chairs and overall
-// legroom (second plus third row) outrank a bench or a jump-seat cabin, even
-// when that van is cheaper. Sunroof and ground clearance are small bonuses.
-// Drag any slider; the mix always renormalises to 100%.
-export const SCORE_KEYS = ['cost', 'cap', 'leg3', 'rel', 'awd', 'cargo', 'cln', 'roof', 'gc', 'covid'];
+// Best overall is a weighted mix you set. Captain's chairs and skipping the
+// COVID build years lead the default mix, with overall legroom, five-year cost
+// and reliability just behind; AWD and cargo are off by default because the
+// filters already handle them. Drag any slider; the mix renormalises to 100%.
+//
+// SCORE_KEYS is the wire order — it is what encodeWeights/parseWeights write
+// into the `w` link parameter, so new factors are appended, never inserted.
+// SCORE_FACTORS is the display order for the sliders and may differ.
+export const SCORE_KEYS = ['cost', 'cap', 'leg3', 'rel', 'awd', 'cargo', 'cln', 'roof', 'gc', 'covid', 'mpg'];
 
 export const SCORE_FACTORS = [
   { id: 'cost', label: 'Five-year cost', short: 'cost' },
+  { id: 'mpg', label: 'Fuel economy', short: 'mpg' },
   { id: 'cap', label: "Captain's chairs", short: 'captains' },
   { id: 'leg3', label: 'Overall legroom', short: 'legroom' },
   { id: 'rel', label: 'Reliability', short: 'reliability' },
@@ -317,16 +374,17 @@ export const SCORE_FACTORS = [
 ];
 
 export const DEFAULT_WEIGHTS = {
-  cost: 2,
-  cap: 5,
-  leg3: 5,
-  rel: 0,
+  cost: 7,
+  cap: 10,
+  leg3: 8,
+  rel: 7,
   awd: 0,
   cargo: 0,
-  cln: 0,
-  roof: 1,
-  gc: 1,
-  covid: 3,
+  cln: 5,
+  roof: 5,
+  gc: 3,
+  covid: 10,
+  mpg: 5,
 };
 
 const clamp01 = (n) => Math.max(0, Math.min(1, n));
@@ -390,6 +448,14 @@ export const gcScore = (o) => {
   return clamp01((gc - 5) / 3);
 };
 
+// EPA combined for petrol, and the hand-set MPGe comparable (`mpgBar`) that the
+// card's fuel bar already uses for electrics and plug-ins. Scaled across the
+// actual list rather than from zero: 14 is the worst here (the lifted 6.2 Yukon
+// AT4), 40 the best (EV9, Model X), so the weight has real range to work in.
+// Note this partly restates the fuel line inside `cost` — it earns its own
+// slider as a hedge on the petrol price, not as new information.
+export const mpgScore = (o) => clamp01(((o.mpgBar || o.mpg || 0) - 14) / 26);
+
 // 2020–2022 factory years: shutdowns, then the chip shortage, cars leaving
 // without modules, and a well-documented QC dip. 2021–2022 are the worst.
 // 2023 still carries some of that hangover. 2019 and earlier, and 2024+,
@@ -413,11 +479,17 @@ export const weightsEqual = (a, b) => SCORE_KEYS.every((k) => (a[k] || 0) === (b
 
 export const encodeWeights = (W) => SCORE_KEYS.map((k) => W[k] || 0).join('-');
 
+// Links written before a factor existed. Seven weights predate sunroof,
+// clearance and the COVID-year demotion; nine predate COVID; ten predate mpg.
+const LEGACY_WEIGHT_LENGTHS = [7, 9, 10];
+
 export const parseWeights = (raw) => {
   let parts = String(raw || '').split('-').map((n) => parseInt(n, 10));
-  // Older links stored seven, then nine weights. Pad with the current defaults.
-  if (parts.length === 7) parts = [...parts, 1, 1, 3];
-  else if (parts.length === 9) parts = [...parts, 3];
+  // An old link only ever expressed the factors that existed when it was
+  // shared, so the missing tail takes today's defaults rather than zero.
+  if (LEGACY_WEIGHT_LENGTHS.includes(parts.length)) {
+    parts = [...parts, ...SCORE_KEYS.slice(parts.length).map((k) => DEFAULT_WEIGHTS[k])];
+  }
   if (parts.length !== SCORE_KEYS.length || parts.some((n) => !Number.isFinite(n))) {
     return { ...DEFAULT_WEIGHTS };
   }
@@ -448,6 +520,7 @@ export const scoreParts = (r, lo, hi) => ({
   roof: roofScore(r.o),
   gc: gcScore(r.o),
   covid: covidScore(r.o),
+  mpg: mpgScore(r.o),
 });
 
 export const scoreRow = (r, lo, hi, W = DEFAULT_WEIGHTS) => {

@@ -29,7 +29,7 @@ import {
   weightMixLabel,
 } from '../lib/cost';
 import { cardId, hrefFor, parseUrl } from '../lib/urlState';
-import { Assumptions, Spec, TrophyIcon, WhyContext, delta } from './pieces';
+import { Assumptions, KnownIssues, Spec, TrophyIcon, WhyContext, delta } from './pieces';
 import CompareTab from './CompareTab';
 import NotesTab from './NotesTab';
 
@@ -328,7 +328,10 @@ const CostCard = ({ o, c, base, rank, badge, badgeTone, open, onToggle, cid }) =
           </div>
           <p className="fine" style={{ margin: '-4px 0 12px' }}>
             {money(c.mntWear)} oil, tires, brakes · {money(c.mntRepair)} repairs after warranty
+            {c.mntKnown > 0 ? ` · ${money(c.mntKnown)} known issues` : ''}
           </p>
+
+          <KnownIssues cid={key} items={c.knownItems} total={c.mntKnown} />
 
           <div className="specs">
             <Spec

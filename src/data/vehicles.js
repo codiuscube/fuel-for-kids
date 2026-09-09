@@ -697,6 +697,48 @@ export const GC=[[/Woodland/,6.9],[/Sienna/,6.3],[/Odyssey/,4.9],[/Pacifica/,5.1
  [/Escalade/,8.0],[/Navigator/,9.0],[/QX80/,9.2],[/QX60/,7.0],[/MDX/,7.3],[/Lexus TX/,8.0],
  [/XC90/,8.5],[/X7/,8.7],[/GLS/,8.1],[/Ioniq 9/,6.5],[/Vistiq/,7.0],[/EX90/,8.0],
  [/Pilot/,7.3],[/Highlander/,8.0],[/Sedona/,6.9]];
+// Documented big-ticket failures, matched on nameplate and model-year range.
+// These are named patterns rather than bad luck: a certified class action, a
+// manufacturer special-coverage extension, a TSB, or an NHTSA complaint
+// cluster. The smooth RepairPal curve in `maintenanceFor` cannot express "this
+// drivetrain has a $4,000 failure with a known odometer window", so these sit
+// alongside it.
+//
+//   c    the component, as it appears on the card
+//   at   odometer band the failure tends to land in, thousands of miles
+//   usd  Texas independent-shop price, parts and labour
+//   p    share of these cars that ever need it
+//   pt   true if factory powertrain coverage would pay for it
+//   eng  optional: only applies where this matches the name and year blob,
+//        for a failure tied to one engine rather than the whole nameplate
+//   not  optional: never applies where this matches, for the same reason
+//   src  what makes it a pattern and not an anecdote
+//
+// `p` is a judgement calibrated to complaint volume — the same kind of call as
+// the `rel` score, not a measurement. A well-kept example may never need one.
+// The cost model charges only the slice of each band you will actually drive
+// through, so buying at 97,000 miles is not billed for a 70,000-mile failure.
+// It cannot know whether a used car has already had the work done; a service
+// record showing the repair is a genuine reason to discount these.
+export const KNOWN=[
+ {m:/Tahoe|Suburban|Yukon/,y:[2015,2020],items:[
+  {c:"8L90 torque converter",at:[60,150],usd:4200,p:.40,pt:true,
+   src:"Certified class action over 8L45/8L90 shudder and hard shifts, naming 2015\u20132019 Yukon, Yukon XL and Yukon Denali XL"},
+  {c:"AFM lifter and camshaft",at:[90,180],usd:4500,p:.20,pt:true,
+   src:"Cylinder deactivation on the 5.3 and 6.2 L8x collapses lifters; about $3,000 at a dealer, $7,000 and up once the camshaft is scored"},
+  {c:"A/C condenser",at:[50,120],usd:1200,p:.45,pt:false,
+   src:"GM Special Coverage 17336 \u2014 thermal cycling cracks the condenser at the bracket weld"},
+ ]},
+ {m:/Tahoe|Suburban|Yukon/,y:[2021,2026],items:[
+  {c:"L87 6.2L engine, second failure",at:[30,150],usd:13000,p:.015,pt:true,eng:/6\.2|Denali|AT4|High Country/i,
+   src:"Recall 25V274 re-oils or replaces L87s built Mar 2021 \u2013 May 2024 free; NHTSA opened EA26005 on 20 Aug 2026 over 499 complaints of engines failing again after that remedy. Priced here is the second failure, not the first \u2014 GM pays for the first"},
+  {c:"DFM lifter and camshaft",at:[60,160],usd:4500,p:.15,pt:true,not:/Duramax|diesel/i,
+   src:"Cylinder deactivation carried over to the L84 5.3 and L87 6.2; the same collapsed-lifter pattern as the previous generation"},
+  {c:"A/C condenser",at:[50,130],usd:1300,p:.30,pt:false,
+   src:"Condenser leaks continue on the 2019\u20132025 platform with TSBs but no special-coverage extension, so this one is yours to pay"},
+ ]},
+];
+
 export const OWN=[[/Woodland|Sienna/,4.4,600],[/Odyssey/,4.3,550],[/Pacifica/,3.8,690],[/Carnival Hybrid/,4.5,520],
  [/Carnival/,4.3,520],[/Telluride/,4.1,520],[/Palisade/,4.2,550],[/Grand Highlander/,4.5,510],
  [/Highlander Hybrid/,4.4,490],[/Pilot/,4.4,540],[/Ascent/,4.2,590],[/CX-90/,3.9,640],
