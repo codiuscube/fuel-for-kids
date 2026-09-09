@@ -19,6 +19,7 @@ import {
   money,
   normalizeWeights,
   ownFor,
+  roofLabel,
   row2Meta,
   row2Of,
   weightMixLabel,

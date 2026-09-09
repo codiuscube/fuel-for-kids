@@ -362,7 +362,9 @@ export const weightsEqual = (a, b) => SCORE_KEYS.every((k) => (a[k] || 0) === (b
 export const encodeWeights = (W) => SCORE_KEYS.map((k) => W[k] || 0).join('-');
 
 export const parseWeights = (raw) => {
-  const parts = String(raw || '').split('-').map((n) => parseInt(n, 10));
+  let parts = String(raw || '').split('-').map((n) => parseInt(n, 10));
+  // Older links stored seven weights; sunroof and clearance were added later.
+  if (parts.length === 7) parts = [...parts, 1, 1];
   if (parts.length !== SCORE_KEYS.length || parts.some((n) => !Number.isFinite(n))) {
     return { ...DEFAULT_WEIGHTS };
   }
@@ -390,6 +392,8 @@ export const scoreParts = (r, lo, hi) => ({
   awd: hasAWD(r.o) ? 1 : 0,
   cargo: Math.min(1, r.o.cargo / 41.5),
   cln: r.o.cln / 5,
+  roof: roofScore(r.o),
+  gc: gcScore(r.o),
 });
 
 export const scoreRow = (r, lo, hi, W = DEFAULT_WEIGHTS) => {
