@@ -254,6 +254,7 @@ const CostCard = ({ o, c, base, rank, badge, badgeTone, open, onToggle, cid }) =
   const seg = (v) => `${((v / c.net) * 100).toFixed(2)}%`;
   const own = ownFor(o);
   const clearance = gcFor(o);
+  const roof = roofLabel(o);
   const key = `${o.n} ${o.y}`;
   const kept = Math.round((c.res / o.sticker) * 100);
   const row2 = row2Meta(o);
@@ -396,7 +397,8 @@ const CostCard = ({ o, c, base, rank, badge, badgeTone, open, onToggle, cid }) =
 
           <p className="vdrive">
             {o.awd}
-            {clearance ? ` · ${clearance.toFixed(1)}" ground clearance` : ''} · {o.offer}
+            {clearance ? ` · ${clearance.toFixed(1)}" ground clearance` : ''}
+            {roof ? ` · ${roof}` : ''} · {o.offer}
           </p>
 
           {o.aw && (
@@ -784,7 +786,7 @@ const VehicleCostView = () => {
                       </div>
                     ))}
                     <button type="button" className="pickreset" onClick={resetWeights}>
-                      Reset to cost, captains, overall room
+                      Reset to your mix
                     </button>
                   </details>
                 </div>

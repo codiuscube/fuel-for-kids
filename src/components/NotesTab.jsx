@@ -52,8 +52,9 @@ const NotesTab = () => (
         formula from age, miles and remaining warranty, still an estimate. Together they move the total more
         than anything else. Treat any gap under about $3,000 as a tie and decide on the test drive. Best
         overall is a mix you set. Captain&rsquo;s chairs and overall legroom (second plus third row) outrank a
-        bench or a jump-seat cabin, even when that van is cheaper. The numbered list is still cheapest first
-        until you change the sort.
+        bench or a jump-seat cabin, even when that van is cheaper. Sunroof and a bit of ground clearance are
+        small bonuses on top, not the decision. The numbered list is still cheapest first until you change the
+        sort.
       </p>
     </div>
     </Note>

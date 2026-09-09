@@ -279,9 +279,8 @@ export const hasCaptains = (o) => {
 
 // Best overall is a weighted mix you set. Captain's chairs and overall
 // legroom (second plus third row) outrank a bench or a jump-seat cabin, even
-// when that van is cheaper. Cost still counts, just not enough to put a
-// sliding 8-passenger Carnival over a Sienna. Drag any slider; the mix
-// always renormalises to 100%.
+// when that van is cheaper. Sunroof and ground clearance are small bonuses.
+// Drag any slider; the mix always renormalises to 100%.
 export const SCORE_KEYS = ['cost', 'cap', 'leg3', 'rel', 'awd', 'cargo', 'cln', 'roof', 'gc'];
 
 export const SCORE_FACTORS = [
