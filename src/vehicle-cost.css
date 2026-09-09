@@ -1039,6 +1039,17 @@
      vertical gestures back to the scroller and leaves horizontal ones here. */
   touch-action: pan-y;
 }
+/* `pan-y` gets the page moving, but the input still takes a value from wherever
+   the finger first landed, and a tap thrown down to arrest a flick lands on
+   whichever slider is under it. So while a scroll is in flight the sliders stop
+   being targets at all — the guard in lib/scrollGuard.js sets the attribute and
+   clears it a quarter second after the last scroll event. Coarse pointers only:
+   a mouse never has this problem, and wheel-then-click is ordinary. */
+@media (hover: none) and (pointer: coarse) {
+  html[data-scrolling] .vehcost input[type='range'] {
+    pointer-events: none;
+  }
+}
 .vehcost input[type='range']::-webkit-slider-runnable-track {
   height: 5px;
   border-radius: 3px;

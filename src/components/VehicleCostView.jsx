@@ -35,7 +35,9 @@ import {
   weightMixLabel,
 } from '../lib/cost';
 import { cardId, hrefFor, parseUrl } from '../lib/urlState';
+import { useScrollGuard } from '../lib/scrollGuard';
 import { Assumptions, KnownIssues, Spec, TrophyIcon, WhyContext, delta } from './pieces';
+import RangeInput from './RangeInput';
 import CompareTab from './CompareTab';
 import NotesTab from './NotesTab';
 
@@ -502,6 +504,10 @@ const VehicleCostView = () => {
   const [mxSort, setMxSort] = useState(boot.mxSort);
   const [W, setW] = useState(boot.W);
 
+  // Watches every scroller on the page so the sliders can ignore a swipe that
+  // was only ever meant to move the page past them.
+  useScrollGuard();
+
   const applyingUrl = useRef(false);
   const historyMode = useRef('replace');
   const scrollMode = useRef('instant');
@@ -831,14 +837,13 @@ const VehicleCostView = () => {
                           {f.label}
                           <output>{mix.sum ? `${Math.round(mix.parts[f.id] * 100)}%` : 'Off'}</output>
                         </label>
-                        <input
+                        <RangeInput
                           id={`w-${f.id}`}
-                          type="range"
                           min={0}
                           max={10}
                           step={1}
                           value={W[f.id] || 0}
-                          onChange={(e) => setWeight(f.id, parseInt(e.target.value, 10))}
+                          onChange={(v) => setWeight(f.id, v)}
                         />
                       </div>
                     ))}
@@ -987,15 +992,14 @@ const VehicleCostView = () => {
                   {g.label}
                   <output>{F.gain[g.id] > 0 ? gainLabel(g, F.gain[g.id]) : 'Any'}</output>
                 </label>
-                <input
+                <RangeInput
                   id={`gain-${g.id}`}
-                  type="range"
                   min={0}
                   max={gainRanges[i].max || g.step}
                   step={g.step}
                   value={F.gain[g.id]}
                   disabled={!gainRanges[i].max}
-                  onChange={(e) => setGain(g.id, parseFloat(e.target.value))}
+                  onChange={(v) => setGain(g.id, v)}
                 />
                 <span className="fine">
                   {gainRanges[i].max
@@ -1010,13 +1014,12 @@ const VehicleCostView = () => {
             <h3>
               Asking price <output>{F.maxp >= PRICE_MAX ? 'Any' : `up to ${money(F.maxp)}`}</output>
             </h3>
-            <input
-              type="range"
+            <RangeInput
               min={20000}
               max={PRICE_MAX}
               step={1000}
               value={F.maxp}
-              onChange={(e) => setF((p) => ({ ...p, maxp: parseInt(e.target.value, 10) }))}
+              onChange={(v) => setF((p) => ({ ...p, maxp: v }))}
               aria-label="Maximum asking price"
             />
           </div>
@@ -1025,13 +1028,12 @@ const VehicleCostView = () => {
             <h3>
               Monthly payment <output>{F.maxm >= PMT_MAX ? 'Any' : `up to ${money(F.maxm)}`}</output>
             </h3>
-            <input
-              type="range"
+            <RangeInput
               min={200}
               max={PMT_MAX}
               step={25}
               value={F.maxm}
-              onChange={(e) => setF((p) => ({ ...p, maxm: parseInt(e.target.value, 10) }))}
+              onChange={(v) => setF((p) => ({ ...p, maxm: v }))}
               aria-label="Maximum monthly payment"
             />
             <p className="fine">
