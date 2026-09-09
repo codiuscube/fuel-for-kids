@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from 'react';
+import { Fragment, useMemo } from 'react';
 import { MATRIX, PRESETS, RELIABILITY_GROUPS, SPECS } from '../data/vehicles';
 import { CGMAX, LGMAX } from '../lib/cost';
 import { KeyItem, LgLine, MxBar } from './pieces';
@@ -15,9 +15,7 @@ const SUB = [
   { id: 'tables', label: 'Tables' },
 ];
 
-const CompareTab = ({ base, baseSel, setBaseFromSelect, setBaseField }) => {
-  const [sub, setSub] = useState('yours');
-  const [mxSort, setMxSort] = useState(5);
+const CompareTab = ({ base, baseSel, setBaseFromSelect, setBaseField, sub, setSub, mxSort, setMxSort }) => {
 
   const matrixRows = useMemo(
     () => [...MATRIX, ['suv', `${base.name} — yours`, base.leg2 + base.leg3, base.cargo, base.mpg, 50]],

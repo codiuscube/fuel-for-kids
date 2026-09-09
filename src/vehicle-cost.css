@@ -376,6 +376,7 @@
   background: var(--surface-2);
   box-shadow: var(--shadow);
   overflow: hidden;
+  scroll-margin-top: calc(var(--head-h) + 140px);
 }
 .vehcost .vcard.flagged {
   border-color: var(--s1);

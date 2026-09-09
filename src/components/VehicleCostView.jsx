@@ -1,10 +1,12 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import '../vehicle-cost.css';
 
 import { OPTIONS, SPECS, PRESETS, WHY } from '../data/vehicles';
 import {
   DEFAULT_ASSUMPTIONS,
   DEFAULT_FILTERS,
+  PMT_MAX,
+  PRICE_MAX,
   baseFromSpec,
   bestOf,
   compute,
@@ -14,6 +16,7 @@ import {
   money,
   ownFor,
 } from '../lib/cost';
+import { cardId, hrefFor, parseUrl } from '../lib/urlState';
 import { Assumptions, Spec, TrophyIcon, WhyContext, delta } from './pieces';
 import CompareTab from './CompareTab';
 import NotesTab from './NotesTab';
@@ -26,6 +29,11 @@ import NotesTab from './NotesTab';
 // sort sheet and a filter sheet. Each card is five lines you can scan while
 // scrolling, and everything else is one tap away. The reasoning still exists in
 // full, it just lives in the Notes tab instead of in front of the results.
+//
+// The query string is the source of truth for sharing: tab, search, sort,
+// filters, the open card, Compare (sub-tab, matrix sort, comparison car) and
+// the assumptions. Opening Details pushes history so Back collapses the card
+// and scrolls it into view under the sticky bar.
 // ---------------------------------------------------------------------------
 
 const TABS = [
@@ -52,9 +60,6 @@ const MUSTS = [
   { id: 'van', label: 'Minivan only' },
   { id: 'suv', label: 'SUV only' },
 ];
-
-const PRICE_MAX = 80000;
-const PMT_MAX = 1600;
 
 // The three "more room than yours" sliders. They filter on the gain over the
 // car selected on the Compare tab — the 2017 Pathfinder until you change it —
@@ -213,7 +218,7 @@ const Fact = ({ value, label, tone }) => (
   </span>
 );
 
-const CostCard = ({ o, c, base, rank, badge, open, onToggle }) => {
+const CostCard = ({ o, c, base, rank, badge, open, onToggle, cid }) => {
   const seg = (v) => `${((v / c.net) * 100).toFixed(2)}%`;
   const own = ownFor(o);
   const clearance = gcFor(o);
@@ -221,7 +226,7 @@ const CostCard = ({ o, c, base, rank, badge, open, onToggle }) => {
   const kept = Math.round((c.res / o.sticker) * 100);
 
   return (
-    <article className={badge ? 'vcard flagged' : 'vcard'}>
+    <article className={badge ? 'vcard flagged' : 'vcard'} id={cid} data-card={cid}>
       {badge && <div className="vflag">{badge}</div>}
       <button type="button" className="vhead" onClick={onToggle} aria-expanded={open}>
         <span className="vrank">{rank}</span>
@@ -377,21 +382,50 @@ const CostCard = ({ o, c, base, rank, badge, open, onToggle }) => {
 // ---------------------------------------------------------------------------
 
 const VehicleCostView = () => {
-  const [tab, setTab] = useState('cars');
-  const [S, setS] = useState(DEFAULT_ASSUMPTIONS);
-  const [F, setF] = useState({ ...DEFAULT_FILTERS, gain: { ...DEFAULT_FILTERS.gain }, maxm: PMT_MAX, q: '' });
-  const [base, setBase] = useState(() => baseFromSpec(SPECS[SPECS.length - 1]));
-  const [baseSel, setBaseSel] = useState(`s${SPECS.length - 1}`);
+  const boot = useMemo(
+    () => parseUrl(typeof window !== 'undefined' ? window.location.search : ''),
+    [],
+  );
+  const [tab, setTab] = useState(boot.tab);
+  const [S, setS] = useState(boot.S);
+  const [F, setF] = useState(boot.F);
+  const [base, setBase] = useState(boot.base);
+  const [baseSel, setBaseSel] = useState(boot.baseSel);
   const [why, setWhy] = useState(null);
   const [sheet, setSheet] = useState(null); // 'filters' | 'sort' | 'assume'
-  const [openCard, setOpenCard] = useState(null);
+  const [openCard, setOpenCard] = useState(boot.openCard);
   const [showPick, setShowPick] = useState(true);
+  const [cmpSub, setCmpSub] = useState(boot.cmpSub);
+  const [mxSort, setMxSort] = useState(boot.mxSort);
+
+  const applyingUrl = useRef(false);
+  const historyMode = useRef('replace');
+  const scrollMode = useRef('instant');
+  const lastHref = useRef(typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/');
 
   const closeSheet = useCallback(() => setSheet(null), []);
   // Changing the sort or the filters from halfway down 40 cards should put you
   // back at the top of the new list, not leave you stranded mid-scroll.
   const toTop = useCallback(() => {
     if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+  const pushUrl = useCallback(() => {
+    historyMode.current = 'push';
+  }, []);
+  const applySnapshot = useCallback((snap) => {
+    applyingUrl.current = true;
+    setTab(snap.tab);
+    setS(snap.S);
+    setF(snap.F);
+    setBase(snap.base);
+    setBaseSel(snap.baseSel);
+    setOpenCard(snap.openCard);
+    setCmpSub(snap.cmpSub);
+    setMxSort(snap.mxSort);
+    scrollMode.current = 'instant';
+    queueMicrotask(() => {
+      applyingUrl.current = false;
+    });
   }, []);
   const whyCtx = useMemo(
     () => ({ open: why, toggle: (id) => setWhy((cur) => (cur === id ? null : id)) }),
@@ -417,7 +451,7 @@ const VehicleCostView = () => {
   // than a page of its own, and it can be folded away.
   const ranked = bestOf(matching);
   const top = ranked && ranked.length ? ranked[0].r : null;
-  const topKey = top ? `${top.o.n} ${top.o.y}` : null;
+  const topKey = top ? cardId(top.o) : null;
   const cheapest = matching.length ? matching.slice().sort((a, b) => a.c.net - b.c.net)[0] : null;
   const nFilters = activeFilterCount(F);
 
@@ -469,6 +503,60 @@ const VehicleCostView = () => {
     }));
   const setGain = (id, v) => setF((p) => ({ ...p, gain: { ...p.gain, [id]: v } }));
 
+  const snapshot = useMemo(
+    () => ({ tab, S, F, openCard, baseSel, base, cmpSub, mxSort }),
+    [tab, S, F, openCard, baseSel, base, cmpSub, mxSort],
+  );
+
+  useEffect(() => {
+    if (applyingUrl.current) return;
+    const href = hrefFor(snapshot);
+    if (href === lastHref.current) {
+      historyMode.current = 'replace';
+      return;
+    }
+    lastHref.current = href;
+    const mode = historyMode.current;
+    historyMode.current = 'replace';
+    if (mode === 'push') window.history.pushState(null, '', href);
+    else window.history.replaceState(null, '', href);
+  }, [snapshot]);
+
+  useEffect(() => {
+    const onPop = () => {
+      lastHref.current = window.location.pathname + window.location.search;
+      applySnapshot(parseUrl(window.location.search));
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, [applySnapshot]);
+
+  useEffect(() => {
+    if (tab !== 'cars' || !openCard) return;
+    const el = document.getElementById(openCard);
+    if (!el) return;
+    const behavior = scrollMode.current;
+    scrollMode.current = 'smooth';
+    el.scrollIntoView({ behavior, block: 'start' });
+  }, [tab, openCard, rows]);
+
+  const goTab = (id) => {
+    if (id === tab) return;
+    pushUrl();
+    setTab(id);
+  };
+  const toggleCard = (id) => {
+    pushUrl();
+    scrollMode.current = 'smooth';
+    setOpenCard((cur) => (cur === id ? null : id));
+    if (tab !== 'cars') setTab('cars');
+  };
+  const goCmpSub = (id) => {
+    if (id === cmpSub) return;
+    pushUrl();
+    setCmpSub(id);
+  };
+
   return (
     <WhyContext.Provider value={whyCtx}>
       <div className="vehcost">
@@ -491,7 +579,7 @@ const VehicleCostView = () => {
                 type="button"
                 role="tab"
                 aria-selected={tab === t.id}
-                onClick={() => setTab(t.id)}
+                onClick={() => goTab(t.id)}
               >
                 {t.label}
               </button>
@@ -620,17 +708,18 @@ const VehicleCostView = () => {
               )}
 
               {rows.map((r, i) => {
-                const key = `${r.o.n} ${r.o.y}`;
+                const key = cardId(r.o);
                 return (
                   <CostCard
                     key={key}
+                    cid={key}
                     o={r.o}
                     c={r.c}
                     base={base}
                     rank={i + 1}
                     badge={key === topKey ? 'Best overall' : null}
                     open={openCard === key}
-                    onToggle={() => setOpenCard((cur) => (cur === key ? null : key))}
+                    onToggle={() => toggleCard(key)}
                   />
                 );
               })}
@@ -652,6 +741,10 @@ const VehicleCostView = () => {
               baseSel={baseSel}
               setBaseFromSelect={setBaseFromSelect}
               setBaseField={setBaseField}
+              sub={cmpSub}
+              setSub={goCmpSub}
+              mxSort={mxSort}
+              setMxSort={setMxSort}
             />
           </main>
         )}
@@ -677,7 +770,7 @@ const VehicleCostView = () => {
                 onClick={() => {
                   setF((p) => ({ ...p, sort: s.id }));
                   closeSheet();
-                  toTop();
+                  if (!openCard) toTop();
                 }}
               >
                 {s.label}
@@ -701,7 +794,7 @@ const VehicleCostView = () => {
                 className="primary"
                 onClick={() => {
                   closeSheet();
-                  toTop();
+                  if (!openCard) toTop();
                 }}
               >
                 Show {rows.length} {rows.length === 1 ? 'vehicle' : 'vehicles'}

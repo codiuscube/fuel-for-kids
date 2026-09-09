@@ -21,12 +21,15 @@ export const DEFAULT_ASSUMPTIONS = {
 // `gain` is a minimum improvement over your current car, not an absolute
 // figure: +2 on leg3 means "at least two inches more third-row legroom than
 // whatever is selected as yours on the Compare tab".
+export const PRICE_MAX = 80000;
+export const PMT_MAX = 1600;
+
 export const DEFAULT_FILTERS = {
   cat: 'all',
   cond: 'all',
   must: {},
   sort: 'net',
-  maxp: 80000,
+  maxp: PRICE_MAX,
   gain: { leg2: 0, leg3: 0, cargo: 0 },
 };
 
