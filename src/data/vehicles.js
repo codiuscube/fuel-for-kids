@@ -21,6 +21,59 @@
 // chairs at Kia of Round Rock was added the same day: VIN KNDNE5KA3V6190973,
 // Ceramic Silver, $50,864.
 //
+// Two cars in stock at World Car Kia New Braunfels were added 9 Sep 2026. Both
+// were read off the dealer's VDP and then confirmed against the VIN-specific
+// Kia window sticker, which is the authority used below wherever the two
+// disagree -- and they disagree on the thing that matters most.
+//
+// 2027 Carnival Hybrid EX, VIN KNDNC5KA4V6205955, Deep Chroma Blue, 6 miles.
+// $43,690 base, $45,090 with options, $46,635 with the $1,545 freight, which is
+// the MSRP the listing shows. Less a $1,332 dealer discount plus the $225
+// documentary fee gives the dealer's own $45,528 sale price, and that is the
+// card. Its sticker carries a Captain's Chairs Package -- "7-Passenger Seating"
+// and "2nd Row Captain's Chairs (2 Seats)" -- so this is real optioned buckets,
+// not lounge seats, and the card says captains. Also on it: Dark Edition
+// Package $950, cargo mat $120, 7-passenger captain's-chair floor mats $285,
+// first aid kit $45, and 19" black alloys in place of the standard 17s.
+//
+// Do not trust this dealer's Passengers field. It reads 8 on both of these
+// cars and both are 7-seaters on their own stickers -- the Prestige's interior
+// photos plainly show two captain's chairs in the second row. On the EX the
+// same feed also puts "removable captains chairs" next to that 8, because it
+// splices the optioned second row onto the base HEV LXS column the sticker is
+// comparing against. Where the feed and the sticker disagree, the sticker wins.
+//
+// 2027 Carnival Hybrid SX Prestige, VIN KNDNE5KA6V6191566, Astra Blue, 0 miles.
+// $53,590 base, $57,150 with options, $58,695 with freight, no dealer discount,
+// so MSRP plus the $225 fee is a $58,920 sale price. SX Prestige Seat Package
+// means 7-passenger VIP lounge captains with power leg support, heated and
+// ventilated -- lounge, as every Prestige is. It also carries a $2,500 dual-
+// screen Rear Seat Entertainment Package, $495 Astra Blue paint, and Bose.
+// One oddity: its sticker is invoiced to World Car Kia, 8034 IH-35 South, San
+// Antonio (TX032), while the EX is invoiced to the New Braunfels store (TX041,
+// 3363 IH 35 South). The listing puts it in New Braunfels, so it is presumably
+// a transfer between the two stores -- worth confirming which lot it sits on
+// before driving out.
+//
+// Neither card takes the $1,250 the site shows under Conditional Offers. It is
+// a qualify-first incentive and nothing on the page says it combines with the
+// KFA rate these cards use, so leaving it out is the conservative read; if it
+// does apply, both cars are $1,250 better than shown.
+//
+// MPG on the 2027 Carnival Hybrid is 32 combined, 34 city / 31 highway, not the
+// 33 used here previously. Both window stickers say 32, and their 3.1 gallons
+// per 100 miles and 274 g CO2 per mile independently work out to 32.3. The two
+// stickers are unmistakably per-VIN -- different base prices, option lists and
+// sold-to codes -- so the identical EPA panel is simply the same rating across
+// both trims, and fueleconomy.gov's 33 is the number that is wrong. The two
+// 2027 hybrids already on the list were corrected to 32 to match. The 2026
+// hybrids are left at 33; no sticker was pulled for those.
+//
+// One flag on the Kia of North Austin 2027 Hybrid EX card. Its $43,690 is
+// exactly the base MSRP off this sticker, before the $1,545 freight every
+// Carnival carries, so it is not a price anyone can transact. Left as found and
+// labelled, rather than quietly marked up.
+//
 // APRs are capped at RBFCU's 4.49% for 60 months, new or used alike, since that
 // is the buyer's actual financing. Manufacturer promos below it (0%, 2.90%,
 // 2.99%, 3.99%) are left alone because they still beat it, and they keep the
@@ -482,14 +535,22 @@ export const OPTIONS=[
   awd:"No AWD offered",mpg:22,mpgLab:"22",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
   ins:13000,res:29000,rel:3.0,cln:3.5,leg2:40.5,leg3:35.6,cargo:40.2,
   url:"https://www.worldcarkiaonline.com/auto/new-2026-kia-carnival-mpv-sx-prestige-new-braunfels-tx/120474272/",lt:"View this listing"},
- {n:"Kia Carnival Hybrid EX",y:"2027 \u00b7 2.90% / 48 mo \u00b7 $43,690",cat:"van",cond:"new",seats:7,row2:"ask",sticker:43690,cash:0,apr:.029,term:48,offer:"2.90% / 48 mo \u00b7 Kia of North Austin, \u224865 mi",
-  awd:"No AWD offered",mpg:33,mpgLab:"33",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
+ {n:"Kia Carnival Hybrid EX",y:"2027 \u00b7 2.90% / 48 mo \u00b7 $43,690",cat:"van",cond:"new",seats:7,row2:"ask",sticker:43690,cash:0,apr:.029,term:48,offer:"Base MSRP, before the $1,545 freight \u00b7 Kia of North Austin, \u224865 mi",
+  awd:"No AWD offered",mpg:32,mpgLab:"32",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
   ins:12500,res:23500,rel:4.5,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
   url:"https://www.kianorthaustin.com/new-kia/carnival-north-austin-tx.htm",lt:"Browse Austin stock"},
  {n:"Kia Carnival Hybrid SX",y:"2027 \u00b7 captains \u00b7 2.90% / 48 \u00b7 $50,864",cat:"van",cond:"new",seats:7,row2:"captains",sticker:50864,cash:0,apr:.029,term:48,offer:"2.90% / 48 mo \u00b7 Kia of Round Rock, \u224860 mi",
-  awd:"No AWD offered",mpg:33,mpgLab:"33",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
+  awd:"No AWD offered",mpg:32,mpgLab:"32",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
   ins:13000,res:27000,rel:4.5,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
   url:"https://www.cargurus.com/details/454878506",lt:"View this listing"},
+ {n:"Kia Carnival Hybrid EX",y:"2027 \u00b7 6 mi \u00b7 captains \u00b7 2.90% / 48 mo \u00b7 $45,528",cat:"van",cond:"new",seats:7,row2:"captains",sticker:45528,cash:0,apr:.029,term:48,offer:"World Car Kia New Braunfels \u2014 captains + Dark Edition on the sticker",
+  awd:"No AWD offered",mpg:32,mpgLab:"32",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
+  ins:12500,res:24500,rel:4.5,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
+  url:"https://www.worldcarkiaonline.com/auto/new-2027-kia-carnival-hybrid-ex-new-braunfels-tx/124889385/",lt:"View this listing"},
+ {n:"Kia Carnival Hybrid SX Prestige",y:"2027 \u00b7 lounge 2nd \u00b7 2.90% / 48 mo \u00b7 $58,920",cat:"van",cond:"new",seats:7,row2:"lounge",sticker:58920,cash:0,apr:.029,term:48,offer:"World Car Kia New Braunfels \u2014 dual-screen rear entertainment, $2,500 option",
+  awd:"No AWD offered",mpg:32,mpgLab:"32",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
+  ins:13000,res:31500,rel:4.5,cln:3.5,leg2:40.5,leg3:35.6,cargo:40.2,
+  url:"https://www.worldcarkiaonline.com/auto/new-2027-kia-carnival-hybrid-sx-prestige-new-braunfels-tx/124186035/",lt:"View this listing"},
  {n:"Kia Carnival SX",y:"2023 \u00b7 28k mi \u00b7 $38,590",cat:"van",cond:"used",seats:7,row2:"bench",sticker:38590,cash:0,apr:.0449,offer:"Carvana San Antonio",
   awd:"No AWD offered",mpg:22,mpgLab:"22",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
   ins:11500,res:16000,rel:3.0,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
@@ -1005,6 +1066,9 @@ export const SOURCE_ROWS = [
   ['2026 Carnival Hybrid SX Prestige', 'Carvana vehicle 4725390, 8 Sep 2026', 'Actual car; 16,631 mi, $50,990 + $1,290 ship'],
   ['2026 Carnival SX Prestige V6', 'World Car Kia New Braunfels, VIN KNDNE5K30T6641260, 8 Sep 2026', 'Actual car; sale $52,631, lounge 2nd'],
   ['2027 Carnival Hybrid SX captains', 'Kia of Round Rock / CarGurus 454878506, 8 Sep 2026', 'Actual car; VIN KNDNE5KA3V6190973, $50,864'],
+  ['2027 Carnival Hybrid EX, New Braunfels', 'World Car VDP + Kia window sticker, VIN KNDNC5KA4V6205955, 9 Sep 2026', 'Actual car; sale $45,528, captains on the sticker'],
+  ['2027 Carnival Hybrid SX Prestige, New Braunfels', 'World Car VDP + Kia window sticker, VIN KNDNE5KA6V6191566, 9 Sep 2026', 'Actual car; sale $58,920, lounge 2nd'],
+  ['2027 Carnival Hybrid MPG', 'Kia window stickers for both VINs above', '32 combined, 34 city / 31 hwy; not the 33 on fueleconomy.gov'],
   ['2016 Sequoia SR5 2WD', 'Third Coast New Braunfels VDP, 8 Sep 2026', 'Actual car; $20,900 from dealer data'],
   ['2016 Sequoia SR5 4x4', 'Facebook Marketplace SA, 8 Sep 2026', 'Actual car; 140,908 mi, $22,114'],
   ['Carnival vs Sienna depreciation', 'iSeeCars: 50.1% vs 38.6% over five years', 'Model average'],
