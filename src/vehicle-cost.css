@@ -367,6 +367,35 @@
   color: inherit;
   opacity: 0.85;
 }
+.vehcost .pickmix {
+  margin-top: 10px;
+}
+.vehcost .pickmix > summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: inherit;
+}
+.vehcost .pickrow {
+  padding: 8px 0 0;
+}
+.vehcost .pickrow > label {
+  color: inherit;
+  opacity: 0.9;
+}
+.vehcost .pickrow > label output {
+  color: inherit;
+}
+.vehcost .pickreset {
+  margin-top: 8px;
+  border: none;
+  background: none;
+  padding: 6px 0;
+  font-size: 13px;
+  text-decoration: underline;
+  color: inherit;
+  opacity: 0.85;
+}
 
 /* --- Card --------------------------------------------------------------- */
 

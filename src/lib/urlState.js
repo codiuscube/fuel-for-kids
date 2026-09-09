@@ -10,9 +10,13 @@ import { OPTIONS, PRESETS, SPECS } from '../data/vehicles';
 import {
   DEFAULT_ASSUMPTIONS,
   DEFAULT_FILTERS,
+  DEFAULT_WEIGHTS,
   PRICE_MAX,
   PMT_MAX,
   baseFromSpec,
+  encodeWeights,
+  parseWeights,
+  weightsEqual,
 } from './cost';
 
 export const TABS = ['cars', 'compare', 'notes'];
@@ -47,6 +51,7 @@ export const defaultSnapshot = () => ({
   tab: 'cars',
   S: { ...DEFAULT_ASSUMPTIONS },
   F: { ...DEFAULT_FILTERS, gain: { ...DEFAULT_FILTERS.gain }, maxm: PMT_MAX, q: '' },
+  W: { ...DEFAULT_WEIGHTS },
   openCard: null,
   baseSel: DEFAULT_BASE_SEL,
   base: defaultBase(),
@@ -148,12 +153,14 @@ export const parseUrl = (search) => {
   if (p.has('chg')) S.charger = Math.max(0, int(p.get('chg'), S.charger));
   if (p.has('term')) S.term = Math.max(12, int(p.get('term'), S.term));
 
+  if (p.has('w')) snap.W = parseWeights(p.get('w'));
+
   return snap;
 };
 
 export const toSearch = (snap) => {
   const p = new URLSearchParams();
-  const { tab, S, F, openCard, baseSel, base, cmpSub, mxSort } = snap;
+  const { tab, S, F, W, openCard, baseSel, base, cmpSub, mxSort } = snap;
   const D = DEFAULT_ASSUMPTIONS;
 
   setIf(p, 'tab', tab, 'cars');
@@ -187,6 +194,7 @@ export const toSearch = (snap) => {
   if (!almost(S.elec, D.elec)) p.set('elec', String(S.elec));
   if (S.charger !== D.charger) p.set('chg', String(S.charger));
   if (S.term !== D.term) p.set('term', String(S.term));
+  if (W && !weightsEqual(W, DEFAULT_WEIGHTS)) p.set('w', encodeWeights(W));
 
   const qs = p.toString();
   return qs ? `?${qs}` : '';

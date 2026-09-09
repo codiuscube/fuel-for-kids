@@ -232,9 +232,9 @@ export const isEff = (o) => !!(o.ev || o.phev || (o.mpg && o.mpg >= 30));
 // Ask means the trim can go either way and this car was not opened.
 export const ROW2 = {
   captains: { label: 'Captains', short: "Captain's chairs", chip: 'ok', frac: 1 },
-  lounge: { label: 'Captains · lounge', short: "Captain's chairs — lounge, do not stow", chip: 'ok', frac: 0.75 },
-  bench: { label: 'Bench 2nd', short: 'Second-row bench', chip: 'warn', frac: 0.12 },
-  ask: { label: 'Ask 2nd row', short: 'Second row unverified', chip: 'warn', frac: 0.4 },
+  lounge: { label: 'Captains · lounge', short: "Captain's chairs — lounge, do not stow", chip: 'ok', frac: 0.9 },
+  bench: { label: 'Bench 2nd', short: 'Second-row bench', chip: 'warn', frac: 0 },
+  ask: { label: 'Ask 2nd row', short: 'Second row unverified', chip: 'warn', frac: 0.2 },
 };
 
 export const row2Of = (o) => {
@@ -277,21 +277,95 @@ export const hasCaptains = (o) => {
   return id === 'captains' || id === 'lounge';
 };
 
-// Recommendation score: cost is a third of it, the rest is what the car is like
-// to live with. Weights are spelled out on the card itself.
-export const scoreRow = (r, lo, hi) => {
-  const cost = hi > lo ? 1 - (r.c.net - lo) / (hi - lo) : 1;
-  const own = ownFor(r.o) ? ownFor(r.o)[1] / 5 : 0.7;
-  return (
-    cost * 0.35 +
-    (r.o.rel / 5) * 0.2 +
-    own * 0.1 +
-    Math.min(1, r.o.leg3 / 38.7) * 0.15 +
-    Math.min(1, r.o.cargo / 41.5) * 0.15 +
-    (r.o.cln / 5) * 0.05
-  );
+// Best overall is a weighted mix you set. Captain's chairs and overall
+// legroom (second plus third row) outrank a bench or a jump-seat cabin, even
+// when that van is cheaper. Cost still counts, just not enough to put a
+// sliding 8-passenger Carnival over a Sienna. Drag any slider; the mix
+// always renormalises to 100%.
+export const SCORE_KEYS = ['cost', 'cap', 'leg3', 'rel', 'awd', 'cargo', 'cln'];
+
+export const SCORE_FACTORS = [
+  { id: 'cost', label: 'Five-year cost', short: 'cost' },
+  { id: 'cap', label: "Captain's chairs", short: 'captains' },
+  { id: 'leg3', label: 'Overall legroom', short: 'legroom' },
+  { id: 'rel', label: 'Reliability', short: 'reliability' },
+  { id: 'awd', label: 'AWD available', short: 'AWD' },
+  { id: 'cargo', label: 'Cargo behind 3rd', short: 'cargo' },
+  { id: 'cln', label: 'Easy to clean', short: 'cleanability' },
+];
+
+export const DEFAULT_WEIGHTS = {
+  cost: 2,
+  cap: 5,
+  leg3: 5,
+  rel: 0,
+  awd: 0,
+  cargo: 0,
+  cln: 0,
 };
-export const bestOf = (list) => {
+
+const clamp01 = (n) => Math.max(0, Math.min(1, n));
+
+// Combined second-plus-third row, with a floor so a long second row cannot
+// hide a jump-seat third. 70" combined / 30" third is children-only; a
+// Sienna-class cabin (79" / 38.7") is a 1.0.
+export const roomScore = (o) => {
+  const overall = clamp01((o.leg2 + o.leg3 - 70) / 9);
+  const third = clamp01((o.leg3 - 30) / 8.7);
+  return 0.5 * overall + 0.5 * third;
+};
+
+export const weightsEqual = (a, b) => SCORE_KEYS.every((k) => (a[k] || 0) === (b[k] || 0));
+
+export const encodeWeights = (W) => SCORE_KEYS.map((k) => W[k] || 0).join('-');
+
+export const parseWeights = (raw) => {
+  const parts = String(raw || '').split('-').map((n) => parseInt(n, 10));
+  if (parts.length !== SCORE_KEYS.length || parts.some((n) => !Number.isFinite(n))) {
+    return { ...DEFAULT_WEIGHTS };
+  }
+  const W = {};
+  SCORE_KEYS.forEach((k, i) => {
+    W[k] = Math.max(0, Math.min(10, parts[i]));
+  });
+  return W;
+};
+
+export const normalizeWeights = (W) => {
+  const sum = SCORE_KEYS.reduce((s, k) => s + Math.max(0, W[k] || 0), 0);
+  const parts = {};
+  SCORE_KEYS.forEach((k) => {
+    parts[k] = sum ? Math.max(0, W[k] || 0) / sum : 0;
+  });
+  return { parts, sum };
+};
+
+export const scoreParts = (r, lo, hi) => ({
+  cost: hi > lo ? 1 - (r.c.net - lo) / (hi - lo) : 1,
+  cap: row2Meta(r.o).frac,
+  leg3: roomScore(r.o),
+  rel: r.o.rel / 5,
+  awd: hasAWD(r.o) ? 1 : 0,
+  cargo: Math.min(1, r.o.cargo / 41.5),
+  cln: r.o.cln / 5,
+});
+
+export const scoreRow = (r, lo, hi, W = DEFAULT_WEIGHTS) => {
+  const p = scoreParts(r, lo, hi);
+  const { parts, sum } = normalizeWeights(W);
+  if (!sum) return 0;
+  return SCORE_KEYS.reduce((s, k) => s + p[k] * parts[k], 0);
+};
+
+export const weightMixLabel = (W) => {
+  const { parts, sum } = normalizeWeights(W);
+  if (!sum) return 'nothing — drag a slider';
+  return SCORE_FACTORS.filter((f) => parts[f.id] >= 0.005)
+    .map((f) => `${Math.round(parts[f.id] * 100)}% ${f.short}`)
+    .join(', ');
+};
+
+export const bestOf = (list, W = DEFAULT_WEIGHTS) => {
   if (!list.length) return null;
   let lo = Infinity;
   let hi = -Infinity;
@@ -300,7 +374,7 @@ export const bestOf = (list) => {
     if (r.c.net > hi) hi = r.c.net;
   });
   return list
-    .map((r) => ({ r, s: scoreRow(r, lo, hi) }))
+    .map((r) => ({ r, s: scoreRow(r, lo, hi, W) }))
     .sort((a, b) => b.s - a.s);
 };
 

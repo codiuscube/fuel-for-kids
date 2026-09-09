@@ -5,8 +5,10 @@ import { OPTIONS, SPECS, PRESETS, WHY } from '../data/vehicles';
 import {
   DEFAULT_ASSUMPTIONS,
   DEFAULT_FILTERS,
+  DEFAULT_WEIGHTS,
   PMT_MAX,
   PRICE_MAX,
+  SCORE_FACTORS,
   baseFromSpec,
   bestOf,
   compute,
@@ -15,9 +17,11 @@ import {
   hasCaptains,
   isEff,
   money,
+  normalizeWeights,
   ownFor,
   row2Meta,
   row2Of,
+  weightMixLabel,
 } from '../lib/cost';
 import { cardId, hrefFor, parseUrl } from '../lib/urlState';
 import { Assumptions, Spec, TrophyIcon, WhyContext, delta } from './pieces';
@@ -430,6 +434,7 @@ const VehicleCostView = () => {
   const [showPick, setShowPick] = useState(true);
   const [cmpSub, setCmpSub] = useState(boot.cmpSub);
   const [mxSort, setMxSort] = useState(boot.mxSort);
+  const [W, setW] = useState(boot.W);
 
   const applyingUrl = useRef(false);
   const historyMode = useRef('replace');
@@ -455,6 +460,7 @@ const VehicleCostView = () => {
     setOpenCard(snap.openCard);
     setCmpSub(snap.cmpSub);
     setMxSort(snap.mxSort);
+    setW(snap.W);
     scrollMode.current = 'instant';
     queueMicrotask(() => {
       applyingUrl.current = false;
@@ -482,11 +488,13 @@ const VehicleCostView = () => {
 
   // The recommendation still runs, but it is a strip above the list rather
   // than a page of its own, and it can be folded away.
-  const ranked = bestOf(matching);
+  const ranked = bestOf(matching, W);
   const top = ranked && ranked.length ? ranked[0].r : null;
   const topKey = top ? cardId(top.o) : null;
   const cheapest = matching.length ? matching.slice().sort((a, b) => a.c.net - b.c.net)[0] : null;
   const nFilters = activeFilterCount(F);
+  const mix = normalizeWeights(W);
+  const mixLabel = weightMixLabel(W);
 
   // Swapping the comparison car moves every gain: a filter that made sense
   // against the Pathfinder can be beyond anything on the list against a
@@ -535,10 +543,12 @@ const VehicleCostView = () => {
       sort: p.sort,
     }));
   const setGain = (id, v) => setF((p) => ({ ...p, gain: { ...p.gain, [id]: v } }));
+  const setWeight = (id, v) => setW((p) => ({ ...p, [id]: v }));
+  const resetWeights = () => setW({ ...DEFAULT_WEIGHTS });
 
   const snapshot = useMemo(
-    () => ({ tab, S, F, openCard, baseSel, base, cmpSub, mxSort }),
-    [tab, S, F, openCard, baseSel, base, cmpSub, mxSort],
+    () => ({ tab, S, F, W, openCard, baseSel, base, cmpSub, mxSort }),
+    [tab, S, F, W, openCard, baseSel, base, cmpSub, mxSort],
   );
 
   useEffect(() => {
@@ -722,12 +732,35 @@ const VehicleCostView = () => {
                     {shortMoney(top.c.net)} over 5 years · {money(top.c.m)}/mo · {money(top.o.sticker)} ask
                   </p>
                   <p className="fine pickwhy">
-                    Scored 35% five-year cost, 20% reliability, 15% third row, 15% cargo, 10% owner rating, 5%
-                    cleanability, across the {matching.length} matching your filters.
+                    Your mix: {mixLabel}, across the {matching.length} matching your filters. The numbered list
+                    is still cheapest-first unless you change the sort.
                     {cheapest && cheapest.o.n !== top.o.n
                       ? ` Cheapest match is the ${cheapest.o.n} at ${shortMoney(cheapest.c.net)}.`
                       : ''}
                   </p>
+                  <details className="pickmix">
+                    <summary>Adjust what matters</summary>
+                    {SCORE_FACTORS.map((f) => (
+                      <div key={f.id} className="gainrow pickrow">
+                        <label htmlFor={`w-${f.id}`}>
+                          {f.label}
+                          <output>{mix.sum ? `${Math.round(mix.parts[f.id] * 100)}%` : 'Off'}</output>
+                        </label>
+                        <input
+                          id={`w-${f.id}`}
+                          type="range"
+                          min={0}
+                          max={10}
+                          step={1}
+                          value={W[f.id] || 0}
+                          onChange={(e) => setWeight(f.id, parseInt(e.target.value, 10))}
+                        />
+                      </div>
+                    ))}
+                    <button type="button" className="pickreset" onClick={resetWeights}>
+                      Reset to cost, captains, overall room
+                    </button>
+                  </details>
                 </div>
               )}
 
