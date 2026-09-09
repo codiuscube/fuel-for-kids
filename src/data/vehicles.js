@@ -69,6 +69,27 @@
 // 2027 hybrids already on the list were corrected to 32 to match. The 2026
 // hybrids are left at 33; no sticker was pulled for those.
 //
+// That was then confirmed a third time. The Round Rock SX (VIN
+// KNDNE5KA3V6190973) sticker was pulled from Kia of Round Rock's own site on
+// 9 Sep 2026 and reads the same 32 / 34 / 31 with the same 3.1 gallons per 100
+// miles, on a third VIN at a third dealer. Kia of Round Rock's listing page
+// claims 33 combined and "34/32 City/Highway" in its dealer notes, which is
+// the same generic model-level feed value that World Car's description carried
+// while its own structured field and sticker said 34/31. Treat any dealer
+// page's MPG as decoration and read the sticker.
+//
+// Its link was moved off CarGurus (listing 454878506, which still resolves) and
+// onto the dealer's own VIN page the same day, so every new car on this page
+// now links to the selling dealer rather than an aggregator. The dealer page
+// confirms the card exactly: $52,330 MSRP less a $1,691 discount plus the $225
+// doc fee is the $50,864 on the card, with 2.90% for 48 months as the posted
+// offer. Its sticker also carries the Captain's Chairs Package with
+// "7-Passenger Seating" and "2nd Row Captain's Chairs (2 Seats)", right next to
+// the base column's "8-Passenger Seating" line -- the same splice that makes
+// these dealers' Passengers fields wrong. A $500 military and a $750 KFA
+// conditional are offered below that price and, as everywhere else here, are
+// not taken.
+//
 // One flag on the Kia of North Austin 2027 Hybrid EX card. Its $43,690 is
 // exactly the base MSRP off this sticker, before the $1,545 freight every
 // Carnival carries, so it is not a price anyone can transact. Left as found and
@@ -542,7 +563,7 @@ export const OPTIONS=[
  {n:"Kia Carnival Hybrid SX",y:"2027 \u00b7 captains \u00b7 2.90% / 48 \u00b7 $50,864",cat:"van",cond:"new",seats:7,row2:"captains",sticker:50864,cash:0,apr:.029,term:48,offer:"2.90% / 48 mo \u00b7 Kia of Round Rock, \u224860 mi",
   awd:"No AWD offered",mpg:32,mpgLab:"32",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
   ins:13000,res:27000,rel:4.5,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
-  url:"https://www.cargurus.com/details/454878506",lt:"View this listing"},
+  url:"https://www.kiaofroundrock.com/new/KNDNE5KA3V6190973.htm",lt:"View this listing"},
  {n:"Kia Carnival Hybrid EX",y:"2027 \u00b7 6 mi \u00b7 captains \u00b7 2.90% / 48 mo \u00b7 $45,528",cat:"van",cond:"new",seats:7,row2:"captains",sticker:45528,cash:0,apr:.029,term:48,offer:"World Car Kia New Braunfels \u2014 captains + Dark Edition on the sticker",
   awd:"No AWD offered",mpg:32,mpgLab:"32",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
   ins:12500,res:24500,rel:4.5,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
@@ -1065,7 +1086,7 @@ export const SOURCE_ROWS = [
   ['Used Carnival listings', 'Carvana San Antonio search page, 8 Sep 2026', 'Listed cars, VIN not opened'],
   ['2026 Carnival Hybrid SX Prestige', 'Carvana vehicle 4725390, 8 Sep 2026', 'Actual car; 16,631 mi, $50,990 + $1,290 ship'],
   ['2026 Carnival SX Prestige V6', 'World Car Kia New Braunfels, VIN KNDNE5K30T6641260, 8 Sep 2026', 'Actual car; sale $52,631, lounge 2nd'],
-  ['2027 Carnival Hybrid SX captains', 'Kia of Round Rock / CarGurus 454878506, 8 Sep 2026', 'Actual car; VIN KNDNE5KA3V6190973, $50,864'],
+  ['2027 Carnival Hybrid SX captains', 'Kia of Round Rock VDP + Kia window sticker, 9 Sep 2026', 'Actual car; VIN KNDNE5KA3V6190973, $50,864 confirmed'],
   ['2027 Carnival Hybrid EX, New Braunfels', 'World Car VDP + Kia window sticker, VIN KNDNC5KA4V6205955, 9 Sep 2026', 'Actual car; sale $45,528, captains on the sticker'],
   ['2027 Carnival Hybrid SX Prestige, New Braunfels', 'World Car VDP + Kia window sticker, VIN KNDNE5KA6V6191566, 9 Sep 2026', 'Actual car; sale $58,920, lounge 2nd'],
   ['2027 Carnival Hybrid MPG', 'Kia window stickers for both VINs above', '32 combined, 34 city / 31 hwy; not the 33 on fueleconomy.gov'],
