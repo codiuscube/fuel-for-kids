@@ -195,6 +195,9 @@ const SlidersIcon = () => (
   />
 );
 const SortIcon = () => <Icon size={15} d={<><path d="M7 4v16M7 20l-3-3M7 20l3-3" /><path d="M14 7h7M14 12h5M14 17h3" /></>} />;
+const StarIcon = () => (
+  <Icon size={15} d={<path d="M12 3.6l2.65 5.5 6 .85-4.35 4.2 1.05 5.95L12 17.2l-5.35 2.9 1.05-5.95L3.35 9.95l6-.85z" />} />
+);
 const GearIcon = () => <Icon size={16} d={<><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1" /></>} />;
 const CloseIcon = () => <Icon size={18} d={<path d="M6 6l12 12M18 6 6 18" />} />;
 const ChevronIcon = () => <Icon size={16} d={<path d="m6 9 6 6 6-6" />} />;
@@ -497,7 +500,7 @@ const VehicleCostView = () => {
   const [base, setBase] = useState(boot.base);
   const [baseSel, setBaseSel] = useState(boot.baseSel);
   const [why, setWhy] = useState(null);
-  const [sheet, setSheet] = useState(null); // 'filters' | 'sort' | 'assume'
+  const [sheet, setSheet] = useState(null); // 'filters' | 'sort' | 'mix' | 'assume'
   const [openCard, setOpenCard] = useState(boot.openCard);
   const [showPick, setShowPick] = useState(true);
   const [cmpSub, setCmpSub] = useState(boot.cmpSub);
@@ -569,6 +572,7 @@ const VehicleCostView = () => {
   const nFilters = activeFilterCount(F);
   const mix = normalizeWeights(W);
   const mixLabel = weightMixLabel(W);
+  const mixCustom = SCORE_FACTORS.some((f) => (W[f.id] || 0) !== (DEFAULT_WEIGHTS[f.id] || 0));
 
   // Swapping the comparison car moves every gain: a filter that made sense
   // against the Pathfinder can be beyond anything on the list against a
@@ -731,24 +735,31 @@ const VehicleCostView = () => {
                 )}
               </div>
               <div className="ctlrow">
-                <button type="button" className="ctlbtn" onClick={() => setSheet('sort')}>
-                  <SortIcon />
-                  {sortDef.short}
-                </button>
-                <button
-                  type="button"
-                  className={nFilters ? 'ctlbtn on' : 'ctlbtn'}
-                  onClick={() => setSheet('filters')}
-                >
-                  <SlidersIcon />
-                  Filters
-                  {!!nFilters && <span className="badge">{nFilters}</span>}
-                </button>
-                <span className="count">
-                  {rows.length} of {OPTIONS.length}
-                </span>
+                <div className="ctlbtns">
+                  <button type="button" className="ctlbtn" onClick={() => setSheet('sort')}>
+                    <SortIcon />
+                    {sortDef.short}
+                  </button>
+                  <button
+                    type="button"
+                    className={nFilters ? 'ctlbtn on' : 'ctlbtn'}
+                    onClick={() => setSheet('filters')}
+                  >
+                    <SlidersIcon />
+                    Filters
+                    {!!nFilters && <span className="badge">{nFilters}</span>}
+                  </button>
+                  <button
+                    type="button"
+                    className={mixCustom ? 'ctlbtn on' : 'ctlbtn'}
+                    onClick={() => setSheet('mix')}
+                  >
+                    <StarIcon />
+                    Mix
+                  </button>
+                </div>
               </div>
-              {!!nFilters && (
+              <div className="resultrow">
                 <div className="activefilters">
                   {F.cat !== 'all' && (
                     <button type="button" className="fpill" onClick={() => setF((p) => ({ ...p, cat: 'all' }))}>
@@ -784,11 +795,16 @@ const VehicleCostView = () => {
                       {gainLabel(g, F.gain[g.id])} {g.short} <CloseIcon />
                     </button>
                   ))}
-                  <button type="button" className="fpill clear" onClick={resetFilters}>
-                    Clear all
-                  </button>
+                  {!!nFilters && (
+                    <button type="button" className="fpill clear" onClick={resetFilters}>
+                      Clear all
+                    </button>
+                  )}
                 </div>
-              )}
+                <span className="count">
+                  {rows.length} of {OPTIONS.length}
+                </span>
+              </div>
             </div>
 
             <main className="list">
@@ -829,28 +845,10 @@ const VehicleCostView = () => {
                       ? ` Cheapest match is the ${cheapest.o.n} at ${shortMoney(cheapest.c.net)}.`
                       : ''}
                   </p>
-                  <details className="pickmix">
-                    <summary>Adjust what matters</summary>
-                    {SCORE_FACTORS.map((f) => (
-                      <div key={f.id} className="gainrow pickrow">
-                        <label htmlFor={`w-${f.id}`}>
-                          {f.label}
-                          <output>{mix.sum ? `${Math.round(mix.parts[f.id] * 100)}%` : 'Off'}</output>
-                        </label>
-                        <RangeInput
-                          id={`w-${f.id}`}
-                          min={0}
-                          max={10}
-                          step={1}
-                          value={W[f.id] || 0}
-                          onChange={(v) => setWeight(f.id, v)}
-                        />
-                      </div>
-                    ))}
-                    <button type="button" className="pickreset" onClick={resetWeights}>
-                      Reset to your mix
-                    </button>
-                  </details>
+                  <button type="button" className="pickmixbtn" onClick={() => setSheet('mix')}>
+                    <StarIcon />
+                    Adjust what matters
+                  </button>
                 </div>
               )}
 
@@ -1041,6 +1039,51 @@ const VehicleCostView = () => {
               ladder follows that term; a few other promos keep the term on the card.
             </p>
           </div>
+        </Sheet>
+
+        <Sheet
+          open={sheet === 'mix'}
+          title="What matters to you"
+          onClose={closeSheet}
+          footer={
+            <>
+              <button type="button" className="ghost" onClick={resetWeights}>
+                Reset
+              </button>
+              <button type="button" className="primary" onClick={closeSheet}>
+                Done
+              </button>
+            </>
+          }
+        >
+          <p className="fine" style={{ marginTop: 0 }}>
+            Best overall ranks everything that matches your filters against this mix, and the podium
+            above the list is its top three. Weights, not filters: a factor at zero is one it
+            ignores, and nothing drops off the list.
+          </p>
+          <div className="fgroup">
+            {SCORE_FACTORS.map((f) => (
+              <div key={f.id} className="gainrow pickrow">
+                <label htmlFor={`w-${f.id}`}>
+                  {f.label}
+                  <output>{mix.sum ? `${Math.round(mix.parts[f.id] * 100)}%` : 'Off'}</output>
+                </label>
+                <RangeInput
+                  id={`w-${f.id}`}
+                  min={0}
+                  max={10}
+                  step={1}
+                  value={W[f.id] || 0}
+                  onChange={(v) => setWeight(f.id, v)}
+                />
+              </div>
+            ))}
+          </div>
+          <p className="fine">
+            {mix.sum
+              ? `Your mix: ${mixLabel}.`
+              : 'Nothing carries any weight, so the podium is just the first three matches. Drag a slider to give Best overall something to rank on.'}
+          </p>
         </Sheet>
 
         <Sheet open={sheet === 'assume'} title="Your assumptions" onClose={closeSheet}>

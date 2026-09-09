@@ -4,12 +4,11 @@ import { useEffect } from 'react';
 // Scroll guard.
 //
 // A phone hands any touch that lands on an <input type="range"> to that input,
-// and the input takes its value from wherever the finger came down. This page
-// is one long scroll with sliders sitting in the middle of it — thirteen
-// stacked weight sliders under "Adjust what matters", three gain sliders and
-// two price sliders in Filters, six in Assumptions — so a swipe meant to
-// scroll past them starts on one and moves it, and a tap meant to arrest a
-// flick nudges it.
+// and the input takes its value from wherever the finger came down. Every
+// slider here lives in a sheet — thirteen weight sliders in Mix, three gain
+// sliders and two price sliders in Filters, six in Assumptions — and a sheet
+// full of them is still a scroller, so a swipe meant to scroll past one starts
+// on it and moves it, and a tap meant to arrest a flick nudges it.
 //
 // `touch-action: pan-y` on the inputs already gives the vertical gesture back
 // to the scroller, so the page does move. What it cannot undo is the value the
