@@ -29,6 +29,22 @@
 // oldest and highest-mileage cars here may be tiered higher or declined
 // outright, so the pre-2020 listings are labelled to check. Legroom, cargo
 // and MPG are manufacturer/EPA figures; insurance and resale are estimates.
+// On 9 Sep 2026 every Carvana VIN listing on this page was re-checked against
+// the live page. Seven had sold (2025 Sienna XLE, both 2024 Pacifica Hybrid
+// Selects, the 2023 Pacifica Hybrid Touring L, the 2019 Odyssey EX-L, the 2017
+// Model X 100D and the 2024 Wagoneer Series II) and are left in place, marked
+// here rather than silently deleted; twenty-two more had dropped in price and
+// were corrected. The Defender entry pointed at a 2023 110 S at $42,990, not
+// the 130 S it described, and now points at a real 2023 130 SE in San Antonio.
+//
+// The same day, cars.com was swept for the Austin-San Antonio corridor (zip
+// 78130, 75 miles, which reaches Austin, Kyle, Buda, San Marcos, New Braunfels
+// and San Antonio): 2,805 listings across 54 nameplates, 2,608 of them inside
+// the corridor. Eleven were added below. Only those eleven could be confirmed
+// to have second-row captain’s chairs from the seller’s own listing text, which
+// is the bar this page sets; cars.com does not carry second-row configuration
+// as structured data, and 126 of 154 candidates said nothing either way.
+//
 // Maintenance is computed from age, odometer, remaining warranty and the miles
 // slider (see maintenanceFor in src/lib/cost.js), which is why the page says
 // to treat sub-$3,000 gaps as ties.
@@ -48,19 +64,19 @@ export const OPTIONS=[
  {n:"Sienna Woodland Edition",y:"2026 \u00b7 lifted, AWD standard \u00b7 $55,750",cat:"van",cond:"new",seats:7,sticker:55750,cash:0,apr:.0449,offer:"Bryan College Station, 124 mi",
   awd:"AWD standard, 6.9\" clearance",mpg:35,mpgLab:"35",ins:13000,res:38000,rel:4.0,cln:3.5,leg2:39.9,leg3:38.7,cargo:33.5,
   url:"https://www.bcstoyota.com/new-inventory/index.htm?model=Sienna",lt:"View this listing"},
- {n:"Toyota Sienna XLE",y:"2025 \u00b7 59k mi \u00b7 $40,499",cat:"van",cond:"used",seats:7,sticker:40499,cash:0,apr:.0449,offer:"RBFCU 4.49%",
+ {n:"Toyota Sienna XLE",y:"2025 \u00b7 59k mi \u00b7 $40,499",cat:"van",cond:"used",seats:7,sticker:40499,cash:0,apr:.0449,offer:"SOLD 9 Sep 2026 \u2014 was RBFCU 4.49%",
   awd:"AWD if optioned",mpg:36,mpgLab:"36",ins:11500,res:24000,rel:4.0,cln:3.0,leg2:39.9,leg3:38.7,cargo:33.5,
   url:"https://www.carvana.com/vehicle/4683855",lt:"View this listing"},
- {n:"Pacifica Hybrid Select",y:"2024 \u00b7 68k mi \u00b7 $21,990",cat:"van",cond:"used",seats:7,sticker:21990,cash:0,apr:.0449,offer:"Plug-in",
+ {n:"Pacifica Hybrid Select",y:"2024 \u00b7 68k mi \u00b7 $21,990",cat:"van",cond:"used",seats:7,sticker:21990,cash:0,apr:.0449,offer:"SOLD 9 Sep 2026 \u2014 was Plug-in",
   awd:"FWD only on hybrid",mpg:30,mpgLab:"82 MPGe",mpgBar:40,kwh100:41,phev:true,charger:true,aw:"2017 N. American Utility of the Year",awUrl:"https://www.torquenews.com/106/chrysler-pacifica-wins-first-ever-north-american-utility-year-award",ins:11500,res:9500,rel:1.5,cln:4.0,
   leg2:39.0,leg3:36.5,cargo:32.3,url:"https://www.carvana.com/vehicle/4401364",lt:"View this listing"},
- {n:"Pacifica Hybrid Touring L",y:"2023 \u00b7 31k mi \u00b7 $28,590",cat:"van",cond:"used",seats:7,sticker:28590,cash:0,apr:.0449,offer:"Plug-in",
+ {n:"Pacifica Hybrid Touring L",y:"2023 \u00b7 31k mi \u00b7 $28,590",cat:"van",cond:"used",seats:7,sticker:28590,cash:0,apr:.0449,offer:"SOLD 9 Sep 2026 \u2014 was Plug-in",
   awd:"FWD only on hybrid",mpg:30,mpgLab:"82 MPGe",mpgBar:40,kwh100:41,phev:true,charger:true,aw:"2017 N. American Utility of the Year",awUrl:"https://www.torquenews.com/106/chrysler-pacifica-wins-first-ever-north-american-utility-year-award",ins:11500,res:12500,rel:1.5,cln:4.0,
   leg2:39.0,leg3:36.5,cargo:32.3,url:"https://www.carvana.com/vehicle/4660545",lt:"View this listing"},
- {n:"Honda Odyssey EX-L",y:"2022 \u00b7 63k mi \u00b7 $31,590",cat:"van",cond:"used",seats:7,sticker:31590,cash:0,apr:.0449,offer:"RBFCU 4.49%",
+ {n:"Honda Odyssey EX-L",y:"2022 \u00b7 63k mi \u00b7 $30,990",cat:"van",cond:"used",seats:7,sticker:30990,cash:0,apr:.0449,offer:"RBFCU 4.49%",
   awd:"No AWD offered",mpg:22,mpgLab:"22",ins:11000,res:15000,rel:3.0,cln:4.0,leg2:40.9,leg3:38.1,cargo:32.8,
   url:"https://www.carvana.com/vehicle/4651723",lt:"View this listing"},
- {n:"Kia Carnival EX",y:"2023 \u00b7 60k mi \u00b7 $31,590",cat:"van",cond:"used",seats:7,row2:"bench",sticker:31590,cash:0,apr:.0449,offer:"RBFCU 4.49%",
+ {n:"Kia Carnival EX",y:"2023 \u00b7 60k mi \u00b7 $30,990",cat:"van",cond:"used",seats:7,row2:"bench",sticker:30990,cash:0,apr:.0449,offer:"RBFCU 4.49%",
   awd:"No AWD offered",mpg:22,mpgLab:"22",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",ins:11000,res:12500,rel:3.0,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
   url:"https://www.carvana.com/vehicle/4357538",lt:"View this listing"},
  {n:"Kia Carnival EX",y:"2024 \u00b7 20k mi \u00b7 $38,590",cat:"van",cond:"used",seats:7,row2:"bench",sticker:38590,cash:0,apr:.0449,offer:"RBFCU 4.49%",
@@ -72,22 +88,22 @@ export const OPTIONS=[
  {n:"Kia Carnival Hybrid SX Prestige",y:"2026 \u00b7 16,631 mi \u00b7 lounge 2nd row \u00b7 $50,990",cat:"van",cond:"used",seats:7,row2:"lounge",sticker:50990,ship:1290,cash:0,apr:.0449,offer:"Carvana \u2014 $495 upgrades, lounge stays put",
   awd:"No AWD offered",mpg:33,mpgLab:"33",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",ins:13000,res:23500,rel:4.5,cln:3.5,leg2:40.5,leg3:35.6,cargo:40.2,
   url:"https://www.carvana.com/vehicle/4725390",lt:"View this listing"},
- {n:"Toyota Sienna XLE",y:"2017 \u00b7 62k mi \u00b7 V6, not hybrid",cat:"van",cond:"used",seats:7,sticker:27590,ship:590,cash:0,apr:.0449,offer:"RBFCU \u2014 check age limit",
+ {n:"Toyota Sienna XLE",y:"2017 \u00b7 62k mi \u00b7 V6, not hybrid",cat:"van",cond:"used",seats:7,sticker:26990,ship:590,cash:0,apr:.0449,offer:"RBFCU \u2014 check age limit",
   awd:"AWD if optioned",mpg:22,mpgLab:"22",ins:9000,res:11000,rel:4.5,cln:3.0,leg2:37.6,leg3:36.3,cargo:39.1,
   url:"https://www.carvana.com/vehicle/4517273",lt:"View this listing"},
- {n:"Toyota Sienna XLE",y:"2020 \u00b7 75k mi \u00b7 V6, not hybrid",cat:"van",cond:"used",seats:7,sticker:32990,cash:0,apr:.0449,offer:"RBFCU \u2014 check age limit",
+ {n:"Toyota Sienna XLE",y:"2020 \u00b7 75k mi \u00b7 V6, not hybrid",cat:"van",cond:"used",seats:7,sticker:31990,cash:0,apr:.0449,offer:"RBFCU \u2014 check age limit",
   awd:"AWD if optioned",mpg:22,mpgLab:"22",ins:9500,res:12500,rel:4.5,cln:3.0,leg2:37.6,leg3:36.3,cargo:39.1,
   url:"https://www.carvana.com/vehicle/4578369",lt:"View this listing"},
- {n:"Honda Odyssey EX-L",y:"2019 \u00b7 37k mi",cat:"van",cond:"used",seats:7,sticker:31990,cash:0,apr:.0449,offer:"RBFCU \u2014 check age limit",
+ {n:"Honda Odyssey EX-L",y:"2019 \u00b7 37k mi",cat:"van",cond:"used",seats:7,sticker:31990,cash:0,apr:.0449,offer:"SOLD 9 Sep 2026 \u2014 was RBFCU \u2014 check age limit",
   awd:"No AWD offered",mpg:22,mpgLab:"22",ins:9500,res:13000,rel:3.0,cln:4.0,leg2:40.9,leg3:38.1,cargo:32.8,
   url:"https://www.carvana.com/vehicle/4651600",lt:"View this listing"},
- {n:"Toyota Sienna XLE",y:"2023 \u00b7 67k mi \u00b7 hybrid",cat:"van",cond:"used",seats:7,sticker:39590,cash:0,apr:.0449,offer:"RBFCU 4.49%",
+ {n:"Toyota Sienna XLE",y:"2023 \u00b7 67k mi \u00b7 hybrid",cat:"van",cond:"used",seats:7,sticker:38990,cash:0,apr:.0449,offer:"RBFCU 4.49%",
   awd:"AWD if optioned",mpg:36,mpgLab:"36",ins:11500,res:22000,rel:4.0,cln:3.0,leg2:39.9,leg3:38.7,cargo:33.5,
   url:"https://www.carvana.com/vehicle/4554451",lt:"View this listing"},
- {n:"Toyota Sienna XSE",y:"2022 \u00b7 32k mi \u00b7 20\" wheels",cat:"van",cond:"used",seats:7,sticker:45990,cash:0,apr:.0449,offer:"Sport trim",
+ {n:"Toyota Sienna XSE",y:"2022 \u00b7 32k mi \u00b7 20\" wheels",cat:"van",cond:"used",seats:7,sticker:45590,cash:0,apr:.0449,offer:"Sport trim",
   awd:"AWD if optioned",mpg:36,mpgLab:"36",ins:12000,res:24000,rel:4.0,cln:3.0,leg2:39.9,leg3:38.7,cargo:33.5,
   url:"https://www.carvana.com/vehicle/4485668",lt:"View this listing"},
- {n:"Pacifica Hybrid Select",y:"2024 \u00b7 57k mi",cat:"van",cond:"used",seats:7,sticker:22990,cash:0,apr:.0449,offer:"Plug-in",
+ {n:"Pacifica Hybrid Select",y:"2024 \u00b7 57k mi",cat:"van",cond:"used",seats:7,sticker:22990,cash:0,apr:.0449,offer:"SOLD 9 Sep 2026 \u2014 was Plug-in",
   awd:"FWD only on hybrid",mpg:30,mpgLab:"82 MPGe",mpgBar:40,kwh100:41,phev:true,charger:true,
   aw:"2017 N. American Utility of the Year",awUrl:"https://www.torquenews.com/106/chrysler-pacifica-wins-first-ever-north-american-utility-year-award",ins:11500,res:10500,rel:1.5,cln:4.0,
   leg2:39.0,leg3:36.5,cargo:32.3,url:"https://www.carvana.com/vehicle/4418299",lt:"View this listing"},
@@ -95,7 +111,7 @@ export const OPTIONS=[
   awd:"No AWD offered",mpg:22,mpgLab:"22",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
   ins:11500,res:19000,rel:3.0,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
   url:"https://www.carvana.com/vehicle/4611470",lt:"View this listing"},
- {n:"Honda Odyssey EX-L",y:"2024 \u00b7 34k mi",cat:"van",cond:"used",seats:7,sticker:37590,cash:0,apr:.0449,offer:"RBFCU 4.49%",
+ {n:"Honda Odyssey EX-L",y:"2024 \u00b7 34k mi",cat:"van",cond:"used",seats:7,sticker:36990,cash:0,apr:.0449,offer:"RBFCU 4.49%",
   awd:"No AWD offered",mpg:22,mpgLab:"22",ins:11500,res:19000,rel:3.0,cln:4.0,leg2:40.9,leg3:38.1,cargo:32.8,
   url:"https://www.carvana.com/vehicle/4674135",lt:"View this listing"},
  {n:"Grand Highlander Hybrid Ltd",y:"2026 \u00b7 $59,699",cat:"suv",cond:"new",seats:7,sticker:59699,cash:0,apr:.0449,offer:"Toyota of Cedar Park, 62 mi",
@@ -130,7 +146,7 @@ export const OPTIONS=[
  {n:"Hyundai Palisade SEL",y:"2023 \u00b7 used \u00b7 market estimate",cat:"suv",cond:"used",seats:7,sticker:31500,cash:0,apr:.0449,offer:"Telluride twin",
   awd:"AWD if optioned",mpg:22,mpgLab:"22",ins:11500,res:14500,rel:3.5,cln:3.5,leg2:42.4,leg3:31.4,cargo:18.0,
   url:"https://www.carvana.com/cars/hyundai-palisade",lt:"Browse listings"},
- {n:"Kia Telluride S",y:"2025 \u00b7 36k mi \u00b7 $32,590",cat:"suv",cond:"used",seats:7,sticker:32590,cash:0,apr:.0449,offer:"RBFCU 4.49%",
+ {n:"Kia Telluride S",y:"2025 \u00b7 36k mi \u00b7 $31,990",cat:"suv",cond:"used",seats:7,sticker:31990,cash:0,apr:.0449,offer:"RBFCU 4.49%",
   awd:"AWD available",mpg:22,mpgLab:"22",aw:"2020 N. American Utility of the Year",awUrl:"https://www.kia.com/sd/en/util/news/Kia-Telluride-wins-Triple-Crown.html",
   ins:11500,res:15500,rel:3.5,cln:3.5,leg2:42.4,leg3:31.4,cargo:21.0,
   url:"https://www.carvana.com/vehicle/4650636",lt:"View this listing"},
@@ -138,10 +154,10 @@ export const OPTIONS=[
   awd:"AWD standard on this trim",mpg:34,mpgLab:"34",aw:"2020 N. American Utility of the Year",awUrl:"https://www.kia.com/sd/en/util/news/Kia-Telluride-wins-Triple-Crown.html",
   ins:13000,res:29000,rel:3.5,cln:3.5,leg2:43.0,leg3:32.1,cargo:21.3,
   url:"https://www.kia.com/us/en/telluride",lt:"Build and find one"},
- {n:"Toyota Sequoia Limited",y:"2023 \u00b7 17k mi \u00b7 $67,990",cat:"suv",cond:"used",seats:7,sticker:67990,cash:0,apr:.0449,offer:"Hybrid V6",
+ {n:"Toyota Sequoia Limited",y:"2023 \u00b7 17k mi \u00b7 $67,590",cat:"suv",cond:"used",seats:7,sticker:67590,cash:0,apr:.0449,offer:"Hybrid V6",
   awd:"4WD available",mpg:21,mpgLab:"21",ins:14000,res:36000,rel:3.5,cln:3.0,leg2:39.2,leg3:33.7,cargo:11.5,
   url:"https://www.carvana.com/vehicle/4665017",lt:"View this listing"},
- {n:"Toyota Sequoia Platinum",y:"2023 \u00b7 34k mi \u00b7 $69,990",cat:"suv",cond:"used",seats:7,sticker:69990,cash:0,apr:.0449,offer:"Hybrid V6",
+ {n:"Toyota Sequoia Platinum",y:"2023 \u00b7 34k mi \u00b7 $68,990",cat:"suv",cond:"used",seats:7,sticker:68990,cash:0,apr:.0449,offer:"Hybrid V6",
   awd:"4WD available",mpg:21,mpgLab:"21",ins:14000,res:36500,rel:3.5,cln:3.0,leg2:39.2,leg3:33.7,cargo:11.5,
   url:"https://www.carvana.com/vehicle/4658098",lt:"View this listing"},
  {n:"Kia EV9 Light LR",y:"2024 \u00b7 27k mi \u00b7 +$1,290 shipping",cat:"suv",cond:"used",seats:6,sticker:37990,cash:0,apr:.0449,offer:"RBFCU 4.49%",
@@ -161,7 +177,7 @@ export const OPTIONS=[
  {n:"Ford Expedition Limited",y:"2017 \u00b7 70k mi \u00b7 old body style",cat:"suv",cond:"used",seats:7,sticker:24990,ship:990,cash:0,apr:.0449,offer:"RBFCU \u2014 check age limit",
   awd:"4WD available",mpg:17,mpgLab:"17",ins:9500,res:9000,rel:2.5,cln:3.0,leg2:39.1,leg3:37.7,cargo:18.6,
   url:"https://www.carvana.com/vehicle/4629379",lt:"View this listing"},
- {n:"Chevy Tahoe LS",y:"2023 \u00b7 64k mi \u00b7 check 2nd row",cat:"suv",cond:"used",seats:7,row2:"bench",sticker:39990,ship:1890,cash:0,apr:.0449,offer:"LS ships with a bench",
+ {n:"Chevy Tahoe LS",y:"2023 \u00b7 64k mi \u00b7 check 2nd row",cat:"suv",cond:"used",seats:7,row2:"bench",sticker:39590,ship:1890,cash:0,apr:.0449,offer:"LS ships with a bench",
   awd:"4WD available",mpg:17,mpgLab:"17",ins:12500,res:18000,rel:3.0,cln:3.0,leg2:42.0,leg3:34.9,cargo:25.5,
   url:"https://www.carvana.com/vehicle/4434231",lt:"View this listing"},
  // GM full-size SUVs. The body-on-frame trio the list was missing: Tahoe, its
@@ -183,7 +199,7 @@ export const OPTIONS=[
  {n:"Chevy Suburban RST 4WD",y:"2024 \u00b7 ~47k mi \u00b7 market estimate",cat:"suv",cond:"used",seats:7,sticker:55590,cash:0,apr:.0449,offer:"Buckets standard on RST",
   awd:"4WD standard on this build",mpg:17,mpgLab:"17",ins:13000,res:26000,rel:3.0,cln:3.0,leg2:42.0,leg3:36.7,cargo:41.5,
   url:"https://www.carvana.com/cars/chevrolet-suburban",lt:"Browse listings"},
- {n:"Chevy Suburban Z71",y:"2021 \u00b7 82k mi \u00b7 $44,990",cat:"suv",cond:"used",seats:7,row2:"ask",sticker:44990,cash:0,apr:.0449,offer:"Check for buckets \u00b7 Carvana",
+ {n:"Chevy Suburban Z71",y:"2021 \u00b7 82k mi \u00b7 $44,590",cat:"suv",cond:"used",seats:7,row2:"ask",sticker:44590,cash:0,apr:.0449,offer:"Check for buckets \u00b7 Carvana",
   awd:"4WD standard on Z71",mpg:16,mpgLab:"16",ins:12000,res:14000,rel:3.0,cln:3.0,leg2:42.0,leg3:36.7,cargo:41.5,
   url:"https://www.carvana.com/vehicle/4684382",lt:"View this listing"},
  {n:"GMC Yukon SLT 4WD",y:"2023 \u00b7 ~55k mi \u00b7 market estimate",cat:"suv",cond:"used",seats:7,sticker:48590,ship:1290,cash:0,apr:.0449,offer:"Captain's chairs standard",
@@ -217,22 +233,22 @@ export const OPTIONS=[
  {n:"GMC Yukon XL Elevation 4WD",y:"2026 \u00b7 4WD, longest body \u00b7 $78,395",cat:"suv",cond:"new",seats:7,row2:"ask",sticker:78395,cash:0,apr:.0449,offer:"Longest body here",
   awd:"4WD standard on this build",mpg:17,mpgLab:"17",ins:14000,res:44500,rel:3.0,cln:3.0,leg2:42.0,leg3:36.7,cargo:41.5,
   url:"https://www.gmc.com/suvs/yukon-xl",lt:"Build and find one"},
- {n:"Rivian R1S Adventure",y:"2023 \u00b7 63k mi \u00b7 $60,590",cat:"suv",cond:"used",seats:6,sticker:60590,cash:0,apr:.0449,offer:"Quad-motor",
+ {n:"Rivian R1S Adventure",y:"2023 \u00b7 63k mi \u00b7 $59,590",cat:"suv",cond:"used",seats:6,sticker:59590,cash:0,apr:.0449,offer:"Quad-motor",
   awd:"AWD standard",kwh100:49,mpgLab:"69 MPGe",mpgBar:34,ev:true,charger:true,ins:16000,res:16000,rel:2.0,cln:4.0,
   leg2:37.6,leg3:32.8,cargo:17.7,url:"https://www.carvana.com/vehicle/4549163",lt:"View this listing"},
- {n:"Rivian R1S Dual Standard",y:"2024 \u00b7 33k mi \u00b7 $63,590",cat:"suv",cond:"used",seats:6,sticker:63590,cash:0,apr:.0449,offer:"Longer range",
+ {n:"Rivian R1S Dual Standard",y:"2024 \u00b7 33k mi \u00b7 $62,590",cat:"suv",cond:"used",seats:6,sticker:62590,cash:0,apr:.0449,offer:"Longer range",
   awd:"AWD standard",kwh100:49,mpgLab:"69 MPGe",mpgBar:34,ev:true,charger:true,ins:16000,res:18000,rel:2.0,cln:4.0,
   leg2:37.6,leg3:32.8,cargo:17.7,url:"https://www.carvana.com/vehicle/4460885",lt:"View this listing"},
- {n:"Tesla Model X 100D",y:"2017 \u00b7 47k mi \u00b7 $31,590",cat:"suv",cond:"used",seats:6,sticker:31590,cash:0,apr:.0449,offer:"RBFCU \u2014 check age limit",
+ {n:"Tesla Model X 100D",y:"2017 \u00b7 47k mi \u00b7 $31,590",cat:"suv",cond:"used",seats:6,sticker:31590,cash:0,apr:.0449,offer:"SOLD 9 Sep 2026 \u2014 was RBFCU \u2014 check age limit",
   awd:"AWD standard",kwh100:34,mpgLab:"100 MPGe",mpgBar:40,ev:true,charger:true,ins:14000,res:6000,rel:2.5,cln:4.0,
   leg2:38.5,leg3:32.2,cargo:15.0,url:"https://www.carvana.com/vehicle/4672369",lt:"View this listing"},
- {n:"Tesla Model X Long Range",y:"2020 \u00b7 56k mi \u00b7 $39,590",cat:"suv",cond:"used",seats:6,sticker:39590,cash:0,apr:.0449,offer:"Falcon doors",
+ {n:"Tesla Model X Long Range",y:"2020 \u00b7 56k mi \u00b7 $38,990",cat:"suv",cond:"used",seats:6,sticker:38990,cash:0,apr:.0449,offer:"Falcon doors",
   awd:"AWD standard",kwh100:34,mpgLab:"100 MPGe",mpgBar:40,ev:true,charger:true,ins:15000,res:9000,rel:2.5,cln:4.0,
   leg2:38.5,leg3:32.2,cargo:15.0,url:"https://www.carvana.com/vehicle/4662079",lt:"View this listing"},
- {n:"Land Rover Defender 130 S",y:"2025 \u00b7 12k mi \u00b7 bench 2nd row",cat:"suv",cond:"used",seats:8,row2:"bench",sticker:74990,cash:0,apr:.0449,offer:"No captain's chairs",
-  awd:"4WD standard",mpg:17,mpgLab:"17",ins:16000,res:26000,rel:1.5,cln:3.0,
-  leg2:39.1,leg3:32.0,cargo:15.7,url:"https://www.carvana.com/vehicle/4632072",lt:"View this listing"},
- {n:"Jeep Wagoneer Series II",y:"2024 \u00b7 76k mi \u00b7 $31,590",cat:"suv",cond:"used",seats:7,row2:"ask",sticker:31590,cash:0,apr:.0449,offer:"RBFCU 4.49%",
+ {n:"Defender 130 SE",y:"2023 \u00b7 28k mi \u00b7 bench 2nd row",cat:"suv",cond:"used",seats:8,row2:"bench",sticker:52713,cash:0,apr:.0449,offer:"San Antonio, 38 mi \u2014 no captain’s chairs",
+  awd:"4WD standard",mpg:17,mpgLab:"17",ins:16000,res:20000,rel:1.5,cln:3.0,
+  leg2:39.1,leg3:32.0,cargo:15.7,url:"https://www.cars.com/vehicledetail/98adb02f-e784-4474-909b-c4f388ec8aa5/",lt:"View this listing"},
+ {n:"Jeep Wagoneer Series II",y:"2024 \u00b7 76k mi \u00b7 $31,590",cat:"suv",cond:"used",seats:7,row2:"ask",sticker:31590,cash:0,apr:.0449,offer:"SOLD 9 Sep 2026 \u2014 was RBFCU 4.49%",
   awd:"4WD available",mpg:20,mpgLab:"20",ins:13000,res:12000,rel:2.0,cln:2.5,leg2:42.7,leg3:36.6,cargo:27.4,
   url:"https://www.carvana.com/vehicle/4676383",lt:"View this listing"},
 // Minivans the list was missing. The gas Pacifica is the only minivan besides
@@ -489,7 +505,56 @@ export const OPTIONS=[
  {n:"Kia Carnival Hybrid EX",y:"2025 \u00b7 hybrid \u00b7 $42,590",cat:"van",cond:"used",seats:7,row2:"bench",sticker:42590,cash:0,apr:.0449,offer:"Mileage not shown \u2014 ask",
   awd:"No AWD offered",mpg:33,mpgLab:"33",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
   ins:12000,res:20000,rel:4.5,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
-  url:"https://www.carvana.com/cars/kia-carnival-in-san-antonio-tx",lt:"Browse San Antonio listings"}
+  url:"https://www.carvana.com/cars/kia-carnival-in-san-antonio-tx",lt:"Browse San Antonio listings"},
+// --- Corridor listings, cars.com sweep 9 Sep 2026 (zip 78130, 75 mi).
+// Second-row captain’s chairs confirmed in each seller’s own listing text;
+// the confirming phrase is noted beside each. Specs, insurance, reliability
+// and cleanability are inherited from the matching model already on the list;
+// resale is that model’s figure scaled to this car’s price.
+ // Ford Explorer XLT — “ActiveX Captain's Chairs”
+ {n:"Ford Explorer XLT",y:"2022 \u00b7 87k mi \u00b7 $20,964",cat:"suv",cond:"used",seats:7,sticker:20964,cash:0,apr:.0449,offer:"Austin, 39 mi \u00b7 captains confirmed",
+  awd:"RWD on this listing",mpg:22,mpgLab:"22",ins:11500,res:9000,rel:2.5,cln:3.5,
+  leg2:39,leg3:32.2,cargo:18.2,url:"https://www.cars.com/vehicledetail/8b390f02-f52b-48b7-8fbe-460da3715d80/",lt:"View this listing"},
+ // Nissan Armada SL — “Captain's Chairs Package”
+ {n:"Nissan Armada SL",y:"2023 \u00b7 50k mi \u00b7 $36,145",cat:"suv",cond:"used",seats:7,sticker:36145,cash:0,apr:.0449,offer:"Boerne, 39 mi \u00b7 captains confirmed",
+  awd:"RWD on this listing",mpg:15,mpgLab:"15",ins:12500,res:15000,rel:2.5,cln:3,
+  leg2:41,leg3:28.4,cargo:16.5,url:"https://www.cars.com/vehicledetail/18b505ca-33f4-4815-ab35-e2275420620e/",lt:"View this listing"},
+ // Subaru Ascent Touring — “Second Row Captain's Chairs”
+ {n:"Subaru Ascent Touring",y:"2024 \u00b7 39k mi \u00b7 $33,868",cat:"suv",cond:"used",seats:7,sticker:33868,cash:0,apr:.0449,offer:"Austin, 51 mi \u00b7 captains confirmed",
+  awd:"AWD standard",mpg:22,mpgLab:"22",ins:12000,res:18000,rel:3.5,cln:3.5,
+  leg2:38.6,leg3:31.7,cargo:17.6,url:"https://www.cars.com/vehicledetail/912a0020-ac50-416b-84f4-2ed39ee70558/",lt:"View this listing"},
+ // Navigator L Black Label — “Htd/Ventilated Captain's Chairs (B)”
+ {n:"Navigator L Black Label",y:"2021 \u00b7 57k mi \u00b7 $46,725",cat:"suv",cond:"used",seats:7,sticker:46725,cash:0,apr:.0449,offer:"San Antonio, 29 mi \u00b7 captains confirmed",
+  awd:"4WD on this listing",mpg:18,mpgLab:"18",ins:14500,res:18500,rel:2.5,cln:3,
+  leg2:41.5,leg3:36.1,cargo:34.3,url:"https://www.cars.com/vehicledetail/345d5ba9-7463-4015-83d6-fffa77529777/",lt:"View this listing"},
+ // BMW X7 xDrive40i — “Second-Row Captain's Chairs”
+ {n:"BMW X7 xDrive40i",y:"2019 \u00b7 89k mi \u00b7 $27,478",cat:"suv",cond:"used",seats:6,sticker:27478,cash:0,apr:.0449,offer:"Lakeway, 47 mi \u00b7 captains confirmed",
+  awd:"AWD standard",mpg:23,mpgLab:"23",ins:15000,res:10000,rel:2.5,cln:3,
+  leg2:37.6,leg3:33.3,cargo:12.8,url:"https://www.cars.com/vehicledetail/f25563dc-bb43-47c1-9210-e6010e77c7ca/",lt:"View this listing"},
+ // BMW X7 xDrive40i — “2nd-row captain's chairs”
+ {n:"BMW X7 xDrive40i",y:"2024 \u00b7 19k mi \u00b7 $61,215",cat:"suv",cond:"used",seats:6,sticker:61215,cash:0,apr:.0449,offer:"Austin, 55 mi \u00b7 captains confirmed",
+  awd:"AWD standard",mpg:23,mpgLab:"23",ins:15000,res:22500,rel:2.5,cln:3,
+  leg2:37.6,leg3:33.3,cargo:12.8,url:"https://www.cars.com/vehicledetail/e7f97a86-a88b-4d41-9a19-3c6983b685a4/",lt:"View this listing"},
+ // Lexus TX 350 Luxury — “heated & ventilated 2nd row captain's chairs”
+ {n:"Lexus TX 350 Luxury",y:"2026 \u00b7 3k mi \u00b7 $69,215",cat:"suv",cond:"used",seats:6,sticker:69215,cash:0,apr:.0449,offer:"Austin, 55 mi \u00b7 captains confirmed",
+  awd:"AWD on this listing",mpg:23,mpgLab:"23",ins:13000,res:34000,rel:4.5,cln:3.5,
+  leg2:39.4,leg3:33.5,cargo:20.2,url:"https://www.cars.com/vehicledetail/f1e1cf84-2e58-4b80-96b9-426e10295bc7/",lt:"View this listing"},
+ // Kia Carnival SX Prestige — “2nd Row Power VIP Lounge Seats”
+ {n:"Kia Carnival SX Prestige",y:"2027 \u00b7 51 mi \u00b7 $55,623",cat:"van",cond:"used",seats:7,row2:"lounge",sticker:55623,cash:0,apr:.0449,offer:"Austin, 55 mi \u00b7 captains confirmed",
+  awd:"No AWD offered",mpg:22,mpgLab:"22",ins:13000,res:30500,rel:3,cln:3.5,
+  leg2:40.5,leg3:35.6,cargo:40.2,url:"https://www.cars.com/vehicledetail/c380ad5e-2a17-4f6f-b793-084cfd07f6cd/",lt:"View this listing"},
+ // Dodge Grand Caravan SE — “2nd Row Stow 'N Go Bucket Seats”
+ {n:"Dodge Grand Caravan SE",y:"2019 \u00b7 21k mi \u00b7 $19,109",cat:"van",cond:"used",seats:7,sticker:19109,cash:0,apr:.0449,offer:"San Antonio, 34 mi \u00b7 captains confirmed",
+  awd:"No AWD offered",mpg:20,mpgLab:"20",ins:8500,res:6000,rel:2,cln:3.5,
+  leg2:36.5,leg3:32.7,cargo:33,url:"https://www.cars.com/vehicledetail/91f81586-5885-44d0-a541-54895d26db11/",lt:"View this listing"},
+ // GMC Yukon Denali — “Power Release 2nd Row Bucket Seats”
+ {n:"GMC Yukon Denali",y:"2023 \u00b7 76k mi \u00b7 $48,523",cat:"suv",cond:"used",seats:7,sticker:48523,cash:0,apr:.0449,offer:"Austin, 54 mi \u00b7 captains confirmed",
+  awd:"RWD on this listing",mpg:16,mpgLab:"16",ins:13500,res:23000,rel:2.5,cln:3,
+  leg2:42,leg3:34.9,cargo:25.5,url:"https://www.cars.com/vehicledetail/70264cc3-cd36-41e3-a4c0-9076b68af616/",lt:"View this listing"},
+ // GMC Yukon XL Denali — “Power Release 2nd Row Bucket Seats”
+ {n:"GMC Yukon XL Denali",y:"2019 \u00b7 97k mi \u00b7 $31,741",cat:"suv",cond:"used",seats:7,sticker:31741,cash:0,apr:.0449,offer:"Austin, 43 mi \u00b7 captains confirmed",
+  awd:"4WD on this listing",mpg:17,mpgLab:"17",ins:12500,res:14000,rel:3,cln:3,
+  leg2:42,leg3:36.7,cargo:41.5,url:"https://www.cars.com/vehicledetail/5a9739f9-5b6d-4115-89dd-3207e0e24961/",lt:"View this listing"},
 ];
 
 export const MATRIX=[
