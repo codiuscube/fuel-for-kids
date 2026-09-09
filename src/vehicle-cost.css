@@ -29,6 +29,15 @@
   --warn-text: #993c1d;
   --good-bg: #e4f5ee;
   --good-text: #146c4e;
+  --gold-bg: #e6f1fb;
+  --gold-text: #0c447c;
+  --gold-line: #2a78d6;
+  --silver-bg: #ecece8;
+  --silver-text: #3a3936;
+  --silver-line: #8a8984;
+  --bronze-bg: #f4eadc;
+  --bronze-text: #6b3f12;
+  --bronze-line: #c17a32;
   --shadow: 0 1px 2px rgba(11, 11, 11, 0.06), 0 6px 20px rgba(11, 11, 11, 0.05);
   --sheet-shadow: 0 -8px 40px rgba(11, 11, 11, 0.22);
   --head-h: 96px;
@@ -65,6 +74,15 @@
     --warn-text: #f5c4b3;
     --good-bg: #14392c;
     --good-text: #6ddaaf;
+    --gold-bg: #14345c;
+    --gold-text: #b5d4f4;
+    --gold-line: #3987e5;
+    --silver-bg: #2c2c2a;
+    --silver-text: #e4e3dc;
+    --silver-line: #8a8984;
+    --bronze-bg: #3a2a18;
+    --bronze-text: #f0d2a8;
+    --bronze-line: #c17a32;
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 20px rgba(0, 0, 0, 0.3);
     --sheet-shadow: 0 -8px 40px rgba(0, 0, 0, 0.6);
   }
@@ -323,10 +341,10 @@
 .vehcost .pick {
   margin-bottom: 14px;
   padding: 12px 14px;
-  border: 1px solid var(--s1);
+  border: 1px solid var(--border);
   border-radius: 14px;
-  background: var(--accent-bg);
-  color: var(--accent-text);
+  background: var(--surface-1);
+  color: var(--text-primary);
 }
 .vehcost .pickhead {
   display: flex;
@@ -347,25 +365,65 @@
   text-decoration: underline;
   opacity: 0.85;
 }
-.vehcost .pickname {
-  margin: 3px 0 1px;
-  font-size: 17px;
+.vehcost .podium {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+.vehcost .pod {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--pod-line, var(--border));
+  border-radius: 12px;
+  background: var(--pod-bg, var(--surface-2));
+  color: var(--pod-text, var(--text-primary));
+  text-align: left;
+}
+.vehcost .pod.gold {
+  --pod-bg: var(--gold-bg);
+  --pod-text: var(--gold-text);
+  --pod-line: var(--gold-line);
+}
+.vehcost .pod.silver {
+  --pod-bg: var(--silver-bg);
+  --pod-text: var(--silver-text);
+  --pod-line: var(--silver-line);
+}
+.vehcost .pod.bronze {
+  --pod-bg: var(--bronze-bg);
+  --pod-text: var(--bronze-text);
+  --pod-line: var(--bronze-line);
+}
+.vehcost .podlab {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.vehcost .podname {
+  display: block;
+  margin-top: 3px;
+  font-size: 16px;
   font-weight: 600;
 }
-.vehcost .picksub {
-  margin: 0 0 2px;
+.vehcost .podsub {
+  display: block;
+  margin-top: 1px;
   font-size: 13px;
   opacity: 0.85;
 }
-.vehcost .pickmeta {
-  margin: 0;
-  font-size: 14px;
+.vehcost .podmeta {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
   font-variant-numeric: tabular-nums;
 }
 .vehcost .pickwhy {
-  margin: 7px 0 0;
-  color: inherit;
-  opacity: 0.85;
+  margin: 10px 0 0;
+  color: var(--text-secondary);
 }
 .vehcost .pickmix {
   margin-top: 10px;
@@ -374,17 +432,9 @@
   cursor: pointer;
   font-size: 13px;
   font-weight: 600;
-  color: inherit;
 }
 .vehcost .pickrow {
   padding: 8px 0 0;
-}
-.vehcost .pickrow > label {
-  color: inherit;
-  opacity: 0.9;
-}
-.vehcost .pickrow > label output {
-  color: inherit;
 }
 .vehcost .pickreset {
   margin-top: 8px;
@@ -393,8 +443,26 @@
   padding: 6px 0;
   font-size: 13px;
   text-decoration: underline;
-  color: inherit;
-  opacity: 0.85;
+  color: var(--text-secondary);
+}
+
+.vehcost .vcard.flagged.gold {
+  border-color: var(--gold-line);
+}
+.vehcost .vcard.flagged.silver {
+  border-color: var(--silver-line);
+}
+.vehcost .vcard.flagged.bronze {
+  border-color: var(--bronze-line);
+}
+.vehcost .vflag.gold {
+  background: var(--gold-line);
+}
+.vehcost .vflag.silver {
+  background: var(--silver-line);
+}
+.vehcost .vflag.bronze {
+  background: var(--bronze-line);
 }
 
 /* --- Card --------------------------------------------------------------- */

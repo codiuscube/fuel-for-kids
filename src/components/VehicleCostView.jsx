@@ -73,6 +73,12 @@ const MUSTS = [
   { id: 'suv', label: 'SUV only' },
 ];
 
+const PODIUM = [
+  { label: 'Best overall', cls: 'gold' },
+  { label: 'Runner-up', cls: 'silver' },
+  { label: 'Bronze', cls: 'bronze' },
+];
+
 // The three "more room than yours" sliders. They filter on the gain over the
 // car selected on the Compare tab — the 2017 Pathfinder until you change it —
 // so the numbers stay meaningful when you swap the comparison car.
@@ -243,7 +249,7 @@ const Fact = ({ value, label, tone }) => (
   </span>
 );
 
-const CostCard = ({ o, c, base, rank, badge, open, onToggle, cid }) => {
+const CostCard = ({ o, c, base, rank, badge, badgeTone, open, onToggle, cid }) => {
   const seg = (v) => `${((v / c.net) * 100).toFixed(2)}%`;
   const own = ownFor(o);
   const clearance = gcFor(o);
@@ -252,8 +258,8 @@ const CostCard = ({ o, c, base, rank, badge, open, onToggle, cid }) => {
   const row2 = row2Meta(o);
 
   return (
-    <article className={badge ? 'vcard flagged' : 'vcard'} id={cid} data-card={cid}>
-      {badge && <div className="vflag">{badge}</div>}
+    <article className={badge ? `vcard flagged ${badgeTone || ''}` : 'vcard'} id={cid} data-card={cid}>
+      {badge && <div className={badgeTone ? `vflag ${badgeTone}` : 'vflag'}>{badge}</div>}
       <button type="button" className="vhead" onClick={onToggle} aria-expanded={open}>
         <span className="vrank">{rank}</span>
         <span className="vtitle">
@@ -488,9 +494,11 @@ const VehicleCostView = () => {
 
   // The recommendation still runs, but it is a strip above the list rather
   // than a page of its own, and it can be folded away.
-  const ranked = bestOf(matching, W);
-  const top = ranked && ranked.length ? ranked[0].r : null;
-  const topKey = top ? cardId(top.o) : null;
+  const ranked = bestOf(matching, W) || [];
+  const podium = ranked.slice(0, 3);
+  const podiumById = new Map(
+    podium.map((item, i) => [cardId(item.r.o), PODIUM[i]]),
+  );
   const cheapest = matching.length ? matching.slice().sort((a, b) => a.c.net - b.c.net)[0] : null;
   const nFilters = activeFilterCount(F);
   const mix = normalizeWeights(W);
@@ -718,23 +726,40 @@ const VehicleCostView = () => {
             </div>
 
             <main className="list">
-              {top && showPick && (
+              {!!podium.length && showPick && (
                 <div className="pick">
                   <div className="pickhead">
-                    <span className="picklab">Best overall</span>
+                    <span className="picklab">Podium</span>
                     <button type="button" className="picksh" onClick={() => setShowPick(false)}>
                       Hide
                     </button>
                   </div>
-                  <p className="pickname">{top.o.n}</p>
-                  <p className="picksub">{top.o.y.replace(/ · \$[\d,]+$/, '')}</p>
-                  <p className="pickmeta">
-                    {shortMoney(top.c.net)} over 5 years · {money(top.c.m)}/mo · {money(top.o.sticker)} ask
-                  </p>
+                  <div className="podium">
+                    {podium.map((item, i) => {
+                      const place = PODIUM[i];
+                      const r = item.r;
+                      const cid = cardId(r.o);
+                      return (
+                        <button
+                          key={cid}
+                          type="button"
+                          className={`pod ${place.cls}`}
+                          onClick={() => toggleCard(cid)}
+                        >
+                          <span className="podlab">{place.label}</span>
+                          <span className="podname">{r.o.n}</span>
+                          <span className="podsub">{r.o.y.replace(/ · \$[\d,]+$/, '')}</span>
+                          <span className="podmeta">
+                            {shortMoney(r.c.net)} over 5 years · {money(r.c.m)}/mo · {money(r.o.sticker)} ask
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                   <p className="fine pickwhy">
-                    Your mix: {mixLabel}, across the {matching.length} matching your filters. The numbered list
-                    is still cheapest-first unless you change the sort.
-                    {cheapest && cheapest.o.n !== top.o.n
+                    Your mix: {mixLabel}, across the {matching.length} matching your filters. Tap a card to
+                    open it. The numbered list is still cheapest-first unless you change the sort.
+                    {cheapest && podium[0] && cheapest.o.n !== podium[0].r.o.n
                       ? ` Cheapest match is the ${cheapest.o.n} at ${shortMoney(cheapest.c.net)}.`
                       : ''}
                   </p>
@@ -775,6 +800,7 @@ const VehicleCostView = () => {
 
               {rows.map((r, i) => {
                 const key = cardId(r.o);
+                const place = podiumById.get(key);
                 return (
                   <CostCard
                     key={key}
@@ -783,7 +809,8 @@ const VehicleCostView = () => {
                     c={r.c}
                     base={base}
                     rank={i + 1}
-                    badge={key === topKey ? 'Best overall' : null}
+                    badge={place ? place.label : null}
+                    badgeTone={place ? place.cls : undefined}
                     open={openCard === key}
                     onToggle={() => toggleCard(key)}
                   />

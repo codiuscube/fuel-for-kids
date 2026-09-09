@@ -282,7 +282,7 @@ export const hasCaptains = (o) => {
 // when that van is cheaper. Cost still counts, just not enough to put a
 // sliding 8-passenger Carnival over a Sienna. Drag any slider; the mix
 // always renormalises to 100%.
-export const SCORE_KEYS = ['cost', 'cap', 'leg3', 'rel', 'awd', 'cargo', 'cln'];
+export const SCORE_KEYS = ['cost', 'cap', 'leg3', 'rel', 'awd', 'cargo', 'cln', 'roof', 'gc'];
 
 export const SCORE_FACTORS = [
   { id: 'cost', label: 'Five-year cost', short: 'cost' },
@@ -292,6 +292,8 @@ export const SCORE_FACTORS = [
   { id: 'awd', label: 'AWD available', short: 'AWD' },
   { id: 'cargo', label: 'Cargo behind 3rd', short: 'cargo' },
   { id: 'cln', label: 'Easy to clean', short: 'cleanability' },
+  { id: 'roof', label: 'Sunroof', short: 'sunroof' },
+  { id: 'gc', label: 'Ground clearance', short: 'clearance' },
 ];
 
 export const DEFAULT_WEIGHTS = {
@@ -302,6 +304,8 @@ export const DEFAULT_WEIGHTS = {
   awd: 0,
   cargo: 0,
   cln: 0,
+  roof: 1,
+  gc: 1,
 };
 
 const clamp01 = (n) => Math.max(0, Math.min(1, n));
@@ -313,6 +317,44 @@ export const roomScore = (o) => {
   const overall = clamp01((o.leg2 + o.leg3 - 70) / 9);
   const third = clamp01((o.leg3 - 30) / 8.7);
   return 0.5 * overall + 0.5 * third;
+};
+
+// Minor bonuses. Sunroof is by trim: Carnival SX and Prestige have the dual
+// roof as standard; EX does not. A 0.35 is "often optional, listing unopened."
+export const roofScore = (o) => {
+  if (o.roof === 'dual') return 1;
+  if (o.roof === 'yes') return 0.85;
+  if (o.roof === 'no') return 0;
+  if (o.roof === 'ask') return 0.35;
+  const n = o.n;
+  if (/Voyager|Grand Caravan|Tahoe LS|Carnival EX|Carnival Hybrid EX/i.test(n)) return 0;
+  if (/Carnival/i.test(n) && /\bSX\b/i.test(n)) return 1;
+  if (
+    /Prestige|Platinum|Limited|Ltd\b|Denali|Premier|Calligraphy|Avenir|Inscription|Sensory|Advance|XSE|Pinnacle|Land AWD|Ioniq 9|Model X|R1S|Vistiq|EX90|X7|GLS|Escalade|Navigator|TX 350|RST\b/i.test(
+      n,
+    )
+  ) {
+    return /Prestige|Calligraphy|Denali|Premier|Platinum/i.test(n) ? 1 : 0.85;
+  }
+  if (/Odyssey EX-L|Pacifica.*Touring L|Telluride.*SX|Atlas SEL|Enclave Avenir|Explorer Platinum/i.test(n)) {
+    return 0.85;
+  }
+  return 0.35;
+};
+
+export const roofLabel = (o) => {
+  const s = roofScore(o);
+  if (s >= 0.99) return 'dual sunroof';
+  if (s >= 0.8) return 'sunroof';
+  return null;
+};
+
+// 5" is a minivan on its belly (Odyssey). 8" is enough for Port Aransas sand
+// without needing a lift. Anything above 8" is the same bonus.
+export const gcScore = (o) => {
+  const gc = gcFor(o);
+  if (gc == null) return 0.4;
+  return clamp01((gc - 5) / 3);
 };
 
 export const weightsEqual = (a, b) => SCORE_KEYS.every((k) => (a[k] || 0) === (b[k] || 0));
