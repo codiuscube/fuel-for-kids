@@ -670,6 +670,136 @@ const NotesTab = () => (
     </div>
     </Note>
 
+    <Note title="The EX in town, or the SX in Round Rock?" blurb="Why the app picks the SX, what the extra $5,336 actually buys, and the one thing the score cannot see">
+    <div className="tldr">
+      <p style={{ fontSize: '14px', margin: '0 0 10px' }}>
+        <b>Short answer.</b> The app puts the SX ahead, but it is only seeing one of the twelve ways these
+        two cars differ. The real question is whether a driver-assistance and comfort upgrade is worth{' '}
+        {gap(N.carnivalHybSx2027cap.net, N.carnivalHybEx2027nb.net)} over five years and a 120-mile round
+        trip to collect it. That is a preference, not a calculation, and the page cannot answer it for you.
+      </p>
+      <p style={{ fontSize: '14px', margin: '0' }}>
+        Both are 2027 Carnival Hybrids. Both have real captain&rsquo;s chairs, seven seats, the same 1.6
+        turbo hybrid at 32 mpg, the same 40.2 cu ft boot, the same 10-year powertrain warranty and the same
+        2.90% over 48 months. Neither is available with all-wheel drive.
+      </p>
+    </div>
+
+    <div className="note" style={{ marginTop: '14px' }}>
+      <b>What the five-year cost is made of.</b> The {gap(N.carnivalHybSx2027cap.net, N.carnivalHybEx2027nb.net)}{' '}
+      gap is not the {money(N.carnivalHybSx2027cap.o.sticker - N.carnivalHybEx2027nb.o.sticker)} price
+      difference. Cost to own already nets off what you get back when you sell, and adds the things a
+      sticker price hides.
+    </div>
+    <p className="fine swipe">Swipe the table sideways to see every column.</p>
+    <div className="scroller">
+      <table>
+        <thead>
+          <tr>
+            <th>Over five years</th>
+            <th>EX &mdash; in town</th>
+            <th>SX &mdash; Round Rock</th>
+            <th>Difference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Asking price</td>
+            <td>{money(N.carnivalHybEx2027nb.o.sticker)}</td>
+            <td>{money(N.carnivalHybSx2027cap.o.sticker)}</td>
+            <td>{money(N.carnivalHybSx2027cap.o.sticker - N.carnivalHybEx2027nb.o.sticker)}</td>
+          </tr>
+          <tr>
+            <td>Depreciation, after tax and resale</td>
+            <td>{money(N.carnivalHybEx2027nb.dep)}</td>
+            <td>{money(N.carnivalHybSx2027cap.dep)}</td>
+            <td>{money(N.carnivalHybSx2027cap.dep - N.carnivalHybEx2027nb.dep)}</td>
+          </tr>
+          <tr>
+            <td>Loan interest</td>
+            <td>{money(N.carnivalHybEx2027nb.c.interest)}</td>
+            <td>{money(N.carnivalHybSx2027cap.c.interest)}</td>
+            <td>{money(N.carnivalHybSx2027cap.c.interest - N.carnivalHybEx2027nb.c.interest)}</td>
+          </tr>
+          <tr>
+            <td>Insurance</td>
+            <td>{money(N.carnivalHybEx2027nb.ins)}</td>
+            <td>{money(N.carnivalHybSx2027cap.ins)}</td>
+            <td>{money(N.carnivalHybSx2027cap.ins - N.carnivalHybEx2027nb.ins)}</td>
+          </tr>
+          <tr>
+            <td>Fuel</td>
+            <td>{money(N.carnivalHybEx2027nb.fuel)}</td>
+            <td>{money(N.carnivalHybSx2027cap.fuel)}</td>
+            <td>the same</td>
+          </tr>
+          <tr>
+            <td>Maintenance</td>
+            <td>{money(N.carnivalHybEx2027nb.mnt)}</td>
+            <td>{money(N.carnivalHybSx2027cap.mnt)}</td>
+            <td>the same</td>
+          </tr>
+          <tr>
+            <td><b>Total cost to own</b></td>
+            <td><b>{money(N.carnivalHybEx2027nb.net)}</b></td>
+            <td><b>{money(N.carnivalHybSx2027cap.net)}</b></td>
+            <td><b>{money(N.carnivalHybSx2027cap.net - N.carnivalHybEx2027nb.net)}</b></td>
+          </tr>
+          <tr>
+            <td>Monthly payment</td>
+            <td>{money(N.carnivalHybEx2027nb.pmt)}</td>
+            <td>{money(N.carnivalHybSx2027cap.pmt)}</td>
+            <td>{money(N.carnivalHybSx2027cap.pmt - N.carnivalHybEx2027nb.pmt)}/mo</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div className="note" style={{ marginTop: '14px' }}>
+      <b>So the sticker gap shrinks as you hold the car.</b>{' '}
+      {money(N.carnivalHybSx2027cap.o.sticker - N.carnivalHybEx2027nb.o.sticker)} more to buy becomes{' '}
+      {gap(N.carnivalHybSx2027cap.net, N.carnivalHybEx2027nb.net)} more to own, because the SX is worth
+      more when you sell it &mdash; this page has it handing back{' '}
+      {money(N.carnivalHybSx2027cap.res - N.carnivalHybEx2027nb.res)} more at year five. What it does not
+      give back is the extra interest and insurance on a pricier van. Fuel and maintenance are identical:
+      same engine, same warranty, same service schedule.
+      <br />
+      <br />
+      <b>What the extra money actually buys.</b> Read off Kia&rsquo;s own window sticker for the Round Rock
+      car, which lists its contents against a standard EX. Ignoring the captain&rsquo;s chairs and Dark
+      Edition wheels, because your EX in town has both of those too, the SX adds twelve things:
+      <ul>
+        <li><b>Safety and driving aids</b> &mdash; a surround-view camera that shows the van from above
+        when parking, a blind-spot camera that puts the lane beside you on the dash when you indicate,
+        automatic braking when reversing, side parking sensors, and the second-generation lane centring
+        that does more of the steering on a motorway.</li>
+        <li><b>Comfort</b> &mdash; twin sunroofs, ventilated front seats that blow cool air rather than
+        just heating, a 12.3-inch digital instrument display in place of the EX&rsquo;s 4.2-inch one,
+        rain-sensing wipers, LED interior lighting, LED fog lights, and a phone-as-key feature.</li>
+      </ul>
+      <b>Here is the honest catch, and it is the important part of this note.</b> Of those twelve, the
+      scoring mix can see exactly <b>one</b>: the sunroof. Every other item is invisible to it. The safety
+      score is looked up by model and year, not by what is fitted to the car, so both score identically even
+      though one brakes for you when reversing and the other does not.
+      <br />
+      <br />
+      That means two things. If you drag the sunroof weight down, the EX jumps up the list &mdash; but you
+      are not really removing a sunroof preference, you are removing the only stand-in for eleven other
+      features, so the EX looks better than it should. And if the driver-assistance kit is what you
+      actually care about, the app is understating the SX, not overstating it. Read the twelve items above
+      and decide directly; that is more reliable here than the score.
+      <br />
+      <br />
+      <b>The case for each, plainly.</b> The EX saves{' '}
+      {gap(N.carnivalHybSx2027cap.net, N.carnivalHybEx2027nb.net)} over five years and{' '}
+      {money(N.carnivalHybSx2027cap.pmt - N.carnivalHybEx2027nb.pmt)} a month, and it is sitting in New
+      Braunfels so you can drive it this week. The SX gives you the parking cameras and the better lane
+      centring, which are the features that matter most on a van this size and on long Gulf Coast runs, plus
+      the sunroofs. Both have the middle-row chairs, which was the thing that started this whole search.
+      Go and sit in both if you can; the SX is 60 miles away, so ring first and make sure it is still there.
+    </div>
+    </Note>
+
     <Note title="Sienna versus Carnival, honestly" blurb="Seats, resale, AWD, a tax break, and where the Kia wins">
     <div className="note">
       <b>The app is not favouring Toyota, and it is no longer your mileage doing it either.</b> When this
