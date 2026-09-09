@@ -735,6 +735,7 @@ export const CHECKS = [
       'Accident history, number of owners, and how much factory warranty remains.',
       'Tyre and brake life — a set of tyres on any of these runs $900–$1,400.',
       'Open recalls, free to check by VIN at nhtsa.gov. On the 2022 Yukon AT4 there are two that matter: 25V274, the 6.2L L87 engine, and 26V085, the ten-speed transmission. Ask the seller for proof both were done.',
+      '2020–2022 is a COVID-year build: factory shutdowns, then the chip shortage. Cars left without modules, and QC dipped. Best overall demotes those years; 2023 is a lighter hit. Prefer 2019 and earlier, or 2024+.',
     ],
   },
   {
@@ -821,6 +822,8 @@ export const WHY = {
     'Weighs wipeable synthetic leather over cloth, seats that fold into the floor or come out, a low flat load floor, a built-in vacuum, and standard all-weather mats. The Sienna loses points because its second row cannot be removed and there is carpet underneath.',
   row2:
     "Whether this listing has second-row captain’s chairs. Captains and lounge both put two in the middle with a walkthrough; lounge seats on Carnival Prestige, Sedona SX and the EV9 VIP do not fold or come out. Bench is a confirmed three-across second row. Ask means the trim can go either way and this car was not verified — GM LT / Elevation, 2027 Carnival EX, Wagoneer Series II.",
+  covid:
+    '2020–2022 factory years: shutdowns, then the chip shortage, cars shipped without modules, and a documented QC dip. 2021–2022 score worst. 2023 is a lighter hangover. 2019 and earlier, and 2024+, are treated as normal builds. This is a Best overall demotion, not a ban.',
   own:
     'Averaged consumer scores from Kelley Blue Book, Edmunds and CarGurus. Owners rate how much they enjoy the car, which is why the EV9 scores 4.6 despite poor reliability data.',
   repairs:

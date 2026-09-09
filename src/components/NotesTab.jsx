@@ -53,8 +53,8 @@ const NotesTab = () => (
         than anything else. Treat any gap under about $3,000 as a tie and decide on the test drive. Best
         overall is a mix you set. Captain&rsquo;s chairs and overall legroom (second plus third row) outrank a
         bench or a jump-seat cabin, even when that van is cheaper. Sunroof and a bit of ground clearance are
-        small bonuses on top, not the decision. The numbered list is still cheapest first until you change the
-        sort.
+        small bonuses on top, not the decision. COVID-year builds (2020&ndash;2022) are demoted on the podium.
+        The numbered list is still cheapest first until you change the sort.
       </p>
     </div>
     </Note>
@@ -241,8 +241,15 @@ const NotesTab = () => (
     </div>
     </Note>
 
-    <Note title="Two traps in the older listings" blurb="Pre-2021 Siennas are V6; the Tahoe LS has a bench">
+    <Note title="Two traps in the older listings" blurb="COVID-year builds, V6 Siennas, and the Tahoe LS bench">
     <div className="note">
+      <b>2020&ndash;2022 is a COVID-year build.</b> Factories shut, then the chip shortage hit, and a lot of
+      cars left without the modules they were supposed to have. Quality control dipped across brands, not just
+      one. Best overall demotes 2021&ndash;2022 hardest, 2020 almost as hard, and 2023 a bit. 2019 and earlier,
+      and 2024+, are treated as normal. The cars stay on the list &mdash; they just should not win the podium
+      unless you drag that slider down.
+      <br />
+      <br />
       <b>2017&ndash;2020 Sienna is the V6, not the hybrid.</b> The hybrid arrived in 2021. The older van gets 22
       mpg instead of 36, which at 25,000 miles a year costs $6,600 more in fuel over five years. It does have{' '}
       <b>more</b> cargo though &mdash; 39.1 cu ft behind the third row versus 33.5 &mdash; and AWD was

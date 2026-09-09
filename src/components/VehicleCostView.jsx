@@ -12,6 +12,8 @@ import {
   baseFromSpec,
   bestOf,
   compute,
+  covidLabel,
+  covidScore,
   gcFor,
   hasAWD,
   hasCaptains,
@@ -121,7 +123,8 @@ const haystack = (o) => {
         : id === 'bench'
           ? 'bench second row'
           : 'ask second row unverified buckets';
-  return `${o.n} ${o.y} ${o.offer} ${o.awd} ${o.cat} ${o.cond} ${meta.label} ${meta.short} ${aliases}`.toLowerCase();
+  const covid = covidLabel(o);
+  return `${o.n} ${o.y} ${o.offer} ${o.awd} ${o.cat} ${o.cond} ${meta.label} ${meta.short} ${aliases}${covid ? ` ${covid} covid` : ''}`.toLowerCase();
 };
 
 const passesFilters = (o, F, base) => {
@@ -255,6 +258,7 @@ const CostCard = ({ o, c, base, rank, badge, badgeTone, open, onToggle, cid }) =
   const own = ownFor(o);
   const clearance = gcFor(o);
   const roof = roofLabel(o);
+  const covid = covidLabel(o);
   const key = `${o.n} ${o.y}`;
   const kept = Math.round((c.res / o.sticker) * 100);
   const row2 = row2Meta(o);
@@ -274,6 +278,7 @@ const CostCard = ({ o, c, base, rank, badge, badgeTone, open, onToggle, cid }) =
             <span className="chip">{bodyLabel(o.cat)}</span>
             <span className={o.seats < 7 ? 'chip warn' : 'chip'}>{o.seats} seats</span>
             <span className={`chip ${row2.chip}`}>{row2.label}</span>
+            {covid && <span className="chip warn">{covid}</span>}
             {hasAWD(o) && <span className="chip">AWD</span>}
           </span>
         </span>
@@ -349,6 +354,13 @@ const CostCard = ({ o, c, base, rank, badge, badgeTone, open, onToggle, cid }) =
               value={row2.short}
               frac={row2.frac}
               why={WHY.row2}
+            />
+            <Spec
+              id={`${key} covid`}
+              label="Build year"
+              value={covid || `${String(o.y).match(/^\d{4}/)?.[0] || ''} — fine`}
+              frac={covidScore(o)}
+              why={WHY.covid}
             />
             <Spec
               id={`${key} cargo`}

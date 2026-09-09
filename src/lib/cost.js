@@ -281,7 +281,7 @@ export const hasCaptains = (o) => {
 // legroom (second plus third row) outrank a bench or a jump-seat cabin, even
 // when that van is cheaper. Sunroof and ground clearance are small bonuses.
 // Drag any slider; the mix always renormalises to 100%.
-export const SCORE_KEYS = ['cost', 'cap', 'leg3', 'rel', 'awd', 'cargo', 'cln', 'roof', 'gc'];
+export const SCORE_KEYS = ['cost', 'cap', 'leg3', 'rel', 'awd', 'cargo', 'cln', 'roof', 'gc', 'covid'];
 
 export const SCORE_FACTORS = [
   { id: 'cost', label: 'Five-year cost', short: 'cost' },
@@ -293,6 +293,7 @@ export const SCORE_FACTORS = [
   { id: 'cln', label: 'Easy to clean', short: 'cleanability' },
   { id: 'roof', label: 'Sunroof', short: 'sunroof' },
   { id: 'gc', label: 'Ground clearance', short: 'clearance' },
+  { id: 'covid', label: 'Skip COVID years', short: 'COVID years' },
 ];
 
 export const DEFAULT_WEIGHTS = {
@@ -305,6 +306,7 @@ export const DEFAULT_WEIGHTS = {
   cln: 0,
   roof: 1,
   gc: 1,
+  covid: 3,
 };
 
 const clamp01 = (n) => Math.max(0, Math.min(1, n));
@@ -318,26 +320,38 @@ export const roomScore = (o) => {
   return 0.5 * overall + 0.5 * third;
 };
 
-// Minor bonuses. Sunroof is by trim: Carnival SX and Prestige have the dual
-// roof as standard; EX does not. A 0.35 is "often optional, listing unopened."
+// Minor bonuses. Sunroof is by trim, vans and SUVs. Dual/panoramic is 1,
+// a conventional moonroof is 0.85, often-optional is 0.35, known-absent is 0.
 export const roofScore = (o) => {
   if (o.roof === 'dual') return 1;
   if (o.roof === 'yes') return 0.85;
   if (o.roof === 'no') return 0;
   if (o.roof === 'ask') return 0.35;
   const n = o.n;
-  if (/Voyager|Grand Caravan|Tahoe LS|Carnival EX|Carnival Hybrid EX/i.test(n)) return 0;
-  if (/Carnival/i.test(n) && /\bSX\b/i.test(n)) return 1;
+
   if (
-    /Prestige|Platinum|Limited|Ltd\b|Denali|Premier|Calligraphy|Avenir|Inscription|Sensory|Advance|XSE|Pinnacle|Land AWD|Ioniq 9|Model X|R1S|Vistiq|EX90|X7|GLS|Escalade|Navigator|TX 350|RST\b/i.test(
+    /Voyager|Grand Caravan|Tahoe LS|Carnival EX|Carnival Hybrid EX|EV9 Light|Telluride S\b/i.test(n)
+  ) {
+    return 0;
+  }
+
+  // Dual / panoramic as standard on the trim.
+  if (
+    /Carnival/i.test(n) && /\bSX\b/i.test(n) ||
+    /Prestige|Calligraphy|Denali|Premier|Platinum|Avenir|Land AWD|Ioniq 9|Model X|R1S|Vistiq|EX90|TX 350|ID\. Buzz/i.test(n)
+  ) {
+    return 1;
+  }
+
+  // Conventional moonroof / sunroof standard, or panoramic on this trim.
+  if (
+    /Limited|Ltd\b|XSE|Pinnacle|Inscription|Sensory|Advance|X7|GLS|Escalade|Navigator|RST\b|Yukon SLT|Armada SL|CX-9 Signature|CX-90 Turbo Premium|Santa Fe Calligraphy|Telluride.*SX|Atlas SEL|Explorer Platinum|Odyssey EX-L|Pacifica.*Touring L|Pilot EX-L|Pathfinder SL|Grand Cherokee L Limited|Flex Limited|Wagoneer|Traverse RS|Sequoia Limited|Grand Highlander Hybrid Ltd|Expedition.*Limited|QX80|QX60|MDX/i.test(
       n,
     )
   ) {
-    return /Prestige|Calligraphy|Denali|Premier|Platinum/i.test(n) ? 1 : 0.85;
-  }
-  if (/Odyssey EX-L|Pacifica.*Touring L|Telluride.*SX|Atlas SEL|Enclave Avenir|Explorer Platinum/i.test(n)) {
     return 0.85;
   }
+
   return 0.35;
 };
 
@@ -356,14 +370,34 @@ export const gcScore = (o) => {
   return clamp01((gc - 5) / 3);
 };
 
+// 2020–2022 factory years: shutdowns, then the chip shortage, cars leaving
+// without modules, and a well-documented QC dip. 2021–2022 are the worst.
+// 2023 still carries some of that hangover. 2019 and earlier, and 2024+,
+// are treated as normal builds. Higher score = not a COVID-year car.
+export const covidScore = (o) => {
+  const y = modelYearOf(o);
+  if (y === 2021 || y === 2022) return 0;
+  if (y === 2020) return 0.15;
+  if (y === 2023) return 0.55;
+  return 1;
+};
+
+export const covidLabel = (o) => {
+  const y = modelYearOf(o);
+  if (y >= 2020 && y <= 2022) return 'COVID build';
+  if (y === 2023) return '2023 QC';
+  return null;
+};
+
 export const weightsEqual = (a, b) => SCORE_KEYS.every((k) => (a[k] || 0) === (b[k] || 0));
 
 export const encodeWeights = (W) => SCORE_KEYS.map((k) => W[k] || 0).join('-');
 
 export const parseWeights = (raw) => {
   let parts = String(raw || '').split('-').map((n) => parseInt(n, 10));
-  // Older links stored seven weights; sunroof and clearance were added later.
-  if (parts.length === 7) parts = [...parts, 1, 1];
+  // Older links stored seven, then nine weights. Pad with the current defaults.
+  if (parts.length === 7) parts = [...parts, 1, 1, 3];
+  else if (parts.length === 9) parts = [...parts, 3];
   if (parts.length !== SCORE_KEYS.length || parts.some((n) => !Number.isFinite(n))) {
     return { ...DEFAULT_WEIGHTS };
   }
@@ -393,6 +427,7 @@ export const scoreParts = (r, lo, hi) => ({
   cln: r.o.cln / 5,
   roof: roofScore(r.o),
   gc: gcScore(r.o),
+  covid: covidScore(r.o),
 });
 
 export const scoreRow = (r, lo, hi, W = DEFAULT_WEIGHTS) => {
