@@ -42,6 +42,22 @@ export const pmt = (principal, apr, n) => {
   return (principal * r) / (1 - Math.pow(1 + r, -n));
 };
 
+// A listing can lock a manufacturer promo to its advertised term (48, 72).
+// A listing with aprByTerm follows the slider and picks the matching KFA
+// rate — stretching 1.90% across 60 months would invent a deal Kia did not
+// offer; using 2.99% at 48 would ignore the cheaper 48-month rung.
+export const termOf = (o, S) => o.term || S.term;
+
+export const aprOf = (o, S) => {
+  const n = termOf(o, S);
+  if (o.aprByTerm && o.aprByTerm[n] != null) return o.aprByTerm[n];
+  return o.apr;
+};
+
+export const aprLabel = (apr) => `${(apr * 100).toFixed(2)}%`;
+
+export const hasPromoFinance = (o) => !!(o.term || o.aprByTerm);
+
 // Fuel cost per mile: electricity for EVs, a blend for plug-ins, petrol otherwise.
 export const perMile = (o, S) => {
   const g = o.diesel ? S.gas * 1.22 : S.gas;
@@ -192,8 +208,10 @@ export const compute = (o, S) => {
   const price = o.sticker + (o.ship || 0);
   const tax = price * TAX + FEES;
   const loan = Math.max(0, price + tax - o.cash - S.down);
-  const m = pmt(loan, o.apr, S.term);
-  const interest = m * S.term - loan;
+  const n = termOf(o, S);
+  const apr = aprOf(o, S);
+  const m = pmt(loan, apr, n);
+  const interest = m * n - loan;
   const wear = Math.max(0.45, Math.min(1.15, 1 - 0.11 * ((S.miles * 5 - 75000) / 25000)));
   const res = o.res * wear;
   const fuel = S.miles * 5 * perMile(o, S);
@@ -213,6 +231,8 @@ export const compute = (o, S) => {
     mntRepair: mnt.unscheduled,
     chg,
     m,
+    apr,
+    term: n,
     res,
   };
 };

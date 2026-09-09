@@ -377,12 +377,21 @@ const NotesTab = () => (
       <br />
       <b>The new-car discounts are real but small.</b> Dealers in the corridor are advertising the KFA Dealer
       Choice Program at $1,500&ndash;$2,000 off, and Kia is adding $750 of Sticker Sales Event bonus cash. That
-      takes a $41,190 Carnival EX to about $39,690 before the cash. Kia also has a bought-down 2.99% for 72
-      months, and 1.90% for 48, but the cheap rate cannot be combined with the discounts &mdash; so both paths
-      are priced as separate cards. Against RBFCU&rsquo;s 4.49% the discounts win outright: taking $1,500 off
-      plus the $750 and financing at the credit union comes out <b>$1,239 ahead</b> of Kia&rsquo;s 2.99% at full
-      MSRP, and the margin grows the more cash you put down. Kia&rsquo;s cheap rate only wins if your
-      alternative is a 6% bank loan.
+      takes a $41,190 Carnival EX to about $39,690 before the cash. On the <b>V6</b>, Kia also has a
+      bought-down 2.99% for 72 months that cannot be combined with those discounts, so both paths are
+      priced as separate cards, and cash plus RBFCU still wins.
+      <br />
+      <br />
+      <b>The 2026 Hybrid keeps both.</b> Kia Finance America is offering 1.90% for 48 months, 2.99% for
+      60, 3.49% for 66, 3.99% for 72, and 5.99% for 84, through 30 September 2026, for qualified buyers
+      &mdash; and that ladder stacks with the Kia cash. The cards keep the discounted price and pick
+      the rate from the term slider (48 / 60 / 72). 84 months at 5.99% is worse than RBFCU, so it is
+      not used. Flip the slider to 48 months if you want the 1.90% rung.
+      <br />
+      <br />
+      <b>The 2027 Hybrid is a different offer: 2.90% for 48 months.</b> That one is locked to 48 months
+      on the North Austin EX and Round Rock SX. Monthly payment goes up because you pay the van off a
+      year sooner; five-year interest goes down.
       <br />
       <br />
       <b>The buy is the 2026 Carnival Hybrid EX at about $42,090.</b> It finishes 13th of 122 at roughly $57.4k
@@ -414,8 +423,8 @@ const NotesTab = () => (
       knowing, because it is a discount that could disappear at any model-year change. 2027 is also the first
       year EX and SX can have real captain&rsquo;s chairs without Prestige lounge seats. Kia of Round Rock has
       a Hybrid SX so equipped at $50,864 (VIN KNDNE5KA3V6190973), about $4,400 over the discounted 2026 SX in
-      the corridor, with the dual sunroof standard on SX. Confirm Bose on the window sticker; it comes with
-      Dark Edition, not with SX by itself.
+      the corridor, with the dual sunroof standard on SX, now at 2.90% for 48 months. Confirm Bose on the
+      window sticker; it comes with Dark Edition, not with SX by itself.
     </div>
     </Note>
 

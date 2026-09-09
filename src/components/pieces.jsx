@@ -212,6 +212,10 @@ export const Assumptions = ({ S, setS, idp }) => {
             </button>
           ))}
         </div>
+        <p className="fine" style={{ margin: '8px 0 0' }}>
+          2026 Carnival Hybrid KFA follows this: 1.90% at 48 months, 2.99% at 60, 3.99% at 72.
+          A few other specials stay locked to the term on the card.
+        </p>
       </div>
     </div>
   );

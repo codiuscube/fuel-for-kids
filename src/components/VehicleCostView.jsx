@@ -9,6 +9,7 @@ import {
   PMT_MAX,
   PRICE_MAX,
   SCORE_FACTORS,
+  aprLabel,
   baseFromSpec,
   bestOf,
   compute,
@@ -17,6 +18,7 @@ import {
   gcFor,
   hasAWD,
   hasCaptains,
+  hasPromoFinance,
   isEff,
   money,
   normalizeWeights,
@@ -279,6 +281,11 @@ const CostCard = ({ o, c, base, rank, badge, badgeTone, open, onToggle, cid }) =
             <span className={o.seats < 7 ? 'chip warn' : 'chip'}>{o.seats} seats</span>
             <span className={`chip ${row2.chip}`}>{row2.label}</span>
             {covid && <span className="chip warn">{covid}</span>}
+            {hasPromoFinance(o) && (
+              <span className="chip ok">
+                {aprLabel(c.apr)} · {c.term} mo
+              </span>
+            )}
             {hasAWD(o) && <span className="chip">AWD</span>}
           </span>
         </span>
@@ -290,7 +297,7 @@ const CostCard = ({ o, c, base, rank, badge, badgeTone, open, onToggle, cid }) =
       </button>
 
       <div className="vfacts">
-        <Fact value={money(c.m)} label="/mo" />
+        <Fact value={money(c.m)} label={hasPromoFinance(o) ? `/mo · ${c.term}` : '/mo'} />
         <Fact value={o.mpgLab} label={/e$/i.test(o.mpgLab) ? '' : ' mpg'} />
         <Fact value={`${o.leg3.toFixed(1)}"`} label=" 3rd row" />
         <Fact value={o.cargo.toFixed(1)} label=" cu ft" />
@@ -990,7 +997,8 @@ const VehicleCostView = () => {
               aria-label="Maximum monthly payment"
             />
             <p className="fine">
-              At {money(S.down)} down over {S.term} months. Change those under the gear icon.
+              At {money(S.down)} down over {S.term} months. The 2026 Carnival Hybrid KFA
+              ladder follows that term; a few other promos keep the term on the card.
             </p>
           </div>
         </Sheet>
