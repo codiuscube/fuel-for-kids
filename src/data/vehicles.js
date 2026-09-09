@@ -13,9 +13,13 @@
 // second 2016 Sequoia SR5 4x4 in San Antonio was added the same day from
 // Facebook Marketplace: 140,908 miles, $22,114, Magnetic Gray Metallic. A
 // 2026 Carnival Hybrid SX Prestige on Carvana (vehicle 4725390) was added
-// 8 Sep 2026: 16,631 miles, $50,990, plus Carvana's $1,290 shipping. A 2027
-// Carnival Hybrid SX with captain's chairs at Kia of Round Rock was added
-// the same day: VIN KNDNE5KA3V6190973, Ceramic Silver, $50,864.
+// 8 Sep 2026: 16,631 miles, $50,990, plus Carvana's $1,290 shipping, $495 in
+// factory upgrades. A new 2026 Carnival SX Prestige V6 at World Car Kia New
+// Braunfels was added the same evening: VIN KNDNE5K30T6641260, Aurora Black
+// Pearl, sale price $52,631 after dealer discount and $1,250 Kia cash (KFA and
+// military conditionals not applied). A 2027 Carnival Hybrid SX with captain's
+// chairs at Kia of Round Rock was added the same day: VIN KNDNE5KA3V6190973,
+// Ceramic Silver, $50,864.
 //
 // APRs are capped at RBFCU's 4.49% for 60 months, new or used alike, since that
 // is the buyer's actual financing. Manufacturer promos below it (0%, 2.90%,
@@ -57,7 +61,7 @@ export const OPTIONS=[
  {n:"Kia Carnival Hybrid SX",y:"2025 \u00b7 17k mi \u00b7 $48,590",cat:"van",cond:"used",seats:7,row2:"bench",sticker:48590,cash:0,apr:.0449,offer:"Most reliable minivan",
   awd:"No AWD offered",mpg:33,mpgLab:"33",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",ins:12500,res:22000,rel:4.5,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
   url:"https://www.carvana.com/vehicle/4691317",lt:"View this listing"},
- {n:"Kia Carnival Hybrid SX Prestige",y:"2026 \u00b7 17k mi \u00b7 lounge 2nd row \u00b7 $50,990",cat:"van",cond:"used",seats:7,row2:"lounge",sticker:50990,ship:1290,cash:0,apr:.0449,offer:"Carvana \u2014 lounge seats stay put",
+ {n:"Kia Carnival Hybrid SX Prestige",y:"2026 \u00b7 16,631 mi \u00b7 lounge 2nd row \u00b7 $50,990",cat:"van",cond:"used",seats:7,row2:"lounge",sticker:50990,ship:1290,cash:0,apr:.0449,offer:"Carvana \u2014 $495 upgrades, lounge stays put",
   awd:"No AWD offered",mpg:33,mpgLab:"33",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",ins:13000,res:23500,rel:4.5,cln:3.5,leg2:40.5,leg3:35.6,cargo:40.2,
   url:"https://www.carvana.com/vehicle/4725390",lt:"View this listing"},
  {n:"Toyota Sienna XLE",y:"2017 \u00b7 62k mi \u00b7 V6, not hybrid",cat:"van",cond:"used",seats:7,sticker:27590,ship:590,cash:0,apr:.0449,offer:"RBFCU \u2014 check age limit",
@@ -416,7 +420,9 @@ export const OPTIONS=[
 // Kia Carnival sweep, 8 Sep 2026. Every Carnival offered between Austin, New
 // Braunfels and San Antonio, new and used. LX and LXS are bench-only, so the
 // list starts at EX. 2025–2026 EX and SX are sliding eight-passenger seats, not
-// captain's chairs — only the 2027 Round Rock Hybrid SX is confirmed captains.
+// captain's chairs. SX Prestige in those years is VIP lounge captains. The 2026
+// V6 Prestige at World Car New Braunfels and the Carvana Hybrid Prestige are
+// both lounge. The 2027 Round Rock Hybrid SX is confirmed regular captains.
 // Every one is front-wheel drive; Kia has never built an
 // AWD Carnival. New prices are MSRP less the dealer discounts advertised in
 // the corridor (KFA Dealer Choice $1,500-$2,000) and Kia's $750 Sticker Sales
@@ -441,6 +447,10 @@ export const OPTIONS=[
   awd:"No AWD offered",mpg:33,mpgLab:"33",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
   ins:12500,res:25500,rel:4.5,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
   url:"https://www.kiaworldcar.com/search/new-kia-carnival-hybrid-san-antonio-tx/?cy=78201&md=22648&tp=new",lt:"Browse hybrid stock"},
+ {n:"Kia Carnival SX Prestige",y:"2026 \u00b7 V6, lounge 2nd \u00b7 $52,631",cat:"van",cond:"new",seats:7,row2:"lounge",sticker:52631,cash:0,apr:.0449,offer:"World Car Kia New Braunfels",
+  awd:"No AWD offered",mpg:22,mpgLab:"22",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
+  ins:13000,res:29000,rel:3.0,cln:3.5,leg2:40.5,leg3:35.6,cargo:40.2,
+  url:"https://www.worldcarkiaonline.com/auto/new-2026-kia-carnival-mpv-sx-prestige-new-braunfels-tx/120474272/",lt:"View this listing"},
  {n:"Kia Carnival Hybrid EX",y:"2027 \u00b7 just landed \u00b7 $43,690",cat:"van",cond:"new",seats:7,row2:"ask",sticker:43690,cash:0,apr:.0449,offer:"Kia of North Austin, \u224865 mi",
   awd:"No AWD offered",mpg:33,mpgLab:"33",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
   ins:12500,res:23500,rel:4.5,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
@@ -771,7 +781,8 @@ export const SOURCE_ROWS = [
   ['Loan rate on every card', 'RBFCU 4.49%/60 mo, new and used alike', 'Advertised, not a pre-approval'],
   ['Carnival prices and offers', 'Kia MSRP, corridor dealer listings, 8 Sep 2026', 'Trim-level, not a VIN'],
   ['Used Carnival listings', 'Carvana San Antonio search page, 8 Sep 2026', 'Listed cars, VIN not opened'],
-  ['2026 Carnival Hybrid SX Prestige', 'Carvana vehicle 4725390, 8 Sep 2026', 'Actual car; $50,990 + $1,290 ship'],
+  ['2026 Carnival Hybrid SX Prestige', 'Carvana vehicle 4725390, 8 Sep 2026', 'Actual car; 16,631 mi, $50,990 + $1,290 ship'],
+  ['2026 Carnival SX Prestige V6', 'World Car Kia New Braunfels, VIN KNDNE5K30T6641260, 8 Sep 2026', 'Actual car; sale $52,631, lounge 2nd'],
   ['2027 Carnival Hybrid SX captains', 'Kia of Round Rock / CarGurus 454878506, 8 Sep 2026', 'Actual car; VIN KNDNE5KA3V6190973, $50,864'],
   ['2016 Sequoia SR5 2WD', 'Third Coast New Braunfels VDP, 8 Sep 2026', 'Actual car; $20,900 from dealer data'],
   ['2016 Sequoia SR5 4x4', 'Facebook Marketplace SA, 8 Sep 2026', 'Actual car; 140,908 mi, $22,114'],

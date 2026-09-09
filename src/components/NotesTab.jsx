@@ -229,11 +229,11 @@ const NotesTab = () => (
       rows that fold into a floor well, and second rows you can remove or slide clear.
       <br />
       <br />
-      <b>Check the second row on any listing.</b> Each card now labels it: Captains, Lounge 2nd, Bench 2nd, or
-      Ask 2nd row. Wagoneer Series II ships with a bench as standard. Carnival LX and LXS are bench-only, and
-      2025&ndash;2026 EX / SX are sliding eight-passenger seats, not captains &mdash; 2027 is the first year those
-      trims can option real buckets. Carnival SX Prestige lounge seats don&rsquo;t fold or remove, which cancels
-      its cargo advantage.
+      <b>Check the second row on any listing.</b> Each card now labels it: Captains, Captains · lounge, Bench 2nd,
+      or Ask 2nd row. Wagoneer Series II ships with a bench as standard. Carnival LX and LXS are bench-only, and
+      2025&ndash;2026 EX / SX are sliding eight-passenger seats, not captains. SX Prestige in those years is the
+      exception: VIP lounge captain&rsquo;s chairs that do not fold or come out. 2027 is the first year EX and SX
+      can option regular buckets without Prestige.
     </div>
     </Note>
 
@@ -385,8 +385,11 @@ const NotesTab = () => (
       $33,590, and it still lands 30th at $61.3k &mdash; about $3,900 worse than buying the new hybrid, because
       it is a V6. The used hybrids are priced almost at new-car money: $42,590 for a 2025 EX at Carvana against
       $42,090 for a brand-new 2026 with the full 10-year powertrain warranty. A 2026 Hybrid SX Prestige also
-      landed on Carvana at $50,990 and 17k miles, plus $1,290 to ship it &mdash; more than a new Hybrid SX in
-      the corridor, and the lounge second row does not fold or come out. Buy the new one.
+      landed on Carvana at $50,990 and 16,631 miles, plus $1,290 to ship it &mdash; more than a new Hybrid SX in
+      the corridor, and the lounge second row does not fold or come out. World Car Kia New Braunfels has a
+      <b>new V6</b> SX Prestige (VIN KNDNE5K30T6641260) at $52,631 after their discount and $1,250 Kia cash;
+      that is lounge captains too, but it is the 22 mpg V6, not the hybrid. Buy the new Hybrid EX if you want
+      a Carnival on cost; buy Prestige only for the lounge seats.
       <br />
       <br />
       <b>Market context.</b> CarGurus has 2023 Carnivals averaging $34,496 around San Antonio and $30,535

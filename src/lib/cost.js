@@ -70,8 +70,11 @@ export const modelYearOf = (o) => {
 
 export const startMilesOf = (o) => {
   if (o.cond === 'new') return 0;
-  const m = String(o.y || '').match(/~?(\d+)\s*k\s*mi/i);
-  if (m) return Number(m[1]) * 1000;
+  const y = String(o.y || '');
+  const k = y.match(/~?(\d+)\s*k\s*mi/i);
+  if (k) return Number(k[1]) * 1000;
+  const exact = y.match(/(\d{1,3}(?:,\d{3})+|\d{4,6})\s*mi/i);
+  if (exact) return Number(exact[1].replace(/,/g, ''));
   const age = Math.max(0, COST_YEAR - modelYearOf(o));
   return Math.min(100000, Math.max(30000, age * 12500));
 };
@@ -229,7 +232,7 @@ export const isEff = (o) => !!(o.ev || o.phev || (o.mpg && o.mpg >= 30));
 // Ask means the trim can go either way and this car was not opened.
 export const ROW2 = {
   captains: { label: 'Captains', short: "Captain's chairs", chip: 'ok', frac: 1 },
-  lounge: { label: 'Lounge 2nd', short: 'Lounge seats (do not stow)', chip: 'ok', frac: 0.75 },
+  lounge: { label: 'Captains · lounge', short: "Captain's chairs — lounge, do not stow", chip: 'ok', frac: 0.75 },
   bench: { label: 'Bench 2nd', short: 'Second-row bench', chip: 'warn', frac: 0.12 },
   ask: { label: 'Ask 2nd row', short: 'Second row unverified', chip: 'warn', frac: 0.4 },
 };
