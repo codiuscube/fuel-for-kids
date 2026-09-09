@@ -1,8 +1,8 @@
 # Three-Row Family Vehicle Comparison
 
-A single-page React app that prices one hundred and twenty-two specific three-row
-vehicles — every one available with second-row captain's chairs — over five
-years of ownership, and lets you sort and filter them on a phone.
+A single-page React app that prices one hundred and thirty-eight specific three-row
+vehicles — every one available with second-row captain's chairs — over five or
+fifteen years of ownership, and lets you sort and filter them on a phone.
 
 The list is a full sweep of the segment rather than a shortlist: every nameplate
 sold in Texas that can be had with captain's chairs is here, new and used, at
@@ -56,7 +56,7 @@ The default view, and the one built for a phone.
 | Filter sheet | Condition, must-haves (AWD / 7 seats / 30+ mpg / minivan / SUV), **more room than yours**, max asking price, max monthly payment |
 | More room than yours | Three sliders — second-row legroom, third-row legroom, cargo — each asking for a minimum *gain* over your current car rather than an absolute figure. `+5.0"` third row means five inches more than the 2017 Pathfinder, or whatever you have picked as yours on the Compare tab. Each slider stops at the biggest gain anything on the list actually offers, and greys out when nothing beats your car on that measure; swapping the comparison car pulls any filter now out of reach back down |
 | Filter pills | Every active filter shows as a chip under the toolbar; tap the × to drop just that one |
-| Gear icon | The assumptions — down payment, miles per year, fuel price, electricity rate, plug-in share, charger install, loan term |
+| Gear icon | The assumptions — down payment, miles per year, fuel price, electricity rate, plug-in share, charger install, how long you keep it (5 or 15 years), loan term |
 
 Each card is five scannable lines: rank, name, year and mileage, condition and
 body chips, the five-year cost as a rounded figure (`$47.9k`, not `$47,932`),
@@ -66,8 +66,11 @@ money goes. **Details** expands the full cost breakdown, the versus-your-car
 specs, drivetrain and ground clearance, and the listing link.
 
 A **Best overall** strip sits at the top of the list and can be hidden. It is
-scored 35% five-year cost, 20% reliability, 15% third row, 15% cargo, 10% owner
-rating, 5% cleanability, across whatever currently matches your filters.
+a weighted mix you can drag: captain's chairs and skipping COVID build years
+lead the default, with seven seats, overall legroom, cost and reliability just
+behind, then cleanability, sunroof, fuel economy and clearance. Seven seats and
+captain's chairs are weights, not filters, so six-seaters and benches stay on
+the list and are scored down rather than hidden.
 
 ### Compare tab
 
@@ -86,7 +89,7 @@ between you and the cars.
 
 ## The cost model
 
-`src/lib/cost.js`. Five years of ownership, recomputed live from the
+`src/lib/cost.js`. Five or fifteen years of ownership, recomputed live from the
 assumptions:
 
 ```
@@ -106,8 +109,15 @@ net = depreciation + interest + fuel + insurance + maintenance
 - **Fuel** is electricity for EVs, a blend for plug-ins at your assumed share of
   electric miles, petrol otherwise (diesel priced 22% higher).
 - **Resale** starts from published five-year depreciation and is discounted
-  about **11% per extra 25,000 miles a year** beyond the 15,000 those figures
-  assume. At the 25,000 default everything is marked down 22%.
+  about **11% per 25,000 miles** the horizon runs past 15,000 a year. At the
+  15,000 default there is no markdown. On the 15-year view it loses a further
+  11% a year after year five, with a $1,000 floor.
+- **Fifteen years** is "run it into the ground": no sale beyond that token
+  value, insurance past year five at 75% of the annual rate as the car's value
+  falls, repairs on the same age-and-odometer curve, and a chip on the card
+  for the year the odometer passes 250,000 miles. The model keeps charging
+  repairs rather than buying a replacement, so that chip is the year you would
+  realistically be shopping again.
 - **EV road fee** is $200 a year, $1,000 over five years, on battery EVs only.
   Hybrids and plug-ins are exempt.
 
@@ -116,68 +126,82 @@ net = depreciation + interest + fuel + insurance + maintenance
 | Assumption | Default | Why |
 | --- | --- | --- |
 | Down payment | $10,000 | |
-| Miles per year | 25,000 | 125,000 over five years |
+| Miles per year | 15,000 | 75,000 over five years; the Pathfinder has averaged about 11,000 since it was bought in 2022, so this is a round figure with headroom for a new school run |
 | Petrol | $3.00/gal | |
 | Electricity | $0.113/kWh | GVEC marginal rate: $0.085 generation + $0.0238 distribution, then 2% franchise fee and 1.5% city tax |
 | Plug-in miles on battery | 55% | |
 | Charger install | $1,000 | ~$1,600 typical install less GVEC's $600 rebate |
 | Loan term | 60 months | |
+| Horizon | 5 years | The family's history says closer to 15; both views are one tap apart |
 
 ---
 
 ## What the research found
 
 The brief: a family of five in New Braunfels replacing a 2017 Nissan Pathfinder
-with 100,000 miles and an ageing CVT. Three kids, so seven seats with
-second-row captain's chairs. Roughly 25,000 miles a year, with regular runs to
-drive-on beaches at Port Aransas, and a liking for the lifted AWD look.
+bought in 2022 with about 55,000 miles, now at 100,000, with an ageing CVT.
+Three kids, almost 15, 12 and 9, all likely to reach six feet. Seven seats with
+second-row captain's chairs as the starting point. About 11,000 miles a year on
+the Pathfinder's own record, modelled at 15,000. Regular runs to drive-on
+beaches at Port Aransas, and a liking for the lifted AWD look.
 
-1. **At 25,000 miles a year, fuel is the deciding variable.** The spread
-   between a 36 mpg Sienna and a 22 mpg Odyssey is about $6,600 over five
-   years; against a 17 mpg Tahoe it is $11,600. Efficiency matters roughly 1.7
-   times more for this family than for an average driver.
-2. **Minivans give more space per dollar than SUVs, without exception.** The
-   cheapest seven-seat SUV nearby starts at $59,699 with five fewer inches of
-   third-row legroom and thirteen fewer cubic feet than a Sienna costing
-   $12,000 less. The only thing an SUV wins outright is absolute boot space —
-   the Suburban and Yukon XL hold 41.5 cu ft behind the third row, the most
-   here — and a used one asks about $16,000 more than a used Carnival for that
-   one extra cubic foot.
-3. **Resale is the largest single lever, bigger than price.** The Sienna loses
-   only 29% over five years against a class average of 46%, which is what keeps
-   a new Sienna competitive with a used one at all. At the 4.49% credit-union
-   rate the 2025 with 59k miles at $40,499 comes back ahead by about $2,100 —
-   cheap money helps a used car more than a new one, because the used car was
-   the one carrying the higher rate.
-4. **The Carnival Hybrid ties the Sienna; the V6 Carnival does not.** A
-   discounted 2026 Carnival Hybrid EX at $42,090 lands 13th of 122 at about
-   $57.4k over five years, $696 from a new Sienna XLE and $121 a month cheaper —
-   a tie under this page's own $3,000 rule. Every V6 Carnival burns $17,045 of
-   petrol over 125,000 miles against the hybrid's $11,364, which is worth more
-   than any discount offered on the car. Used is not the cheaper way in: the
-   used hybrids ask new-car money, and the cheap used ones are all V6.
-5. **No federal purchase credit exists on any car bought in 2026.** The clean
-   vehicle credits ended for vehicles acquired after 30 September 2025, and a
-   Carnival never qualified anyway — it is not a plug-in. The one incentive
-   left on a new car is the OBBBA auto-loan interest deduction, up to $10,000 a
-   year of interest for tax years 2025–2028, and it requires **final assembly in
-   the United States**. The Sienna is built in Princeton, Indiana and qualifies.
-   The Carnival is built in Gwangmyeong, South Korea and does not.
-6. **No EV can give seven seats with captain's chairs.** EV9, Rivian R1S, Tesla
-   Model X, Volvo EX90 and Ioniq 9 all have two-seat third rows. It is a
-   structural limit of the segment.
-7. **Leasing does not work at this mileage.** Every offer caps at 10,000 miles a
-   year. At 25,000 you end a three-year term 45,000 miles over — $6,750 in
-   penalties at Toyota's $0.15/mile, $11,250 at Kia's $0.25 — and own nothing.
-8. **Buying older only saves money right at the bottom.** A 2017 Sienna at
-   $27,590 still costs about $4,000 more over five years than a 2025 at
-   $40,499. But a 2016 Odyssey at $16,590 wins outright at about $55.8k,
-   cheaper than any Sienna, because there is almost no depreciation left to
-   pay — and it finishes the five years at 220,000 miles with $13,000 budgeted
-   for repairs. Old and thirsty loses; old and frugal wins.
-9. **Cost and reliability point in opposite directions at the bottom.** The
-   cheapest option is a Pacifica Hybrid at $21,990, and it is also the least
-   reliable vehicle in the set.
+Figures below are at the defaults on 9 September 2026. The app's Notes tab
+computes the same figures live, so if they disagree, the app is right.
+
+1. **At 15,000 miles a year, fuel is a tiebreaker, not the decider.** The spread
+   between a 36 mpg Sienna and a 22 mpg Odyssey is about $4,000 over five years;
+   against a 17 mpg Tahoe it is $7,000. An earlier version of this page assumed
+   25,000 miles a year, which made those gaps $6,600 and $11,600 and made fuel
+   the deciding line. That one assumption was doing most of the work.
+2. **Nearly every sensible van costs about the same to own.** The twenty
+   cheapest cars span about $8,800 over five years, roughly $150 a month.
+   Insurance alone could swing $4,000 either way. Cost tells you which four or
+   five to sit in; it does not pick the van.
+3. **Fifteen years changes the question.** Run to the ground, a new Sienna XLE
+   is about $107k, $7,100 a year, finishing at 225,000 miles. A 2016 Odyssey is
+   about $89k, $5,900 a year, finishing at 320,000 miles and passing 250,000 in
+   year 11. That is $1,200 a year for a van nine years newer with a modern
+   safety suite, and the model never charges the old van for the replacement it
+   would need.
+4. **Three teenagers heading for six feet make third-row legroom the primary
+   spec.** A 32-inch third row on a Telluride, Palisade or Pilot is a
+   children's seat. Only the Sienna (38.7"), Odyssey (38.1"), Expedition,
+   Suburban and Yukon XL clear 36 inches. The seven-seat years are also short:
+   the oldest is likely gone by 2030, so a fifteen-year car spends eleven years
+   as a two-to-four-person vehicle.
+5. **Minivans give more space per dollar than SUVs, without exception.** The
+   cheapest new seven-seat SUV nearby is a Grand Highlander Hybrid at $59,699
+   with five fewer inches of third-row legroom and thirteen fewer cubic feet
+   than a Sienna costing $12,000 less. The only thing an SUV wins outright is
+   absolute boot space, and a new Tahoe costs about $22,000 more than a new
+   Sienna over five years to get it.
+6. **The Carnival Hybrid "tie" was a bench.** The 2026 Carnival Hybrid EX at
+   $42,090 lands within $1,400 of a new Sienna XLE, but 2025–2026 EX and SX carry
+   sliding eight-passenger seats, not captain's chairs. The only hybrid Carnival
+   with real captains is the 2027 SX at $50,864, about $7,000 behind the Sienna
+   over five years.
+7. **No federal purchase credit exists on any car bought in 2026.** The clean
+   vehicle credits ended for vehicles acquired after 30 September 2025. The one
+   incentive left on a new car is the OBBBA auto-loan interest deduction, up to
+   $10,000 a year of interest for tax years 2025–2028, and it requires **final
+   assembly in the United States**. The Sienna qualifies (Princeton, Indiana).
+   The Carnival does not (Gwangmyeong, South Korea).
+8. **No EV can give seven seats with captain's chairs.** EV9, Rivian R1S, Tesla
+   Model X, Volvo EX90 and Ioniq 9 all have two-seat third rows. They stay on
+   the list and lose half the seat-count weight.
+9. **Leasing fails for a different reason now.** At 15,000 miles a year the
+   overage on a three-year lease is $2,250 at Toyota's $0.15 a mile or $3,750
+   at Kia's $0.25, survivable. The real problem is that this family keeps cars
+   for nine years and a lease hands the car back at three, owning nothing.
+10. **Buying older is a real bet at this mileage.** A 2016 Odyssey at $16,590 is
+    the cheapest thing on the page at about $38.8k over five years, finishing
+    at 170,000 miles. A 2017 Sienna V6 lands within $800 of a brand-new hybrid.
+    What you give up is a decade of safety engineering, a warranty, and a teen
+    driver's first car having automatic braking.
+11. **Cost and reliability point in opposite directions at the bottom.** The
+    second-cheapest option is a Pacifica Hybrid at $22,990, and it is also the
+    least reliable vehicle in the set, with a 6% chance of a $17,000 battery
+    outside warranty that the total shows as about a thousand dollars.
 
 ### Texas rules that change the maths
 
@@ -247,11 +271,12 @@ src/
   index.css                    global reset
   vehicle-cost.css             all styling, scoped under .vehcost, mobile first
   data/vehicles.js             the 122 listings, spec tables, and explainer copy
-  lib/cost.js                  the five-year cost model
+  lib/cost.js                  the cost model, five or fifteen years
+  lib/figures.js               the figures the Notes tab quotes, computed from the model
   components/
     VehicleCostView.jsx        app shell, Cars tab, sheets, cards
     CompareTab.jsx             vs-yours, at-a-glance, tables
-    NotesTab.jsx               long-form reasoning, in accordions
+    NotesTab.jsx               long-form reasoning, in accordions; numbers come from lib/figures.js
     pieces.jsx                 shared bars, popovers, assumptions panel
 ```
 

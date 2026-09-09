@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 import { WHY } from '../data/vehicles';
-import { money } from '../lib/cost';
+import { HORIZONS, money } from '../lib/cost';
 
 // ---------------------------------------------------------------------------
 // Shared small pieces: the "why this number" popovers, the bar primitives, and
@@ -55,7 +55,7 @@ const KnownRow = ({ id, item }) => {
 };
 
 // The known big-ticket failures for a listing. Only the ones whose odometer
-// window overlaps your five years are shown — a failure you will drive past
+// window overlaps your ownership horizon are shown — a failure you will drive past
 // before you ever reach it is not a cost.
 export const KnownIssues = ({ cid, items = [], total = 0, status }) => {
   const live = items.filter((i) => i.inWindow);
@@ -269,6 +269,19 @@ export const Assumptions = ({ S, setS, idp }) => {
         value={S.charger}
         onChange={(v) => set('charger', v)}
       />
+      <div className="ctrl">
+        <label>How long you keep it</label>
+        <div className="seg">
+          {HORIZONS.map((y) => (
+            <button key={y} type="button" aria-pressed={S.years === y} onClick={() => set('years', y)}>
+              {y} years
+            </button>
+          ))}
+        </div>
+        <p className="fine" style={{ margin: '8px 0 0' }}>
+          {WHY.years}
+        </p>
+      </div>
       <div className="ctrl">
         <label>Loan term</label>
         <div className="seg">

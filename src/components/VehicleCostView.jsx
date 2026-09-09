@@ -25,6 +25,10 @@ import {
   normalizeWeights,
   ownFor,
   roofLabel,
+  safeLabel,
+  safeScore,
+  safeTone,
+  safetyOf,
   row2Meta,
   row2Of,
   weightMixLabel,
@@ -56,13 +60,14 @@ const TABS = [
 ];
 
 const SORTS = [
-  { id: 'net', label: 'Cheapest over 5 years', short: '5-yr cost', get: (r) => r.c.net, dir: 1 },
+  { id: 'net', label: 'Cheapest to own', short: 'Cost to own', get: (r) => r.c.net, dir: 1 },
   { id: 'pmt', label: 'Lowest monthly payment', short: 'Payment', get: (r) => r.c.m, dir: 1 },
   { id: 'price', label: 'Lowest asking price', short: 'Price', get: (r) => r.o.sticker, dir: 1 },
   { id: 'leg3', label: 'Biggest third row', short: '3rd row', get: (r) => r.o.leg3, dir: -1 },
   { id: 'cargo', label: 'Most cargo space', short: 'Cargo', get: (r) => r.o.cargo, dir: -1 },
   { id: 'mpg', label: 'Best fuel economy', short: 'MPG', get: (r) => r.o.mpgBar || r.o.mpg || 0, dir: -1 },
   { id: 'rel', label: 'Most reliable', short: 'Reliability', get: (r) => r.o.rel, dir: -1 },
+  { id: 'safe', label: 'Safest', short: 'Safety', get: (r) => safeScore(r.o), dir: -1 },
   { id: 'res', label: 'Best resale', short: 'Resale', get: (r) => r.c.res, dir: -1 },
 ];
 
@@ -127,7 +132,8 @@ const haystack = (o) => {
           ? 'bench second row'
           : 'ask second row unverified buckets';
   const covid = covidLabel(o);
-  return `${o.n} ${o.y} ${o.offer} ${o.awd} ${o.cat} ${o.cond} ${meta.label} ${meta.short} ${aliases}${covid ? ` ${covid} covid` : ''}`.toLowerCase();
+  const safe = safeLabel(o) || '';
+  return `${o.n} ${o.y} ${o.offer} ${o.awd} ${o.cat} ${o.cond} ${meta.label} ${meta.short} ${aliases}${covid ? ` ${covid} covid` : ''} ${safe}`.toLowerCase();
 };
 
 const passesFilters = (o, F, base) => {
@@ -258,10 +264,14 @@ const Fact = ({ value, label, tone }) => (
 
 const CostCard = ({ o, c, base, rank, badge, badgeTone, open, onToggle, cid }) => {
   const seg = (v) => `${((v / c.net) * 100).toFixed(2)}%`;
+  const Y = c.years;
+  const endK = Math.round(c.endMiles / 1000);
   const own = ownFor(o);
   const clearance = gcFor(o);
   const roof = roofLabel(o);
   const covid = covidLabel(o);
+  const safe = safeLabel(o);
+  const safety = safetyOf(o);
   const key = `${o.n} ${o.y}`;
   const kept = Math.round((c.res / o.sticker) * 100);
   const row2 = row2Meta(o);
@@ -282,6 +292,12 @@ const CostCard = ({ o, c, base, rank, badge, badgeTone, open, onToggle, cid }) =
             <span className={o.seats < 7 ? 'chip warn' : 'chip'}>{o.seats} seats</span>
             <span className={`chip ${row2.chip}`}>{row2.label}</span>
             {covid && <span className="chip warn">{covid}</span>}
+            {safe && <span className={`chip ${safeTone(o)}`}>{safe}</span>}
+            {c.pastLife != null && (
+              <span className="chip warn" title={`About ${endK}k miles by the end of year ${Y}`}>
+                {c.pastLife === 0 ? 'Past 250k already' : `250k mi in yr ${c.pastLife}`}
+              </span>
+            )}
             {hasPromoFinance(o) && (
               <span className="chip ok">
                 {aprLabel(c.apr)} · {c.term} mo
@@ -292,7 +308,7 @@ const CostCard = ({ o, c, base, rank, badge, badgeTone, open, onToggle, cid }) =
         </span>
         <span className="vcost">
           <span className="vnet">{shortMoney(c.net)}</span>
-          <span className="vnetlab">5-yr cost</span>
+          <span className="vnetlab">{Y}-yr cost</span>
           <span className="vask">{money(o.sticker)} ask</span>
         </span>
       </button>
@@ -323,13 +339,14 @@ const CostCard = ({ o, c, base, rank, badge, badgeTone, open, onToggle, cid }) =
             <span>Fuel {money(c.fuel)}</span>
             <span>Insurance {money(c.ins)}</span>
             <span>Maintenance {money(c.mnt)}</span>
-            <span>Sell for {money(c.res)}</span>
+            <span>{Y > 5 ? `Worth at yr ${Y}` : 'Sell for'} {money(c.res)}</span>
             {!!c.chg && <span>Charger {money(c.chg)}</span>}
             {!!c.evfee && <span>TX EV fee {money(c.evfee)}</span>}
           </div>
           <p className="fine" style={{ margin: '-4px 0 12px' }}>
             {money(c.mntWear)} oil, tires, brakes · {money(c.mntRepair)} repairs after warranty
-            {c.mntKnown > 0 ? ` · ${money(c.mntKnown)} known issues` : ''}
+            {c.mntKnown > 0 ? ` · ${money(c.mntKnown)} known issues` : ''} · about {endK}k miles by the end of
+            year {Y}
           </p>
 
           <KnownIssues cid={key} items={c.knownItems} total={c.mntKnown} status={knownStatus(o)} />
@@ -393,7 +410,7 @@ const CostCard = ({ o, c, base, rank, badge, badgeTone, open, onToggle, cid }) =
             />
             <Spec
               id={`${key} res`}
-              label="Resale at year 5"
+              label={`Resale at year ${Y}`}
               value={
                 <>
                   {money(c.res)} <span className="muted">{kept}% kept</span>
@@ -403,6 +420,21 @@ const CostCard = ({ o, c, base, rank, badge, badgeTone, open, onToggle, cid }) =
               why={WHY.res}
             />
             <Spec id={`${key} rel`} label="Reliability" value={`${o.rel.toFixed(1)} / 5`} frac={o.rel / 5} why={WHY.rel} />
+            <Spec
+              id={`${key} safe`}
+              label="Crash safety"
+              value={
+                safety
+                  ? `${safety.iihs === 'untested' ? 'IIHS untested' : safety.iihs === 'none' ? 'IIHS no award' : `IIHS ${safety.iihs}`}${
+                      safety.rearSeat ? ` · rear seat ${safety.rearSeat.toLowerCase()}` : ''
+                    }${safety.nhtsa ? ` · NHTSA ${safety.nhtsa}★` : ''}${
+                      safety.aeb === true ? ' · auto braking std' : safety.aeb === false ? ' · no auto braking' : ''
+                    }${safety.conf === 'verified' ? '' : ` (${safety.conf})`}`
+                  : 'Not looked up'
+              }
+              frac={safeScore(o)}
+              why={safety ? `${WHY.safe} ${safety.note}` : WHY.safe}
+            />
             <Spec id={`${key} cln`} label="Easy to clean" value={`${o.cln.toFixed(1)} / 5`} frac={o.cln / 5} why={WHY.cln} />
             {own && (
               <Spec id={`${key} own`} label="Owner rating" value={`${own[1].toFixed(1)} / 5`} frac={own[1] / 5} why={WHY.own} />
@@ -776,7 +808,7 @@ const VehicleCostView = () => {
                           <span className="podname">{r.o.n}</span>
                           <span className="podsub">{r.o.y.replace(/ · \$[\d,]+$/, '')}</span>
                           <span className="podmeta">
-                            {shortMoney(r.c.net)} over 5 years · {money(r.c.m)}/mo · {money(r.o.sticker)} ask
+                            {shortMoney(r.c.net)} over {r.c.years} years · {money(r.c.m)}/mo · {money(r.o.sticker)} ask
                           </span>
                         </button>
                       );
@@ -1013,8 +1045,9 @@ const VehicleCostView = () => {
           </p>
           <Assumptions S={S} setS={setS} idp="veh-" />
           <p className="fine">
-            Default is 25,000 miles a year, so 125,000 over five years. Resale is discounted for that extra wear,
-            roughly 11% per additional 25,000 miles. Electricity is the GVEC marginal rate: $0.085 generation plus
+            Default is 15,000 miles a year and a five-year hold, so 75,000 miles, which is the mileage the published
+            resale figures assume. Drag miles higher and resale is discounted roughly 11% per additional 25,000. The
+            15-year view keeps the car to the end rather than selling it. Electricity is the GVEC marginal rate: $0.085 generation plus
             $0.0238 distribution, then the 2% franchise fee and 1.5% city tax. Charger default is a typical $1,600
             install less GVEC&rsquo;s $600 rebate.
           </p>

@@ -4,19 +4,29 @@
 // ---------------------------------------------------------------------------
 
 import { CLEAR, GC, KNOWN, OWN } from '../data/vehicles';
+import { SAFETY } from '../data/safety';
 
 export const TAX = 0.0625;
 export const FEES = 400;
 
 export const DEFAULT_ASSUMPTIONS = {
   down: 10000,
-  miles: 25000,
+  miles: 15000,
   gas: 3.0,
   kwh: 0.113,
   elec: 0.55,
   charger: 1000,
   term: 60,
+  years: 5,
 };
+
+// Ownership horizons. Five years sells the car at the published resale figure.
+// Fifteen years is running it into the ground: no sale beyond a token value,
+// insurance easing as the car ages, repairs climbing on the same curve, and a
+// flag on the card for the year the odometer passes 250,000 miles.
+export const HORIZONS = [5, 15];
+export const LIFE_MILES = 250000;
+export const yearsOf = (S) => (HORIZONS.includes(S.years) ? S.years : 5);
 
 // `gain` is a minimum improvement over your current car, not an absolute
 // figure: +2 on leg3 means "at least two inches more third-row legroom than
@@ -73,7 +83,7 @@ export const perMile = (o, S) => {
 export const COST_YEAR = 2026;
 
 // RepairPal / AAA sample cars are driven about 15,000 miles a year. This
-// family's slider defaults to 25,000, which is why wear items and failure
+// family drives about 15,000 too, but the slider goes to 35,000, which is why wear items and failure
 // rates have to scale with miles instead of sitting as a lump sum.
 export const RP_MILES_YR = 15000;
 
@@ -139,17 +149,19 @@ const ageFactor = (age) => {
   if (a <= 5) return 0.5 + (a - 2) * 0.07;
   if (a <= 8) return 0.71 + (a - 5) * 0.1;
   if (a <= 12) return 1.01 + (a - 8) * 0.1;
-  return clamp(1.41 + (a - 12) * 0.12, 1.41, 2.3);
+  return clamp(1.41 + (a - 12) * 0.12, 1.41, 2.8);
 };
 
 // RepairPal's sample sits around 90,000 miles. Past 150k the curve steepens
 // because you are into the second set of major wear items; past 220k it is
-// a high-mile vehicle even for a Toyota truck.
+// a high-mile vehicle even for a Toyota truck. The 15-year horizon runs cars
+// to 300,000 miles and beyond, so the curve keeps climbing to a 3.5x cap
+// rather than flattening at 2.8x; on a five-year view nothing here reaches it.
 const mileFactor = (odo) => {
   if (odo < 90000) return 0.55 + (odo / 90000) * 0.45;
   if (odo < 150000) return 1.0 + ((odo - 90000) / 60000) * 0.5;
   if (odo < 220000) return 1.5 + ((odo - 150000) / 70000) * 0.7;
-  return clamp(2.2 + ((odo - 220000) / 80000) * 0.5, 2.2, 2.8);
+  return clamp(2.2 + ((odo - 220000) / 80000) * 0.5, 2.2, 3.5);
 };
 
 // Oil, tires, brakes, filters. Scales with miles you will actually drive.
@@ -212,8 +224,9 @@ export const knownStatus = (o) => {
 // bumper-to-bumper pays for anything, powertrain only for the `pt` items.
 export const knownCostFor = (o, S) => {
   const miles = Math.max(0, S.miles);
+  const Y = yearsOf(S);
   const start = startMilesOf(o);
-  const end = start + miles * 5;
+  const end = start + miles * Y;
   const startAge = Math.max(0, COST_YEAR - modelYearOf(o));
   const w = warrantyOf(o);
 
@@ -240,11 +253,12 @@ export const knownCostFor = (o, S) => {
   return { total: items.reduce((t, i) => t + i.expected, 0), items };
 };
 
-// Five-year maintenance: wear items that scale with the miles slider, plus
-// unscheduled repairs that scale with age, odometer, remaining warranty,
+// Maintenance over the horizon: wear items that scale with the miles slider,
+// plus unscheduled repairs that scale with age, odometer, remaining warranty,
 // and how hard you drive relative to RepairPal's 15,000-mile sample.
 export const maintenanceFor = (o, S) => {
   const miles = Math.max(0, S.miles);
+  const Y = yearsOf(S);
   const start = startMilesOf(o);
   const year = modelYearOf(o);
   const startAge = Math.max(0, COST_YEAR - year);
@@ -253,10 +267,10 @@ export const maintenanceFor = (o, S) => {
   const base = own ? own[2] : 650;
   const drive = Math.sqrt(miles / RP_MILES_YR);
   const rel = relAdj(o);
-  const scheduled = scheduledCpm(o) * miles * 5;
+  const scheduled = scheduledCpm(o) * miles * Y;
 
   let unscheduled = 0;
-  for (let t = 0; t < 5; t++) {
+  for (let t = 0; t < Y; t++) {
     const age = startAge + t;
     const odoStart = start + t * miles;
     const odoMid = odoStart + miles / 2;
@@ -271,9 +285,16 @@ export const maintenanceFor = (o, S) => {
   return { total, scheduled, unscheduled, known: known.total, knownItems: known.items };
 };
 
-// Five-year running total. Resale is marked down about 11% for every extra
-// 25,000 miles a year beyond the 15,000-a-year the published figures assume.
+// Running total over the horizon. Resale starts from the published five-year
+// figure, marked down about 11% for every 25,000 miles the horizon runs past
+// 15,000 a year; beyond year five it loses a further 11% a year, which is
+// roughly what a ten-year-old mainstream car does on its way to fifteen, with
+// a $1,000 floor for what is left of a 300,000-mile van. Insurance is a
+// five-year lump in the data; years past five are charged at 75% of that
+// annual rate, since collision and comprehensive shrink with the car's value
+// while liability does not.
 export const compute = (o, S) => {
+  const Y = yearsOf(S);
   const price = o.sticker + (o.ship || 0);
   const tax = price * TAX + FEES;
   const loan = Math.max(0, price + tax - o.cash - S.down);
@@ -281,20 +302,30 @@ export const compute = (o, S) => {
   const apr = aprOf(o, S);
   const m = pmt(loan, apr, n);
   const interest = m * n - loan;
-  const wear = Math.max(0.45, Math.min(1.15, 1 - 0.11 * ((S.miles * 5 - 75000) / 25000)));
-  const res = o.res * wear;
-  const fuel = S.miles * 5 * perMile(o, S);
+  const wear = Math.max(0.45, Math.min(1.15, 1 - 0.11 * (((S.miles - RP_MILES_YR) * Y) / 25000)));
+  const res = Math.max(1000, o.res * wear * Math.pow(0.89, Math.max(0, Y - 5)));
+  const fuel = S.miles * Y * perMile(o, S);
   const dep = price + tax - o.cash - res;
   const chg = o.charger ? S.charger : 0;
-  const evfee = o.ev ? 1000 : 0;
+  const evfee = o.ev ? 200 * Y : 0;
+  const ins = o.ins * (Y <= 5 ? Y / 5 : 1 + (0.75 * (Y - 5)) / 5);
   const mnt = maintenanceFor(o, S);
+  const start = startMilesOf(o);
+  const endMiles = start + S.miles * Y;
+  // Year of ownership in which the odometer passes LIFE_MILES, if it does
+  // inside the horizon. 0 means it was already past when you bought it.
+  const lifeYear =
+    start >= LIFE_MILES ? 0 : S.miles > 0 ? Math.ceil((LIFE_MILES - start) / S.miles) : Infinity;
   return {
-    net: dep + interest + fuel + o.ins + mnt.total + chg + evfee,
+    net: dep + interest + fuel + ins + mnt.total + chg + evfee,
+    years: Y,
+    endMiles,
+    pastLife: lifeYear <= Y ? lifeYear : null,
     evfee,
     dep,
     interest,
     fuel,
-    ins: o.ins,
+    ins,
     mnt: mnt.total,
     mntWear: mnt.scheduled,
     mntRepair: mnt.unscheduled,
@@ -309,6 +340,55 @@ export const compute = (o, S) => {
 };
 
 export const ownFor = (o) => OWN.find((r) => r[0].test(o.n)) || null;
+
+// Crash-safety record for this listing's nameplate and model year, or null if
+// nobody has looked it up. Entries are matched on the name alone plus a
+// model-year range, the same way known issues are.
+export const safetyOf = (o) => {
+  const y = modelYearOf(o);
+  return SAFETY.find((e) => e.m.test(o.n) && y >= e.y[0] && y <= e.y[1]) || null;
+};
+
+const IIHS_SCORE = { 'TSP+': 1, TSP: 0.8, none: 0.45, untested: 0.4 };
+const REAR_SCORE = { Good: 1, Acceptable: 0.7, Marginal: 0.4, Poor: 0.1 };
+
+// 0–1. Standard automatic emergency braking is a quarter of it on its own,
+// because with a new driver in the house it is the single feature most likely
+// to matter. IIHS award and the updated rear-seat test carry the crash side;
+// NHTSA stars fill in where IIHS has not tested. Anything unknown scores as a
+// middling 0.4 rather than 0, so an untested car is not punished as though it
+// had failed, and an unverified entry is capped so it cannot win on a guess.
+export const safeScore = (o) => {
+  const e = safetyOf(o);
+  if (!e) return 0.4;
+  const iihs = IIHS_SCORE[e.iihs] ?? 0.4;
+  const rear = e.rearSeat ? REAR_SCORE[e.rearSeat] ?? 0.4 : iihs;
+  const nhtsa = e.nhtsa === 5 ? 1 : e.nhtsa === 4 ? 0.7 : e.nhtsa ? 0.4 : iihs;
+  const aeb = e.aeb === true ? 1 : e.aeb === false ? 0 : 0.4;
+  const raw = 0.35 * iihs + 0.2 * rear + 0.2 * nhtsa + 0.25 * aeb;
+  return e.conf === 'unverified' ? Math.min(raw, 0.6) : raw;
+};
+
+// Short chip for the card. Warns loudly on the one thing a buyer can act on.
+export const safeLabel = (o) => {
+  const e = safetyOf(o);
+  if (!e) return null;
+  const bits = [];
+  if (e.iihs === 'TSP+' || e.iihs === 'TSP') bits.push(`IIHS ${e.iihs}`);
+  if (e.aeb === false) bits.push('No auto braking');
+  else if (e.rearSeat === 'Poor' || e.rearSeat === 'Marginal') bits.push(`Rear seat ${e.rearSeat.toLowerCase()}`);
+  if (!bits.length && e.nhtsa) bits.push(`NHTSA ${e.nhtsa}★`);
+  if (!bits.length) return e.aeb ? 'Auto braking std' : null;
+  return bits.join(' · ');
+};
+
+export const safeTone = (o) => {
+  const e = safetyOf(o);
+  if (!e) return '';
+  if (e.aeb === false || e.rearSeat === 'Poor') return 'warn';
+  if (e.iihs === 'TSP+' || e.iihs === 'TSP') return 'ok';
+  return '';
+};
 export const gcFor = (o) => {
   const hit = GC.find((r) => r[0].test(o.n));
   return hit ? hit[1] : null;
@@ -369,21 +449,23 @@ export const hasCaptains = (o) => {
 };
 
 // Best overall is a weighted mix you set. Captain's chairs and skipping the
-// COVID build years lead the default mix, with overall legroom, five-year cost
-// and reliability just behind; AWD and cargo are off by default because the
-// filters already handle them. Drag any slider; the mix renormalises to 100%.
+// COVID build years lead the default mix, with seven seats, safety, overall
+// legroom, cost and reliability just behind; AWD and cargo are off by default
+// because the filters already handle them. Drag any slider; the mix renormalises to 100%.
 //
 // SCORE_KEYS is the wire order — it is what encodeWeights/parseWeights write
 // into the `w` link parameter, so new factors are appended, never inserted.
 // SCORE_FACTORS is the display order for the sliders and may differ.
-export const SCORE_KEYS = ['cost', 'cap', 'leg3', 'rel', 'awd', 'cargo', 'cln', 'roof', 'gc', 'covid', 'mpg'];
+export const SCORE_KEYS = ['cost', 'cap', 'leg3', 'rel', 'awd', 'cargo', 'cln', 'roof', 'gc', 'covid', 'mpg', 'seats', 'safe'];
 
 export const SCORE_FACTORS = [
   { id: 'cost', label: 'Five-year cost', short: 'cost' },
   { id: 'mpg', label: 'Fuel economy', short: 'mpg' },
   { id: 'cap', label: "Captain's chairs", short: 'captains' },
+  { id: 'seats', label: 'Seven seats', short: '7 seats' },
   { id: 'leg3', label: 'Overall legroom', short: 'legroom' },
   { id: 'rel', label: 'Reliability', short: 'reliability' },
+  { id: 'safe', label: 'Crash safety and auto braking', short: 'safety' },
   { id: 'awd', label: 'AWD available', short: 'AWD' },
   { id: 'cargo', label: 'Cargo behind 3rd', short: 'cargo' },
   { id: 'cln', label: 'Easy to clean', short: 'cleanability' },
@@ -404,6 +486,8 @@ export const DEFAULT_WEIGHTS = {
   gc: 3,
   covid: 10,
   mpg: 5,
+  seats: 8,
+  safe: 8,
 };
 
 const clamp01 = (n) => Math.max(0, Math.min(1, n));
@@ -499,8 +583,9 @@ export const weightsEqual = (a, b) => SCORE_KEYS.every((k) => (a[k] || 0) === (b
 export const encodeWeights = (W) => SCORE_KEYS.map((k) => W[k] || 0).join('-');
 
 // Links written before a factor existed. Seven weights predate sunroof,
-// clearance and the COVID-year demotion; nine predate COVID; ten predate mpg.
-const LEGACY_WEIGHT_LENGTHS = [7, 9, 10];
+// clearance and the COVID-year demotion; nine predate COVID; ten predate mpg;
+// eleven predate the seat-count factor; twelve predate safety.
+const LEGACY_WEIGHT_LENGTHS = [7, 9, 10, 11, 12];
 
 export const parseWeights = (raw) => {
   let parts = String(raw || '').split('-').map((n) => parseInt(n, 10));
@@ -531,6 +616,10 @@ export const normalizeWeights = (W) => {
 export const scoreParts = (r, lo, hi) => ({
   cost: hi > lo ? 1 - (r.c.net - lo) / (hi - lo) : 1,
   cap: row2Meta(r.o).frac,
+  // Seven or more is the brief. A six-seater is two captains and a two-seat
+  // third row, which carries three kids only if nobody brings a friend.
+  seats: r.o.seats >= 7 ? 1 : r.o.seats === 6 ? 0.5 : 0,
+  safe: safeScore(r.o),
   leg3: roomScore(r.o),
   rel: r.o.rel / 5,
   awd: hasAWD(r.o) ? 1 : 0,

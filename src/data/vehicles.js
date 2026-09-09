@@ -914,6 +914,17 @@ export const FINANCE_OFFERS = [
   ['Used, any brand', 'RBFCU 4.49%', 'Same rate new or used, 60 mo or less.'],
 ];
 
+// The same offers as numbers: due-at-signing plus 36 payments, and the
+// per-mile overage each brand charges past its 10,000-a-year allowance. The
+// Notes compute the "your miles" column from these at the default mileage.
+export const LEASE_RATES = [
+  ['Sienna LE, $319/mo', 15483, 0.15],
+  ['Grand Highlander XLE, $439/mo', 19803, 0.15],
+  ['Carnival Hybrid LXS, $459/mo', 20523, 0.25],
+  ['Kia EV9 Light LR, $439/mo', 19803, 0.25],
+  ['Armada SV 4x2, $819/mo', 35703, 0.2],
+];
+
 export const LEASES = [
   ['Sienna LE, $319/mo', '$15,483', '$22,233'],
   ['Grand Highlander XLE, $439/mo', '$19,803', '$26,553'],
@@ -927,20 +938,21 @@ export const CHECKS = [
   {
     g: 'Answer these first — they move the decision most',
     items: [
-      'Is that 2025 Sienna XLE at $40,499 actually all-wheel drive? It tops the list and the drivetrain is unverified.',
-      'Get three real insurance quotes. I used $11,500–$13,500 over five years as a type-based estimate; a real Texas number could swing $4,000 either way, which is more than the gap between your top three.',
-      'Does the Pathfinder’s CVT shudder, hesitate or whine? That is the difference between $8,000 of car and $2,000 of car.',
-      'Check your odometer against a year ago. If it is 15,000 miles a year rather than 25,000, the whole ranking compresses and older cars come back.',
+      'Check a year of odometer, or the last two oil-change stickers. The Pathfinder has averaged about 11,000 miles a year since 2022; the page assumes 15,000. If it is really 25,000, efficient cars pull well ahead and old cars fall back.',
+      'Decide how long you will keep it. Five years sells the car; fifteen runs it into the ground. The two views rank the list differently, and your history says fifteen.',
+      'Get three real insurance quotes, with the 15-year-old on the policy. The type-based estimate here is for two adults and could be off by $4,000 over five years, which is more than the gap between your top three.',
+      'Does the Pathfinder’s CVT shudder, hesitate or whine? That is the difference between $8,000 of car and $2,000 of car, and it is most of the down payment.',
     ],
   },
   {
     g: 'On any used listing',
     items: [
       'Drivetrain: front-wheel or all-wheel? Do not trust the trim name.',
-      'Second row: captain’s chairs or a bench? Especially Wagoneer Series II, Carnival LX and LXS, and any Tahoe, Suburban or Yukon below Premier / Denali — GM sells buckets as an option, not a trim.',
+      'Second row: captain’s chairs or a bench? Especially Wagoneer Series II, Carnival LX and LXS, 2025–2026 Carnival EX and SX, and any Tahoe, Suburban or Yukon below Premier / Denali — GM sells buckets as an option, not a trim.',
       'Accident history, number of owners, and how much factory warranty remains.',
       'Tyre and brake life — a set of tyres on any of these runs $900–$1,400.',
       'Open recalls, free to check by VIN at nhtsa.gov. On the 2022 Yukon AT4 there are two that matter: 25V274, the 6.2L L87 engine, and 26V085, the ten-speed transmission. Ask the seller for proof both were done.',
+      'Is automatic emergency braking standard on this model year? It arrived on the Odyssey and Sienna for 2018, on GM full-size later. With a new driver in the house this is worth more than a sunroof.',
       '2020–2022 is a COVID-year build: factory shutdowns, then the chip shortage. Cars left without modules, and QC dipped. Best overall demotes those years; 2023 is a lighter hit. Prefer 2019 and earlier, or 2024+.',
     ],
   },
@@ -961,16 +973,18 @@ export const CHECKS = [
       'Ask what add-ons are on the car. Paint protection, VIN etching and market adjustments are where $2,000–$4,000 hides.',
       'Ask whether taking the promotional APR forfeits a cash rebate. On the EV9, the Armada and the Carnival V6 you must choose one. On the 2026 Carnival Hybrid, dealer discount can sit next to KFA 1.90–3.99%; Kia bonus cash and military $500 are not counted unless the contract shows them.',
       'On a new car, read the Final Assembly Point line on the window sticker. It decides whether your loan interest is deductible, and it varies by trim and model year — check the actual car, not the model name.',
+      'On a Sienna, ask whether the eight-seat version’s middle seat comes out. If it does you get a bench for three teenagers and captain’s chairs in the same van.',
       'Walk in with a credit union pre-approval. It costs nothing and it is the only leverage that reliably works.',
     ],
   },
   {
-    g: 'On the test drive — bring the car seats and all three kids',
+    g: 'On the test drive — bring all three kids',
     items: [
-      'Can a child reach the third row with a car seat still installed in the second? This is the most useful thing you will learn all day.',
-      'Does your actual stroller fit behind the third row with every seat up?',
+      'Put the fifteen-year-old in the third row for twenty minutes. Then swap. This is the most useful thing you will learn all day.',
+      'Can three tall kids get in and out through a sliding door in a tight school car park without the middle seats moving?',
+      'Does the luggage for a Port Aransas weekend fit behind the third row with every seat up?',
       'Sit in the third row yourself for five minutes.',
-      'Open the doors in a tight space. Sliding versus hinged is a daily thing you will either love or resent.',
+      'Have the teenager drive it, if they hold a permit. It is their car too within a year.',
     ],
   },
 ];
@@ -1004,6 +1018,7 @@ export const SOURCE_ROWS = [
   ['Five-year maintenance', 'Wear items by miles + repairs by age, odometer, warranty', 'Formula, not a quote'],
   ['Owner ratings', 'KBB, Edmunds, CarGurus', 'Model average'],
   ['Reliability score', 'Consumer Reports + recalls', 'My judgement'],
+  ['Crash safety', 'IIHS ratings pages, NHTSA overall stars, manufacturer standard-equipment lists', 'Per nameplate generation; confidence marked on each card'],
   ['Cleanability score', 'Interior features', 'My judgement'],
   ['Insurance', 'Type-based estimate', 'Estimate, not a quote'],
   ['Resale dollars', 'Depreciation + mileage discount', 'Estimate'],
@@ -1021,7 +1036,11 @@ export const WHY = {
   mpg:
     'EPA combined rating. MPGe for electrics and plug-ins is not comparable to petrol mpg, so the fuel cost in the bar above uses your actual electricity and petrol prices instead.',
   res:
-    'Starts from iSeeCars five-year depreciation for the model, then discounts about 11% per extra 25,000 miles a year. Percentage is against what you pay, so used cars look better than new ones on this line.',
+    'Starts from iSeeCars five-year depreciation for the model, then discounts about 11% per extra 25,000 miles over the 15,000 a year those figures assume. On the 15-year view it loses a further 11% a year after year five, with a $1,000 floor, which is what is left of a 300,000-mile van. Percentage is against what you pay, so used cars look better than new ones on this line.',
+  years:
+    'Five years sells the car at the published resale figure. Fifteen years is running it into the ground: no sale beyond a token value, insurance easing as the car ages, and repairs climbing on the same age-and-odometer curve every card already uses. A car that passes 250,000 miles inside the window is flagged with the year it happens; the model keeps charging repairs rather than buying a replacement, so read that flag as "you would probably be shopping again here".',
+  safe:
+    'IIHS award for a representative model year of this generation, the IIHS updated moderate-overlap front test with a dummy in the rear seat (the one that matters when the passengers are your kids), the NHTSA overall star rating, and whether automatic emergency braking is standard. Scored 0 to 1 for Best overall; a car nobody has looked up scores a middling 0.4 rather than zero. Ratings are for the model year shown on the IIHS page and may differ by trim and headlight package.',
   rel:
     'My score from Consumer Reports predicted reliability plus recall history. 4.5 means CR rates it above average; 1.5 means bottom of its class. This is a judgement, not a measurement.',
   cln:
@@ -1035,23 +1054,23 @@ export const WHY = {
   repairs:
     'RepairPal-style annual average for the nameplate, used as the unscheduled-repair input to the five-year maintenance formula. It is not the maintenance line on the card. Longer bar is cheaper.',
   dep:
-    'Asking price plus 6.25% Texas sales tax and $400 of title and registration fees, minus what the car should be worth at year five. Usually the biggest single number on this page.',
+    'Asking price plus 6.25% Texas sales tax and $400 of title and registration fees, minus what the car should be worth at the end of your horizon. Usually the biggest single number on this page.',
   interest:
     "Total interest over the loan term at the APR shown on each card. Every card here is capped at RBFCU's 4.49% for 60 months, which they quote for used cars as well as new; a manufacturer promo is only used where it beats that. The 2026 Carnival Hybrid follows the KFA ladder (1.90% at 48, 2.99% at 60, 3.99% at 72) on the dealer-discounted price, without the $750 Kia cash. The 2027 Hybrid is 2.90% locked to 48 months. Kia's 4.49% sell rate is the ordinary KFA rate — same as RBFCU — and is why the payment estimator still shows a Military checkbox. The 0% EV9 and the 2.99%/72 Carnival V6 keep their advertised terms. Two caveats: 4.49% is the well-qualified rate at 60 months or less, and the oldest, highest-mileage cars on this page may be tiered higher or declined, so treat those totals as optimistic until you have the pre-approval in writing.",
   fuel:
     'Your miles per year times five, at the petrol or electricity price you set in Assumptions. Plug-ins blend the two using the battery-share slider.',
   ins:
-    'Five-year estimate scaled by vehicle type and value, not a quote. Texas rates run above the national average, and EVs and large SUVs cost more to insure.',
+    'Estimate scaled by vehicle type and value, not a quote; years past five are charged at 75% of the annual rate as collision and comprehensive shrink with the car. Texas rates run above the national average, and EVs and large SUVs cost more to insure.',
   mnt:
-    'Five-year total of two pieces. Wear items (oil, tires, brakes) scale with the miles slider and with tire size — a Sequoia costs more per mile than a Sienna, and a 6-inch lift on 35s costs more still. Unscheduled repairs start from the RepairPal annual for the model, then rise with age and odometer and fall while bumper or powertrain coverage is still in force. A new Kia still has 10/100 powertrain; a used one typically does not. Drag miles down and this number drops.',
+    'Total over your horizon of two pieces. Wear items (oil, tires, brakes) scale with the miles slider and with tire size — a Sequoia costs more per mile than a Sienna, and a 6-inch lift on 35s costs more still. Unscheduled repairs start from the RepairPal annual for the model, then rise with age and odometer and fall while bumper or powertrain coverage is still in force. A new Kia still has 10/100 powertrain; a used one typically does not. Drag miles down and this number drops.',
   chg:
     "One-time Level 2 charger installation, charged only to the electrics and the plug-in Pacifica. Default is a typical $1,600 job less GVEC's $600 rebate.",
   evfee:
-    'Texas Senate Bill 505 charges battery EVs $200 a year in road-use fees, $1,000 over five years. Hybrids and plug-in hybrids are exempt.',
+    'Texas Senate Bill 505 charges battery EVs $200 a year in road-use fees, $1,000 over five years and $3,000 over fifteen. Hybrids and plug-in hybrids are exempt.',
   down:
     'Cash you put in on day one. It reduces the loan and therefore the interest, but not the total cost of the car. Your Pathfinder sale should fund most of this.',
   miles:
-    'Drives fuel cost, the resale discount, and maintenance. At 25,000 a year you cover 125,000 miles in five years, which is why efficient cars pull ahead and why an old car finishing past 200,000 miles is charged for that wear.',
+    'Drives fuel cost, the resale discount, and maintenance. The Pathfinder has averaged about 11,000 a year since 2022; 15,000 is that with headroom. Drag it to 25,000 and efficient cars pull ahead, and an old car finishing past 200,000 miles is charged for that wear.',
   gas:
     'Price per gallon of regular. Diesel is calculated at 22% above this. Texas averages below the national figure.',
   kwh:

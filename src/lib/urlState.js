@@ -11,6 +11,7 @@ import {
   DEFAULT_ASSUMPTIONS,
   DEFAULT_FILTERS,
   DEFAULT_WEIGHTS,
+  HORIZONS,
   PRICE_MAX,
   PMT_MAX,
   baseFromSpec,
@@ -20,7 +21,7 @@ import {
 } from './cost';
 
 export const TABS = ['cars', 'compare', 'notes'];
-export const SORT_IDS = ['net', 'pmt', 'price', 'leg3', 'cargo', 'mpg', 'rel', 'res'];
+export const SORT_IDS = ['net', 'pmt', 'price', 'leg3', 'cargo', 'mpg', 'rel', 'safe', 'res'];
 export const MUST_IDS = ['awd', 's7', 'cap', 'eff'];
 export const COMPARE_SUBS = ['yours', 'glance', 'tables'];
 export const MX_SORTS = [2, 3, 4, 5];
@@ -152,6 +153,10 @@ export const parseUrl = (search) => {
   if (p.has('elec')) S.elec = Math.min(1, Math.max(0, num(p.get('elec'), S.elec)));
   if (p.has('chg')) S.charger = Math.max(0, int(p.get('chg'), S.charger));
   if (p.has('term')) S.term = Math.max(12, int(p.get('term'), S.term));
+  if (p.has('yr')) {
+    const yr = int(p.get('yr'), S.years);
+    if (HORIZONS.includes(yr)) S.years = yr;
+  }
 
   if (p.has('w')) snap.W = parseWeights(p.get('w'));
 
@@ -194,6 +199,7 @@ export const toSearch = (snap) => {
   if (!almost(S.elec, D.elec)) p.set('elec', String(S.elec));
   if (S.charger !== D.charger) p.set('chg', String(S.charger));
   if (S.term !== D.term) p.set('term', String(S.term));
+  if (S.years !== D.years) p.set('yr', String(S.years));
   if (W && !weightsEqual(W, DEFAULT_WEIGHTS)) p.set('w', encodeWeights(W));
 
   const qs = p.toString();
