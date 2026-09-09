@@ -17,7 +17,7 @@ import {
 
 export const TABS = ['cars', 'compare', 'notes'];
 export const SORT_IDS = ['net', 'pmt', 'price', 'leg3', 'cargo', 'mpg', 'rel', 'res'];
-export const MUST_IDS = ['awd', 's7', 'eff'];
+export const MUST_IDS = ['awd', 's7', 'cap', 'eff'];
 export const COMPARE_SUBS = ['yours', 'glance', 'tables'];
 export const MX_SORTS = [2, 3, 4, 5];
 

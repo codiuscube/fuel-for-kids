@@ -50,6 +50,139 @@ export const perMile = (o, S) => {
   return g / o.mpg;
 };
 
+// Snapshot year for age/warranty maths. The listings are a late-2026 freeze,
+// so we do not use Date.now() — a later calendar year would silently age
+// every car and drop warranties that were still in force when the prices
+// were recorded.
+export const COST_YEAR = 2026;
+
+// RepairPal / AAA sample cars are driven about 15,000 miles a year. This
+// family's slider defaults to 25,000, which is why wear items and failure
+// rates have to scale with miles instead of sitting as a lump sum.
+export const RP_MILES_YR = 15000;
+
+const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
+
+export const modelYearOf = (o) => {
+  const m = String(o.y || '').match(/^(\d{4})/);
+  return m ? Number(m[1]) : COST_YEAR;
+};
+
+export const startMilesOf = (o) => {
+  if (o.cond === 'new') return 0;
+  const m = String(o.y || '').match(/~?(\d+)\s*k\s*mi/i);
+  if (m) return Number(m[1]) * 1000;
+  const age = Math.max(0, COST_YEAR - modelYearOf(o));
+  return Math.min(100000, Math.max(30000, age * 12500));
+};
+
+const kiaHyundai = (o) =>
+  /Kia |Hyundai |Genesis |Palisade|Telluride|Carnival|Santa Fe|Sorento|Ioniq|EV9|Sedona/i.test(
+    o.n,
+  );
+
+// Remaining factory coverage. Bumper-to-bumper usually transfers; Kia and
+// Hyundai's 10-year / 100,000-mile powertrain warranty does not, unless the
+// car is still with its original owner (modeled here as cond === 'new').
+export const warrantyOf = (o) => {
+  if (o.ev) {
+    // Battery coverage usually transfers with the car. Kia/Hyundai pack is
+    // 10/100; everyone else in this list is the federal 8/100 floor.
+    if (kiaHyundai(o)) return { bumperY: 5, bumperM: 60000, ptY: 10, ptM: 100000 };
+    return { bumperY: 3, bumperM: 36000, ptY: 8, ptM: 100000 };
+  }
+  if (kiaHyundai(o) && o.cond === 'new') {
+    return { bumperY: 5, bumperM: 60000, ptY: 10, ptM: 100000 };
+  }
+  if (kiaHyundai(o)) {
+    return { bumperY: 5, bumperM: 60000, ptY: 5, ptM: 60000 };
+  }
+  return { bumperY: 3, bumperM: 36000, ptY: 5, ptM: 60000 };
+};
+
+// Share of unscheduled repairs you actually pay. Tires, brakes and
+// deductibles still land on you during bumper coverage (~22%). After bumper
+// but inside powertrain, engine/trans work is covered (~62% paid). After
+// that you pay all of it.
+const unscheduledPay = (w, age, odo) => {
+  if (age < w.bumperY && odo < w.bumperM) return 0.22;
+  if (age < w.ptY && odo < w.ptM) return 0.62;
+  return 1;
+};
+
+// Age bands track shop data: cheap while new, a step up at 6–8 years, then
+// a steeper climb after year 8–9 when water pumps, suspension and A/C start
+// landing. AAA finds 10–15 year cars cost 30–60% more per year than a newer
+// example of the same model; the top of this curve is in that range.
+const ageFactor = (age) => {
+  const a = Math.max(0, age);
+  if (a <= 2) return 0.5;
+  if (a <= 5) return 0.5 + (a - 2) * 0.07;
+  if (a <= 8) return 0.71 + (a - 5) * 0.1;
+  if (a <= 12) return 1.01 + (a - 8) * 0.1;
+  return clamp(1.41 + (a - 12) * 0.12, 1.41, 2.3);
+};
+
+// RepairPal's sample sits around 90,000 miles. Past 150k the curve steepens
+// because you are into the second set of major wear items; past 220k it is
+// a high-mile vehicle even for a Toyota truck.
+const mileFactor = (odo) => {
+  if (odo < 90000) return 0.55 + (odo / 90000) * 0.45;
+  if (odo < 150000) return 1.0 + ((odo - 90000) / 60000) * 0.5;
+  if (odo < 220000) return 1.5 + ((odo - 150000) / 70000) * 0.7;
+  return clamp(2.2 + ((odo - 220000) / 80000) * 0.5, 2.2, 2.8);
+};
+
+// Oil, tires, brakes, filters. Scales with miles you will actually drive.
+// AAA's 2025 "maintenance, repair and tires" average is about 11¢/mile, but
+// that figure includes a prepaid extended warranty; this is the wear-item
+// slice only, with bigger tires costing more.
+const scheduledCpm = (o) => {
+  let cpm;
+  if (o.ev) cpm = 0.018;
+  else if (
+    /Defender|GLS(?:\s|$)|X7|XC90|EX90|Grand Wagoneer|Escalade|Navigator/i.test(o.n)
+  ) {
+    cpm = 0.05;
+  } else if (/Tahoe|Suburban|Yukon|Sequoia|Expedition|Armada|QX80/i.test(o.n)) {
+    cpm = 0.042;
+  } else if (o.cat === 'van') cpm = 0.026;
+  else cpm = 0.03;
+  if (/\d+"?\s*lift|\b35s\b|on 35/i.test(`${o.y} ${o.n}`)) cpm *= 1.35;
+  return cpm;
+};
+
+const relAdj = (o) => clamp(1 + (3.2 - (o.rel || 3)) * 0.18, 0.75, 1.45);
+
+// Five-year maintenance: wear items that scale with the miles slider, plus
+// unscheduled repairs that scale with age, odometer, remaining warranty,
+// and how hard you drive relative to RepairPal's 15,000-mile sample.
+export const maintenanceFor = (o, S) => {
+  const miles = Math.max(0, S.miles);
+  const start = startMilesOf(o);
+  const year = modelYearOf(o);
+  const startAge = Math.max(0, COST_YEAR - year);
+  const w = warrantyOf(o);
+  const own = ownFor(o);
+  const base = own ? own[2] : 650;
+  const drive = Math.sqrt(miles / RP_MILES_YR);
+  const rel = relAdj(o);
+  const scheduled = scheduledCpm(o) * miles * 5;
+
+  let unscheduled = 0;
+  for (let t = 0; t < 5; t++) {
+    const age = startAge + t;
+    const odoStart = start + t * miles;
+    const odoMid = odoStart + miles / 2;
+    const wear = 0.5 * ageFactor(age) + 0.5 * mileFactor(odoMid);
+    const pay = unscheduledPay(w, age, odoStart);
+    unscheduled += base * 0.7 * wear * pay * drive * rel;
+  }
+
+  const total = scheduled + unscheduled;
+  return { total, scheduled, unscheduled };
+};
+
 // Five-year running total. Resale is marked down about 11% for every extra
 // 25,000 miles a year beyond the 15,000-a-year the published figures assume.
 export const compute = (o, S) => {
@@ -64,14 +197,17 @@ export const compute = (o, S) => {
   const dep = price + tax - o.cash - res;
   const chg = o.charger ? S.charger : 0;
   const evfee = o.ev ? 1000 : 0;
+  const mnt = maintenanceFor(o, S);
   return {
-    net: dep + interest + fuel + o.ins + o.mnt + chg + evfee,
+    net: dep + interest + fuel + o.ins + mnt.total + chg + evfee,
     evfee,
     dep,
     interest,
     fuel,
     ins: o.ins,
-    mnt: o.mnt,
+    mnt: mnt.total,
+    mntWear: mnt.scheduled,
+    mntRepair: mnt.unscheduled,
     chg,
     m,
     res,
@@ -86,6 +222,57 @@ export const gcFor = (o) => {
 
 export const hasAWD = (o) => !/No AWD|FWD only|RWD/i.test(o.awd);
 export const isEff = (o) => !!(o.ev || o.phev || (o.mpg && o.mpg >= 30));
+
+// Second-row type on each listing. Captains and lounge both put two in the
+// middle with a walkthrough; lounge seats (Carnival Prestige, Sedona SX, EV9
+// VIP) do not fold or come out. Bench is a confirmed three-across second row.
+// Ask means the trim can go either way and this car was not opened.
+export const ROW2 = {
+  captains: { label: 'Captains', short: "Captain's chairs", chip: 'ok', frac: 1 },
+  lounge: { label: 'Lounge 2nd', short: 'Lounge seats (do not stow)', chip: 'ok', frac: 0.75 },
+  bench: { label: 'Bench 2nd', short: 'Second-row bench', chip: 'warn', frac: 0.12 },
+  ask: { label: 'Ask 2nd row', short: 'Second row unverified', chip: 'warn', frac: 0.4 },
+};
+
+export const row2Of = (o) => {
+  if (o.row2 && ROW2[o.row2]) return o.row2;
+  const blob = `${o.n} ${o.y} ${o.offer}`;
+  if (/lounge|VIP 2nd row/i.test(blob)) return 'lounge';
+  if (/no captain|bench 2nd|ships with a bench/i.test(blob)) return 'bench';
+  if (o.seats === 8) return 'bench';
+  if (/Carnival/i.test(o.n)) {
+    if (/Prestige/i.test(o.n)) return 'lounge';
+    if (/\bcaptains\b/i.test(blob)) return 'captains';
+    // 2025–2026 EX/SX are sliding 8-passenger seats, not captains. 2027 is the
+    // first year those trims can option real buckets — this car still unverified.
+    if (modelYearOf(o) >= 2027) return 'ask';
+    return 'bench';
+  }
+  if (/captain|buckets standard|stow.?n.?go buckets/i.test(blob)) return 'captains';
+  if (
+    /check for buckets|buckets optional|check 2nd row|check buckets|check for the buckets|check it/i.test(
+      blob,
+    )
+  ) {
+    return 'ask';
+  }
+  if (/Wagoneer Series II/i.test(o.n) && !/Grand Wagoneer/i.test(o.n)) return 'ask';
+  if (/Voyager/i.test(o.n)) return 'ask';
+  if (/\b(Tahoe|Suburban|Yukon)\b/i.test(o.n)) {
+    if (/\b(Premier|RST|SLT|Denali|Platinum|High Country)\b/i.test(o.n)) return 'captains';
+    if (/\bLS\b/.test(o.n)) return 'bench';
+    if (/\b(LT|Elevation|Z71|AT4)\b/.test(o.n)) return 'ask';
+  }
+  if (/Armada SV/i.test(o.n)) return 'ask';
+  if (o.seats === 6) return 'captains';
+  return 'captains';
+};
+
+export const row2Meta = (o) => ROW2[row2Of(o)];
+export const hasCaptains = (o) => {
+  const id = row2Of(o);
+  return id === 'captains' || id === 'lounge';
+};
 
 // Recommendation score: cost is a third of it, the rest is what the car is like
 // to live with. Weights are spelled out on the card itself.

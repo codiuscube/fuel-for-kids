@@ -12,9 +12,12 @@ import {
   compute,
   gcFor,
   hasAWD,
+  hasCaptains,
   isEff,
   money,
   ownFor,
+  row2Meta,
+  row2Of,
 } from '../lib/cost';
 import { cardId, hrefFor, parseUrl } from '../lib/urlState';
 import { Assumptions, Spec, TrophyIcon, WhyContext, delta } from './pieces';
@@ -56,6 +59,11 @@ const SORTS = [
 const MUSTS = [
   { id: 'awd', label: 'AWD available', hint: 'Offered on the model — confirm on the listing' },
   { id: 's7', label: '7 seats' },
+  {
+    id: 'cap',
+    label: "Captain's chairs",
+    hint: 'Confirmed second-row buckets, including lounge seats. Hides benches and unverified listings.',
+  },
   { id: 'eff', label: '30+ mpg' },
   { id: 'van', label: 'Minivan only' },
   { id: 'suv', label: 'SUV only' },
@@ -91,13 +99,26 @@ const bodyLabel = (cat) => (cat === 'van' ? 'Minivan' : 'SUV');
 
 // Everything a search box should reasonably match on: name, year, mileage,
 // finance note and drivetrain text all live in different fields.
-const haystack = (o) => `${o.n} ${o.y} ${o.offer} ${o.awd} ${o.cat} ${o.cond}`.toLowerCase();
+const haystack = (o) => {
+  const id = row2Of(o);
+  const meta = row2Meta(o);
+  const aliases =
+    id === 'captains'
+      ? 'captains captain chairs buckets'
+      : id === 'lounge'
+        ? 'lounge captains captain chairs vip'
+        : id === 'bench'
+          ? 'bench second row'
+          : 'ask second row unverified buckets';
+  return `${o.n} ${o.y} ${o.offer} ${o.awd} ${o.cat} ${o.cond} ${meta.label} ${meta.short} ${aliases}`.toLowerCase();
+};
 
 const passesFilters = (o, F, base) => {
   if (F.cat !== 'all' && o.cat !== F.cat) return false;
   if (F.cond !== 'all' && o.cond !== F.cond) return false;
   if (F.must.awd && !hasAWD(o)) return false;
   if (F.must.s7 && o.seats < 7) return false;
+  if (F.must.cap && !hasCaptains(o)) return false;
   if (F.must.eff && !isEff(o)) return false;
   if (o.sticker > F.maxp) return false;
   // A hair under, to keep floating point from rejecting an exact match.
@@ -224,6 +245,7 @@ const CostCard = ({ o, c, base, rank, badge, open, onToggle, cid }) => {
   const clearance = gcFor(o);
   const key = `${o.n} ${o.y}`;
   const kept = Math.round((c.res / o.sticker) * 100);
+  const row2 = row2Meta(o);
 
   return (
     <article className={badge ? 'vcard flagged' : 'vcard'} id={cid} data-card={cid}>
@@ -239,6 +261,7 @@ const CostCard = ({ o, c, base, rank, badge, open, onToggle, cid }) => {
             <span className={o.cond === 'new' ? 'chip nw' : 'chip'}>{o.cond === 'new' ? 'New' : 'Used'}</span>
             <span className="chip">{bodyLabel(o.cat)}</span>
             <span className={o.seats < 7 ? 'chip warn' : 'chip'}>{o.seats} seats</span>
+            <span className={`chip ${row2.chip}`}>{row2.label}</span>
             {hasAWD(o) && <span className="chip">AWD</span>}
           </span>
         </span>
@@ -279,6 +302,9 @@ const CostCard = ({ o, c, base, rank, badge, open, onToggle, cid }) => {
             {!!c.chg && <span>Charger {money(c.chg)}</span>}
             {!!c.evfee && <span>TX EV fee {money(c.evfee)}</span>}
           </div>
+          <p className="fine" style={{ margin: '-4px 0 12px' }}>
+            {money(c.mntWear)} oil, tires, brakes · {money(c.mntRepair)} repairs after warranty
+          </p>
 
           <div className="specs">
             <Spec
@@ -304,6 +330,13 @@ const CostCard = ({ o, c, base, rank, badge, open, onToggle, cid }) => {
               }
               frac={o.leg3 / 38.7}
               why={WHY.leg3}
+            />
+            <Spec
+              id={`${key} row2`}
+              label="Second row"
+              value={row2.short}
+              frac={row2.frac}
+              why={WHY.row2}
             />
             <Spec
               id={`${key} cargo`}
@@ -726,8 +759,9 @@ const VehicleCostView = () => {
 
               {!!rows.length && (
                 <p className="fine listfoot">
-                  Costs recalculate live from your assumptions. Insurance, maintenance and resale are estimates, so
-                  treat any gap under about $3,000 as a tie and decide on the test drive.
+                  Costs recalculate live from your assumptions, including maintenance, which now follows the car&rsquo;s
+                  age, miles and remaining warranty. Insurance and resale are still estimates, so treat any gap under
+                  about $3,000 as a tie and decide on the test drive.
                 </p>
               )}
             </main>

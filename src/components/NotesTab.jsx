@@ -48,9 +48,9 @@ const NotesTab = () => (
         is a fixed answer.
       </p>
       <p style={{ fontSize: '14px', margin: 0 }}>
-        <b>What it is not.</b> Not a quote. Insurance, maintenance and resale are the three softest inputs and
-        together they move the total more than anything else. Treat any gap under about $3,000 as a tie and
-        decide on the test drive.
+        <b>What it is not.</b> Not a quote. Insurance and resale are the softest inputs; maintenance is a
+        formula from age, miles and remaining warranty, still an estimate. Together they move the total more
+        than anything else. Treat any gap under about $3,000 as a tie and decide on the test drive.
       </p>
     </div>
     </Note>
@@ -106,12 +106,12 @@ const NotesTab = () => (
           mile or $11,250 at Kia&rsquo;s $0.25 &mdash; and you finish owning nothing.
         </li>
         <li>
-          <b>Buying older only saves money right at the bottom.</b> A 2017 Sienna at $27,590 still costs
-          about $4,000 more over five years than a 2025 at $40,499. But go far enough down &mdash; a 2016
-          Odyssey at $16,590 &mdash; and it wins outright at about $55.8k, cheaper than any Sienna on the
+          <b>Buying older only saves money right at the bottom.</b> A 2017 Sienna at $27,590 now lands within a
+          few hundred dollars of a 2025 at $40,499 over five years &mdash; a tie. Go further down &mdash; a 2016
+          Odyssey at $16,590 &mdash; and it wins outright at about $49k, cheaper than any Sienna on the
           page, because there is almost no depreciation left to pay. What you are buying is a van that
-          finishes the five years at 220,000 miles with $13,000 budgeted for repairs. That is the whole
-          trade, and it is a real one.
+          finishes the five years at 220,000 miles with about $7,000 budgeted for oil, tires, brakes and
+          repairs. That is the whole trade, and it is a real one.
         </li>
         <li>
           <b>Cost and reliability point in opposite directions at the bottom.</b> The cheapest option here is a
@@ -130,7 +130,7 @@ const NotesTab = () => (
           That knocks the Odyssey and gas Carnival out of contention despite their low prices.
         </li>
         <li>
-          <b>Cheapest overall: 2024 Pacifica Hybrid Select, $21,990</b> — roughly $47.9k over five years, $276 a
+          <b>Cheapest overall: 2024 Pacifica Hybrid Select, $21,990</b> — roughly $47k over five years, $257 a
           month. It is also the least reliable vehicle here, at 68,000 miles heading to 190,000. Lowest cost and
           highest risk are the same car.
         </li>
@@ -155,9 +155,11 @@ const NotesTab = () => (
           8.0&quot; behind and 17.5 cu ft, while the Telluride adds only 1.4&quot; and 5.3 cu ft.
         </li>
         <li>
-          <b>Going older doesn&rsquo;t pay here.</b> A 2017 Sienna at $27,590 costs about $61.5k over five years
-          &mdash; more than a 2025 at $40,499 &mdash; because 22 mpg, higher interest, and $9,000 of maintenance
-          on a 187,000-mile van eat the whole saving. Your mileage is what makes cheap old cars expensive.
+          <b>Going older is a mileage bet, not an automatic saving.</b> A 2017 Sienna at $27,590 costs about $56k
+          over five years &mdash; within a few hundred dollars of a 2025 at $40,499. Fuel at 22 mpg and a van
+          that finishes at 187,000 miles eat the cheap sticker; the repair line is no longer a $9,000 lump, it
+          is the same formula as every other card, and a low-mile Toyota still lands near $6,000 of wear and
+          repairs. Your mileage is what makes cheap old cars expensive.
         </li>
         <li>
           <b>The Kia EV9 seats six.</b> Cheapest to fuel by far, but its third row holds two people and it keeps
@@ -227,9 +229,11 @@ const NotesTab = () => (
       rows that fold into a floor well, and second rows you can remove or slide clear.
       <br />
       <br />
-      <b>Check the second row on any listing.</b> Wagoneer Series II ships with a bench as standard. Carnival LX
-      and LXS are bench-only, so you need EX or above. Carnival SX Prestige lounge seats don&rsquo;t fold or
-      remove, which cancels its cargo advantage.
+      <b>Check the second row on any listing.</b> Each card now labels it: Captains, Lounge 2nd, Bench 2nd, or
+      Ask 2nd row. Wagoneer Series II ships with a bench as standard. Carnival LX and LXS are bench-only, and
+      2025&ndash;2026 EX / SX are sliding eight-passenger seats, not captains &mdash; 2027 is the first year those
+      trims can option real buckets. Carnival SX Prestige lounge seats don&rsquo;t fold or remove, which cancels
+      its cargo advantage.
     </div>
     </Note>
 
@@ -380,7 +384,9 @@ const NotesTab = () => (
       <b>Used is not the cheaper way into a Carnival.</b> The best used one found is a 2024 EX with 56k miles at
       $33,590, and it still lands 30th at $61.3k &mdash; about $3,900 worse than buying the new hybrid, because
       it is a V6. The used hybrids are priced almost at new-car money: $42,590 for a 2025 EX at Carvana against
-      $42,090 for a brand-new 2026 with the full 10-year powertrain warranty. Buy the new one.
+      $42,090 for a brand-new 2026 with the full 10-year powertrain warranty. A 2026 Hybrid SX Prestige also
+      landed on Carvana at $50,990 and 17k miles, plus $1,290 to ship it &mdash; more than a new Hybrid SX in
+      the corridor, and the lounge second row does not fold or come out. Buy the new one.
       <br />
       <br />
       <b>Market context.</b> CarGurus has 2023 Carnivals averaging $34,496 around San Antonio and $30,535
@@ -391,7 +397,11 @@ const NotesTab = () => (
       <br />
       <b>The 2027s have landed and cost $100 more.</b> Every trim went up exactly $100. Kia is absorbing the
       15% tariff that every Korean-built car now carries rather than putting it on the sticker &mdash; worth
-      knowing, because it is a discount that could disappear at any model-year change.
+      knowing, because it is a discount that could disappear at any model-year change. 2027 is also the first
+      year EX and SX can have real captain&rsquo;s chairs without Prestige lounge seats. Kia of Round Rock has
+      a Hybrid SX so equipped at $50,864 (VIN KNDNE5KA3V6190973), about $4,400 over the discounted 2026 SX in
+      the corridor, with the dual sunroof standard on SX. Confirm Bose on the window sticker; it comes with
+      Dark Edition, not with SX by itself.
     </div>
     </Note>
 
@@ -444,9 +454,9 @@ const NotesTab = () => (
       The Sienna&rsquo;s second row does not come out and there is carpet under it.
       <br />
       <br />
-      <b>The honest verdict.</b> Against the <b>V6</b> Carnival the Sienna wins on cost by about $4,600 and it
-      is not close. Against the <b>Carnival Hybrid</b> the five-year totals are $57,361 and $56,665 &mdash;
-      $696 apart on a $57,000 number, which is a tie under this page&rsquo;s own rule that anything under
+      <b>The honest verdict.</b> Against the <b>V6</b> Carnival the Sienna wins on cost by about $4,800 and it
+      is not close. Against the <b>Carnival Hybrid</b> the five-year totals still land within a few hundred
+      dollars of each other, which is a tie under this page&rsquo;s own rule that anything under
       $3,000 is a tie. At that point it is not a spreadsheet question any more: the Sienna gives you AWD, the
       better third row (38.7 inches against 35.6) and the tax deduction; the Carnival gives you 6.7 cu ft more
       boot, twice the warranty and $5,400 less cash on the day. Drive both.
@@ -562,15 +572,16 @@ const NotesTab = () => (
       <br />
       <br />
       <b>The mileage is the quiet one.</b> At 25,000 miles a year you would hand this car back at roughly{' '}
-      <b>212,000 miles</b>. That is why maintenance is set at $13,000, the same as the 2018 Tahoe on the list
-      and near the top of the page. And 35-inch tyres are a $1,600&ndash;$2,000 set rather than $1,200, wearing
+      <b>212,000 miles</b>. The maintenance formula puts that around $12,000 over five years &mdash; big tires
+      on a lift, plus GM full-size repairs with no warranty left &mdash; near the top of the page, and in the
+      same band as the 2018 Tahoe. 35-inch tyres are a $1,600&ndash;$2,000 set rather than $1,200, wearing
       faster because of the alignment a lift lives with.
       <br />
       <br />
       <b>What it actually costs against its own siblings.</b> The unlifted 2023 Yukon SLT, a year newer with
-      32,000 fewer miles, comes in <b>$18,400 cheaper</b> over five years. A brand-new 2026 Yukon Elevation, with
-      a warranty and no recall history to chase, is <b>$7,400 cheaper</b>. The 2025 Sienna at the top of the
-      recommendation is $49,100 cheaper. If what you want is the GM full-size, one of the other seven on this
+      32,000 fewer miles, comes in <b>$16,500 cheaper</b> over five years. A brand-new 2026 Yukon Elevation, with
+      a warranty and no recall history to chase, is <b>$2,600 cheaper</b>. The 2025 Sienna at the top of the
+      recommendation is $45,000 cheaper. If what you want is the GM full-size, one of the other seven on this
       page gets you there for less.
       <br />
       <br />
@@ -651,7 +662,9 @@ const NotesTab = () => (
     <p className="fine" style={{ marginBottom: '10px' }}>
       Owner ratings are averaged from Kelley Blue Book, Edmunds and CarGurus consumer scores. Repair figures are
       RepairPal-style averages for unscheduled repairs and maintenance across all model years, so they describe
-      the model over a lifetime rather than any one car.
+      the model over a lifetime rather than any one car. They are the starting rate for the five-year
+      maintenance formula, not the number on the card. The card adds oil, tires and brakes for the miles you
+      will drive, then scales those RepairPal repairs up with age and odometer and down while warranty remains.
     </p>
     <p className="fine swipe">Swipe the table sideways to see every column.</p>
     <div className="scroller">
@@ -686,9 +699,10 @@ const NotesTab = () => (
     <p className="fine" style={{ marginTop: '10px' }}>
       <b>Older isn&rsquo;t automatically cheaper.</b> An older car has cheap parts and any independent shop can
       work on it, but the repair <b>frequency</b> climbs. A 2017 Sienna costs less per visit than a 2026 one and
-      visits far more often, which is why I load $9,000 into its five-year maintenance line versus $3,000 for
-      the new one. The sweet spot is a 3&ndash;5 year old mainstream car: past the depreciation cliff, still
-      inside the wear curve, parts still cheap.
+      visits far more often, which is why the formula loads about $6,000 into its five-year maintenance line
+      versus about $4,400 for the new one &mdash; not a $9,000 lump versus a $3,000 lump. Drag the miles slider
+      and both numbers move. The sweet spot is a 3&ndash;5 year old mainstream car: past the depreciation cliff,
+      still inside the wear curve, parts still cheap.
     </p>
     <p className="fine">
       <b>Where old genuinely wins:</b> no dealer-only diagnostics, no proprietary modules, no battery pack with
@@ -841,8 +855,8 @@ const NotesTab = () => (
     </p>
     <p className="fine">
       <b>Of the older options, the 2017 Sienna is the only defensible one.</b> $27,590, an $417 payment, and
-      Toyota&rsquo;s most reliable minivan generation. It still costs $4,000 more over five years than a 2025
-      hybrid, but if the monthly number is what matters, that&rsquo;s the one to look at.
+      Toyota&rsquo;s most reliable minivan generation. It now lands within a few hundred dollars of a 2025
+      hybrid over five years, so if the monthly number is what matters, that&rsquo;s the one to look at.
     </p>
     <p className="fine">
       <b>25,000 miles a year changes the question.</b> That&rsquo;s 125,000 miles in five years, which does two
@@ -858,8 +872,8 @@ const NotesTab = () => (
     <p className="fine">
       <b>The used Pacifica Hybrids are far cheaper than I assumed.</b> A 2024 Select with 68k miles is listed at
       $21,990 &mdash; roughly $10,000 under my earlier estimate. That makes it the cheapest thing on the list at
-      about $42k net, with a $276 payment. It is also the least reliable vehicle here, at 68,000 miles heading
-      to 143,000, which is why I raised its maintenance line to $7,500. This is the highest-risk, lowest-cost
+      about $47k net, with a $257 payment. It is also the least reliable vehicle here, at 68,000 miles heading
+      to 193,000, which is why the maintenance formula still puts about $7,300 on it. This is the highest-risk, lowest-cost
       option and you should treat those as the same sentence.
     </p>
     <p className="fine">
@@ -884,7 +898,7 @@ const NotesTab = () => (
     <p className="fine">
       <b>The Pacifica Hybrid is the risk you&rsquo;d take for a low payment.</b> Cheapest monthly, great to
       clean, best fuel cost of the seven-seaters, and dead last in CR&rsquo;s minivan reliability on powertrain
-      and electronics. The $5,500 maintenance figure may be optimistic.
+      and electronics. The formula&rsquo;s $7,300 maintenance figure may still be optimistic.
     </p>
     <p className="fine">
       <b>The cheap Wagoneers stay a trap.</b> Best room of anything here and a low payment, but 70,000 miles at
@@ -910,7 +924,8 @@ const NotesTab = () => (
     </p>
     <p className="fine">
       <b>Where this is soft.</b> Reliability and cleanability are my scores from published ratings and interior
-      features, not measurements. Insurance and maintenance are type-based estimates, not quotes.
+      features, not measurements. Insurance is a type-based estimate, not a quote. Maintenance is a formula from
+      age, miles and warranty, still an estimate.
     </p>
     </Note>
   </div>
