@@ -7,7 +7,11 @@
 // 78253 / 78130) and the listings linked from those offers. Nine Kia Carnivals
 // were added 8 Sep 2026 from a sweep of Austin, New Braunfels and San Antonio
 // stock; those carry search-page links rather than VIN links, because the
-// individual cars were read from listing summaries and not opened.
+// individual cars were read from listing summaries and not opened. A 2016
+// Sequoia SR5 2WD at Third Coast New Braunfels was added 8 Sep 2026: 121,259
+// miles, $20,900 from the dealer's sellingPrice field (the VDP hides it). A
+// second 2016 Sequoia SR5 4x4 in San Antonio was added the same day from
+// Facebook Marketplace: 140,908 miles, $22,114, Magnetic Gray Metallic.
 //
 // APRs are capped at RBFCU's 4.49% for 60 months, new or used alike, since that
 // is the buyer's actual financing. Manufacturer promos below it (0%, 2.90%,
@@ -170,8 +174,8 @@ export const OPTIONS=[
  {n:"GMC Yukon Denali 4WD",y:"2024 \u00b7 ~41k mi \u00b7 6.2L V8",cat:"suv",cond:"used",seats:7,sticker:61590,cash:0,apr:.0449,offer:"Air ride, 16 mpg",
   awd:"4WD standard on this build",mpg:16,mpgLab:"16",ins:13500,mnt:7500,res:29000,rel:2.5,cln:3.0,leg2:42.0,leg3:34.9,cargo:25.5,
   url:"https://www.carvana.com/cars/gmc-yukon",lt:"Browse listings"},
- // A real Facebook Marketplace car, and the only private-party listing here.
- // Priced, rated and fuelled as it actually sits: 6.2L L87 under recall 25V274,
+ // A real Facebook Marketplace car. Priced, rated and fuelled as it actually
+ // sits: 6.2L L87 under recall 25V274,
  // 87k miles on the clock, and a 6" lift on 35s that costs mpg and resale
  // rather than adding either. See the note "The lifted AT4" for the working.
  {n:"GMC Yukon AT4 4WD",y:"2022 \u00b7 87k mi \u00b7 6\" lift on 35s \u00b7 $51,500",cat:"suv",cond:"used",seats:7,sticker:51500,cash:0,apr:.0449,offer:"Private seller \u00b7 check for buckets",
@@ -323,8 +327,12 @@ export const OPTIONS=[
   awd:"AWD standard on this build",mpg:24,mpgLab:"24",ins:11000,mnt:4500,res:13500,rel:3.5,cln:3.5,leg2:41.7,leg3:29.6,cargo:12.6,
   url:"https://www.carvana.com/cars/kia-sorento",lt:"Browse listings"},
 // Older than four years, kept in because the reviews are good and the price is
-// right. All under 100,000 miles. The cost model still charges them for the
-// mileage you will add, so read the five-year figure, not the sticker.
+// right. The rest of this block is under 100,000 miles; the two 2016 Sequoia
+// SR5s are the exception, because they are local and you asked. Third Coast's
+// is RWD at 121k; the San Antonio Marketplace 4x4 is at 141k. Both have a
+// second-row bench, not captain's chairs.
+// The cost model still charges them for the mileage you will add, so read the
+// five-year figure, not the sticker.
  {n:"Kia Sedona SX",y:"2020 \u00b7 ~79k mi \u00b7 the Carnival before it",cat:"van",cond:"used",seats:7,sticker:20590,ship:1290,cash:0,apr:.0449,offer:"Lounge seats, cheap",
   awd:"No AWD offered",mpg:21,mpgLab:"21",ins:9500,mnt:9000,res:7500,rel:3.0,cln:3.5,leg2:40.4,leg3:31.5,cargo:33.9,
   url:"https://www.carvana.com/cars/kia-sedona",lt:"Browse listings"},
@@ -334,6 +342,12 @@ export const OPTIONS=[
  {n:"Toyota Sequoia Platinum",y:"2019 \u00b7 ~88k mi \u00b7 old body style",cat:"suv",cond:"used",seats:7,sticker:38590,cash:0,apr:.0449,offer:"Bulletproof, and drinks it",
   awd:"4WD available",mpg:15,mpgLab:"15",ins:11500,mnt:11000,res:14000,rel:4.5,cln:3.0,leg2:40.9,leg3:35.3,cargo:18.9,
   url:"https://www.carvana.com/cars/toyota-sequoia",lt:"Browse listings"},
+ {n:"Toyota Sequoia SR5",y:"2016 \u00b7 121k mi \u00b7 bench 2nd row \u00b7 $20,900",cat:"suv",cond:"used",seats:8,sticker:20900,cash:0,apr:.0449,offer:"Third Coast NB \u2014 no captains",
+  awd:"RWD on this build",mpg:15,mpgLab:"15",ins:10000,mnt:13500,res:8500,rel:4.5,cln:3.0,leg2:40.9,leg3:35.3,cargo:18.9,
+  url:"https://www.thirdcoastautos.com/vehicle-details/used-2016-toyota-sequoia-sr5-5-7l-2wd-new-braunfels-tx-id-63154060",lt:"View this listing"},
+ {n:"Toyota Sequoia SR5",y:"2016 \u00b7 141k mi \u00b7 bench 2nd row \u00b7 $22,114",cat:"suv",cond:"used",seats:8,sticker:22114,cash:0,apr:.0449,offer:"Private seller SA \u2014 no captains",
+  awd:"4WD on this build",mpg:15,mpgLab:"15",ins:10000,mnt:14000,res:7500,rel:4.5,cln:3.0,leg2:40.9,leg3:35.3,cargo:18.9,
+  url:"https://www.facebook.com/marketplace/item/2012120399440562/",lt:"View this listing"},
  {n:"Honda Odyssey EX-L",y:"2016 \u00b7 ~95k mi \u00b7 old body style",cat:"van",cond:"used",seats:7,sticker:16590,ship:1290,cash:0,apr:.0449,offer:"Most van per dollar here",
   awd:"No AWD offered",mpg:22,mpgLab:"22",ins:8500,mnt:13000,res:5500,rel:3.0,cln:3.5,leg2:40.9,leg3:38.1,cargo:38.4,
   url:"https://www.carvana.com/cars/honda-odyssey",lt:"Browse listings"},
@@ -742,6 +756,8 @@ export const SOURCE_ROWS = [
   ['Loan rate on every card', 'RBFCU 4.49%/60 mo, new and used alike', 'Advertised, not a pre-approval'],
   ['Carnival prices and offers', 'Kia MSRP, corridor dealer listings, 8 Sep 2026', 'Trim-level, not a VIN'],
   ['Used Carnival listings', 'Carvana San Antonio search page, 8 Sep 2026', 'Listed cars, VIN not opened'],
+  ['2016 Sequoia SR5 2WD', 'Third Coast New Braunfels VDP, 8 Sep 2026', 'Actual car; $20,900 from dealer data'],
+  ['2016 Sequoia SR5 4x4', 'Facebook Marketplace SA, 8 Sep 2026', 'Actual car; 140,908 mi, $22,114'],
   ['Carnival vs Sienna depreciation', 'iSeeCars: 50.1% vs 38.6% over five years', 'Model average'],
   ['Final assembly points', 'Kia Gwangmyeong; Toyota Indiana, Princeton', 'Manufacturer'],
   ['Auto-loan interest deduction', 'OBBBA, tax years 2025–2028', 'Statute, not tax advice'],

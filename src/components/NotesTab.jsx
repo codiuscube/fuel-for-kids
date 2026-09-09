@@ -199,8 +199,13 @@ const NotesTab = () => (
           included below. Hybrids and plug-ins are exempt.
         </li>
         <li>
-          <b>Sequoia is out on cost.</b> Both used ones land above $93k over five years — the highest here by
-          $12,000 — because they start near $68,000 and hold only 11.5 cu ft behind the third row.
+          <b>The 2023 Sequoias are out on cost.</b> Both used hybrids land above $93k over five years — the
+          highest here by $12,000 — because they start near $68,000 and hold only 11.5 cu ft behind the third
+          row. The two 2016 SR5s are a different car: old body, 18.9 cu ft, and about $21k&ndash;$22k. Third
+          Coast New Braunfels is RWD with 121k miles at $20,900; the San Antonio Marketplace 4x4 is 141k miles
+          at $22,114. Fuel at 15 mpg still costs about $25,000 over five years, so the cheap sticker does not
+          make either cheap to run. Both have a second-row bench, not captain&rsquo;s chairs, so they fail the
+          original brief even before the fuel bill.
         </li>
         <li>
           <b>The 2027 Telluride Hybrid is the most interesting new option.</b> $50,035 with AWD, 34 mpg, a
@@ -247,7 +252,10 @@ const NotesTab = () => (
       <b>The rule for getting on this page.</b> Three rows, seven seats or six with captain&rsquo;s chairs,
       second-row captain&rsquo;s chairs available on some trim, sold in Texas, and under 100,000 miles if it is
       used. Age is not a filter any more: a 2016 Odyssey is here because the reviews hold up and the price is
-      right. Every nameplate that clears that bar is now priced below, whether or not it wins.
+      right. The two 2016 Sequoia SR5s are the mileage exceptions, because they are local and you asked: Third
+      Coast New Braunfels, RWD, at 121,259 miles, and a San Antonio Marketplace 4x4 at 140,908. Read the
+      five-year figure, not the sticker. Every nameplate that clears that bar is now priced below, whether or
+      not it wins.
       <br />
       <br />
       <b>Ruled out on the second row &mdash; no captain&rsquo;s chairs at any trim.</b> Audi Q7 and Q8, whose
@@ -516,12 +524,12 @@ const NotesTab = () => (
     </div>
     </Note>
 
-    <Note title="The lifted AT4, and why it finishes 104th" blurb="The one Facebook car on the list, priced as it actually sits">
+    <Note title="The lifted AT4, and why it finishes 104th" blurb="The Facebook Yukon, priced as it actually sits">
     <div className="note">
       <b>This is the 2022 Yukon AT4 from Facebook Marketplace</b> &mdash; 87,000 miles, 6.2L V8, professionally
-      lifted six inches on 35-inch tyres, $51,500. It is the only private-party listing on the page, and it is
-      on the list because you asked for it, not because it scored its way on. Run through the same model as
-      everything else it lands <b>104th of 107 on five-year cost at $106,476</b>, about $915 a month, and second
+      lifted six inches on 35-inch tyres, $51,500. It is on the list because you asked for it, not because it
+      scored its way on. Run through the same model as everything else it lands <b>104th of 107 on five-year
+      cost at $106,476</b>, about $915 a month, and second
       from last on the recommendation. Here is where that comes from, because none of it is the lift being ugly.
       <br />
       <br />
