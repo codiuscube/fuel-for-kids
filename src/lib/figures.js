@@ -26,6 +26,12 @@ const NAMED = {
   carnivalHybSx2027cap: /Kia Carnival Hybrid SX \| 2027 · captains/,
   carnivalHybSx2025: /Kia Carnival Hybrid SX \| 2025 · 17k/,
   carnivalPrestige2026: /Kia Carnival Hybrid SX Prestige \| 2026/,
+  // The two World Car New Braunfels cars, 9 Sep 2026. Both regexes are pinned
+  // tightly: there are now two 2027 Hybrid EX listings and a bare year would
+  // match whichever happened to be cheaper.
+  carnivalHybEx2027nb: /Kia Carnival Hybrid EX \| 2027 · 6 mi/,
+  carnivalHybEx2027austin: /Kia Carnival Hybrid EX \| 2027 · 2\.90%/,
+  carnivalPrestige2027nb: /Kia Carnival Hybrid SX Prestige \| 2027/,
   carnivalEx2024_56k: /Kia Carnival EX \| 2024 · 56k/,
   carnivalEx2023: /Kia Carnival EX \| 2023 · 60k/,
   pacifica2024_57k: /Pacifica Hybrid Select \| 2024 · 57k/,

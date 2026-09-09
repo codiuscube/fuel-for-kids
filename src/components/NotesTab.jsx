@@ -172,12 +172,13 @@ const NotesTab = () => (
           with 67,000 miles.
         </li>
         <li>
-          <b>The Carnival Hybrid &ldquo;tie&rdquo; was a bench.</b> The 2026 Carnival Hybrid EX at $42,090 lands
-          at {$(N.carnivalHybEx2026.net)}, {gap(N.carnivalHybEx2026.net, N.siennaNew.net)} from a new Sienna XLE,
-          but 2025&ndash;2026 EX and SX carry sliding eight-passenger seats, not captain&rsquo;s chairs. The only
-          hybrid Carnival with real captains is the 2027 SX at $50,864, which lands at{' '}
-          {$(N.carnivalHybSx2027cap.net)}, {gap(N.carnivalHybSx2027cap.net, N.siennaNew.net)} behind the Sienna.
-          Hold the brief to captains and it is not a tie.
+          <b>The cheap Carnival hybrid has a bench, but there is now a cheap one that doesn&rsquo;t.</b> The
+          2026 Carnival hybrid EX at $42,090 lands at {$(N.carnivalHybEx2026.net)},{' '}
+          {gap(N.carnivalHybEx2026.net, N.siennaNew.net)} from a new Sienna &mdash; but its middle row is a
+          three-across bench with no walkway, so it fails the brief. The cheapest Carnival that passes is the
+          2027 hybrid EX in New Braunfels at $45,528, which lands at {$(N.carnivalHybEx2027nb.net)},{' '}
+          {gap(N.carnivalHybEx2027nb.net, N.siennaNew.net)} behind the Sienna. Held to captain&rsquo;s chairs
+          the Sienna still wins on five-year cost, but by far less than it used to.
         </li>
         <li>
           <b>There is no government incentive on a Carnival, and there is one on a Sienna.</b> Every federal
@@ -376,11 +377,18 @@ const NotesTab = () => (
       reason it still carries one.
       <br />
       <br />
-      <b>Check the second row on any listing.</b> Each card labels it: Captains, Captains · lounge, Bench 2nd,
-      or Ask 2nd row. Wagoneer Series II ships with a bench as standard. Carnival LX and LXS are bench-only, and
-      2025&ndash;2026 EX / SX are sliding eight-passenger seats, not captains. SX Prestige in those years is the
-      exception: VIP lounge captain&rsquo;s chairs that do not fold or come out. 2027 is the first year EX and SX
-      can option regular buckets without Prestige.
+      <b>Check the middle row on any listing.</b> Every card is labelled one of four ways.{' '}
+      <b>Captains</b> means two separate seats with a walkway, which slide and lift out &mdash; what you
+      want. <b>Captains · lounge</b> means two separate seats that recline with a footrest but are bolted in
+      permanently. <b>Bench 2nd</b> means one seat for three, no walkway. <b>Ask 2nd row</b> means the trim
+      can be built either way and this particular car was not confirmed, so it needs a phone call.
+      <br />
+      <br />
+      For the Carnival specifically: LX and LXS only come as a bench. In 2025 and 2026 the EX and SX are a
+      sliding three-across bench too, despite what some listings claim. SX Prestige in those years has the
+      bolted-in lounge chairs. 2027 is the first year the EX and SX can be ordered with ordinary
+      captain&rsquo;s chairs, and the 2027 EX in New Braunfels is one that was &mdash; confirmed on the
+      manufacturer&rsquo;s window sticker, not just the dealer&rsquo;s advert.
     </div>
     </Note>
 
@@ -512,44 +520,101 @@ const NotesTab = () => (
     </div>
     </Note>
 
-    <Note title="Every Kia Carnival deal in the corridor" blurb="Austin to San Antonio, 8 Sep 2026 — and only the 2027 SX has captains">
-    <div className="note">
-      <b>Nine Carnivals were added, five new and four used.</b> The sweep covered Austin, New Braunfels and
-      San Antonio. It starts at EX because LX and LXS ship with a second-row bench, and every single one is
-      front-wheel drive &mdash; Kia has never built an all-wheel-drive Carnival, in any year, on any trim.
+    <Note title="Which Kia Carnival is which" blurb="Four trims with confusingly similar names — and the one in town is the good one">
+    <div className="tldr">
+      <p style={{ fontSize: '14px', margin: '0 0 10px' }}>
+        <b>Read this part first.</b> Kia sells the Carnival in trims called EX, SX and SX Prestige. Those
+        names look almost identical and cost up to $13,000 apart, which makes them very easy to mix up. Here
+        is every 2027 hybrid Carnival on this page, cheapest first.
+      </p>
+      <div className="scroller">
+        <table>
+          <thead>
+            <tr>
+              <th>Trim</th>
+              <th>Where</th>
+              <th>Asking</th>
+              <th>Cost over 5 years</th>
+              <th>Middle row</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>EX</b></td>
+              <td>In town &mdash; New Braunfels</td>
+              <td>$45,528</td>
+              <td><b>{$(N.carnivalHybEx2027nb.net)}</b></td>
+              <td>Two captain&rsquo;s chairs</td>
+            </tr>
+            <tr>
+              <td>SX</td>
+              <td>Round Rock, 60 mi</td>
+              <td>$50,864</td>
+              <td>{$(N.carnivalHybSx2027cap.net)}</td>
+              <td>Two captain&rsquo;s chairs</td>
+            </tr>
+            <tr>
+              <td>SX Prestige</td>
+              <td>In town &mdash; New Braunfels</td>
+              <td>$58,920</td>
+              <td>{$(N.carnivalPrestige2027nb.net)}</td>
+              <td>Two reclining lounge chairs</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p style={{ fontSize: '14px', margin: '0' }}>
+        <b>The EX is the one to look at.</b> It is the cheapest of the three, it is sitting in New Braunfels,
+        and it has the two middle seats with a walkway that this whole search is built around. The SX Prestige
+        is the same van with leather, a bigger stereo, sunroofs and rear-seat screens, for{' '}
+        {gap(N.carnivalPrestige2027nb.net, N.carnivalHybEx2027nb.net)} more over five years. That is a comfort
+        upgrade, not a better answer to the brief.
+      </p>
+    </div>
+    <div className="note" style={{ marginTop: '14px' }}>
+      <b>Nine Carnivals were added, five new and four used.</b> The search covered Austin, New Braunfels and
+      San Antonio. It starts at EX because the cheaper LX and LXS trims only come with a three-across bench in
+      the middle row. Every Carnival ever built is front-wheel drive &mdash; Kia has never made an
+      all-wheel-drive one, in any year, on any trim.
       <br />
       <br />
-      <b>The new-car discounts are real but small.</b> Dealers in the corridor are advertising the KFA Dealer
-      Choice Program at $1,500&ndash;$2,000 off, and Kia is adding $750 of Sticker Sales Event bonus cash. That
-      takes a $41,190 Carnival EX to about $39,690 before the cash. On the <b>V6</b>, Kia also has a
-      bought-down 2.99% for 72 months that cannot be combined with those discounts, so both paths are
-      priced as separate cards, and cash plus RBFCU still wins.
+      <b>The discounts are real but small.</b> Dealers here are taking $1,500&ndash;$2,000 off, and Kia adds
+      $750 of its own rebate on top. That takes a $41,190 Carnival EX down to about $39,690. On the
+      petrol <b>V6</b> version, Kia will instead sell you a cheap 2.99% loan over 72 months &mdash; but you
+      have to pick one or the other, the discount or the cheap loan, so this page prices them as two separate
+      cards. Taking the discount and borrowing from RBFCU comes out ahead.
       <br />
       <br />
-      <b>The 2026 Hybrid keeps the dealer discount, not the Kia cash.</b> Kia Finance America is offering
-      1.90% for 48 months, 2.99% for 60, 3.49% for 66, 3.99% for 72, and 5.99% for 84, through 30 September
-      2026, for qualified buyers. The offer&rsquo;s own fine print says offers may not be combined except
-      where specified. Dealer contribution is specified &mdash; that is the $1,500&ndash;$2,000 off already
-      in the price. The $750 Sticker Sales Event cash is not counted on those cards, and neither is military
-      $500. Kia&rsquo;s payment estimator will show a Military checkbox next to a 4.49% <em>sell rate</em>;
-      that 4.49% is the ordinary KFA rate, the same number as RBFCU, not the 1.90% special. Tick Military
-      only if you actually qualify, and only after you confirm 1.90% is still the selected program. Flip
-      the slider to 48 months for the 1.90% rung. 84 months at 5.99% is worse than RBFCU, so it is not used.
+      <b>On the 2026 hybrid you can have the cheap loan </b><i>and</i><b> the dealer discount.</b> Kia&rsquo;s
+      own finance arm is offering 1.90% if you pay it off in 48 months, 2.99% over 60, or 3.99% over 72,
+      through 30 September 2026, if your credit qualifies. Normally Kia&rsquo;s offers cannot be stacked, but
+      its own small print makes an exception for money the dealer puts in &mdash; which is exactly the
+      $1,500&ndash;$2,000 already in these prices. What you cannot also have is Kia&rsquo;s $750 rebate or the
+      $500 military discount, so neither is counted here. One thing to watch at the dealer: Kia&rsquo;s
+      payment calculator shows a Military tickbox next to a 4.49% rate. That 4.49% is Kia&rsquo;s
+      <em> ordinary</em> rate, the same as RBFCU &mdash; not the 1.90% deal. Make sure the 1.90% is still
+      selected before you tick anything.
       <br />
       <br />
-      <b>The 2027 Hybrid is a different offer: 2.90% for 48 months.</b> That one is locked to 48 months
-      on the North Austin EX and Round Rock SX. Monthly payment goes up because you pay the van off a
-      year sooner; total interest goes down.
+      <b>The 2027 hybrids are a different, simpler offer: 2.90%, but only over 48 months.</b> Paying a van
+      off in four years instead of five means a bigger monthly payment and less total interest. All three
+      2027 hybrids in the table above are priced this way.
       <br />
       <br />
-      <b>The cheapest Carnival is the 2026 Hybrid EX at about $42,090, and it is a bench.</b> It finishes{' '}
-      {ord(N.carnivalHybEx2026.rank)} of {F.count} at roughly {$(N.carnivalHybEx2026.net)} over five years,{' '}
-      {gap(N.carnivalHybEx2026.net, N.siennaNew.net)} from a new Sienna XLE. But the 2025&ndash;2026 EX and SX
-      second row is a sliding eight-passenger seat. The Carnival that actually meets the brief is the 2027
-      Hybrid SX with captain&rsquo;s chairs at Kia of Round Rock, $50,864, which lands {ord(N.carnivalHybSx2027cap.rank)}{' '}
-      at {$(N.carnivalHybSx2027cap.net)}. Every V6 Carnival burns {money(F.fuelAt(22))} of petrol over{' '}
-      {kmi(F.miles)} miles against the hybrid&rsquo;s {money(F.fuelAt(33))}, a {money(F.fuelGap(33, 22))} gap
-      that a big discount on a V6 could now cover at your mileage.
+      <b>The cheapest Carnival of all is a 2026 hybrid EX at about $42,090 &mdash; but its middle row is a
+      bench.</b> It comes {ord(N.carnivalHybEx2026.rank)} of {F.count} at roughly{' '}
+      {$(N.carnivalHybEx2026.net)} over five years, only{' '}
+      {gap(N.carnivalHybEx2026.net, N.siennaNew.net)} away from a brand-new Sienna. The catch is that in 2025
+      and 2026 the EX and SX came with a sliding three-across bench, not two separate chairs. 2027 is the
+      first year you can get real captain&rsquo;s chairs without paying for the top Prestige trim, which is
+      why the 2027 EX in town matters: it is the cheapest Carnival that actually meets the brief, at{' '}
+      {$(N.carnivalHybEx2027nb.net)} over five years.
+      <br />
+      <br />
+      <b>Skip the V6 unless it is heavily discounted.</b> A petrol V6 Carnival burns{' '}
+      {money(F.fuelAt(22))} of fuel over {kmi(F.miles)} miles. The hybrid burns {money(F.fuelAt(32))}. That{' '}
+      {money(F.fuelGap(32, 22))} difference is real money, though a big enough discount on a V6 could still
+      cover it at your mileage.
       <br />
       <br />
       <b>Used is not the cheaper way into a Carnival.</b> The best used one found is a 2024 EX with 56k miles at
@@ -569,35 +634,67 @@ const NotesTab = () => (
       from the original in-service date, which is the one genuine reason to pay a dealer premium over Carvana.
       <br />
       <br />
-      <b>The 2027s have landed and cost $100 more.</b> Every trim went up exactly $100. Kia is absorbing the
-      15% tariff that every Korean-built car now carries rather than putting it on the sticker &mdash; worth
-      knowing, because it is a discount that could disappear at any model-year change. 2027 is also the first
-      year EX and SX can have real captain&rsquo;s chairs without Prestige lounge seats. Kia of Round Rock has
-      a Hybrid SX so equipped at $50,864 (VIN KNDNE5KA3V6190973), about $4,400 over the discounted 2026 SX in
-      the corridor, with the dual sunroof standard on SX, at 2.90% for 48 months. Confirm Bose on the
-      window sticker; it comes with Dark Edition, not with SX by itself.
+      <b>The 2027s only cost $100 more than the 2026s.</b> Every trim went up exactly $100. Korean-built
+      cars now carry a 15% import tariff and Kia is currently swallowing it rather than passing it on. Worth
+      knowing, because that is effectively a discount which could vanish at the next model-year change.
+      <br />
+      <br />
+      <b>How to tell the middle row apart, since this is the whole point.</b> There are three different
+      things Kia will sell you and only two of them are what you want:
+      <ul>
+        <li>
+          <b>Bench</b> &mdash; one seat for three people, straight across. No walkway to the back row. This
+          is what every 2025&ndash;2026 EX and SX has, and it is why those are ruled out.
+        </li>
+        <li>
+          <b>Captain&rsquo;s chairs</b> &mdash; two separate seats with a gap between them, so the kids in
+          the third row can walk through instead of climbing. They also slide and lift out when you need to
+          haul something. This is what you want, and it is what the 2027 EX in town has.
+        </li>
+        <li>
+          <b>Lounge chairs</b> &mdash; the same two-seat layout, but plusher, powered, and with a footrest
+          that comes up. They recline like an aeroplane seat. The catch: they are bolted in and do not fold
+          flat or come out, so you lose the van&rsquo;s ability to swallow furniture. Only on SX Prestige.
+        </li>
+      </ul>
+      Both of the New Braunfels cars were checked against the manufacturer&rsquo;s own window sticker, not
+      just the dealer&rsquo;s website. The EX&rsquo;s sticker lists a Captain&rsquo;s Chairs Package in
+      writing. Do not trust the &ldquo;Passengers: 8&rdquo; line on this dealer&rsquo;s listings &mdash; it
+      says 8 on both cars and both are seven-seaters.
+      <br />
+      <br />
+      <b>Two things to confirm at the dealer.</b> The Bose stereo comes bundled with the Dark Edition
+      package, not with the SX trim on its own, so check the sticker rather than the salesperson. And the SX
+      Prestige&rsquo;s paperwork is made out to World Car&rsquo;s San Antonio store even though the listing
+      says New Braunfels, so ring ahead and ask which lot it is actually parked on.
     </div>
     </Note>
 
     <Note title="Sienna versus Carnival, honestly" blurb="Seats, resale, AWD, a tax break, and where the Kia wins">
     <div className="note">
-      <b>The app is not favouring Toyota, and it is no longer your mileage doing it either.</b> At 25,000 miles
-      a year fuel and resale were the two biggest lines and the Sienna won both. At {miK} the fuel line between
-      the hybrids is {money(F.fuelGap(36, 33))} over five years, noise. What separates them now is the second
-      row, resale, and AWD.
+      <b>The app is not favouring Toyota, and it is no longer your mileage doing it either.</b> When this
+      page assumed 25,000 miles a year, fuel and resale were the two biggest costs and the Sienna won both.
+      At {miK} miles the fuel difference between the two hybrids is only{' '}
+      {money(F.fuelGap(36, 32))} over five years, which is noise. What actually separates them now is resale
+      value, all-wheel drive, and a tax deduction.
       <br />
       <br />
-      <b>The second row decides it before the money does.</b> The 2026 Carnival Hybrid EX and SX are sliding
-      eight-passenger seats. The Prestige has lounge captains that do not fold or come out. The 2027 SX is the
-      first hybrid Carnival with ordinary captain&rsquo;s chairs, and it costs $50,864 against the Sienna
-      XLE&rsquo;s $47,504. Compared like for like &mdash; captains to captains &mdash; the Sienna is{' '}
-      {gap(N.carnivalHybSx2027cap.net, N.siennaNew.net)} cheaper over five years.
+      <b>The middle row used to settle this. It no longer does.</b> For 2025 and 2026 the affordable
+      Carnivals came with a bench, so the only Carnival with two proper middle seats was an expensive one and
+      the Sienna won on cost without an argument. The 2027 EX in New Braunfels changes that: it has real
+      captain&rsquo;s chairs and asks $45,528, which is <i>less</i> than the Sienna&rsquo;s $47,504. Over
+      five years the Sienna is still {gap(N.carnivalHybEx2027nb.net, N.siennaNew.net)} cheaper &mdash; it
+      holds its value much better, which is where that gap comes from &mdash; but it is now a genuine
+      comparison rather than a walkover. For context, that gap was{' '}
+      {gap(N.carnivalHybSx2027cap.net, N.siennaNew.net)} when the cheapest captain&rsquo;s-chair Carnival was
+      the SX in Round Rock.
       <br />
       <br />
-      <b>Fuel is only an argument against the V6.</b> Every Sienna since 2021 is a hybrid at 36 mpg. The
-      Carnival V6 gets 22. Over {kmi(F.miles)} miles at $3.00 a gallon that is {money(F.fuelAt(36))} against{' '}
-      {money(F.fuelAt(22))}. The Carnival Hybrid gets 33 mpg, which costs {money(F.fuelAt(33))}, and against it
-      the fuel argument is worth {money(F.fuelGap(36, 33))}.
+      <b>Fuel is only an argument against the V6.</b> Every Sienna since 2021 is a hybrid, at 36 mpg. The
+      petrol V6 Carnival gets 22. Over {kmi(F.miles)} miles at $3.00 a gallon that is {money(F.fuelAt(36))}{' '}
+      against {money(F.fuelAt(22))} &mdash; a serious difference. But against the Carnival <i>hybrid</i>, at
+      32 mpg and {money(F.fuelAt(32))}, the Sienna only saves {money(F.fuelGap(36, 32))} over five years.
+      Between the two hybrids, fuel is not a deciding factor.
       <br />
       <br />
       <b>Resale is the lever that does not evaporate.</b> This page has the Sienna keeping 71% of its value
@@ -636,11 +733,14 @@ const NotesTab = () => (
       The Sienna&rsquo;s second row does not come out and there is carpet under it.
       <br />
       <br />
-      <b>The honest verdict.</b> Against the <b>V6</b> Carnival the Sienna wins on cost and on the second row.
-      Against the <b>Carnival Hybrid</b> with captain&rsquo;s chairs the Sienna is {gap(N.carnivalHybSx2027cap.net, N.siennaNew.net)}{' '}
-      cheaper over five years, has the better third row (38.7 inches against 35.6) for three tall kids, offers
-      AWD, and gets the tax deduction. The Carnival gives you 6.7 cu ft more boot, twice the warranty, and a
-      dual sunroof standard on SX. Drive both, and put the fifteen-year-old in the third row of each.
+      <b>The honest verdict.</b> Against a <b>petrol V6</b> Carnival the Sienna wins on cost and on seating,
+      and it is not close. Against the <b>2027 Carnival hybrid EX</b> in New Braunfels it is a real choice.
+      The Sienna costs {gap(N.carnivalHybEx2027nb.net, N.siennaNew.net)} less over five years, has 3 more
+      inches of legroom in the back row for three tall kids (38.7 inches against 35.6), can be had with
+      all-wheel drive, and qualifies for the loan-interest tax deduction because it is built in Indiana. The
+      Carnival asks about $2,000 less up front, holds 6.7 cu ft more luggage behind the third row, and comes
+      with double the powertrain warranty &mdash; and it is sitting in New Braunfels now rather than needing
+      to be ordered. Drive both, and put the fifteen-year-old in the back row of each before deciding.
     </div>
     </Note>
 
