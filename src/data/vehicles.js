@@ -414,9 +414,16 @@ export const OPTIONS=[
  {n:"Pacifica Touring L AWD",y:"2023 \u00b7 ~55k mi \u00b7 petrol, not hybrid",cat:"van",cond:"used",seats:7,sticker:29590,ship:1290,cash:0,apr:.0449,offer:"The other AWD minivan",
   awd:"AWD standard on this build",mpg:20,mpgLab:"20",ins:11000,res:12500,rel:2.0,cln:4.0,leg2:39.0,leg3:36.5,cargo:32.3,
   url:"https://www.carvana.com/cars/chrysler-pacifica",lt:"Browse listings"},
- {n:"Pacifica Select AWD",y:"2026 \u00b7 AWD, petrol \u00b7 $48,635",cat:"van",cond:"new",seats:7,sticker:48635,cash:0,apr:.0449,offer:"AWD, and it stows away",
-  awd:"AWD standard on this build",mpg:20,mpgLab:"20",ins:11500,res:22000,rel:2.0,cln:4.0,leg2:39.0,leg3:36.5,cargo:32.3,
-  url:"https://www.chrysler.com/pacifica.html",lt:"Build and find one"},
+ // The refreshed 2027 Pacifica (petrol V6 only; the plug-in hybrid is gone) is on
+ // lots now. Two real cars replace the 2026 build card, 16 Oct 2026, cars.com.
+ // Both prices include Chrysler's $3,000 bonus cash and the $225 doc fee.
+ // Neither listing states the 2nd row; Limited is normally Stow 'n Go captains.
+ {n:"Pacifica Select",y:"2027 \u00b7 refreshed \u00b7 FWD \u00b7 $42,530",cat:"van",cond:"new",seats:7,row2:"ask",sticker:42530,cash:0,apr:.0449,offer:"San Marcos Chrysler, 16 mi \u2014 7 or 8 seats not listed, ask",
+  awd:"FWD on this car \u2014 AWD +$2,995",mpg:22,mpgLab:"22",ins:11500,res:19500,rel:2.0,cln:4.0,leg2:39.0,leg3:36.5,cargo:32.3,
+  url:"https://www.cars.com/vehicledetail/cab83af7-6064-4b75-b8df-ab08208a1788/",lt:"View this listing"},
+ {n:"Pacifica Limited",y:"2027 \u00b7 refreshed \u00b7 FWD \u00b7 $46,660",cat:"van",cond:"new",seats:7,sticker:46660,cash:0,apr:.0449,offer:"San Pedro CDJR, San Antonio \u2014 Stow 'n Go captains (confirm)",
+  awd:"FWD on this car \u2014 AWD +$2,995",mpg:22,mpgLab:"22",ins:12000,res:21500,rel:2.0,cln:4.0,leg2:39.0,leg3:36.5,cargo:32.3,
+  url:"https://www.cars.com/vehicledetail/a39f7cd7-9c51-4e24-939b-30a083977f0e/",lt:"View this listing"},
  {n:"Chrysler Voyager LX",y:"2023 \u00b7 ~62k mi \u00b7 market estimate",cat:"van",cond:"used",seats:7,row2:"ask",sticker:23990,ship:1290,cash:0,apr:.0449,offer:"Cheapest new-ish van",
   awd:"No AWD on this trim",mpg:22,mpgLab:"22",ins:10500,res:9500,rel:2.0,cln:3.5,leg2:39.0,leg3:36.5,cargo:32.3,
   url:"https://www.carvana.com/cars/chrysler-voyager",lt:"Browse listings"},
@@ -449,9 +456,14 @@ export const OPTIONS=[
  {n:"VW Atlas SEL 4Motion",y:"2024 \u00b7 ~45k mi \u00b7 market estimate",cat:"suv",cond:"used",seats:7,sticker:33590,ship:1290,cash:0,apr:.0449,offer:"Roomy third row for the money",
   awd:"AWD standard on this build",mpg:22,mpgLab:"22",ins:11500,res:14000,rel:2.5,cln:3.5,leg2:37.6,leg3:33.7,cargo:20.6,
   url:"https://www.carvana.com/cars/volkswagen-atlas",lt:"Browse listings"},
- {n:"VW Atlas SEL 4Motion",y:"2026 \u00b7 AWD \u00b7 $48,995",cat:"suv",cond:"new",seats:7,sticker:48995,cash:0,apr:.0449,offer:"33.7in third row, 20.6 cu ft",
-  awd:"AWD standard on this build",mpg:22,mpgLab:"22",ins:12000,res:23000,rel:2.5,cln:3.5,leg2:37.6,leg3:33.7,cargo:20.6,
-  url:"https://www.vw.com/en/models/atlas.html",lt:"Build and find one"},
+ // The all-new second-generation 2027 Atlas replaces the 2026 build card. Group 1
+ // VW Alamo Heights, VIN 1V2H53DH2VC506035, 16 Oct 2026, $225 doc included.
+ // A 2nd-row bench is standard (7 seats); captains are a $695 option (6 seats).
+ // Room figures are the previous generation's until VW publishes the new ones;
+ // the 25 mpg is the dealer's 22 / 29, not an EPA sticker.
+ {n:"VW Atlas SE w/Technology",y:"2027 \u00b7 all-new \u00b7 FWD \u00b7 $45,165",cat:"suv",cond:"new",seats:7,row2:"ask",sticker:45165,cash:0,apr:.0449,offer:"Group 1 VW Alamo Heights \u2014 bench or $695 captains, ask",
+  awd:"FWD on this car \u2014 4Motion AWD available",mpg:25,mpgLab:"25",ins:12000,res:22000,rel:2.5,cln:3.5,leg2:37.6,leg3:33.7,cargo:20.6,
+  url:"https://www.cars.com/vehicledetail/8184ebd3-fb44-4c95-9f9b-74313fd905c1/",lt:"View this listing"},
  {n:"Ford Explorer ST-Line AWD",y:"2023 \u00b7 ~58k mi \u00b7 market estimate",cat:"suv",cond:"used",seats:7,row2:"ask",sticker:31590,ship:1290,cash:0,apr:.0449,offer:"Buckets optional, check it",
   awd:"AWD standard on this build",mpg:22,mpgLab:"22",ins:11500,res:13500,rel:2.5,cln:3.5,leg2:39.0,leg3:32.2,cargo:18.2,
   url:"https://www.carvana.com/cars/ford-explorer",lt:"Browse listings"},
