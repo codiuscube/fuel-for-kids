@@ -551,7 +551,11 @@ const VehicleCostView = () => {
   const matching = useMemo(() => {
     const q = F.q.trim().toLowerCase();
     return priced.filter(
-      (r) => passesFilters(r.o, F, base) && r.c.m <= F.maxm && (!q || haystack(r.o).includes(q)),
+      (r) =>
+        !isSold(r.o) &&
+        passesFilters(r.o, F, base) &&
+        r.c.m <= F.maxm &&
+        (!q || haystack(r.o).includes(q)),
     );
   }, [priced, F, base]);
 
@@ -802,7 +806,7 @@ const VehicleCostView = () => {
                   )}
                 </div>
                 <span className="count">
-                  {rows.length} of {OPTIONS.length}
+                  {rows.length} of {OPTIONS.filter((o) => !isSold(o)).length}
                 </span>
               </div>
             </div>

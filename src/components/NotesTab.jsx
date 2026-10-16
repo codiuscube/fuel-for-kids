@@ -167,7 +167,7 @@ const NotesTab = () => (
         </li>
         <li>
           <b>Resale is what keeps a new Sienna in the race.</b> It loses only 29% over five years against a class
-          average of 46%, which is why a new XLE at $47,504 lands at {$(N.siennaNew.net)},{' '}
+          average of 46%, which is why a new XLE at $48,458 lands at {$(N.siennaNew.net)},{' '}
           {ord(N.siennaNew.rank)} of {F.count}, within {gap(N.siennaNew.net, N.sienna2023.net)} of a 2023 hybrid
           with 67,000 miles.
         </li>
@@ -314,12 +314,12 @@ const NotesTab = () => (
           reliable vehicle here. Lowest cost and highest risk are the same car.
         </li>
         <li>
-          <b>Safest bet: Toyota Sienna.</b> New at $47,504 for {$(N.siennaNew.net)}, or a 2023 hybrid with 67,000
+          <b>Safest bet: Toyota Sienna.</b> New at $48,458 for {$(N.siennaNew.net)}, or a 2023 hybrid with 67,000
           miles at $38,990 for {$(N.sienna2023.net)}. Best resale in the segment by a wide margin, the biggest
           third row of anything on this list, and the only hybrid minivan offering AWD.
         </li>
         <li>
-          <b>If you want the AWD stance: Sienna Woodland Edition, $55,750.</b> Standard AWD, 6.9 inches of
+          <b>If you want the AWD stance: Sienna Woodland Edition, $55,756.</b> Standard AWD, 6.9 inches of
           clearance, all-weather mats included. It costs {gap(N.woodland.net, N.siennaNew.net)} more than the XLE
           over five years, {$(N.woodland.net)} in all, and still beats every new SUV on the list.
         </li>
@@ -380,10 +380,12 @@ const NotesTab = () => (
       reason it still carries one.
       <br />
       <br />
-      <b>Check the middle row on any listing.</b> Every card is labelled one of four ways.{' '}
+      <b>Check the middle row on any listing.</b> Every card is labelled one of five ways.{' '}
       <b>Captains</b> means two separate seats with a walkway, which slide and lift out &mdash; what you
       want. <b>Captains · lounge</b> means two separate seats that recline with a footrest but are bolted in
-      permanently. <b>Bench 2nd</b> means one seat for three, no walkway. <b>Ask 2nd row</b> means the trim
+      permanently. <b>8 seats · middle out</b> means three seats where the middle one comes out, leaving a
+      walkway and two seats; you liked this in the Carnival on 16 October, so it now counts almost like
+      captains. <b>Bench 2nd</b> means one seat for three, no walkway. <b>Ask 2nd row</b> means the trim
       can be built either way and this particular car was not confirmed, so it needs a phone call.
       <br />
       <br />
@@ -826,7 +828,7 @@ const NotesTab = () => (
       <b>The middle row used to settle this. It no longer does.</b> For 2025 and 2026 the affordable
       Carnivals came with a bench, so the only Carnival with two proper middle seats was an expensive one and
       the Sienna won on cost without an argument. The 2027 EX in New Braunfels changes that: it has real
-      captain&rsquo;s chairs and asks $46,224, which is <i>less</i> than the Sienna&rsquo;s $47,504. Over
+      captain&rsquo;s chairs and asks $46,224, which is <i>less</i> than the Sienna&rsquo;s $48,458. Over
       five years the Sienna is still {gap(N.carnivalHybEx2027nb.net, N.siennaNew.net)} cheaper &mdash; it
       holds its value much better, which is where that gap comes from &mdash; but it is now a genuine
       comparison rather than a walkover. For context, that gap was{' '}
@@ -882,7 +884,7 @@ const NotesTab = () => (
       The Sienna costs {gap(N.carnivalHybEx2027nb.net, N.siennaNew.net)} less over five years, has 3 more
       inches of legroom in the back row for three tall kids (38.7 inches against 35.6), can be had with
       all-wheel drive, and qualifies for the loan-interest tax deduction because it is built in Indiana. The
-      Carnival asks about $1,300 less up front, holds 6.7 cu ft more luggage behind the third row, and comes
+      Carnival asks about $2,200 less up front, holds 6.7 cu ft more luggage behind the third row, and comes
       with double the powertrain warranty &mdash; and it is sitting in New Braunfels now rather than needing
       to be ordered. Drive both, and put the fifteen-year-old in the back row of each before deciding.
     </div>
@@ -907,7 +909,7 @@ const NotesTab = () => (
       tied eligibility to the assembly point, not the brand. The Carnival is built at Kia&rsquo;s Gwangmyeong
       plant in South Korea and shipped over &mdash; no deduction. The Sienna is built at Toyota Motor
       Manufacturing Indiana in Princeton, and every US-market Sienna comes from there &mdash; deduction
-      available. Kia&rsquo;s own Telluride and EV9 stickers say West Point, Georgia, so those qualify too. On a $47,504 Sienna at RBFCU&rsquo;s 4.49% over 60 months the card shows{' '}
+      available. Kia&rsquo;s own Telluride and EV9 stickers say West Point, Georgia, so those qualify too. On a $48,458 Sienna at RBFCU&rsquo;s 4.49% over 60 months the card shows{' '}
       {money(N.siennaNew.c.interest)} of interest across the loan, most of it in the 2026&ndash;2028 tax years,
       worth roughly a fifth of that back at a typical marginal rate.
       <br />
@@ -1234,8 +1236,9 @@ const NotesTab = () => (
       <br />
       <b>The Woodland Edition is the one to look at.</b> Standard AWD, 6.9 inches of ground clearance instead of
       6.3, matte-black wheels, black badging, roof rails, and a 3,500-lb tow hitch. It also comes standard with
-      all-weather floor and cargo mats, which helps the Sienna&rsquo;s one real weakness. $55,750 at Bryan
-      College Station, the one on the list.
+      all-weather floor and cargo mats, which helps the Sienna&rsquo;s one real weakness. $55,756 at sticker at
+      AutoNation Toyota South Austin; Vic Vaughan in Boerne has one coming in at $55,526. Skip Universal
+      Toyota, which lists every Sienna about $7,000 over sticker.
       <br />
       <br />
       Every SUV here offers AWD or 4WD. On the EV9, the base Light is rear-drive &mdash; AWD starts at the Wind
@@ -1320,7 +1323,7 @@ const NotesTab = () => (
     <p className="fine">
       <b>Why &ldquo;value kept&rdquo; flatters used cars.</b> The percentage is measured against what <b>you</b>{' '}
       pay, not the original sticker. A used EV9 keeps a third of $37,990 because the first owner already
-      absorbed the drop from $56,000. A new Sienna keeps two thirds of $47,504. Kia&rsquo;s EV9 still has the
+      absorbed the drop from $56,000. A new Sienna keeps two thirds of $48,458. Kia&rsquo;s EV9 still has the
       worst depreciation of anything here in absolute terms &mdash; roughly 63% from new over five years &mdash;
       it just doesn&rsquo;t look that way when you buy it second-hand.
     </p>

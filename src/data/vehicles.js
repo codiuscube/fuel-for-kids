@@ -181,12 +181,19 @@ export const KFA_CARNIVAL_2027 = { 48: 0.029, 60: 0.0399, 72: 0.0449 };
 export const KFA_TELLURIDE_HYBRID_2027 = { 48: 0.0399, 60: 0.0449, 72: 0.0449 };
 
 export const OPTIONS=[
- {n:"Toyota Sienna XLE",y:"2026 \u00b7 $47,504",cat:"van",cond:"new",seats:7,sticker:47504,cash:0,apr:.0449,offer:"North Park Toyota, 42 mi",
+ // Sienna, re-checked 16 Oct 2026 on cars.com and Toyota's inventory search
+ // (50 mi of 78130). Prices include the $225 doc fee. XLE comes as 7 or 8
+ // seats and neither the listing nor Toyota's page says which, so it is "ask".
+ // Avoid Universal Toyota: every Sienna there is about $7,020 over sticker.
+ {n:"Toyota Sienna XLE",y:"2026 \u00b7 $1,846 under sticker \u00b7 $48,458",cat:"van",cond:"new",seats:7,row2:"ask",sticker:48458,cash:0,apr:.0449,offer:"North Park Toyota, San Antonio \u2014 7 or 8 seats not listed, ask",
   awd:"AWD +$1,000",mpg:36,mpgLab:"36",ins:12500,res:32000,rel:4.0,cln:3.0,leg2:39.9,leg3:38.7,cargo:33.5,
-  url:"https://www.northparktoyota.com/new-inventory/index.htm?model=Sienna",lt:"View this listing"},
- {n:"Sienna Woodland Edition",y:"2026 \u00b7 lifted, AWD standard \u00b7 $55,750",cat:"van",cond:"new",seats:7,sticker:55750,cash:0,apr:.0449,offer:"Bryan College Station, 124 mi",
+  url:"https://www.cars.com/vehicledetail/e66e6d38-2b81-464e-ae97-31d761b1b266/",lt:"View this listing"},
+ {n:"Toyota Sienna LE",y:"2026 \u00b7 8 seats \u00b7 $45,454",cat:"van",cond:"new",seats:8,row2:"flex",sticker:45454,cash:0,apr:.0449,offer:"AutoNation Toyota South Austin \u2014 at sticker, middle seat comes out (confirm)",
+  awd:"FWD on this car \u2014 AWD +$1,000",mpg:36,mpgLab:"36",ins:12000,res:30500,rel:4.0,cln:3.0,leg2:39.9,leg3:38.7,cargo:33.5,
+  url:"https://www.cars.com/vehicledetail/8e6a9d26-9bb1-4b28-871a-0d767b8fa602/",lt:"View this listing"},
+ {n:"Sienna Woodland Edition",y:"2026 \u00b7 lifted, AWD standard \u00b7 $55,756",cat:"van",cond:"new",seats:7,sticker:55756,cash:0,apr:.0449,offer:"AutoNation Toyota South Austin, 40 mi \u2014 at sticker; Vic Vaughan Boerne $55,526 in transit",
   awd:"AWD standard, 6.9\" clearance",mpg:35,mpgLab:"35",ins:13000,res:38000,rel:4.0,cln:3.5,leg2:39.9,leg3:38.7,cargo:33.5,
-  url:"https://www.bcstoyota.com/new-inventory/index.htm?model=Sienna",lt:"View this listing"},
+  url:"https://www.cars.com/vehicledetail/078fd833-11e0-47a0-87f3-9ebdbc776861/",lt:"View this listing"},
  {n:"Toyota Sienna XLE",y:"2025 \u00b7 59k mi \u00b7 $40,499",cat:"van",cond:"used",seats:7,sticker:40499,cash:0,apr:.0449,offer:"SOLD 9 Sep 2026 \u2014 was RBFCU 4.49%",
   awd:"AWD if optioned",mpg:36,mpgLab:"36",ins:11500,res:24000,rel:4.0,cln:3.0,leg2:39.9,leg3:38.7,cargo:33.5,
   url:"https://www.carvana.com/vehicle/4683855",lt:"View this listing"},
@@ -633,34 +640,22 @@ export const OPTIONS=[
   awd:"No AWD offered",mpg:32,mpgLab:"32",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
   ins:13000,res:31500,rel:4.5,cln:3.5,leg2:40.5,leg3:35.6,cargo:40.2,
   url:"https://www.worldcarkiaonline.com/auto/new-2027-kia-carnival-hybrid-sx-prestige-new-braunfels-tx/124186035/",lt:"View this listing"},
- {n:"Kia Carnival Hybrid SX Prestige",y:"2027 \u00b7 6 mi \u00b7 lounge 2nd \u00b7 $596 off \u00b7 $55,524",cat:"van",cond:"new",seats:7,row2:"lounge",sticker:55524,cash:0,apr:.029,aprByTerm:KFA_CARNIVAL_2027,offer:"World Car Kia New Braunfels \u2014 Iceberg Green, no rear screens",
+ {n:"Kia Carnival Hybrid SX Prestige",y:"2027 \u00b7 6 mi \u00b7 lounge 2nd \u00b7 $596 off \u00b7 $55,524",cat:"van",cond:"new",seats:7,row2:"lounge",sticker:55524,cash:0,apr:.029,aprByTerm:KFA_CARNIVAL_2027,offer:"World Car Kia New Braunfels \u2014 Iceberg Green; Ivory Silver with rear screens is $58,310",
   awd:"No AWD offered",mpg:32,mpgLab:"32",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
   ins:13000,res:30000,rel:4.5,cln:3.5,leg2:40.5,leg3:35.6,cargo:40.2,
   url:"https://www.worldcarkiaonline.com/auto/new-2027-kia-carnival-hybrid-sx-prestige/126521577/",lt:"View this listing"},
- {n:"Kia Carnival Hybrid SX Prestige",y:"2027 \u00b7 lounge 2nd \u00b7 rear screens \u00b7 $58,310",cat:"van",cond:"new",seats:7,row2:"lounge",sticker:58310,cash:0,apr:.029,aprByTerm:KFA_CARNIVAL_2027,offer:"World Car Kia New Braunfels \u2014 Ivory Silver, $2,500 dual-screen package",
-  awd:"No AWD offered",mpg:32,mpgLab:"32",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
-  ins:13000,res:31000,rel:4.5,cln:3.5,leg2:40.5,leg3:35.6,cargo:40.2,
-  url:"https://www.worldcarkiaonline.com/auto/new-2027-kia-carnival-hybrid-sx-prestige/124333182/",lt:"View this listing"},
  // 2027 V6 SX with the Captain's Chairs Package on the sticker, 16 Oct 2026.
- {n:"Kia Carnival SX",y:"2027 \u00b7 V6 \u00b7 captains \u00b7 no price posted \u00b7 $49,475",cat:"van",cond:"new",seats:7,row2:"captains",sticker:49475,cash:0,apr:.029,aprByTerm:KFA_CARNIVAL_2027,offer:"World Car Kia New Braunfels \u2014 $49,250 sticker + doc, ask for their price",
-  awd:"No AWD offered",mpg:21,mpgLab:"21",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
-  ins:12500,res:24500,rel:3.0,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
-  url:"https://www.worldcarkiaonline.com/auto/new-2027-kia-carnival-sx/126834252/",lt:"View this listing"},
- {n:"Kia Carnival SX",y:"2027 \u00b7 V6 \u00b7 captains \u00b7 Aurora Black \u00b7 $50,370",cat:"van",cond:"new",seats:7,row2:"captains",sticker:50370,cash:0,apr:.029,aprByTerm:KFA_CARNIVAL_2027,offer:"World Car Kia New Braunfels \u2014 captains + Dark Edition on the sticker",
+ {n:"Kia Carnival SX",y:"2027 \u00b7 V6 \u00b7 captains \u00b7 Aurora Black \u00b7 $50,370",cat:"van",cond:"new",seats:7,row2:"captains",sticker:50370,cash:0,apr:.029,aprByTerm:KFA_CARNIVAL_2027,offer:"World Car Kia New Braunfels \u2014 two more like it there: $49,475 (no price posted) and $50,525",
   awd:"No AWD offered",mpg:21,mpgLab:"21",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
   ins:12500,res:24500,rel:3.0,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
   url:"https://www.worldcarkiaonline.com/auto/new-2027-kia-carnival-sx/125148963/",lt:"View this listing"},
- {n:"Kia Carnival SX",y:"2027 \u00b7 V6 \u00b7 captains \u00b7 Ceramic Silver \u00b7 $50,525",cat:"van",cond:"new",seats:7,row2:"captains",sticker:50525,cash:0,apr:.029,aprByTerm:KFA_CARNIVAL_2027,offer:"World Car Kia New Braunfels \u2014 captains + Dark Edition on the sticker",
-  awd:"No AWD offered",mpg:21,mpgLab:"21",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
-  ins:12500,res:24500,rel:3.0,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
-  url:"https://www.worldcarkiaonline.com/auto/new-2027-kia-carnival-sx/123189617/",lt:"View this listing"},
  // The one 2027 Hybrid SX at World Car NB (VIN KNDNE5KA2V6216267, Astra Blue):
  // 8-passenger on its Kia sticker, no Captain's Chairs Package. Seen in person
  // 16 Oct 2026: the second-row middle seat comes out, leaving a walkway. The
  // dealer's addendum adds $898 of AVIA ceramic window tint: $51,435 MSRP +
  // $898 = $52,333 asking, + $225 doc = $52,558. The website's $51,660 left
- // the tint out. Still scored as a bench until that rule is decided.
- {n:"Kia Carnival Hybrid SX",y:"2027 \u00b7 8 seats, middle comes out \u00b7 $52,558",cat:"van",cond:"new",seats:8,row2:"bench",sticker:52558,cash:0,apr:.029,aprByTerm:KFA_CARNIVAL_2027,offer:"World Car Kia New Braunfels \u2014 $898 tint on the addendum, no discount",
+ // the tint out. Scored as "flex" (8 seats, middle out) from 16 Oct 2026.
+ {n:"Kia Carnival Hybrid SX",y:"2027 \u00b7 8 seats, middle comes out \u00b7 $52,558",cat:"van",cond:"new",seats:8,row2:"flex",sticker:52558,cash:0,apr:.029,aprByTerm:KFA_CARNIVAL_2027,offer:"World Car Kia New Braunfels \u2014 $898 tint on the addendum, no discount",
   awd:"No AWD offered",mpg:32,mpgLab:"32",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
   ins:13000,res:26500,rel:4.5,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
   url:"https://www.worldcarkiaonline.com/auto/new-2027-kia-carnival-hybrid-sx/126071178/",lt:"View this listing"},

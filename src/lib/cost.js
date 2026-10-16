@@ -416,6 +416,10 @@ export const isEff = (o) => !!(o.ev || o.phev || (o.mpg && o.mpg >= 30));
 export const ROW2 = {
   captains: { label: 'Captains', short: "Captain's chairs", chip: 'ok', frac: 1 },
   lounge: { label: 'Captains · lounge', short: "Captain's chairs — lounge, do not stow", chip: 'ok', frac: 0.9 },
+  // 8 seats where the 2nd-row middle seat comes out, leaving a walkway: the
+  // family liked this in person (16 Oct 2026), so it scores with lounge, just
+  // under true captains. Only set where the removable middle is confirmed.
+  flex: { label: '8 seats · middle out', short: '8 seats — middle seat comes out for a walkway', chip: 'ok', frac: 0.9 },
   bench: { label: 'Bench 2nd', short: 'Second-row bench', chip: 'warn', frac: 0 },
   ask: { label: 'Ask 2nd row', short: 'Second row unverified', chip: 'warn', frac: 0.2 },
 };
@@ -457,7 +461,7 @@ export const row2Of = (o) => {
 export const row2Meta = (o) => ROW2[row2Of(o)];
 export const hasCaptains = (o) => {
   const id = row2Of(o);
-  return id === 'captains' || id === 'lounge';
+  return id === 'captains' || id === 'lounge' || id === 'flex';
 };
 
 // Best overall is a weighted mix you set. Captain's chairs and skipping the
