@@ -157,9 +157,9 @@ const NotesTab = () => (
           van for the replacement it would realistically need.
         </li>
         <li>
-          <b>Minivans give more space per dollar than SUVs, without exception.</b> The cheapest new seven-seat SUV
-          near you is a Grand Highlander Hybrid at $59,699, with five fewer inches of third-row legroom and
-          thirteen fewer cubic feet than a Sienna costing $12,000 less. It lands {ord(N.grandHighlander.rank)} on
+          <b>Minivans give more space per dollar than SUVs, without exception.</b> A new Grand Highlander Hybrid
+          Limited at San Marcos Toyota is $60,585, with five fewer inches of third-row legroom and thirteen fewer
+          cubic feet than a Sienna XLE costing $12,000 less. It lands {ord(N.grandHighlander.rank)} on
           five-year cost at {$(N.grandHighlander.net)}. The one thing an SUV wins outright is absolute boot
           space &mdash; a Suburban&rsquo;s 41.5 cu ft is the most here &mdash; and it costs about{' '}
           {gap(F.named.tahoeLTNew ? F.named.tahoeLTNew.net : 0, N.siennaNew.net)} more than a new Sienna over
@@ -554,7 +554,7 @@ const NotesTab = () => (
             <tr>
               <td>SX</td>
               <td>Round Rock, 60 mi</td>
-              <td>$50,864</td>
+              <td>$50,352</td>
               <td>{$(N.carnivalHybSx2027cap.net)}</td>
               <td>Two captain&rsquo;s chairs</td>
             </tr>
@@ -686,7 +686,7 @@ const NotesTab = () => (
     </div>
     </Note>
 
-    <Note title="The EX in town, or the SX in Round Rock?" blurb="Why the app picks the SX, what the extra $4,640 actually buys, and the one thing the score cannot see">
+    <Note title="The EX in town, or the SX in Round Rock?" blurb="Why the app picks the SX, what the extra $4,128 actually buys, and the one thing the score cannot see">
     <div className="tldr">
       <p style={{ fontSize: '14px', margin: '0 0 10px' }}>
         <b>Short answer.</b> The app puts the SX ahead, but it is only seeing one of the twelve ways these
