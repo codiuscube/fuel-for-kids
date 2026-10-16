@@ -122,6 +122,46 @@
 // Maintenance is computed from age, odometer, remaining warranty and the miles
 // slider (see maintenanceFor in src/lib/cost.js), which is why the page says
 // to treat sub-$3,000 gaps as ties.
+//
+// World Car Kia New Braunfels was re-checked in person on 16 Oct 2026. Every
+// new Carnival, Carnival Hybrid, Telluride Hybrid and EV9 on its site was
+// listed, and every EX-and-up Carnival, Hybrid Prestige, Telluride Hybrid
+// EX / X-Line SX and the EV9 was matched to its own Kia window sticker by VIN.
+// What changed:
+//   - 2027 Hybrid EX (KNDNC5KA4V6205955) is still there, but the dealer
+//     discount fell from $1,332 to $636: $46,635 - $636 + $225 = $46,224.
+//   - 2027 Hybrid SX Prestige Astra Blue (KNDNE5KA6V6191566) and 2026 V6 SX
+//     Prestige Aurora Black (KNDNE5K30T6641260) are no longer listed. Both
+//     are kept and marked SOLD, as the page does for every vanished car.
+//   - Two other 2027 Hybrid SX Prestiges are there, both 7-passenger VIP
+//     lounge on the sticker: Iceberg Green KNDNE5KA7V6219150 ($55,895 less
+//     $596, $55,524) and Ivory Silver KNDNE5KAXV6198987 ($58,085, no
+//     discount, $58,310, with the $2,500 rear-seat entertainment package).
+//   - Three 2027 V6 Carnival SX carry the Captain's Chairs Package on their
+//     stickers: KNDNE5K33V6669606 ($49,250, no sale price posted yet),
+//     KNDNE5K37V6662626 ($50,370) and KNDNE5K36V6655814 ($50,525). The other
+//     2027 V6 EX and SX stickers read (668367, 668053, 668181, 668285,
+//     668132, 668293) are 8-passenger benches and were not added. The 2027
+//     V6 sticker is 21 mpg combined, 18 city / 25 highway.
+//   - The one 2027 Hybrid SX there (KNDNE5KA2V6216267, $51,660) is an
+//     8-passenger bench on its sticker, and the one EV9 (2026 Land AWD,
+//     5XYADFS56TG028677, $60,919 after $10,000 Kia cash) has the "Land
+//     7-Passenger Package", which swaps the captains for a bench. Both are
+//     added as bench cards so the page shows they were looked at.
+//   - Telluride Hybrid EX has captain's chairs standard ("One-Touch Slide 2nd
+//     Row Captain's Chairs (2 Seats)") and is assembled in West Point, Georgia.
+//     The AWD EX sticker reads 31 mpg (30 / 32), not the 34 the build card
+//     carried; the FWD EX reads 35 (34 / 36). The X-Line SX AWD reads 31.
+//     The two Telluride build cards now point at real cars on the lot.
+//   - Kia's 2027 Carnival rate (hybrid and V6 alike) is now a ladder: 2.90%
+//     to 48 months, 3.99% at 60, 4.99% at 72, through 2 Nov 2026. Telluride
+//     Hybrid is 3.99% / 4.49% / 5.99%. Both are capped at RBFCU's 4.49%.
+//   - Conditional offers, not taken: Carnival $750 KFA bonus cash and $500
+//     military; Telluride $750 Competitive Bonus (owners of another brand),
+//     $750 Kia loyalty and $500 military.
+// Not re-checked on 16 Oct: the 2026 Carnival Hybrid cards (their KFA ladder
+// ended 30 Sep and none were left at the New Braunfels store), the 2026 V6
+// 2.99% / 72 card, Round Rock, North Austin, Carvana, and everything else.
 // ---------------------------------------------------------------------------
 
 // 2026 Carnival Hybrid KFA, through 30 Sep 2026. Dealer discount stays (Kia
@@ -130,6 +170,15 @@
 // 66-month 3.49% and 84-month 5.99% exist; 84 is worse than RBFCU, and the
 // slider is 48 / 60 / 72 only.
 export const KFA_CARNIVAL_HYBRID_2026 = { 48: 0.019, 60: 0.0299, 72: 0.0399 };
+
+// 2027 Carnival, hybrid and V6, KFA Low APR through 2 Nov 2026: 2.90% to 48
+// months, 3.99% at 60, 4.99% at 72 (read off World Car's VDPs, 16 Oct 2026).
+// 72 is capped at RBFCU's 4.49%, which beats it.
+export const KFA_CARNIVAL_2027 = { 48: 0.029, 60: 0.0399, 72: 0.0449 };
+
+// 2027 Telluride Hybrid, KFA Low APR through 2 Nov 2026: 3.99% to 48 months,
+// 4.49% at 60, 5.99% at 72. Capped at RBFCU's 4.49%.
+export const KFA_TELLURIDE_HYBRID_2027 = { 48: 0.0399, 60: 0.0449, 72: 0.0449 };
 
 export const OPTIONS=[
  {n:"Toyota Sienna XLE",y:"2026 \u00b7 $47,504",cat:"van",cond:"new",seats:7,sticker:47504,cash:0,apr:.0449,offer:"North Park Toyota, 42 mi",
@@ -197,10 +246,10 @@ export const OPTIONS=[
  {n:"Honda Pilot TrailSport",y:"2023 \u00b7 used \u00b7 market estimate",cat:"suv",cond:"used",seats:7,sticker:39000,cash:0,apr:.0449,offer:"RBFCU 4.49%",
   awd:"AWD standard",mpg:21,mpgLab:"21",ins:11500,res:18000,rel:4.0,cln:3.5,leg2:40.8,leg3:32.5,cargo:18.6,
   url:"https://www.carvana.com/cars/honda-pilot",lt:"Browse listings"},
- {n:"Telluride X-Line SX Hybrid",y:"2027 \u00b7 AWD, rugged trim \u00b7 $56,035",cat:"suv",cond:"new",seats:7,sticker:56035,cash:0,apr:.0449,offer:"Hybrid + off-road look",
-  awd:"AWD standard",mpg:33,mpgLab:"33",aw:"2020 N. American Utility of the Year",awUrl:"https://www.kia.com/sd/en/util/news/Kia-Telluride-wins-Triple-Crown.html",
+ {n:"Telluride X-Line SX Hybrid",y:"2027 \u00b7 AWD, rugged trim \u00b7 $57,024",cat:"suv",cond:"new",seats:7,sticker:57024,cash:0,apr:.0399,aprByTerm:KFA_TELLURIDE_HYBRID_2027,offer:"World Car Kia New Braunfels \u2014 captains, built in Georgia",
+  awd:"AWD standard",mpg:31,mpgLab:"31",aw:"2020 N. American Utility of the Year",awUrl:"https://www.kia.com/sd/en/util/news/Kia-Telluride-wins-Triple-Crown.html",
   ins:13500,res:32000,rel:3.5,cln:3.5,leg2:43.0,leg3:32.1,cargo:21.3,
-  url:"https://www.kia.com/us/en/telluride",lt:"Build and find one"},
+  url:"https://www.worldcarkiaonline.com/auto/new-2027-kia-telluride-hybrid-xline-sx/123940439/",lt:"View this listing"},
  {n:"Mazda CX-90 PHEV Preferred",y:"2026 \u00b7 AWD std \u00b7 ~$51,000",cat:"suv",cond:"new",seats:7,sticker:51000,cash:0,apr:.0449,offer:"26 mi electric",
   awd:"AWD standard",mpg:25,mpgLab:"56 MPGe",mpgBar:38,kwh100:48,phev:true,charger:true,
   ins:13000,res:26000,rel:3.0,cln:3.5,leg2:39.4,leg3:30.4,cargo:14.9,
@@ -224,10 +273,14 @@ export const OPTIONS=[
   awd:"AWD available",mpg:22,mpgLab:"22",aw:"2020 N. American Utility of the Year",awUrl:"https://www.kia.com/sd/en/util/news/Kia-Telluride-wins-Triple-Crown.html",
   ins:11500,res:15500,rel:3.5,cln:3.5,leg2:42.4,leg3:31.4,cargo:21.0,
   url:"https://www.carvana.com/vehicle/4650636",lt:"View this listing"},
- {n:"Kia Telluride Hybrid EX",y:"2027 \u00b7 AWD \u00b7 $50,035",cat:"suv",cond:"new",seats:7,sticker:50035,cash:0,apr:.0449,offer:"Redesigned, 35 mpg",
-  awd:"AWD standard on this trim",mpg:34,mpgLab:"34",aw:"2020 N. American Utility of the Year",awUrl:"https://www.kia.com/sd/en/util/news/Kia-Telluride-wins-Triple-Crown.html",
+ {n:"Kia Telluride Hybrid EX",y:"2027 \u00b7 AWD \u00b7 5 mi \u00b7 $50,935",cat:"suv",cond:"new",seats:7,sticker:50935,cash:0,apr:.0399,aprByTerm:KFA_TELLURIDE_HYBRID_2027,offer:"World Car Kia New Braunfels \u2014 captains standard, built in Georgia",
+  awd:"AWD on this car",mpg:31,mpgLab:"31",aw:"2020 N. American Utility of the Year",awUrl:"https://www.kia.com/sd/en/util/news/Kia-Telluride-wins-Triple-Crown.html",
   ins:13000,res:29000,rel:3.5,cln:3.5,leg2:43.0,leg3:32.1,cargo:21.3,
-  url:"https://www.kia.com/us/en/telluride",lt:"Build and find one"},
+  url:"https://www.worldcarkiaonline.com/auto/new-2027-kia-telluride-hybrid-ex/125753649/",lt:"View this listing"},
+ {n:"Kia Telluride Hybrid EX",y:"2027 \u00b7 FWD \u00b7 $48,935",cat:"suv",cond:"new",seats:7,sticker:48935,cash:0,apr:.0399,aprByTerm:KFA_TELLURIDE_HYBRID_2027,offer:"World Car Kia New Braunfels \u2014 35 mpg, captains standard",
+  awd:"FWD only \u2014 AWD is the $50,935 car",mpg:35,mpgLab:"35",aw:"2020 N. American Utility of the Year",awUrl:"https://www.kia.com/sd/en/util/news/Kia-Telluride-wins-Triple-Crown.html",
+  ins:13000,res:28000,rel:3.5,cln:3.5,leg2:43.0,leg3:32.1,cargo:21.3,
+  url:"https://www.worldcarkiaonline.com/auto/new-2027-kia-telluride-hybrid-ex/126364602/",lt:"View this listing"},
  {n:"Toyota Sequoia Limited",y:"2023 \u00b7 17k mi \u00b7 $67,590",cat:"suv",cond:"used",seats:7,sticker:67590,cash:0,apr:.0449,offer:"Hybrid V6",
   awd:"4WD available",mpg:21,mpgLab:"21",ins:14000,res:36000,rel:3.5,cln:3.0,leg2:39.2,leg3:33.7,cargo:11.5,
   url:"https://www.carvana.com/vehicle/4665017",lt:"View this listing"},
@@ -245,6 +298,9 @@ export const OPTIONS=[
  {n:"Kia EV9 Land AWD",y:"2026 \u00b7 0% + $5k \u00b7 $68,900",cat:"suv",cond:"new",seats:6,sticker:68900,cash:5000,apr:0,offer:"0% / 60 mo + $5,000 \u00b7 or $10,000 cash",
   awd:"AWD standard",kwh100:35.6,mpgLab:"88 MPGe",mpgBar:40,ev:true,charger:true,aw:"2024 World Car of the Year",awUrl:"https://www.kbb.com/car-news/the-kia-ev9-is-the-2024-world-car-of-the-year",ins:14000,res:25500,rel:1.5,cln:4.0,
   leg2:42.8,leg3:32.0,cargo:20.2,url:"https://www.kia.com/us/en/ev9",lt:"Build and find one"},
+ {n:"Kia EV9 Land AWD",y:"2026 \u00b7 7-seat bench \u00b7 $10k Kia cash \u00b7 $60,919",cat:"suv",cond:"new",seats:7,row2:"bench",sticker:60919,cash:0,apr:.0449,offer:"World Car Kia New Braunfels \u2014 Land 7-Passenger Package, bench 2nd row",
+  awd:"AWD standard",kwh100:40,mpgLab:"84 MPGe",mpgBar:38,ev:true,charger:true,aw:"2024 World Car of the Year",awUrl:"https://www.kbb.com/car-news/the-kia-ev9-is-the-2024-world-car-of-the-year",ins:14000,res:27000,rel:1.5,cln:4.0,
+  leg2:42.8,leg3:32.0,cargo:20.2,url:"https://www.worldcarkiaonline.com/auto/new-2026-kia-ev9-land-awd/125229621/",lt:"View this listing"},
  {n:"Kia EV9 Land AWD",y:"2024 \u00b7 15k mi \u00b7 $45,990",cat:"suv",cond:"used",seats:6,row2:"lounge",sticker:45990,cash:0,apr:.0449,offer:"VIP 2nd row \u00b7 Carvana",
   awd:"AWD standard",kwh100:35.6,mpgLab:"88 MPGe",mpgBar:40,ev:true,charger:true,aw:"2024 World Car of the Year",awUrl:"https://www.kbb.com/car-news/the-kia-ev9-is-the-2024-world-car-of-the-year",ins:13500,res:20000,rel:1.5,cln:4.0,
   leg2:42.8,leg3:32.0,cargo:20.2,url:"https://www.carvana.com/vehicle/4709411",lt:"View this listing"},
@@ -536,10 +592,10 @@ export const OPTIONS=[
 // stock; mileage is from the listing, the exact VIN was not opened, so the
 // link is the search page.
 // ---------------------------------------------------------------------------
- {n:"Kia Carnival EX",y:"2026 \u00b7 $1,500 off + $750 \u00b7 $39,690",cat:"van",cond:"new",seats:7,row2:"bench",sticker:39690,cash:750,apr:.0449,offer:"World Car Kia, New Braunfels",
+ {n:"Kia Carnival EX",y:"2026 \u00b7 $2,187 off + $1,500 \u00b7 $40,273",cat:"van",cond:"new",seats:7,row2:"bench",sticker:40273,cash:0,apr:.0449,offer:"World Car Kia, New Braunfels \u2014 16 Oct 2026",
   awd:"No AWD offered",mpg:22,mpgLab:"22",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
   ins:12000,res:20500,rel:3.0,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
-  url:"https://www.worldcarkianorth.com/search/new-kia-carnival-san-antonio-tx/?cy=78201&md=10821&tp=new",lt:"Browse New Braunfels / SA stock"},
+  url:"https://www.worldcarkiaonline.com/search/new-kia-carnival/?tp=new&md=10821",lt:"Browse New Braunfels stock"},
  {n:"Kia Carnival EX",y:"2026 \u00b7 2.99% / 72 mo \u00b7 $41,190",cat:"van",cond:"new",seats:7,row2:"bench",sticker:41190,cash:0,apr:.0299,term:72,offer:"Cheap rate, no discounts stack",
   awd:"No AWD offered",mpg:22,mpgLab:"22",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
   ins:12000,res:20500,rel:3.0,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
@@ -552,26 +608,57 @@ export const OPTIONS=[
   awd:"No AWD offered",mpg:33,mpgLab:"33",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
   ins:12500,res:25500,rel:4.5,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
   url:"https://www.kiaworldcar.com/search/new-kia-carnival-hybrid-san-antonio-tx/?cy=78201&md=22648&tp=new",lt:"Browse hybrid stock"},
- {n:"Kia Carnival SX Prestige",y:"2026 \u00b7 V6, lounge 2nd \u00b7 $52,631",cat:"van",cond:"new",seats:7,row2:"lounge",sticker:52631,cash:0,apr:.0449,offer:"World Car Kia New Braunfels",
+ {n:"Kia Carnival SX Prestige",y:"2026 \u00b7 V6, lounge 2nd \u00b7 $52,631",cat:"van",cond:"new",seats:7,row2:"lounge",sticker:52631,cash:0,apr:.0449,offer:"SOLD or moved by 16 Oct 2026 \u2014 was World Car Kia New Braunfels",
   awd:"No AWD offered",mpg:22,mpgLab:"22",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
   ins:13000,res:29000,rel:3.0,cln:3.5,leg2:40.5,leg3:35.6,cargo:40.2,
   url:"https://www.worldcarkiaonline.com/auto/new-2026-kia-carnival-mpv-sx-prestige-new-braunfels-tx/120474272/",lt:"View this listing"},
- {n:"Kia Carnival Hybrid EX",y:"2027 \u00b7 2.90% / 48 mo \u00b7 $43,690",cat:"van",cond:"new",seats:7,row2:"ask",sticker:43690,cash:0,apr:.029,term:48,offer:"Base MSRP, before the $1,545 freight \u00b7 Kia of North Austin, \u224865 mi",
+ // Listing price only; 2026 SX Prestige is VIP lounge on every car, sticker not opened.
+ {n:"Kia Carnival SX Prestige",y:"2026 \u00b7 V6, lounge 2nd \u00b7 $2,500 Kia cash \u00b7 $48,357",cat:"van",cond:"new",seats:7,row2:"lounge",sticker:48357,cash:0,apr:.0449,offer:"World Car Kia New Braunfels \u2014 $2,823 off + $2,500 Kia cash",
+  awd:"No AWD offered",mpg:21,mpgLab:"21",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
+  ins:13000,res:27500,rel:3.0,cln:3.5,leg2:40.5,leg3:35.6,cargo:40.2,
+  url:"https://www.worldcarkiaonline.com/auto/new-2026-kia-carnival-sx-prestige/125023254/",lt:"View this listing"},
+ {n:"Kia Carnival Hybrid EX",y:"2027 \u00b7 2.90% / 48 mo \u00b7 $43,690",cat:"van",cond:"new",seats:7,row2:"ask",sticker:43690,cash:0,apr:.029,aprByTerm:KFA_CARNIVAL_2027,offer:"Base MSRP, before the $1,545 freight \u00b7 Kia of North Austin, \u224865 mi",
   awd:"No AWD offered",mpg:32,mpgLab:"32",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
   ins:12500,res:23500,rel:4.5,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
   url:"https://www.kianorthaustin.com/new-kia/carnival-north-austin-tx.htm",lt:"Browse Austin stock"},
- {n:"Kia Carnival Hybrid SX",y:"2027 \u00b7 captains \u00b7 2.90% / 48 \u00b7 $50,864",cat:"van",cond:"new",seats:7,row2:"captains",sticker:50864,cash:0,apr:.029,term:48,offer:"2.90% / 48 mo \u00b7 Kia of Round Rock, \u224860 mi",
+ {n:"Kia Carnival Hybrid SX",y:"2027 \u00b7 captains \u00b7 2.90% / 48 \u00b7 $50,864",cat:"van",cond:"new",seats:7,row2:"captains",sticker:50864,cash:0,apr:.029,aprByTerm:KFA_CARNIVAL_2027,offer:"2.90% / 48 mo \u00b7 Kia of Round Rock, \u224860 mi",
   awd:"No AWD offered",mpg:32,mpgLab:"32",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
   ins:13000,res:27000,rel:4.5,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
   url:"https://www.kiaofroundrock.com/new/KNDNE5KA3V6190973.htm",lt:"View this listing"},
- {n:"Kia Carnival Hybrid EX",y:"2027 \u00b7 6 mi \u00b7 captains \u00b7 2.90% / 48 mo \u00b7 $45,528",cat:"van",cond:"new",seats:7,row2:"captains",sticker:45528,cash:0,apr:.029,term:48,offer:"World Car Kia New Braunfels \u2014 captains + Dark Edition on the sticker",
+ {n:"Kia Carnival Hybrid EX",y:"2027 \u00b7 6 mi \u00b7 captains \u00b7 $636 off \u00b7 $46,224",cat:"van",cond:"new",seats:7,row2:"captains",sticker:46224,cash:0,apr:.029,aprByTerm:KFA_CARNIVAL_2027,offer:"World Car Kia New Braunfels \u2014 captains + Dark Edition on the sticker",
   awd:"No AWD offered",mpg:32,mpgLab:"32",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
   ins:12500,res:24500,rel:4.5,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
   url:"https://www.worldcarkiaonline.com/auto/new-2027-kia-carnival-hybrid-ex-new-braunfels-tx/124889385/",lt:"View this listing"},
- {n:"Kia Carnival Hybrid SX Prestige",y:"2027 \u00b7 lounge 2nd \u00b7 2.90% / 48 mo \u00b7 $58,920",cat:"van",cond:"new",seats:7,row2:"lounge",sticker:58920,cash:0,apr:.029,term:48,offer:"World Car Kia New Braunfels \u2014 dual-screen rear entertainment, $2,500 option",
+ {n:"Kia Carnival Hybrid SX Prestige",y:"2027 \u00b7 lounge 2nd \u00b7 rear screens \u00b7 $58,920",cat:"van",cond:"new",seats:7,row2:"lounge",sticker:58920,cash:0,apr:.029,aprByTerm:KFA_CARNIVAL_2027,offer:"SOLD or moved by 16 Oct 2026 \u2014 was World Car Kia New Braunfels, Astra Blue",
   awd:"No AWD offered",mpg:32,mpgLab:"32",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
   ins:13000,res:31500,rel:4.5,cln:3.5,leg2:40.5,leg3:35.6,cargo:40.2,
   url:"https://www.worldcarkiaonline.com/auto/new-2027-kia-carnival-hybrid-sx-prestige-new-braunfels-tx/124186035/",lt:"View this listing"},
+ {n:"Kia Carnival Hybrid SX Prestige",y:"2027 \u00b7 6 mi \u00b7 lounge 2nd \u00b7 $596 off \u00b7 $55,524",cat:"van",cond:"new",seats:7,row2:"lounge",sticker:55524,cash:0,apr:.029,aprByTerm:KFA_CARNIVAL_2027,offer:"World Car Kia New Braunfels \u2014 Iceberg Green, no rear screens",
+  awd:"No AWD offered",mpg:32,mpgLab:"32",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
+  ins:13000,res:30000,rel:4.5,cln:3.5,leg2:40.5,leg3:35.6,cargo:40.2,
+  url:"https://www.worldcarkiaonline.com/auto/new-2027-kia-carnival-hybrid-sx-prestige/126521577/",lt:"View this listing"},
+ {n:"Kia Carnival Hybrid SX Prestige",y:"2027 \u00b7 lounge 2nd \u00b7 rear screens \u00b7 $58,310",cat:"van",cond:"new",seats:7,row2:"lounge",sticker:58310,cash:0,apr:.029,aprByTerm:KFA_CARNIVAL_2027,offer:"World Car Kia New Braunfels \u2014 Ivory Silver, $2,500 dual-screen package",
+  awd:"No AWD offered",mpg:32,mpgLab:"32",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
+  ins:13000,res:31000,rel:4.5,cln:3.5,leg2:40.5,leg3:35.6,cargo:40.2,
+  url:"https://www.worldcarkiaonline.com/auto/new-2027-kia-carnival-hybrid-sx-prestige/124333182/",lt:"View this listing"},
+ // 2027 V6 SX with the Captain's Chairs Package on the sticker, 16 Oct 2026.
+ {n:"Kia Carnival SX",y:"2027 \u00b7 V6 \u00b7 captains \u00b7 no price posted \u00b7 $49,475",cat:"van",cond:"new",seats:7,row2:"captains",sticker:49475,cash:0,apr:.029,aprByTerm:KFA_CARNIVAL_2027,offer:"World Car Kia New Braunfels \u2014 $49,250 sticker + doc, ask for their price",
+  awd:"No AWD offered",mpg:21,mpgLab:"21",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
+  ins:12500,res:24500,rel:3.0,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
+  url:"https://www.worldcarkiaonline.com/auto/new-2027-kia-carnival-sx/126834252/",lt:"View this listing"},
+ {n:"Kia Carnival SX",y:"2027 \u00b7 V6 \u00b7 captains \u00b7 Aurora Black \u00b7 $50,370",cat:"van",cond:"new",seats:7,row2:"captains",sticker:50370,cash:0,apr:.029,aprByTerm:KFA_CARNIVAL_2027,offer:"World Car Kia New Braunfels \u2014 captains + Dark Edition on the sticker",
+  awd:"No AWD offered",mpg:21,mpgLab:"21",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
+  ins:12500,res:24500,rel:3.0,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
+  url:"https://www.worldcarkiaonline.com/auto/new-2027-kia-carnival-sx/125148963/",lt:"View this listing"},
+ {n:"Kia Carnival SX",y:"2027 \u00b7 V6 \u00b7 captains \u00b7 Ceramic Silver \u00b7 $50,525",cat:"van",cond:"new",seats:7,row2:"captains",sticker:50525,cash:0,apr:.029,aprByTerm:KFA_CARNIVAL_2027,offer:"World Car Kia New Braunfels \u2014 captains + Dark Edition on the sticker",
+  awd:"No AWD offered",mpg:21,mpgLab:"21",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
+  ins:12500,res:24500,rel:3.0,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
+  url:"https://www.worldcarkiaonline.com/auto/new-2027-kia-carnival-sx/123189617/",lt:"View this listing"},
+ // The one 2027 Hybrid SX at World Car NB: 8-passenger bench on its sticker.
+ {n:"Kia Carnival Hybrid SX",y:"2027 \u00b7 8-seat bench \u00b7 $51,660",cat:"van",cond:"new",seats:8,row2:"bench",sticker:51660,cash:0,apr:.029,aprByTerm:KFA_CARNIVAL_2027,offer:"World Car Kia New Braunfels \u2014 no Captain's Chairs Package",
+  awd:"No AWD offered",mpg:32,mpgLab:"32",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
+  ins:13000,res:26500,rel:4.5,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
+  url:"https://www.worldcarkiaonline.com/auto/new-2027-kia-carnival-hybrid-sx/126071178/",lt:"View this listing"},
  {n:"Kia Carnival SX",y:"2023 \u00b7 28k mi \u00b7 $38,590",cat:"van",cond:"used",seats:7,row2:"bench",sticker:38590,cash:0,apr:.0449,offer:"Carvana San Antonio",
   awd:"No AWD offered",mpg:22,mpgLab:"22",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
   ins:11500,res:16000,rel:3.0,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
@@ -986,8 +1073,9 @@ export const RELIABILITY_GROUPS = [
 export const FINANCE_OFFERS = [
   ['Kia EV9', '0% / 60 mo + $5,000', 'Or $10,000 cash. Do not stack.'],
   ['Nissan Armada', '2.9% / 72 mo', 'Or $3,500 cash. Loyalty $2,000 with NMAC.'],
-  ['Carnival Hybrid 2026', '1.90–3.99% KFA', 'Dealer off stays. Not the $750 Kia cash or military. Through 30 Sep.'],
-  ['Carnival Hybrid 2027', '2.90% / 48 mo', 'Kia Finance, qualified. Separate 2027 offer.'],
+  ['Carnival Hybrid 2026', '1.90–3.99% KFA', 'Ended 30 Sep 2026; not re-checked. Dealer off stayed; $750 Kia cash and military did not.'],
+  ['Carnival 2027, hybrid and V6', '2.90% / 48, 3.99% / 60, 4.99% / 72', 'KFA, qualified, through 2 Nov. Not with the $750 bonus cash or $500 military.'],
+  ['Telluride Hybrid 2027', '3.99% / 48, 4.49% / 60, 5.99% / 72', 'KFA, through 2 Nov. Ask about the $750 Competitive Bonus for non-Kia owners.'],
   ['Carnival V6', '2.99% / 72 mo', 'Bought down — does not stack. Cash + RBFCU still wins on the V6.'],
   ['Carnival, discount path', '$1,500–$2,000 off + $750', 'KFA Dealer Choice + bonus cash. Bank / KFA 4.49% sell rate.'],
   ['Grand Highlander', '4.99% / 60 mo', 'Also at 72 months.'],
@@ -1053,7 +1141,7 @@ export const CHECKS = [
     items: [
       'Ask for the out-the-door price in writing by email before visiting. Refuse to discuss monthly payment.',
       'Ask what add-ons are on the car. Paint protection, VIN etching and market adjustments are where $2,000–$4,000 hides.',
-      'Ask whether taking the promotional APR forfeits a cash rebate. On the EV9, the Armada and the Carnival V6 you must choose one. On the 2026 Carnival Hybrid, dealer discount can sit next to KFA 1.90–3.99%; Kia bonus cash and military $500 are not counted unless the contract shows them.',
+      'Ask whether taking the promotional APR forfeits a cash rebate. On the EV9, the Armada and the Carnival V6 you must choose one. On the 2027 Carnival the KFA ladder is 2.90% / 3.99% / 4.99% at 48 / 60 / 72 months; Kia bonus cash and military $500 are not counted unless the contract shows them.',
       'On a new car, read the Final Assembly Point line on the window sticker. It decides whether your loan interest is deductible, and it varies by trim and model year — check the actual car, not the model name.',
       'On a Sienna, ask whether the eight-seat version’s middle seat comes out. If it does you get a bench for three teenagers and captain’s chairs in the same van.',
       'Walk in with a credit union pre-approval. It costs nothing and it is the only leverage that reliably works.',
@@ -1085,15 +1173,18 @@ export const SOURCE_ROWS = [
   ['Carnival prices and offers', 'Kia MSRP, corridor dealer listings, 8 Sep 2026', 'Trim-level, not a VIN'],
   ['Used Carnival listings', 'Carvana San Antonio search page, 8 Sep 2026', 'Listed cars, VIN not opened'],
   ['2026 Carnival Hybrid SX Prestige', 'Carvana vehicle 4725390, 8 Sep 2026', 'Actual car; 16,631 mi, $50,990 + $1,290 ship'],
-  ['2026 Carnival SX Prestige V6', 'World Car Kia New Braunfels, VIN KNDNE5K30T6641260, 8 Sep 2026', 'Actual car; sale $52,631, lounge 2nd'],
+  ['2026 Carnival SX Prestige V6', 'World Car Kia New Braunfels, VIN KNDNE5K30T6641260, 8 Sep 2026', 'Gone by 16 Oct; was $52,631, lounge 2nd'],
   ['2027 Carnival Hybrid SX captains', 'Kia of Round Rock VDP + Kia window sticker, 9 Sep 2026', 'Actual car; VIN KNDNE5KA3V6190973, $50,864 confirmed'],
-  ['2027 Carnival Hybrid EX, New Braunfels', 'World Car VDP + Kia window sticker, VIN KNDNC5KA4V6205955, 9 Sep 2026', 'Actual car; sale $45,528, captains on the sticker'],
-  ['2027 Carnival Hybrid SX Prestige, New Braunfels', 'World Car VDP + Kia window sticker, VIN KNDNE5KA6V6191566, 9 Sep 2026', 'Actual car; sale $58,920, lounge 2nd'],
+  ['2027 Carnival Hybrid EX, New Braunfels', 'World Car VDP + Kia window sticker, VIN KNDNC5KA4V6205955, re-checked 16 Oct 2026', 'Actual car; sale $46,224 (was $45,528), captains on the sticker'],
+  ['2027 Carnival Hybrid SX Prestige, New Braunfels', 'World Car VDP + Kia window sticker, VIN KNDNE5KA6V6191566, 9 Sep 2026', 'Gone by 16 Oct; was $58,920, lounge 2nd'],
+  ['World Car Kia New Braunfels re-check', 'Every new Carnival, Telluride Hybrid and EV9 listed, stickers read by VIN, 16 Oct 2026', 'Actual cars; seating from the sticker, not the listing'],
+  ['2027 Telluride Hybrid MPG', 'Kia window stickers, 16 Oct 2026', 'AWD EX and X-Line SX 31 combined; FWD EX 35'],
+  ['2027 Carnival V6 MPG', 'Kia window stickers, 16 Oct 2026', '21 combined, 18 city / 25 hwy'],
   ['2027 Carnival Hybrid MPG', 'Kia window stickers for both VINs above', '32 combined, 34 city / 31 hwy; not the 33 on fueleconomy.gov'],
   ['2016 Sequoia SR5 2WD', 'Third Coast New Braunfels VDP, 8 Sep 2026', 'Actual car; $20,900 from dealer data'],
   ['2016 Sequoia SR5 4x4', 'Facebook Marketplace SA, 8 Sep 2026', 'Actual car; 140,908 mi, $22,114'],
   ['Carnival vs Sienna depreciation', 'iSeeCars: 50.1% vs 38.6% over five years', 'Model average'],
-  ['Final assembly points', 'Kia Gwangmyeong; Toyota Indiana, Princeton', 'Manufacturer'],
+  ['Final assembly points', 'Kia Gwangmyeong (Carnival); Kia West Point, Georgia (Telluride, EV9); Toyota Indiana, Princeton', 'Window sticker'],
   ['Auto-loan interest deduction', 'OBBBA, tax years 2025–2028', 'Statute, not tax advice'],
   ['Electricity rate', 'Your GVEC bill, Aug 2026', 'Your actual rate'],
   ['Charger rebate', 'GVEC EV charger programme', 'Published'],

@@ -105,7 +105,8 @@ net = depreciation + interest + fuel + insurance + maintenance
 - **Loan** is price + tax − cash − down payment, amortised over the chosen term
   at the vehicle's APR. Every APR is capped at **RBFCU's 4.49% for 60 months**,
   which they quote for used cars as well as new; a manufacturer promo is only
-  used where it beats that (0% EV9, 2.90% Armada, 2.99% Carnival, 3.99% Ioniq 9).
+  used where it beats that (0% EV9, 2.90% Armada, 2.99% Carnival, 3.99% Ioniq 9,
+  and Kia's 2027 Carnival and Telluride Hybrid ladders, which follow the loan-term slider).
   That rate is the well-qualified one at 60 months or less — the oldest and
   highest-mileage listings may be tiered higher or declined, and are labelled to
   check.
@@ -249,7 +250,8 @@ repair costs, and the long-form caveats — lives in the app's **Notes** tab.
 | Loan rate on every card | RBFCU 4.49%/60 mo, new and used alike | Advertised, not a pre-approval |
 | Carnival prices and offers | Kia MSRP, corridor dealer listings, 8 Sep 2026 | Trim-level, not a VIN |
 | Used Carnival listings | Carvana San Antonio search page, 8 Sep 2026 | Listed cars, VIN not opened |
-| Final assembly points | Kia Gwangmyeong; Toyota Indiana, Princeton | Manufacturer |
+| World Car Kia New Braunfels | Every new Carnival, Telluride Hybrid and EV9 listed; Kia window sticker read by VIN, 16 Oct 2026 | Actual cars; seating and MPG from the sticker |
+| Final assembly points | Kia Gwangmyeong (Carnival), Kia West Point, Georgia (Telluride, EV9); Toyota Indiana, Princeton | Window sticker |
 | Auto-loan interest deduction | OBBBA, tax years 2025–2028 | Statute, not tax advice |
 | Electricity rate | GVEC bill, Aug 2026 | Actual rate |
 | Charger rebate | GVEC EV charger programme | Published |

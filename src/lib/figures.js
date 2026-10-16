@@ -31,7 +31,7 @@ const NAMED = {
   // match whichever happened to be cheaper.
   carnivalHybEx2027nb: /Kia Carnival Hybrid EX \| 2027 · 6 mi/,
   carnivalHybEx2027austin: /Kia Carnival Hybrid EX \| 2027 · 2\.90%/,
-  carnivalPrestige2027nb: /Kia Carnival Hybrid SX Prestige \| 2027/,
+  carnivalPrestige2027nb: /Kia Carnival Hybrid SX Prestige \| 2027 · 6 mi/,
   carnivalEx2024_56k: /Kia Carnival EX \| 2024 · 56k/,
   carnivalEx2023: /Kia Carnival EX \| 2023 · 60k/,
   pacifica2024_57k: /Pacifica Hybrid Select \| 2024 · 57k/,
@@ -39,7 +39,7 @@ const NAMED = {
   grandCaravan2019_21k: /Dodge Grand Caravan SE \| 2019 · 21k/,
   grandHighlander: /Grand Highlander Hybrid Ltd \| 2026/,
   palisadeHyb: /Palisade Hybrid SEL \| 2026 · FWD/,
-  tellurideHyb2027: /Kia Telluride Hybrid EX \| 2027/,
+  tellurideHyb2027: /Kia Telluride Hybrid EX \| 2027 · AWD/,
   tellurideXLine: /Telluride X-Line SX Hybrid \| 2027/,
   telluride2025S: /Kia Telluride S \| 2025 · 36k/,
   pilotTrailSport: /Honda Pilot TrailSport \| 2026/,
