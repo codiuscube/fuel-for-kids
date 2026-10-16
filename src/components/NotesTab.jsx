@@ -677,8 +677,10 @@ const NotesTab = () => (
       says 8 on every car, including the seven-seaters.
       <br />
       <br />
-      <b>One thing to confirm at the dealer.</b> The Bose stereo comes bundled with the Dark Edition
-      package, not with the SX trim on its own, so check the sticker rather than the salesperson.
+      <b>One thing to confirm at the dealer.</b> Bose is only on the SX Prestige. The Dark Edition package
+      on the EX and SX stickers is black wheels and dark trim, nothing else, so an EX and an SX have the
+      same stereo. Also read the dealer&rsquo;s addendum sheet next to the Kia sticker: on the Hybrid SX it
+      added $898 of window tint that the website price left out.
     </div>
     </Note>
 

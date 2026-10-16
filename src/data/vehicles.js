@@ -654,8 +654,13 @@ export const OPTIONS=[
   awd:"No AWD offered",mpg:21,mpgLab:"21",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
   ins:12500,res:24500,rel:3.0,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
   url:"https://www.worldcarkiaonline.com/auto/new-2027-kia-carnival-sx/123189617/",lt:"View this listing"},
- // The one 2027 Hybrid SX at World Car NB: 8-passenger bench on its sticker.
- {n:"Kia Carnival Hybrid SX",y:"2027 \u00b7 8-seat bench \u00b7 $51,660",cat:"van",cond:"new",seats:8,row2:"bench",sticker:51660,cash:0,apr:.029,aprByTerm:KFA_CARNIVAL_2027,offer:"World Car Kia New Braunfels \u2014 no Captain's Chairs Package",
+ // The one 2027 Hybrid SX at World Car NB (VIN KNDNE5KA2V6216267, Astra Blue):
+ // 8-passenger on its Kia sticker, no Captain's Chairs Package. Seen in person
+ // 16 Oct 2026: the second-row middle seat comes out, leaving a walkway. The
+ // dealer's addendum adds $898 of AVIA ceramic window tint: $51,435 MSRP +
+ // $898 = $52,333 asking, + $225 doc = $52,558. The website's $51,660 left
+ // the tint out. Still scored as a bench until that rule is decided.
+ {n:"Kia Carnival Hybrid SX",y:"2027 \u00b7 8 seats, middle comes out \u00b7 $52,558",cat:"van",cond:"new",seats:8,row2:"bench",sticker:52558,cash:0,apr:.029,aprByTerm:KFA_CARNIVAL_2027,offer:"World Car Kia New Braunfels \u2014 $898 tint on the addendum, no discount",
   awd:"No AWD offered",mpg:32,mpgLab:"32",aw:"#1 minivan, J.D. Power 2026 quality",awUrl:"https://www.kiamedia.com/us/en/media/sitesection/3461/awards",
   ins:13000,res:26500,rel:4.5,cln:4.0,leg2:40.5,leg3:35.6,cargo:40.2,
   url:"https://www.worldcarkiaonline.com/auto/new-2027-kia-carnival-hybrid-sx/126071178/",lt:"View this listing"},
