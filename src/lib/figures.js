@@ -12,7 +12,8 @@ import { DEFAULT_ASSUMPTIONS, bestOf, compute, hasCaptains, perMile, startMilesO
 // Named listings the Notes talk about. Each regex is matched against
 // `${n} | ${y}` so it can pin a specific car by year and mileage.
 const NAMED = {
-  siennaNew: /Toyota Sienna XLE \| 2026/,
+  // Pinned past the year: a used 2026 XLE from Carvana is on the list too.
+  siennaNew: /Toyota Sienna XLE \| 2026 · \$1,846/,
   woodland: /Sienna Woodland Edition \| 2026/,
   sienna2025: /Toyota Sienna XLE \| 2025 · 59k/,
   sienna2023: /Toyota Sienna XLE \| 2023 · 67k/,
@@ -48,7 +49,7 @@ const NAMED = {
   tahoeLTDuramax: /Chevy Tahoe LT Duramax \| 2023/,
   tahoeLTNew: /Chevy Tahoe LT 4WD \| 2026/,
   yukonSLT2023: /GMC Yukon SLT 4WD \| 2023/,
-  yukonElevation2026: /GMC Yukon Elevation 4WD \| 2026/,
+  yukonElevation2026: /GMC Yukon Elevation 4WD \| 202[67]/,
   yukonAT4: /GMC Yukon AT4 4WD \| 2022/,
   expedition2017: /Ford Expedition Limited \| 2017/,
   ev9_2024: /Kia EV9 Light LR \| 2024/,

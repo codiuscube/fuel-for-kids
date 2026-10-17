@@ -191,8 +191,9 @@ const NotesTab = () => (
           <b>No electric vehicle can give you seven seats with captain&rsquo;s chairs.</b> The EV9, Rivian R1S,
           Tesla Model X, Volvo EX90, Hyundai Ioniq 9, Cadillac Vistiq and VW ID. Buzz all pair captain&rsquo;s
           chairs with a two-seat third row; the seven-seat version of each swaps in a bench. It is a structural
-          limit of the segment, not a trim choice. All seven are priced below as six-seaters and scored down for
-          the missing seat, so you can see what it costs.
+          limit of the segment, not a trim choice. Most are priced below as six-seaters and scored down for
+          the missing seat, so you can see what it costs. The seven-seat EV9s here have a bench, and the
+          Ioniq 9 and Vistiq listings don&rsquo;t say which second row they carry.
         </li>
         <li>
           <b>Leasing still fails, for a different reason.</b> Every offer caps you at 10,000 miles a year. At{' '}
@@ -346,12 +347,12 @@ const NotesTab = () => (
         </li>
         <li>
           <b>Honda Pilot TrailSport is the real off-road trim.</b> Standard AWD, all-terrain tyres, steel skid
-          plates, and a 32.5&quot; third row. At 21 mpg it burns {gap(N.pilotTrailSport.fuel, N.siennaNew.fuel)}{' '}
+          plates, and a 32.5&quot; third row. At 20 mpg it burns {gap(N.pilotTrailSport.fuel, N.siennaNew.fuel)}{' '}
           more than a Sienna over five years.
         </li>
         <li>
           <b>The 2023 Sequoias are out on cost.</b> Both used hybrids land above {$(Math.min(N.sequoiaLtd2023.net, N.sequoiaPlat2023.net))}{' '}
-          over five years because they start near $68,000 and hold only 11.5 cu ft behind the third row. The two
+          over five years because they start near $65,000 and hold only 11.5 cu ft behind the third row. The two
           2016 SR5s are a different car: old body, 18.9 cu ft, about $21k&ndash;$22k to buy, 15 mpg, and a bench
           second row, so they fail the brief before the fuel bill.
         </li>
@@ -478,11 +479,12 @@ const NotesTab = () => (
       <br />
       <b>What it costs you to say yes.</b> 17 mpg, and $74,300 before destination for the PRO-4X. At {miK}{' '}
       miles a year that is {money(N.armadaPro4x.fuel)} of petrol over five years and a five-year total of about{' '}
-      {$(N.armadaPro4x.net)}, {ord(N.armadaPro4x.rank)} of {F.count}. The SL 4x4 is on the list too at $7,770
-      less for the same body, engine and third row. As of 3 Sep 2026 Nissan is also advertising the base SV 4x2
-      at $58,840 with 2.9% for 72 months, or $3,500 customer cash &mdash; not both. That is the cheapest new
-      Armada on the page, and it is still rear-drive. Captain&rsquo;s chairs are an option on SV and PRO-4X, not
-      standard. The award is real; so is the price.
+      {$(N.armadaPro4x.net)}, {ord(N.armadaPro4x.rank)} of {F.count}. The SL 4x4 is on the list too at $7,160
+      less for the same body, engine and third row. Nissan still offers 2.9% for 72 months or $3,500 customer
+      cash, not both, through 2 November. On 16 October Ancira Nissan listed a base SV 4x2 at $54,074; taking
+      the 2.9% puts it near $57,574. That is the cheapest new Armada on the page, and it is still rear-drive.
+      Captain&rsquo;s chairs are an option on SV and PRO-4X, not standard, and the PRO-4X priced here has the
+      split bench. The award is real; so is the price.
       <br />
       <br />
       <b>Check the second row before you fall for one.</b> Captain&rsquo;s chairs are an option on the PRO-4X,
@@ -514,7 +516,9 @@ const NotesTab = () => (
       Suburban Z71 at $44,990 with 82,000 miles is the real full-size boot (41.5 cu ft) with no factory warranty
       left; buckets are not guaranteed on Z71. A 2020 Expedition MAX XLT at $32,990 with 80,000 miles is the
       cheapest eight-seat hauler here by a wide margin, with $9,200 in factory options on the listing, and the
-      same second-row question. Both trucks belong on a PPI, not a one-click buy.
+      same second-row question. Both trucks belong on a PPI, not a one-click buy. By 16 October all three
+      had sold. The closest replacement is a 2024 EV9 Land with 20,742 miles and captain&rsquo;s chairs at
+      $42,590, plus $1,990 to ship.
       <br />
       <br />
       <b>These are not the same job.</b> The Armada is a body-on-frame full-size that tows 8,500 lb and seats
@@ -635,13 +639,20 @@ const NotesTab = () => (
       <b>Used is not the cheaper way into a Carnival.</b> The best used one found is a 2024 EX with 56k miles at
       $33,590, and it lands {ord(N.carnivalEx2024_56k.rank)} at {$(N.carnivalEx2024_56k.net)} &mdash;{' '}
       {gap(N.carnivalEx2024_56k.net, N.carnivalHybEx2026.net)} worse than the new hybrid, because it is a V6
-      with no captains either. The used hybrids are priced almost at new-car money: $42,590 for a 2025 EX at
+      with no captains either. The used hybrids are priced almost at new-car money: $42,990 for a 2025 EX at
       Carvana against $42,090 for a brand-new 2026 with the full 10-year powertrain warranty. A 2026 Hybrid SX
       Prestige also landed on Carvana at $50,990 and 16,631 miles, plus $1,290 to ship it &mdash; more than a
       new Hybrid SX in the corridor, and the lounge second row does not fold or come out. World Car Kia New
       Braunfels had a <b>new V6</b> SX Prestige (VIN KNDNE5K30T6641260) at $52,631 on 8 September; by 16
       October it was gone, and the cheapest V6 Prestige there was a 2026 in Panthera Metal at $48,357 after
       $2,823 off and $2,500 of Kia cash. Lounge captains again, and the V6, not the hybrid.
+      <br />
+      <br />
+      <b>Carvana on 16 October.</b> Every Carnival listed here before had sold. What is there now: a 2025
+      Hybrid EX with 7,790 miles at $42,990 (8 seats, free shipping), only $3,234 under the new 2027 EX in
+      New Braunfels; a 2025 Hybrid SX Prestige with 13,078 miles at $47,990 plus $1,590 shipping, $7,534 under
+      the new Iceberg Green Prestige; and a 2026 V6 LXS with 18,444 miles at $32,990, the cheapest eight-seater
+      on the page whose middle seat comes out.
       <br />
       <br />
       <b>Market context.</b> CarGurus has 2023 Carnivals averaging $34,496 around San Antonio and $30,535
