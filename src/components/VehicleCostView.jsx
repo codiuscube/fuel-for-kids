@@ -22,6 +22,7 @@ import {
   hasPromoFinance,
   isEff,
   isSold,
+  modelOf,
   money,
   normalizeWeights,
   ownFor,
@@ -88,10 +89,31 @@ const MUSTS = [
 ];
 
 const PODIUM = [
-  { label: 'Best overall', cls: 'gold' },
-  { label: 'Runner-up', cls: 'silver' },
+  { label: 'Gold', cls: 'gold' },
+  { label: 'Silver', cls: 'silver' },
   { label: 'Bronze', cls: 'bronze' },
 ];
+
+const PODIUMS = [
+  { id: 'all', label: 'Overall' },
+  { id: 'suv', label: 'SUV' },
+  { id: 'van', label: 'Minivan' },
+];
+
+// The top three models in a ranked list, each represented by its
+// best-scoring listing. Without this the minivan podium is three Siennas.
+const topModels = (ranked, n = 3) => {
+  const seen = new Set();
+  const out = [];
+  for (const x of ranked) {
+    const m = modelOf(x.r.o);
+    if (seen.has(m)) continue;
+    seen.add(m);
+    out.push(x);
+    if (out.length === n) break;
+  }
+  return out;
+};
 
 // The three "more room than yours" sliders. They filter on the gain over the
 // car selected on the Compare tab — the 2017 Pathfinder until you change it —
@@ -503,6 +525,8 @@ const VehicleCostView = () => {
   const [sheet, setSheet] = useState(null); // 'filters' | 'sort' | 'mix' | 'assume'
   const [openCard, setOpenCard] = useState(boot.openCard);
   const [showPick, setShowPick] = useState(true);
+  // Which podium a phone shows; wider screens show all three side by side.
+  const [podTab, setPodTab] = useState('all');
   const [cmpSub, setCmpSub] = useState(boot.cmpSub);
   const [mxSort, setMxSort] = useState(boot.mxSort);
   const [W, setW] = useState(boot.W);
@@ -567,11 +591,36 @@ const VehicleCostView = () => {
 
   // The recommendation still runs, but it is a strip above the list rather
   // than a page of its own, and it can be folded away.
+  // Scored once across everything matching, so a car's SUV medal and its
+  // overall medal come from the same number.
   const ranked = bestOf(matching.filter((r) => !isSold(r.o)), W) || [];
-  const podium = ranked.slice(0, 3);
-  const podiumById = new Map(
-    podium.map((item, i) => [cardId(item.r.o), PODIUM[i]]),
+  const podiums = PODIUMS.map((p) => ({
+    ...p,
+    items: topModels(p.id === 'all' ? ranked : ranked.filter((x) => x.r.o.cat === p.id)),
+  })).filter((p) => p.items.length);
+  // With SUV only or Minivan only on, Overall would repeat the one podium left.
+  const shownPodiums = podiums.filter((p) => p.id !== 'all').length > 1 ? podiums : podiums.filter((p) => p.id !== 'all');
+  // A card's flag lists its overall medal, then a category medal only when it
+  // places differently there: the Sienna that wins overall also wins
+  // minivans, and saying so twice is noise.
+  const podiumById = new Map();
+  shownPodiums.forEach((p) =>
+    p.items.forEach((item, i) => {
+      const id = cardId(item.r.o);
+      const cur = podiumById.get(id);
+      if (cur && cur.place === i) return;
+      const label = `${p.label} ${PODIUM[i].label.toLowerCase()}`;
+      podiumById.set(
+        id,
+        cur
+          ? { ...cur, label: `${cur.label} · ${label}`, cls: PODIUM[Math.min(cur.place, i)].cls }
+          : { label, cls: PODIUM[i].cls, place: i },
+      );
+    }),
   );
+  const podium = shownPodiums[0] ? shownPodiums[0].items : [];
+  // A filter can take away the tab a phone was on; fall back to the first.
+  const activePod = shownPodiums.some((p) => p.id === podTab) ? podTab : shownPodiums[0]?.id;
   const cheapest = matching.length ? matching.slice().sort((a, b) => a.c.net - b.c.net)[0] : null;
   const nFilters = activeFilterCount(F);
   const mix = normalizeWeights(W);
@@ -815,36 +864,64 @@ const VehicleCostView = () => {
               {!!podium.length && showPick && (
                 <div className="pick">
                   <div className="pickhead">
-                    <span className="picklab">Podium</span>
+                    <span className="picklab">Podiums</span>
                     <button type="button" className="picksh" onClick={() => setShowPick(false)}>
                       Hide
                     </button>
                   </div>
-                  <div className="podium">
-                    {podium.map((item, i) => {
-                      const place = PODIUM[i];
-                      const r = item.r;
-                      const cid = cardId(r.o);
-                      return (
+                  {shownPodiums.length > 1 && (
+                    <div className="seg podtabs">
+                      {shownPodiums.map((p) => (
                         <button
-                          key={cid}
+                          key={p.id}
                           type="button"
-                          className={`pod ${place.cls}`}
-                          onClick={() => toggleCard(cid)}
+                          aria-pressed={activePod === p.id}
+                          onClick={() => setPodTab(p.id)}
                         >
-                          <span className="podlab">{place.label}</span>
-                          <span className="podname">{r.o.n}</span>
-                          <span className="podsub">{r.o.y.replace(/ · \$[\d,]+$/, '')}</span>
-                          <span className="podmeta">
-                            {shortMoney(r.c.net)} over {r.c.years} years · {money(r.c.m)}/mo · {money(r.o.sticker)} ask
-                          </span>
+                          {p.label}
                         </button>
-                      );
-                    })}
+                      ))}
+                    </div>
+                  )}
+                  <div className="podiums" style={{ '--cols': shownPodiums.length }}>
+                    {shownPodiums.map((p) => (
+                      <section
+                        key={p.id}
+                        className={activePod === p.id ? 'podgroup on' : 'podgroup'}
+                        aria-label={`${p.label} podium`}
+                      >
+                        <h3 className="podhead">{p.label}</h3>
+                        <div className="podium">
+                          {p.items.map((item, i) => {
+                            const place = PODIUM[i];
+                            const r = item.r;
+                            const cid = cardId(r.o);
+                            return (
+                              <button
+                                key={cid}
+                                type="button"
+                                className={`pod ${place.cls}`}
+                                onClick={() => toggleCard(cid)}
+                              >
+                                <span className="podlab">{place.label}</span>
+                                <span className="podname">{r.o.n}</span>
+                                <span className="podsub">{r.o.y.replace(/ · \$[\d,]+$/, '')}</span>
+                                <span className="podmeta">
+                                  {shortMoney(r.c.net)} over {r.c.years} years · {money(r.c.m)}/mo ·{' '}
+                                  {money(r.o.sticker)} ask
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </section>
+                    ))}
                   </div>
                   <p className="fine pickwhy">
-                    Your mix: {mixLabel}, across the {matching.length} matching your filters. Tap a card to
-                    open it. The numbered list is still cheapest-first unless you change the sort.
+                    Your mix: {mixLabel}, across the {matching.length} matching your filters. Each medal is a
+                    different model, shown by its best listing; the other listings of that model are still in the
+                    list. Tap a car to open it. The numbered list is still cheapest-first unless you change the
+                    sort.
                     {cheapest && podium[0] && cheapest.o.n !== podium[0].r.o.n
                       ? ` Cheapest match is the ${cheapest.o.n} at ${shortMoney(cheapest.c.net)}.`
                       : ''}
@@ -1061,9 +1138,9 @@ const VehicleCostView = () => {
           }
         >
           <p className="fine" style={{ marginTop: 0 }}>
-            Best overall ranks everything that matches your filters against this mix, and the podium
-            above the list is its top three. Weights, not filters: a factor at zero is one it
-            ignores, and nothing drops off the list.
+            Best overall ranks everything that matches your filters against this mix, and the podiums
+            above the list are its top three models overall, among SUVs and among minivans. Weights,
+            not filters: a factor at zero is one it ignores, and nothing drops off the list.
           </p>
           <div className="fgroup">
             {SCORE_FACTORS.map((f) => (
@@ -1086,7 +1163,7 @@ const VehicleCostView = () => {
           <p className="fine">
             {mix.sum
               ? `Your mix: ${mixLabel}.`
-              : 'Nothing carries any weight, so the podium is just the first three matches. Drag a slider to give Best overall something to rank on.'}
+              : 'Nothing carries any weight, so each podium is just its first three models. Drag a slider to give Best overall something to rank on.'}
           </p>
         </Sheet>
 

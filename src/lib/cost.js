@@ -94,6 +94,15 @@ export const modelYearOf = (o) => {
   return m ? Number(m[1]) : COST_YEAR;
 };
 
+// The model a listing belongs to, so a podium can show three different cars
+// rather than three Siennas. A long-wheelbase version (Yukon XL, Expedition
+// MAX) counts as its own model, the way the Suburban does beside the Tahoe.
+const MAKES = /^(Acura|BMW|Buick|Cadillac|Chevy|Chrysler|Dodge|Ford|GMC|Honda|Hyundai|Infiniti|Jeep|Kia|Lexus|Mazda|Mercedes|Nissan|Rivian|Subaru|Tesla|Toyota|Volvo|VW) /;
+export const modelOf = (o) => {
+  const w = o.n.replace(MAKES, '').split(' ');
+  return /^(Grand|Model|ID\.|Santa)$/.test(w[0]) || /^(XL|MAX)$/.test(w[1] || '') ? `${w[0]} ${w[1]}` : w[0];
+};
+
 export const startMilesOf = (o) => {
   if (o.cond === 'new') return 0;
   const y = String(o.y || '');

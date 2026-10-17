@@ -29,9 +29,9 @@
   --warn-text: #993c1d;
   --good-bg: #e4f5ee;
   --good-text: #146c4e;
-  --gold-bg: #e6f1fb;
-  --gold-text: #0c447c;
-  --gold-line: #2a78d6;
+  --gold-bg: #fbf3d9;
+  --gold-text: #5c4300;
+  --gold-line: #c99a0e;
   --silver-bg: #ecece8;
   --silver-text: #3a3936;
   --silver-line: #8a8984;
@@ -74,9 +74,9 @@
     --warn-text: #f5c4b3;
     --good-bg: #14392c;
     --good-text: #6ddaaf;
-    --gold-bg: #14345c;
-    --gold-text: #b5d4f4;
-    --gold-line: #3987e5;
+    --gold-bg: #3b3010;
+    --gold-text: #f3dd9b;
+    --gold-line: #c99a0e;
     --silver-bg: #2c2c2a;
     --silver-text: #e4e3dc;
     --silver-line: #8a8984;
@@ -388,11 +388,45 @@
   text-decoration: underline;
   opacity: 0.85;
 }
+.vehcost .podiums {
+  display: grid;
+  gap: 14px;
+  margin-top: 10px;
+}
+/* Nine medals stacked on a phone push the list a screen and a half down, so
+   a phone gets one podium at a time behind tabs; wider screens show all three
+   side by side and need neither the tabs nor the headings' help. */
+.vehcost .podtabs {
+  margin-top: 10px;
+}
+@media (max-width: 699px) {
+  .vehcost .podgroup:not(.on) {
+    display: none;
+  }
+  .vehcost .podtabs ~ .podiums .podhead {
+    display: none;
+  }
+}
+@media (min-width: 700px) {
+  .vehcost .podtabs {
+    display: none;
+  }
+  .vehcost .podiums {
+    grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
+    gap: 12px;
+  }
+}
+.vehcost .podhead {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
 .vehcost .podium {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-top: 10px;
+  margin-top: 6px;
 }
 .vehcost .pod {
   display: block;
@@ -479,6 +513,8 @@
 }
 .vehcost .vflag.gold {
   background: var(--gold-line);
+  /* White on gold is unreadable at 11px. */
+  color: #1f1800;
 }
 .vehcost .vflag.silver {
   background: var(--silver-line);
