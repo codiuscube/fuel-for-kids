@@ -127,6 +127,9 @@ export const warrantyOf = (o) => {
     // Battery coverage usually transfers with the car. Kia/Hyundai pack is
     // 10/100; everyone else in this list is the federal 8/100 floor.
     if (kiaHyundai(o)) return { bumperY: 5, bumperM: 60000, ptY: 10, ptM: 100000 };
+    // Rivian: 5 years / 60,000 bumper-to-bumper, 8 years / 175,000 on the
+    // Large and Max packs' battery and drive units.
+    if (/Rivian/i.test(o.n)) return { bumperY: 5, bumperM: 60000, ptY: 8, ptM: 175000 };
     return { bumperY: 3, bumperM: 36000, ptY: 8, ptM: 100000 };
   }
   if (kiaHyundai(o) && o.cond === 'new') {

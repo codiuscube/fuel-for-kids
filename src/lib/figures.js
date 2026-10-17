@@ -57,7 +57,8 @@ const NAMED = {
   sequoiaLtd2023: /Toyota Sequoia Limited \| 2023/,
   sequoiaPlat2023: /Toyota Sequoia Platinum \| 2023/,
   armadaPro4x: /Armada PRO-4X/,
-  r1sCheapest: /Rivian R1S/,
+  // Adventure only: the Dual Standard has sold and stays on the list for these notes.
+  r1sCheapest: /Rivian R1S Adventure/,
   modelX2017: /Tesla Model X 100D \| 2017/,
   defender130: /Defender 130/,
   wagoneerCheap: /Jeep Wagoneer Series II/,

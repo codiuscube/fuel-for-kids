@@ -453,10 +453,15 @@ export const OPTIONS=[
  {n:"GMC Yukon XL Elevation 4WD",y:"2026 \u00b7 4WD, longest body \u00b7 $74,265",cat:"suv",cond:"new",seats:7,row2:"ask",sticker:74265,cash:0,apr:.0449,offer:"Ancira Buick GMC, Boerne",
   awd:"4WD standard on this build",mpg:17,mpgLab:"17",ins:14000,res:44500,rel:3.0,cln:3.0,leg2:42.0,leg3:36.7,cargo:41.5,
   url:"https://www.cars.com/vehicledetail/1ea1cb33-972b-4e80-b830-7eccce068255/",lt:"View this listing"},
- {n:"Rivian R1S Adventure",y:"2023 \u00b7 64k mi \u00b7 $57,990",cat:"suv",cond:"used",seats:6,sticker:57990,ship:1890,cash:0,apr:.0449,offer:"Quad-motor",
+ {n:"Rivian R1S Adventure",y:"2023 \u00b7 64k mi \u00b7 $57,990",cat:"suv",cond:"used",seats:7,row2:"bench",sticker:57990,ship:1890,cash:0,apr:.0449,offer:"Quad-motor \u2014 bench 2nd row, like every R1S before 2027",
   awd:"AWD standard",kwh100:49,mpgLab:"69 MPGe",mpgBar:34,ev:true,charger:true,ins:16000,res:16000,rel:2.0,cln:4.0,
   leg2:37.6,leg3:32.8,cargo:17.7,url:"https://www.carvana.com/vehicle/4549163",lt:"View this listing"},
- {n:"Rivian R1S Dual Standard",y:"2024 \u00b7 33k mi \u00b7 $62,590",cat:"suv",cond:"used",seats:6,sticker:62590,cash:0,apr:.0449,offer:"SOLD 16 Oct 2026 \u2014 was Longer range",
+ // San Marcos Toyota, 16 Oct 2026: $64,998 + $225 doc. Seven seats: the
+ // 2027 R1S is the first that can have second-row captain's chairs.
+ {n:"Rivian R1S Adventure",y:"2024 \u00b7 34k mi \u00b7 one owner \u00b7 $65,223",cat:"suv",cond:"used",seats:7,row2:"bench",sticker:65223,cash:0,apr:.0449,offer:"San Marcos Toyota, 10 mi \u2014 Quad-Motor, Large pack, Glacier White",
+  awd:"AWD standard",kwh100:49,mpgLab:"69 MPGe",mpgBar:34,ev:true,charger:true,ins:16000,res:19500,rel:2.0,cln:4.0,
+  leg2:37.6,leg3:32.8,cargo:17.7,url:"https://www.sanmarcostoyota.com/auto/used-2024-rivian-r1s-adventure-quad-motor-large-pack/126367338/",lt:"View this listing"},
+ {n:"Rivian R1S Dual Standard",y:"2024 \u00b7 33k mi \u00b7 $62,590",cat:"suv",cond:"used",seats:7,row2:"bench",sticker:62590,cash:0,apr:.0449,offer:"SOLD 16 Oct 2026 \u2014 was Longer range",
   awd:"AWD standard",kwh100:49,mpgLab:"69 MPGe",mpgBar:34,ev:true,charger:true,ins:16000,res:18000,rel:2.0,cln:4.0,
   leg2:37.6,leg3:32.8,cargo:17.7,url:"https://www.carvana.com/vehicle/4460885",lt:"View this listing"},
  {n:"Tesla Model X 100D",y:"2017 \u00b7 47k mi \u00b7 $31,590",cat:"suv",cond:"used",seats:6,sticker:31590,cash:0,apr:.0449,offer:"SOLD 9 Sep 2026 \u2014 was RBFCU \u2014 check age limit",

@@ -192,8 +192,9 @@ const NotesTab = () => (
           Tesla Model X, Volvo EX90, Hyundai Ioniq 9, Cadillac Vistiq and VW ID. Buzz all pair captain&rsquo;s
           chairs with a two-seat third row; the seven-seat version of each swaps in a bench. It is a structural
           limit of the segment, not a trim choice. Most are priced below as six-seaters and scored down for
-          the missing seat, so you can see what it costs. The seven-seat EV9s here have a bench, and the
-          Ioniq 9 and Vistiq listings don&rsquo;t say which second row they carry.
+          the missing seat, so you can see what it costs. The seven-seat EV9s here have a bench, so do the
+          Rivians (captain&rsquo;s chairs only arrived on the 2027 R1S), and the Ioniq 9 and Vistiq listings
+          don&rsquo;t say which second row they carry.
         </li>
         <li>
           <b>Leasing still fails, for a different reason.</b> Every offer caps you at 10,000 miles a year. At{' '}
@@ -1089,8 +1090,8 @@ const NotesTab = () => (
       Like the EV9, their third rows hold two, so captain&rsquo;s chairs make them six-seaters.
       <br />
       <br />
-      <b>Rivian R1S</b> just added second-row captain&rsquo;s chairs as an option, but that makes it a
-      six-seater; seven requires the bench. Third row is two seats, 17.6 cu ft behind it, and the option runs
+      <b>Rivian R1S</b> only added second-row captain&rsquo;s chairs for 2027, and they make it a
+      six-seater; seven requires the bench. Every used R1S, including the ones here, has the bench. Third row is two seats, 17.6 cu ft behind it, and the option runs
       $4,000&ndash;$6,000 because it forces package bundling. The cheapest one here lands at{' '}
       {$(N.r1sCheapest.net)} over five years.
       <br />
